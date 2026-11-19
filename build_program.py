@@ -631,7 +631,7 @@ html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom
 .detail-text{overflow-wrap:anywhere}
 .detail-text p,.abstract p,.card .desc p{margin:0 0 .65em}
 .detail-text p:last-child,.abstract p:last-child,.card .desc p:last-child{margin-bottom:0}
-.detail-save[aria-pressed="true"]{color:var(--starOn-ink);background:var(--starOn-bg)}
+.detail-save.on{color:var(--starOn-ink);background:var(--starOn-bg)}
 /* ---------- toolbar ---------- */
 .sticky-wrap{position:sticky;top:0;z-index:50;background:var(--sticky-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:18px}
 .toolbar{max-width:1180px;margin:0 auto;padding:10px 20px 0}
@@ -1007,6 +1007,8 @@ html:has(dialog[open]) .undo-bar{display:none}
 .cp-keep{flex:none;margin-left:auto;border:1px solid var(--clash-line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:3px 11px;font-size:.75rem;font-weight:650;white-space:nowrap}
 .cp-keep:hover{border-color:var(--clash-row-line);color:var(--ink)}
 .cp-in+.cp-keep,.cp-items li>.cp-keep{align-self:center}
+.cp-hid{font-style:italic;font-weight:600;color:var(--ink-2)}
+.cp-off .cp-open{color:var(--ink-2)}
 .print-doc{display:none}
 .agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--sunken)}
 .agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--ink-2);font-size:.875rem;font-weight:650}
@@ -2358,9 +2360,15 @@ function persistStars(){
 // The My agenda badge counts what My agenda lists: a saved session with starred talks
 // in it is one item, as in the day tabs.
 function paintStarCount(){
-  const n = agendaItems().length, el = document.getElementById('starCount');
+  const items = agendaItems(), n = items.length, el = document.getElementById('starCount');
   el.textContent = n;
-  el.title = n === 1 ? '1 item in My agenda' : n + ' items in My agenda';
+  el.title = (n === 1 ? '1 item in My agenda' : n + ' items in My agenda') + innerNote(items, ' (', ')');
+}
+// Why the count can be lower than the stars: talks saved inside a saved session count
+// with it ("6 saved talks are inside saved sessions"). '' when there are none.
+function innerNote(items, pre = '', post = ''){
+  const n = items.reduce((k, it) => k + (it.inner ? it.inner.length : 0), 0);
+  return n ? pre + (n === 1 ? '1 saved talk is inside a saved session and counts with it' : n + ' saved talks are inside saved sessions and count with them') + post : '';
 }
 // Any ordinary star change also drops a pending "Undo".
 function saveStars(){
@@ -2393,9 +2401,25 @@ function renderTabs(counts = programCounts(), totals = null){
     `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
   el.innerHTML = tab('all', 'All week', total, allOn, false, totals && sum(totals)) +
     DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti, totals && totals[i])).join('');
+  revealDayTab();
   const day = allOn ? '' : DATA.days[state.day].label;
   if (state.scope !== 'participants') fitPlaceholder(state.scope === 'agenda' ? [day && `Search my agenda, ${day}…`, 'Search my agenda…', 'Search agenda…']
     : allOn ? ['Search talks, speakers, abstracts…', 'Search talks, speakers…', 'Search talks…'] : [`Search ${day}…`, 'Search talks…']);
+}
+// The chosen day stays in view in the sideways-scrolling tabs (a phone), whatever the
+// tabs' counts do (a search with no matches, a new view). Measured in the next frame,
+// with the layout it needs anyway, and only moved when the tab is out of view.
+let dayTabFrame = 0;
+function revealDayTab(){
+  if (dayTabFrame) return;
+  dayTabFrame = requestAnimationFrame(() => {
+    dayTabFrame = 0;
+    const el = document.getElementById('daytabs'), t = el.querySelector('.daytab.on');
+    if (!t || el.scrollWidth <= el.clientWidth + 1) return;
+    const a = t.offsetLeft - el.offsetLeft, w = t.offsetWidth;
+    if (a >= el.scrollLeft && a + w <= el.scrollLeft + el.clientWidth) return;
+    el.scrollLeft = Math.max(0, a - (el.clientWidth - w) / 2);
+  });
 }
 // The longest of the given placeholders that fits the search box (the last one, or
 // "Search…", when none does); kept up to date as the box changes width.
@@ -2864,7 +2888,15 @@ document.addEventListener('click', e => {
 function refresh(){
   if (state.scope === 'agenda') renderBuilder();
   if (state.layout === 'calendar') renderCalendar(); else if (state.scope !== 'agenda') applyFilters();
+  agendaKeepHead();
   paintNow(); writeHash();
+}
+// My agenda's search or streams leaving nothing (Streams: None, a search with no match)
+// while scrolled deep: the page shrinks to a short note, which with the agenda's header and
+// buttons would end up above the toolbar, out of sight. Bring them back under it.
+function agendaKeepHead(){
+  if (state.scope !== 'agenda' || !document.querySelector('#builderList .ag-nomatch, #agenda .ag-nomatch')) return;
+  if (window.scrollY > programTop()) scrollToProgramTop();
 }
 
 function rerender(){
@@ -2879,6 +2911,7 @@ function rerender(){
   if (personal) renderBuilder();
   if (state.layout === 'calendar') renderCalendar();
   else if (!personal){ renderTabs(); renderAgenda(); }
+  agendaKeepHead();
   paintStarCount();
   paintNow(); writeHash();
 }
@@ -3180,8 +3213,12 @@ function agendaCountText(items, html, sep = ' · '){
   if (sess.length){
     let t = countWord(sess.length, 'session', html);
     if (hosts.length){
-      const what = nInner === 1 ? 'a saved talk' : hosts.length === 1 ? nInner + ' saved talks' : 'saved talks';
-      const clause = sess.length === 1 ? ' with ' + what : hosts.length === sess.length ? ', all with ' + what : `, ${hosts.length} with ${what}`;
+      // the number of talks inside, so the stars add up ("10 holding 14 saved talks")
+      const what = nInner === 1 ? 'a saved talk' : nInner + ' saved talks';
+      const each = nInner === hosts.length;
+      const clause = sess.length === 1 ? ' with ' + what
+        : hosts.length === sess.length ? (each ? ', each with a saved talk' : ', holding ' + what)
+        : each ? `, ${hosts.length} with a saved talk${nInner === 1 ? '' : ' each'}` : `, ${hosts.length} holding ${what}`;
       // in the bar the clause is detail that gives way first when space is short
       t += html ? `<span class="ag-sx">${clause}</span>` : clause;
     }
@@ -3281,7 +3318,9 @@ function clashPanelHtml(groups, numbers){
         const [c, bg] = CAT_COLORS[it.s.cat];
         const drop = it.clashes.flatMap(itemIds), n = it.clashes.length;
         const keep = `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
-        return `<li style="--c:${c};--cbg:${bg}" ${itemIdAttrs(it)}><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${keep}${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
+        // an item My agenda's search or streams hide is still in the clash: said so
+        const sub = [it.t ? `in ${esc(it.s.title)}` : '', it.off ? '<span class="cp-hid">Hidden by your search or streams</span>' : ''].filter(Boolean).join(' &middot; ');
+        return `<li style="--c:${c};--cbg:${bg}" ${itemIdAttrs(it)}${it.off ? ' class="cp-off"' : ''}><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}${it.off ? '<span class="visually-hidden"> (hidden by your search or streams)</span>' : ''}</button>${keep}${sub ? `<span class="cp-in">${sub}</span>` : ''}</li>`;
       }).join('')}</ul></li>`).join('')}</ol>`;
 }
 let clashPanelOpen = false;
@@ -3492,7 +3531,7 @@ function weekOverview(){
   const cols = DATA.days.map((d, di) => {
     const slots = [...days[di]].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
       || ((a.s || a).grp || '').localeCompare((b.s || b).grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
-    counts.push(agenda ? slots.length : slots.filter(slotMatches).length);
+    counts.push(agenda ? entCount(slots) : slots.filter(slotMatches).length);
     let html = '';
     // longer bands first, so a short break paints over an all-day one
     const bands = slots.filter(isBand).sort((x, y) => (toMin(y.end) - toMin(y.start)) - (toMin(x.end) - toMin(x.start)));
@@ -3950,12 +3989,14 @@ function agendaEmptyHtml(){
 // items) · week 5"). In the list and the calendar alike.
 function renderClashes(items){
   const slot = document.getElementById('clashSlot'), box = document.getElementById('clashBox');
-  const groups = clashGroups(items), numbers = new Map(groups.map((g, i) => [g, i + 1]));
+  const groups = clashGroups(items);
   agendaFilter(items);   // marks the items the filters hide (it.off)
   const day = state.day === 'all' ? null : state.day;
   const dayGroups = day === null ? groups : groups.filter(g => g[0].di === day);
   const scoped = dayGroups.filter(g => g.some(x => !x.off));
   const shown = scoped.length ? scoped : dayGroups.length ? dayGroups : groups;
+  // numbered within what the panel lists, as the bar counts them ("Clash 1" of "Wed: 2 clashes")
+  const numbers = new Map(shown.map((g, i) => [g, i + 1]));
   const caret = ' <span class="caret" aria-hidden="true">&#9662;</span>';
   const nItems = g => g.reduce((n, x) => n + x.length, 0);
   // the items left shown, while My agenda's search or streams are on
@@ -3990,7 +4031,8 @@ function agendaStatsHtml(shown, whole, filtered){
   if (!shown.length) return `<span class="ag-cnt">${where}${filtered ? 'nothing' : 'nothing saved'}</span>` +
     (state.day === 'all' ? '' : `<span class="ag-hrs"> &middot; ${countWord(whole.length, 'item', true)} this week</span>`);
   // the counts may end in an ellipsis on a tight bar; the planned hours never do
-  return `<span class="ag-cnt">${where}${agendaCountText(shown, true)}</span><span class="ag-hrs"> &middot; <span class="ag-about">about </span><b>${plannedHours(shown).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span></span>`;
+  const why = innerNote(shown);
+  return `<span class="ag-cnt"${why ? ` title="${countWord(shown.length, 'item')}: ${why}"` : ''}>${where}${agendaCountText(shown, true)}</span><span class="ag-hrs"> &middot; <span class="ag-about">about </span><b>${plannedHours(shown).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span></span>`;
 }
 // Up next and Now: today's items, on today's tab or All week (not on another day's).
 function agendaUpNext(items){
@@ -4020,7 +4062,7 @@ function renderBuilder(){
   if (!whole.length){
     stats.textContent = 'Nothing saved yet';
     body.innerHTML = agendaEmptyHtml();
-    if (personalList) document.querySelector('.result-row').hidden = true;
+    if (personalList){ document.querySelector('.result-row').hidden = true; document.getElementById('resultLine').textContent = 'Nothing saved yet'; }
     return;
   }
   const onDay = state.day === 'all' ? items : items.filter(x => x.di === state.day);
@@ -4028,7 +4070,9 @@ function renderBuilder(){
   if (personalList){
     const total = state.day === 'all' ? whole.length : whole.filter(x => x.di === state.day).length;
     document.querySelector('.result-row').hidden = !filtered;
-    if (filtered) document.getElementById('resultLine').innerHTML = agendaFilterLine(onDay.length, total, !total || onDay.length && onDay.length < 10 ? items.length - onDay.length : 0);
+    // always for this view, shown or not: never a line left over from another view
+    document.getElementById('resultLine').innerHTML = filtered ? agendaFilterLine(onDay.length, total, !total || onDay.length && onDay.length < 10 ? items.length - onDay.length : 0)
+      : `${state.day === 'all' ? 'All week' : '<b>' + esc(DATA.days[state.day].label) + '</b>'} · ${countWord(onDay.length, 'agenda item', true)}`;
   }
   // the calendar hides the list: it is built when the list is shown (showView rerenders)
   if (state.layout === 'calendar'){ body.innerHTML = ''; return; }
@@ -4579,6 +4623,10 @@ function dayEntries(day){
   }));
 }
 const dvTid = e => e.t ? e.t.id : '';
+// Entries counted as My agenda counts items (the tabs, the bar, the badge): a saved
+// session with its saved talks is one, a saved talk on its own is one, and a session
+// drawn only around saved talks (ctx) is not an item of its own: its talks are.
+const entCount = ents => ents.reduce((n, e) => n + (e.ctx ? e.inner.size : 1), 0);
 // My agenda's kind pill: a saved session (solid, its stream colour), a session shown only
 // for its starred talks (dashed), or a talk / poster (outlined, with a speaker icon).
 const dvKind = e => e.t ? `<span class="kind k-t">${e.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>`
@@ -4880,7 +4928,7 @@ function hzDraw(root, left){
     // My agenda: one lane in time order; items that overlap take rows of their own
     const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null);
     const nClash = ents.filter(e => e.clash.length).length;
-    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${ents.length} item${ents.length === 1 ? '' : 's'}</small>${nClash ? `<small class="hz-lcx">&#9888; ${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">&#9888; ${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
   }
   // groups -> lanes (a lane is shown if it has anything that day)
   for (const g of agenda ? [] : HZ_GROUPS){
@@ -5459,7 +5507,7 @@ function vtDayView(day){
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
   const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
   const cx = nClash && agendaClashWords(DATA.days.indexOf(day));
-  const headNote = c => agenda ? `<small>${colSlots[c.key].length} item${colSlots[c.key].length === 1 ? '' : 's'}${nClash ? ` · <span class="vt-hcx">&#9888; ${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
+  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? ` · <span class="vt-hcx">&#9888; ${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
   const heads = `<div class="vt-corner">${agenda && !scroll ? DV_KEY_BTN : ''}</div>` + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
@@ -5805,7 +5853,11 @@ function renderCalendar(){
 
 document.getElementById('scheduleLayout').addEventListener('click', e => {
   const button = e.target.closest('[data-layout]');
-  if (button && button.dataset.layout !== state.layout) withTransition('fade', () => showView(button.dataset.layout, state.scope));
+  if (button && button.dataset.layout !== state.layout) withTransition('fade', () => {
+    showView(button.dataset.layout, state.scope);
+    // the old scroll belonged to the other layout: never land past the new one's top
+    if (window.scrollY > programTop()) scrollToProgramTop();
+  });
 });
 const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
@@ -5821,6 +5873,8 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   }
   if (state.layout === 'list'){
     showView('list', button.dataset.scope);
+    // scrolled deep into the other view: start this one at its top, under the toolbar
+    if (window.scrollY > programTop()) scrollToProgramTop();
     return;
   }
   const previous = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
@@ -5860,8 +5914,18 @@ document.getElementById('programOrient').addEventListener('click', e => {
     try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
     paintOrient();
     renderCalendar();
+    revealCalendar();
   });
 });
+// A switch in the toolbar whose result is out of sight below it (a phone's tall toolbar
+// over All week): bring the calendar's top up under the toolbar, so the change shows.
+function revealCalendar(){
+  const el = document.querySelector('#agenda .week-sx, #agenda .hz-day, #agenda .vt-day');
+  if (!el) return;
+  const top = el.getBoundingClientRect().top;
+  if (top < innerHeight - 160) return;
+  window.scrollTo({ top: Math.round(window.scrollY + top - stickyWrap.getBoundingClientRect().height - 12), behavior: 'instant' });
+}
 // A day of the Full program or of My agenda in Horizontal or Vertical.
 const dayViewShown = () => state.layout === 'calendar' && state.scope !== 'participants' && state.day !== 'all';
 PHONE_MQ.addEventListener('change', () => {
@@ -5876,13 +5940,29 @@ window.addEventListener('resize', () => {
     else if (main.querySelector('.vt-grid') && Math.abs(main.clientWidth - vtWidth) > 40) renderCalendar();
   }, 120);
 });
-document.getElementById('includeParents').addEventListener('change', renderCalendar);
+// "Show full sessions" is remembered, as Hide clash warnings is, and carried in the
+// address of My agenda's calendar (full=1) so a shared or reloaded view keeps it.
+function savedFull(){
+  try { return localStorage.getItem('aip2026-full-sessions') === '1'; } catch (e) { return false; }
+}
+document.getElementById('includeParents').checked = savedFull();
+document.getElementById('includeParents').addEventListener('change', e => {
+  try { localStorage.setItem('aip2026-full-sessions', e.target.checked ? '1' : '0'); } catch (err) {}
+  renderCalendar();
+});
 
 const eventDialog = document.getElementById('eventDialog');
 let dialogTrigger, dialogBefore = null;
+// The details' save button says what is so and what a click does: "☆ Save talk", or
+// "★ Saved" (its name adds "remove from My agenda"). The words change with the state,
+// so it is a plain button, not a toggle (aria-pressed would contradict the words).
+function favouriteButtonInner(saved, kind){
+  return saved ? `<span aria-hidden="true">★</span> Saved<span class="visually-hidden">: remove ${kind} from My agenda</span>`
+    : `<span aria-hidden="true">☆</span> Save ${kind}`;
+}
 function favouriteButton(id, kind){
   const saved = state.starred.has(id);
-  return `<button class="ag-btn detail-save" data-detail-save="${id}" aria-pressed="${saved}">${saved?'★':'☆'} Save ${kind}</button>`;
+  return `<button type="button" class="ag-btn detail-save${saved ? ' on' : ''}" data-detail-save="${id}" data-kind="${kind}" title="${saved ? `In My agenda. Click to remove the ${kind}` : 'Save to My agenda'}">${favouriteButtonInner(saved, kind)}</button>`;
 }
 function replaceButton(s, t){
   if (state.starred.has(s.id)) return '';
@@ -6002,8 +6082,9 @@ eventDialog.addEventListener('click', e => {
   const id = btn.dataset.detailSave;
   const wasSaved = state.starred.delete(id);
   if (!wasSaved) state.starred.add(id);
-  btn.setAttribute('aria-pressed', !wasSaved);
-  btn.textContent = (wasSaved ? '☆' : '★') + btn.textContent.slice(1);
+  btn.classList.toggle('on', !wasSaved);
+  btn.title = wasSaved ? 'Save to My agenda' : `In My agenda. Click to remove the ${btn.dataset.kind}`;
+  btn.innerHTML = favouriteButtonInner(!wasSaved, btn.dataset.kind);
   const marker = btn.closest('details')?.querySelector('.saved-marker');
   if (marker) marker.textContent = wasSaved ? '' : '★ ';
   saveStars();
@@ -6163,8 +6244,10 @@ function removedMessage(before){
   const kept = [...state.starred].map(talkById).filter(x => x && left.includes(x.s.id)).length;
   const msg = parts.join('; ') || 'Removed ' + countWord(left.length, 'star');
   if (!kept) return msg;
+  // the talks saved in a removed session stay, each now an item of its own (so the count
+  // of items may not go down): say so, or the removal looks as if it did nothing
   const sess = gone.filter(it => it.kind === 'session').length;
-  return msg + `; ${sess === 1 ? 'its ' : ''}${kept === 1 ? 'saved talk stays' : kept + ' saved talks stay'}`;
+  return msg + `; ${sess === 1 ? 'its ' : ''}${kept === 1 ? 'saved talk stays in My agenda on its own' : kept + ' saved talks stay in My agenda on their own'}`;
 }
 // Whether a change from `before` took anything out of My agenda (for Undo).
 const starsLeft = before => [...before].some(id => !state.starred.has(id));
@@ -7378,6 +7461,7 @@ function stateHash(){
   if (state.group && state.scope !== 'agenda') p.set('group', state.group);
   if (state.programTalks) p.set('talks', '1');
   if (state.orient === 'v' && state.layout === 'calendar') p.set('orient', 'v');
+  if (state.scope === 'agenda' && state.layout === 'calendar' && document.getElementById('includeParents').checked) p.set('full', '1');
   return p.toString();
 }
 let hashReady = false;
@@ -7601,6 +7685,7 @@ function readHash(){
   paintLevel();
   state.orient = ['h', 'v'].includes(p.get('orient')) ? p.get('orient') : savedOrient();
   paintOrient();
+  if (state.scope === 'agenda') document.getElementById('includeParents').checked = p.get('full') === '1' || savedFull();
   return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
 }
 function followHashTargets(r){
