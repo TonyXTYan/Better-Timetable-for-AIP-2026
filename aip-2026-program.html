@@ -90,13 +90,14 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .session-option{display:block;margin:12px 0;font-size:14px}
 .calendar-hint{display:none;color:var(--muted);font-size:13px;margin:6px 0}
 @media(max-width:720px){.calendar-hint{display:block}}
-.week-scroll{max-height:70vh;overflow:auto;border:1px solid var(--line);background:var(--surface);border-radius:10px}
+.week-scroll{overflow-x:auto;border:1px solid var(--line);background:var(--surface);border-radius:10px}
 .week-scroll table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
 .week-scroll td{min-width:9rem}
 .week-scroll thead th{position:sticky;top:0;z-index:2;background:var(--sunken-2)}
 .week-scroll thead th.today{background:var(--today-bg);color:var(--today-ink)}
 .week-scroll tbody th{position:sticky;left:0;background:var(--surface);z-index:1}
+@media (min-width:900px){.week-scroll{overflow:visible}.week-scroll thead th{top:var(--toolbar-h,150px)}}
 .week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--surface-2);font-size:12px}
 .week-event small,.child-talk{display:block}
 .child-talk{font-weight:650}
