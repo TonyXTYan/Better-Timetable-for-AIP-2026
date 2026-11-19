@@ -166,6 +166,77 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 @media (min-width:900px){.week-scroll{overflow:visible}.week-scroll thead th{top:var(--toolbar-h,150px)}}
 .week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--surface-2);font-size:.75rem}
 .week-event small,.child-talk{display:block}
+/* All week overview (Full program > Calendar > All week): one slim column per day on a
+   shared, compressed time axis, sized to about one screen. Sessions are blocks in their
+   stream colour (plenaries and breaks are bands behind them); a click opens that day. */
+.week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-h,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:10px 12px 12px;box-shadow:var(--shadow)}
+.week-hint{margin:0 0 8px;font-size:.8125rem;color:var(--muted)}
+.week-head,.week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
+.week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;text-align:left;cursor:pointer}
+.week-dayh small{font-size:.6875rem;font-weight:500;color:var(--muted)}
+.week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
+.week-dayh.today{background:var(--today-bg);border-color:var(--danger-line);color:var(--today-ink)}
+.week-dayh.today small{color:inherit}
+.week-body{height:var(--wh);margin-top:6px}
+.week-axis{position:relative}
+.week-axis span{position:absolute;right:2px;transform:translateY(-50%);font-size:.6875rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.week-col{position:relative;border-radius:6px;background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
+.week-col.today{box-shadow:0 0 0 1px var(--danger-line)}
+.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:center;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.625rem;font-weight:700;line-height:1.1;letter-spacing:.02em;overflow:hidden;cursor:pointer;z-index:2}
+.week-blk span{padding:3px 1px 0;white-space:nowrap;pointer-events:none}
+.week-blk.week-vl span{writing-mode:vertical-rl;padding:3px 0 0}
+.week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
+.week-blk.week-band{left:0;width:100%;justify-content:flex-start;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
+.week-band span{max-width:100%;padding:2px 4px 0;overflow:hidden;text-overflow:ellipsis;font-weight:650}
+.week-blk.week-past{filter:saturate(.5);opacity:.68}
+.week-blk.week-off{opacity:.16;pointer-events:none}
+.week-blk.week-band.week-off{opacity:.3}
+.week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:5;pointer-events:none}
+.week-now::before{content:"";position:absolute;left:-2px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--live-ink)}
+.week-now[hidden]{display:none}
+.week-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 0 0 calc(2.6rem + var(--wgap));padding:0;list-style:none;font-size:.75rem;color:var(--ink-2)}
+.week-legend li{display:flex;align-items:center;gap:6px}
+.week-legend i{flex:none;width:.75rem;height:.75rem;border-radius:3px;background:var(--c)}
+.week-legend li.week-off{opacity:.45;text-decoration:line-through}
+#weekTip{position:fixed;z-index:90;max-width:18rem;padding:6px 9px;border-radius:8px;background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;box-shadow:0 4px 14px var(--pop-shadow);pointer-events:none}
+#weekTip b{display:block;font-weight:650}
+#weekTip[hidden]{display:none}
+.week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit 1.4s ease-out}
+@keyframes week-hit{0%{box-shadow:0 0 0 8px var(--focus-ring)}100%{box-shadow:0 0 0 0 transparent}}
+@media (max-width:720px){
+  .week-ov{--wh:clamp(26rem, calc(100vh - var(--toolbar-h,150px) - 9rem), 40rem);--wgap:3px;padding:8px 6px 10px}
+  .week-head,.week-body{grid-template-columns:1.9rem var(--week-cols-sm)}
+  .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
+  .week-dayh .week-mon,.week-axis .week-odd{display:none}
+  .week-blk span{display:none}
+  .week-blk:hover{outline:0}
+  .week-legend{margin-left:0;gap:4px 10px}
+}
+/* View changes (withTransition): the main area cross-fades with a slight slide or zoom;
+   the toolbar swaps at once and stays above it. Only set while a transition runs. The
+   old and new main areas get different names, so each stays where it was on screen
+   when the change also scrolls the page. */
+html[data-view-tx]:not([data-view-tx-new]) #main{view-transition-name:main-old}
+html[data-view-tx-new] #main{view-transition-name:main}
+html[data-view-tx] .sticky-wrap{view-transition-name:toolbar}
+::view-transition{pointer-events:none}
+::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar){animation:none}
+::view-transition-old(toolbar){display:none}
+::view-transition-group(toolbar){z-index:3}
+::view-transition-old(main-old){animation:120ms ease-in both week-tx-out}
+::view-transition-new(main){animation:210ms cubic-bezier(.2,.7,.3,1) both week-tx-in}
+html[data-view-tx="fwd"]::view-transition-new(main){animation-name:week-tx-in-r}
+html[data-view-tx="back"]::view-transition-new(main){animation-name:week-tx-in-l}
+html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom;animation-duration:300ms}
+::view-transition-group(week-zoom){z-index:2;animation-duration:320ms;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+::view-transition-old(week-zoom),::view-transition-new(week-zoom){width:100%;height:100%}
+#main.view-enter{animation:week-tx-fade 180ms ease-out}
+@keyframes week-tx-out{to{opacity:0}}
+@keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
+@keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
+@keyframes week-tx-in-l{from{opacity:0;transform:translateX(-18px)}}
+@keyframes week-tx-zoom{from{opacity:0;transform:scale(.97)}}
+@keyframes week-tx-fade{from{opacity:0}}
 .child-talk{font-weight:650}
 #eventDialog,#moveDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink);background:var(--card)}
 #eventDialog::backdrop,#moveDialog::backdrop{background:#16233788}
@@ -946,6 +1017,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .favourites-calendar #agenda{display:none!important}
   .sticky-wrap,.star,.talk-star,.hero .links,.display-btn,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   .hz-ov,.hz-mini,.vt-picker,#hzTip{display:none!important}
+  #weekTip,.week-hint{display:none!important}
   .hz-stick,.vt-head,.vt-corner,.vt-lh{position:static;box-shadow:none}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
@@ -1699,10 +1771,17 @@ document.getElementById('daytabs').addEventListener('keydown', e => {
 });
 document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
-  state.day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
-  rerender();
-  document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
-  scrollToProgramTop();
+  const day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
+  const go = () => {
+    state.day = day;
+    rerender();
+    document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
+    scrollToProgramTop();
+  };
+  // The Vertical day view slides between days itself.
+  const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
+  if (vertical || day === state.day) go();
+  else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go);
 });
 
 // A click toggles one stream; "only" or a double-click shows just that stream.
@@ -2016,6 +2095,217 @@ function weekCalendar(items){
   return `<p class="calendar-hint">Scroll across to see later days.</p><div class="week-scroll" tabindex="0" role="region" aria-label="All week calendar"><table><thead><tr><th scope="col">AEDT</th>${days}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
 
+// All week overview (Full program > Calendar > All week): the whole congress on one
+// screen. One column per day on a shared time axis; sessions are slim blocks in their
+// stream colour, packed in lanes per cluster of overlapping sessions; plenaries and
+// breaks are full-width bands behind them. Sessions the search or stream filters leave
+// out stay as faint shapes. A click opens that day's calendar at the session.
+const WEEK_AB = { plenary:'Plenary', aip:'AIP', anzcop:'ANZCOP', commad:'COMMAD', focus:'Focus', poster:'Posters', edu:'EDU', public:'Public', special:'Forum', business:'Meeting', social:'Break' };
+const WEEK_BANDS = ['plenary', 'social'];
+function weekBounds(){
+  const slots = DATA.days.flatMap(d => d.slots);
+  return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
+          Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
+}
+function weekOverview(){
+  const [t0, t1] = weekBounds(), dur = t1 - t0;
+  const pct = m => +((m - t0) / dur * 100).toFixed(3);
+  const today = aedtNow().date;
+  const order = Object.keys(DATA.cats);
+  const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  let axis = '';
+  for (let m = t0; m <= t1; m += 60) axis += `<span class="${(m - t0) % 120 ? 'week-odd' : ''}" style="top:${pct(m)}%">${hhmm(m)}</span>`;
+  const block = (s, di, l, w, band) => {
+    const on = slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
+    const a = toMin(s.start), b = toMin(s.end);
+    const label = band ? (s.cat === 'plenary' ? 'Plenary' : s.title) : s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
+    const aria = esc(`${s.title}, ${DATA.days[di].label} ${s.start}–${s.end}`);
+    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
+      style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
+      data-week-sid="${s.id}" data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${esc(label)}</span></button>`;
+  };
+  const counts = [];
+  const cols = DATA.days.map((d, di) => {
+    const slots = [...d.slots].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
+      || (a.grp || '').localeCompare(b.grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
+    counts.push(slots.filter(slotMatches).length);
+    let html = '';
+    for (const s of slots.filter(s => WEEK_BANDS.includes(s.cat))) html += block(s, di, 0, 100, true);
+    // clusters of overlapping sessions, greedy lanes inside each
+    const clusters = [];
+    let cl = null;
+    for (const s of slots.filter(s => !WEEK_BANDS.includes(s.cat))){
+      const a = toMin(s.start), b = toMin(s.end);
+      if (!cl || a >= cl.end){ cl = { end:b, lanes:[], items:[] }; clusters.push(cl); }
+      let lane = cl.lanes.findIndex(e => e <= a);
+      if (lane < 0){ lane = cl.lanes.length; cl.lanes.push(0); }
+      cl.lanes[lane] = b; cl.end = Math.max(cl.end, b);
+      cl.items.push({ s, lane });
+    }
+    for (const c of clusters){
+      const n = c.lanes.length;
+      for (const it of c.items) html += block(it.s, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false);
+    }
+    const isToday = d.date === today;
+    return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
+  });
+  const heads = DATA.days.map((d, di) => {
+    const [wd, dd, ...mon] = d.label.split(' ');
+    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" aria-label="Open ${esc(d.label)} (${counts[di]} session${counts[di] === 1 ? '' : 's'})">
+      <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}</small></button>`;
+  });
+  // a day with almost nothing on (registration Sunday) gets a narrow column
+  const widths = min => DATA.days.map(d => d.slots.length < 4 ? `minmax(${min},.45fr)` : 'minmax(0,1fr)').join(' ');
+  const cats = order.filter(k => DATA.days.some(d => d.slots.some(s => s.cat === k)));
+  const legend = cats.map(k => `<li class="${state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('');
+  const touch = matchMedia('(hover: none)').matches;
+  return `<div class="week-ov" style="--week-cols:${widths('5.25rem')};--week-cols-sm:${widths('0px')};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+    <p class="week-hint">${touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its title; click it, or a day, to open that day.'}</p>
+    <div class="week-head"><span></span>${heads.join('')}</div>
+    <div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div>
+    <ul class="week-legend" aria-label="Stream colours">${legend}</ul>
+  </div>`;
+}
+// After rendering: short labels only where they fit (sideways in tall, narrow blocks),
+// and one tab stop for the blocks (arrow keys move between them).
+function weekFit(root = document.getElementById('agenda')){
+  const ov = root.querySelector('.week-ov');
+  if (!ov) return;
+  for (const b of ov.querySelectorAll('.week-blk')){
+    const span = b.firstElementChild;
+    span.hidden = false;
+    b.classList.remove('week-vl');
+    if (b.classList.contains('week-off')){ span.hidden = true; continue; }
+    const w = b.clientWidth, h = b.clientHeight;
+    if (b.classList.contains('week-band')){ span.hidden = h < 13 || w < 30; continue; }
+    if (span.offsetWidth <= w && h >= 14) continue;
+    b.classList.add('week-vl');
+    if (span.offsetHeight <= h && span.offsetWidth <= w) continue;
+    b.classList.remove('week-vl');
+    span.hidden = true;
+  }
+  const blocks = weekBlocks(ov);
+  if (!blocks.some(b => b.tabIndex === 0) && blocks[0]) blocks[0].tabIndex = 0;
+  weekPaintNow();
+}
+const weekBlocks = (root, di) => [...root.querySelectorAll(di === undefined ? '.week-blk:not(.week-off)' : `.week-col[data-day="${di}"] .week-blk:not(.week-off)`)];
+function weekPaintNow(){
+  const ov = document.querySelector('#agenda .week-ov');
+  if (!ov) return;
+  const n = aedtNow(), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1;
+  const line = ov.querySelector('.week-now');
+  if (line){
+    line.hidden = !(n.min >= t0 && n.min <= t1);
+    line.style.setProperty('--np', (n.min - t0) / (t1 - t0) * 100);
+  }
+  for (const b of ov.querySelectorAll('.week-blk')) b.classList.toggle('week-past', b.dataset.date < n.date || (b.dataset.date === n.date && +b.dataset.end <= n.min));
+}
+function weekTarget(sid){
+  const main = document.getElementById('agenda');
+  const button = main.querySelector(`[data-session-detail="${sid}"][data-talk-detail=""]`) || main.querySelector(`[data-session-detail="${sid}"]`);
+  return button ? { button, box: button.closest('.hz-bar, .vt-card') || button } : null;
+}
+// Click a block (or a day head) to open that day in the current Horizontal or Vertical
+// layout, scrolled to the session, zooming in from the block.
+function weekOpenDay(di, sid, from){
+  const day = DATA.days[di], s = sid ? slotById(sid) : null;
+  if (s && state.orient !== 'v'){
+    // the timeline's window starts a little before the session
+    const cur = HZ.range[day.date], phone = PHONE_MQ.matches;
+    const w = cur ? cur[1] - cur[0] : phone ? 120 : 270;
+    const a = Math.max(0, toMin(s.start) - (phone ? 15 : 30));
+    HZ.range[day.date] = [a, a + w];
+    HZ.preset[day.date] = null;
+  }
+  withTransition('zoom', () => {
+    state.day = di;
+    rerender();
+    const t = s && weekTarget(s.id);
+    if (!t){
+      scrollToProgramTop();
+      document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll:true });
+      return null;
+    }
+    t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
+    const bar = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
+    const stick = t.box.closest('.hz-canvas')?.querySelector('.hz-stick')?.offsetHeight || t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
+    const top = t.box.getBoundingClientRect().top - bar - stick - 12;
+    if (top < 0) window.scrollBy({ top, behavior:'instant' });
+    t.button.focus({ preventScroll:true });
+    t.box.classList.add('week-hit');
+    setTimeout(() => t.box.classList.remove('week-hit'), 1600);
+    return t.box;
+  }, from);
+}
+function weekTip(){
+  let tip = document.getElementById('weekTip');
+  if (!tip){ tip = document.createElement('div'); tip.id = 'weekTip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true; document.body.appendChild(tip); }
+  return tip;
+}
+function weekShowTip(b){
+  const s = slotById(b.dataset.weekSid), d = DATA.days[+b.dataset.day];
+  const tip = weekTip();
+  const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(' · ');
+  tip.innerHTML = `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}`;
+  tip.hidden = false;
+  const r = b.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  const right = r.right + 8 + w < innerWidth - 8;
+  tip.style.left = (right ? r.right + 8 : Math.max(8, r.left - w - 8)) + 'px';
+  tip.style.top = Math.max(8, Math.min(innerHeight - h - 8, r.top + Math.min(r.height, 40) / 2 - h / 2)) + 'px';
+}
+const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (tip) tip.hidden = true; };
+{
+  const agendaEl = document.getElementById('agenda');
+  agendaEl.addEventListener('click', e => {
+    if (!e.target.closest('.week-ov')) return;
+    const head = e.target.closest('[data-week-day]');
+    if (head){ weekOpenDay(+head.dataset.weekDay, null, null); return; }
+    let b = e.target.closest('.week-blk:not(.week-off)');
+    const col = e.target.closest('.week-col');
+    if (!b && col){
+      // a tap between blocks (or on a faint one) opens the nearest session in time
+      const r = col.getBoundingClientRect(), ov = col.closest('.week-ov');
+      const m = +ov.dataset.t0 + (e.clientY - r.top) / r.height * (+ov.dataset.t1 - +ov.dataset.t0);
+      const dist = x => m < +x.dataset.start ? +x.dataset.start - m : m > +x.dataset.end ? m - +x.dataset.end : 0;
+      b = weekBlocks(col.closest('.week-ov'), col.dataset.day).sort((x, y) => dist(x) - dist(y))[0];
+      if (!b || dist(b) > 45){ weekOpenDay(+col.dataset.day, null, null); return; }
+    }
+    if (!b) return;
+    weekHideTip();
+    weekOpenDay(+b.dataset.day, b.dataset.weekSid, b);
+  });
+  agendaEl.addEventListener('pointerover', e => {
+    const b = e.target.closest && e.target.closest('.week-blk:not(.week-off)');
+    if (b && e.pointerType === 'mouse') weekShowTip(b); else if (!b) weekHideTip();
+  });
+  agendaEl.addEventListener('pointerleave', weekHideTip);
+  agendaEl.addEventListener('focusin', e => { if (e.target.matches('.week-blk')) weekShowTip(e.target); });
+  agendaEl.addEventListener('focusout', weekHideTip);
+  window.addEventListener('scroll', weekHideTip, { passive:true });
+  agendaEl.addEventListener('keydown', e => {
+    const b = e.target.closest('.week-blk');
+    if (!b) return;
+    const ov = b.closest('.week-ov'), di = +b.dataset.day;
+    const col = weekBlocks(ov, di).sort((x, y) => x.dataset.start - y.dataset.start || x.offsetLeft - y.offsetLeft), i = col.indexOf(b);
+    let next = null;
+    if (e.key === 'ArrowDown') next = col[i + 1];
+    else if (e.key === 'ArrowUp') next = col[i - 1];
+    else if (e.key === 'Home') next = col[0];
+    else if (e.key === 'End') next = col[col.length - 1];
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+      for (let d = di + (e.key === 'ArrowLeft' ? -1 : 1); d >= 0 && d < DATA.days.length && !next; d += e.key === 'ArrowLeft' ? -1 : 1){
+        next = weekBlocks(ov, d).sort((x, y) => Math.abs(x.dataset.start - b.dataset.start) - Math.abs(y.dataset.start - b.dataset.start))[0];
+      }
+    } else return;
+    e.preventDefault();
+    if (!next) return;
+    b.tabIndex = -1; next.tabIndex = 0;
+    next.focus();
+  });
+  let weekResize = 0;
+  window.addEventListener('resize', () => { clearTimeout(weekResize); weekResize = setTimeout(() => weekFit(), 120); });
+}
+
 function savedTalkLabels(it){
   return (it.children || []).map(t => `<span class="child-talk">★ ${t.s} · ${esc(t.t)}</span>`).join('');
 }
@@ -2099,6 +2389,64 @@ function renderBuilder(){
   body.innerHTML = upNextHtml(items) + panel + (html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
     <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
+
+// View changes animate: withTransition(kind, fn) runs fn (which changes state and
+// renders) inside document.startViewTransition, so the main area cross-fades with a
+// slight slide ('fwd', 'back'), rise ('fade') or zoom ('zoom'; fn may return the
+// element the `from` element grows into). Browsers without view transitions get a
+// short fade. Nothing animates when motion is reduced (system setting, unless Display
+// settings say Full, or Reduce there). A click, key press or input while a change is
+// pending applies it first and skips the animation, so the state is never stale.
+let viewTx = null;
+function motionReduced(){
+  const m = document.documentElement.dataset.motion;
+  return m === 'reduce' || (m !== 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function settleTransition(){
+  const tx = viewTx;
+  if (!tx) return;
+  viewTx = null;
+  tx.run();
+  try { tx.vt.skipTransition(); } catch (e) {}
+}
+for (const type of ['pointerdown', 'click', 'keydown', 'input']) document.addEventListener(type, settleTransition, true);
+function withTransition(kind, fn, from){
+  settleTransition();
+  const root = document.documentElement;
+  if (motionReduced()){ fn(); return; }
+  if (!document.startViewTransition){
+    fn();
+    const main = document.getElementById('main');
+    main.classList.remove('view-enter');
+    void main.offsetWidth;
+    main.classList.add('view-enter');
+    main.addEventListener('animationend', () => main.classList.remove('view-enter'), { once:true });
+    return;
+  }
+  let ran = false, target = null;
+  const run = () => {
+    if (ran) return;
+    ran = true;
+    target = fn() || null;
+    if (target && from) target.style.viewTransitionName = 'week-zoom';
+    root.dataset.viewTxNew = '';
+  };
+  delete root.dataset.viewTxNew;
+  root.dataset.viewTx = kind;
+  if (from) from.style.viewTransitionName = 'week-zoom';
+  let vt;
+  try { vt = document.startViewTransition(run); }
+  catch (e){ run(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; return; }
+  const tx = viewTx = { vt, run };
+  vt.ready.catch(() => {});
+  vt.updateCallbackDone.catch(e => console.error(e));
+  vt.finished.catch(() => {}).then(() => {
+    if (viewTx === tx) viewTx = null;
+    if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; }
+    if (target) target.style.viewTransitionName = '';
+  });
+}
+const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
 function showView(layout, scope){
   state.layout = layout;
@@ -2911,7 +3259,7 @@ function renderCalendar(){
   main.classList.add('wide');
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
-    main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekCalendar(items);
+    main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekOverview();
     result.textContent = message;
   } else {
     const empty = favourites
@@ -2919,7 +3267,7 @@ function renderCalendar(){
       : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
-      : state.day === 'all' ? weekCalendar(selected)
+      : state.day === 'all' ? (favourites ? weekCalendar(selected) : weekOverview())
       : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
     if (main.querySelector('.hz-canvas')) hzInit(main);
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
@@ -2928,18 +3276,21 @@ function renderCalendar(){
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
+  weekFit(main);
   paintNow();
   writeHash();
 }
 
 document.getElementById('scheduleLayout').addEventListener('click', e => {
   const button = e.target.closest('[data-layout]');
-  if (button && button.dataset.layout !== state.layout) showView(button.dataset.layout, state.scope);
+  if (button && button.dataset.layout !== state.layout) withTransition('fade', () => showView(button.dataset.layout, state.scope));
 });
 const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
   if (!button || button.dataset.scope === state.scope) return;
+  const kind = SCOPE_ORDER.indexOf(button.dataset.scope) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
+  withTransition(kind, () => {
   if (button.dataset.scope === 'participants' || state.scope === 'participants'){
     showView(state.layout, button.dataset.scope);
     if (window.scrollY > programTop()) scrollToProgramTop();
@@ -2955,6 +3306,7 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   showView(state.layout, button.dataset.scope);
   const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
   next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
+  });
 });
 function paintLevel(){
   for (const b of document.querySelectorAll('[data-level]')) b.setAttribute('aria-pressed', (b.dataset.level === 'talks') === state.programTalks);
@@ -2962,9 +3314,11 @@ function paintLevel(){
 document.getElementById('programLevel').addEventListener('click', e => {
   const b = e.target.closest('[data-level]');
   if (!b || (b.dataset.level === 'talks') === state.programTalks) return;
-  state.programTalks = b.dataset.level === 'talks';
-  paintLevel();
-  renderCalendar();
+  withTransition('fade', () => {
+    state.programTalks = b.dataset.level === 'talks';
+    paintLevel();
+    renderCalendar();
+  });
 });
 function savedOrient(){
   try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
@@ -2975,10 +3329,12 @@ function paintOrient(){
 document.getElementById('programOrient').addEventListener('click', e => {
   const b = e.target.closest('[data-orient]');
   if (!b || b.dataset.orient === state.orient) return;
-  state.orient = b.dataset.orient;
-  try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
-  paintOrient();
-  renderCalendar();
+  withTransition('fade', () => {
+    state.orient = b.dataset.orient;
+    try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
+    paintOrient();
+    renderCalendar();
+  });
 });
 const programDayShown = () => state.layout === 'calendar' && state.scope === 'program' && state.day !== 'all';
 PHONE_MQ.addEventListener('change', () => {
@@ -3851,6 +4207,7 @@ function paintNow(){
   document.querySelectorAll('#agenda .hz-talk, #agenda .hz-mark, #agenda .vt-tk').forEach(x =>
     x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
   document.querySelectorAll('#agenda .hz-canvas').forEach(hzPaintNow);
+  weekPaintNow();
   // Vertical view: a now line at the exact time, between the rows around it.
   document.querySelectorAll('#agenda .vt-grid').forEach(g => {
     const line = g.querySelector('.vt-nowl'), end = g.querySelector('.vt-t.end');
