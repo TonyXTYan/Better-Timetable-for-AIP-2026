@@ -29,6 +29,7 @@ GROUP_LABELS = {
     'COMMAD': 'Optoelectronic Materials & Devices (COMMAD)',
     'Focus': 'Focus Session',
     'Industry': 'Industry & Innovation',
+    'ANZOS': 'Australian & New Zealand Optical Society',
 }
 
 CATS = {
@@ -37,6 +38,7 @@ CATS = {
     'anzcop': 'ANZCOP',
     'commad': 'COMMAD',
     'focus': 'Focus Sessions',
+    'poster': 'Posters',
     'edu': 'Education & PEG',
     'public': 'Public & Community',
     'special': 'Forums & Special Events',
@@ -88,6 +90,8 @@ def classify(title, entry_type):
                 grp = g
                 break
         return 'business', grp
+    if 'poster session' in tl:
+        return 'poster', ''
     if any(w in tl for w in SOCIAL_WORDS):
         return 'social', ''
     if tl.startswith('public lecture'):
@@ -198,10 +202,11 @@ HTML = r'''<!DOCTYPE html>
   --commad:#c2410c; --commad-bg:#ffedd5;
   --focus:#7e22ce; --focus-bg:#f3e8ff;
   --edu:#b45309; --edu-bg:#fef3c7;
+  --poster:#4338ca; --poster-bg:#e0e7ff;
   --public:#a21caf; --public-bg:#fae8ff;
   --special:#0e7490; --special-bg:#cffafe;
   --business:#475569; --business-bg:#e2e8f0;
-  --social:#78716c; --social-bg:#f5f5f4;
+  --social:#57534e; --social-bg:#f5f5f4;
   --star:#f59e0b;
   --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
   --radius:14px;
@@ -243,6 +248,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
 .week-scroll td{min-width:9rem}
 .week-scroll thead th{position:sticky;top:0;z-index:2;background:#eef2fa}
+.week-scroll thead th.today{background:#fee2e2;color:#991b1b}
 .week-scroll tbody th{position:sticky;left:0;background:white;z-index:1}
 .week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:#f8fafc;font-size:12px}
 .week-event small,.child-talk{display:block}
@@ -264,9 +270,11 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .daytab .dt-count{font-weight:500;color:var(--muted);font-size:12px;margin-left:5px}
 .daytab:hover{border-color:#c7cede}
 .daytab.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.daytab.on .dt-count{color:#dbeafe}
+.daytab.on .dt-count{color:#fff}
+.daytab.zero:not(.on){color:var(--muted);background:#f8fafc}
+.daytab.today::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;margin-right:6px;vertical-align:1px}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0 10px}
-.searchbox{flex:1 1 260px;position:relative;min-width:220px}
+.searchbox{flex:1 1 220px;position:relative;min-width:0}
 .searchbox input{width:100%;padding:9px 36px 9px 38px;border-radius:12px;border:1px solid var(--line);font-size:14.5px;background:#fff;color:var(--ink)}
 .searchbox input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
 .searchbox input[type="search"]::-webkit-search-cancel-button,
@@ -277,21 +285,61 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .toggle:hover{border-color:#c7cede}
 .toggle.on{background:#fff7ed;border-color:#fdba74;color:#9a3412}
 .toggle .cnt{background:var(--star);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px;font-weight:700}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .chip .dot{width:8px;height:8px;border-radius:50%}
 .chip:hover{border-color:#c7cede;color:var(--ink)}
 .chip.on{color:#fff}
 .grpill{display:none;align-items:center;gap:8px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-size:13px;font-weight:600;border-radius:999px;padding:5px 8px 5px 12px;margin:0 0 10px}
 .grpill button{border:0;background:#c7d2fe;color:#3730a3;border-radius:50%;width:20px;height:20px;line-height:1;font-size:12px}
-.result-line{font-size:13px;color:var(--muted);padding:0 0 10px}
+.result-row{display:flex;align-items:baseline;gap:4px 14px;padding:0 0 9px;flex-wrap:wrap}
+.result-line{font-size:13px;color:var(--muted);flex:1 1 auto;min-width:0}
+.linkish{border:0;background:none;padding:0;color:var(--accent);font-size:13px;font-weight:600}
+.linkish:hover{text-decoration:underline}
+.filter-menu{position:relative}
+.toggle .caret{font-size:10px;color:var(--muted)}
+.fs-sum{font-weight:500;color:var(--muted)}
+.filter-menu.active .toggle{border-color:var(--accent);background:#eff6ff;color:#1e40af}
+.filter-menu.active .fs-sum{color:#1e40af}
+.filter-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(540px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(16,24,40,.18);padding:12px 14px}
+.fp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px}
+.fp-all{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:600;color:var(--accent)}
+.fp-tip{margin:10px 0 0;font-size:12px;color:var(--muted)}
+#nowBtn{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+#nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:#1e2433;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.shared-banner{max-width:1140px;margin:14px auto 0;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:12px 16px;font-size:14px;color:#064e3b}
+.shared-banner .sb-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.shared-banner .fb-actions button{border-color:#a7f3d0;color:#047857}
+.shared-banner ul{margin:8px 0 0;padding-left:18px;font-size:13px;max-height:220px;overflow:auto}
+.shared-banner summary{cursor:pointer;font-weight:600;margin-top:6px;font-size:13px}
+/* ---------- live "now" markers ---------- */
+.block.past{opacity:.55}
+.block.past:hover,.block.past:focus-within{opacity:1}
+.block-time .live{display:none;margin-top:4px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:1px 8px;width:max-content;margin-left:auto}
+.block.is-now .live-now{display:block;background:#dc2626;color:#fff}
+.block.is-next .live-next{display:block;background:#dbeafe;color:#1e40af}
+.talk.is-now{background:#fef2f2}
+.talk.is-now .t-time{color:#dc2626}
+.talk.is-now .t-time::after{content:"NOW";display:block;font-size:9.5px;letter-spacing:.06em}
+.cal-now{position:absolute;inset-inline:0;top:calc(var(--offset) * var(--minute));border-top:2px solid #dc2626;z-index:3;pointer-events:none}
+.cal-now::before{content:"";position:absolute;left:calc(var(--time-gutter) - 5px);top:-6px;width:10px;height:10px;border-radius:50%;background:#dc2626}
+.ag-row.past{opacity:.6}
+.up-next{margin:14px 0 0;background:#fff;border:1px solid var(--line);border-left:4px solid #dc2626;border-radius:12px;padding:10px 14px;font-size:14px}
+.up-next b{font-weight:700}
+.up-next>div+div{margin-top:4px}
+.up-next .linkish{font-size:14px;text-align:left}
+.up-next .un-when{color:var(--muted);font-size:13px}
+.up-next .un-k{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#b91c1c;margin-right:6px}
 .result-line b{color:var(--ink)}
 
 /* ---------- agenda ---------- */
-main{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
+.agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
 .block{display:grid;grid-template-columns:86px 1fr;gap:14px;margin:0 0 22px}
 .block.hidden{display:none}
-.block-time{position:sticky;top:118px;align-self:start;text-align:right;padding-top:2px}
+.block-time{position:sticky;top:calc(var(--toolbar-h,150px) + 10px);align-self:start;text-align:right;padding-top:2px}
+.card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .block-time .bt{font-weight:800;font-size:17px;letter-spacing:-.01em}
 .block-time .bd{font-size:11.5px;color:var(--muted);font-weight:600}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
@@ -304,7 +352,7 @@ main{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
 .badge{flex:0 0 auto;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--cbg,#eef);color:var(--c,#555);cursor:pointer;border:0;white-space:nowrap;margin-top:2px}
 .badge:hover{filter:brightness(.95)}
 .card h3{margin:0;font-size:15.5px;line-height:1.35;letter-spacing:-.01em;flex:1}
-.star{flex:0 0 auto;border:0;background:transparent;font-size:17px;line-height:1;padding:2px 2px;color:#cbd5e1;border-radius:8px}
+.star{flex:0 0 auto;border:0;background:transparent;font-size:18px;line-height:1;padding:2px 3px;color:var(--muted);border-radius:8px}
 .star:hover{background:#f1f5f9}
 .star.on{color:var(--star)}
 .card .meta{padding:6px 15px 0 17px;font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:3px 12px}
@@ -331,7 +379,9 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body{padding:0 16px 13px 65px;font-size:13.5px;color:#4b5563}
 .t-body .abstract{white-space:pre-wrap;margin:0 0 8px}
 .t-body .aff{font-style:italic}
-.t-body .tools{display:flex;gap:12px;align-items:center;font-size:12.5px}
+.t-body .tools{display:flex;gap:16px;align-items:center;font-size:12.5px}
+.t-body .tools .linkish,.card .meta .linkish{font-size:12.5px}
+.ics-note summary{cursor:pointer;font-weight:600;color:var(--ink)}
 .talk-star{align-self:start;width:38px;height:38px;margin:3px 5px 0 0;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--muted);font-size:21px;line-height:1}
 .talk-star:hover{border-color:var(--line);background:#f8fafc}
 .talk-star.on{background:#fff7eb;border-color:#fcd34d;color:#92400e}
@@ -354,7 +404,7 @@ footer p{margin:4px 0}
 .fb-actions button:hover{background:#f3f8ff}
 .day-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding:24px 0 10px;margin-bottom:2px}
 .day-head>div{flex:1 1 240px}
-.day-head .dh-label{font-size:17px;font-weight:800;letter-spacing:.2px}
+.day-head .dh-label{display:inline;margin:0;font-size:17px;font-weight:800;letter-spacing:.2px}
 .day-head .dh-sub{font-size:12.5px;color:var(--muted);margin-left:10px}
 .dh-focus{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
 .dh-focus:hover{background:#f1f5f9}
@@ -372,7 +422,7 @@ footer p{margin:4px 0}
 .builder-actions{display:flex;flex-wrap:wrap;gap:8px}
 .builder-actions button:disabled{opacity:.55;cursor:default}
 .agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:#eef1f6}
-.agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--muted);font-size:14px;font-weight:650}
+.agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:#4b5563;font-size:14px;font-weight:650}
 .agenda-views button[aria-pressed="true"]{background:#fff;border-color:var(--line);color:var(--ink)}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
@@ -433,10 +483,19 @@ footer p{margin:4px 0}
   .ag-actions{flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:4px}
   .ag-btn{min-height:36px}
   .card .star{min-width:44px;min-height:44px}
-  .toolbar .chips{flex-wrap:nowrap;overflow-x:auto}
-  .toolbar .chip{flex:none}
+  .toolbar{padding-top:8px}
+  .daytabs{padding-bottom:6px}
+  .controls{padding:4px 0 6px;flex-wrap:nowrap}
+  .controls .toggle{padding:8px 10px}
+  .searchbox input{padding-left:32px}
+  .searchbox .mag{left:10px}
+  .result-row{padding-bottom:7px}
+  .result-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+  .block-time .live{margin-left:0;margin-top:0}
   .talk-star{width:44px;height:44px;margin-right:2px}
+  .searchbox input{font-size:16px}
 }
+@media (pointer:coarse){.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .schedule-nav .agenda-views{margin:0}
 #starCount{font-size:.82em;font-variant-numeric:tabular-nums}
@@ -445,7 +504,7 @@ footer p{margin:4px 0}
 .favourites-calendar #builder{padding-bottom:0}
 @media print{
   .favourites-calendar #agenda{display:none!important}
-  .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:#fff}
@@ -479,6 +538,7 @@ footer p{margin:4px 0}
     </div>
   </div>
 </header>
+<div class="shared-banner" id="sharedBanner" hidden></div>
 
 <details class="highlight-wrap"><summary>Congress highlights</summary><section class="highlights" aria-label="Congress highlights">
   <div class="hl"><div class="hl-k">Public lecture</div><div class="hl-t">Dr Jessie Christiansen (NASA/Caltech)</div><p class="hl-d"><b>Mon 7 Dec, evening.</b> The hunt for Earth 2.0 — from the first exoplanets to NASA's next flagship telescope. Free, open to all.</p></div>
@@ -487,6 +547,7 @@ footer p{margin:4px 0}
   <div class="hl"><div class="hl-k">Friday programs</div><div class="hl-t">Teachers Day &amp; Career Fair</div><p class="hl-d"><b>Fri 11 Dec.</b> Australian Physics Teachers Day (from 8am) and the Australian Physics Career Fair (1–4pm).</p></div>
 </section></details>
 
+<div id="toolbarAnchor"></div>
 <div class="sticky-wrap">
   <div class="toolbar">
     <div class="schedule-nav">
@@ -499,25 +560,34 @@ footer p{margin:4px 0}
         <button data-layout="calendar" aria-pressed="false">Calendar</button>
       </div>
     </div>
-    <div class="daytabs" id="daytabs" role="tablist" aria-label="Congress days"></div>
+    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
     <div class="controls">
       <div class="searchbox">
-        <span class="mag">&#128269;</span>
-        <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program">
+        <span class="mag" aria-hidden="true">&#128269;</span>
+        <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program" autocomplete="off" spellcheck="false">
         <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
       </div>
+      <div class="filter-menu" id="filterMenu">
+        <button class="toggle" id="filterBtn" type="button" aria-expanded="false" aria-controls="filterPanel">Streams <span id="filterSummary" class="fs-sum">All</span><span aria-hidden="true" class="caret">&#9662;</span></button>
+        <div class="filter-panel" id="filterPanel" hidden>
+          <div class="fp-head"><b>Show streams</b><button type="button" class="fp-all" id="filterAll">Show all</button></div>
+          <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
+          <p class="fp-tip">Tip: click a group badge on a session (e.g. QST) to show only that group.</p>
+        </div>
+      </div>
+      <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
       <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
       <label id="programLevel" hidden><select aria-label="Program calendar events"><option value="sessions">Sessions</option><option value="talks">Individual talks</option></select></label>
-      <button class="toggle" id="expandAll">Expand all abstracts</button>
     </div>
-    <div class="chips" id="chips" aria-label="Filter by stream"></div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter">&#10005;</button></div>
-    <div class="result-line" id="resultLine"></div>
+    <div class="result-row"><div class="result-line" id="resultLine"></div><button class="linkish" id="expandAll" type="button">Expand all abstracts</button></div>
   </div>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 
 
+<main id="main">
 <section id="builder" class="builder" hidden>
   <div class="builder-head">
     <div>
@@ -528,6 +598,7 @@ footer p{margin:4px 0}
       <button class="toggle" id="printAgenda">Print</button>
       <button class="toggle" id="copyAgenda">Copy as text</button>
       <button class="toggle" id="icsAgenda">Download .ics</button>
+      <button class="toggle" id="shareAgenda">Share link</button>
     </div>
   </div>
   <p class="export-status" id="exportStatus" role="status"></p>
@@ -535,17 +606,19 @@ footer p{margin:4px 0}
     <label for="copyBox">Select and copy your agenda text below.</label>
     <textarea id="copyBox" readonly rows="6"></textarea>
   </div>
-  <div class="ics-note" id="icsNote" hidden>
-    <p><b>Tip:</b> if the download didn&#8217;t start, copy the text below and save it as <b>my-agenda.ics</b> (or paste it into any calendar app that accepts imports).</p>
+  <details class="ics-note" id="icsNote" hidden>
+    <summary>Download didn&#8217;t start? Show the calendar text</summary>
+    <p>Copy the text below and save it as <b>my-agenda.ics</b>, or paste it into any calendar app that accepts imports.</p>
     <textarea id="icsBox" readonly rows="6" aria-label="Calendar file text"></textarea>
-  </div>
+  </details>
   <div id="builderBody">
     <div id="builderList"></div>
   </div>
 </section>
 
-<main id="agenda"></main>
+<div id="agenda" class="agenda"></div>
 <div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
+</main>
 
 <dialog id="eventDialog" aria-labelledby="eventTitle">
   <form method="dialog"><button class="toggle" autofocus>Close</button></form>
@@ -565,7 +638,8 @@ footer p{margin:4px 0}
     </div>
     <div>
       <h4>Tips</h4>
-      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b> (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a stream badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar.</p>
+      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. During the congress, <b>Now</b> jumps to what is on.</p>
+      <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
     </div>
   </div>
 </footer>
@@ -577,7 +651,8 @@ const CAT_COLORS = {
   anzcop:['var(--anzcop)','var(--anzcop-bg)'], commad:['var(--commad)','var(--commad-bg)'],
   focus:['var(--focus)','var(--focus-bg)'], edu:['var(--edu)','var(--edu-bg)'],
   public:['var(--public)','var(--public-bg)'], special:['var(--special)','var(--special-bg)'],
-  business:['var(--business)','var(--business-bg)'], social:['var(--social)','var(--social-bg)']
+  business:['var(--business)','var(--business-bg)'], social:['var(--social)','var(--social-bg)'],
+  poster:['var(--poster)','var(--poster-bg)']
 };
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
@@ -601,19 +676,19 @@ function personStr(sp){
 }
 
 // ---------- header tabs & chips ----------
-function renderTabs(counts = DATA.days.map(d => d.slots.length)){
+function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).length); }
+function renderTabs(counts = programCounts()){
   const el = document.getElementById('daytabs');
   const total = counts.reduce((a,b)=>a+b,0);
   const allOn = state.day === 'all';
-  let html = `<button class="daytab ${allOn?'on':''}" data-day="all" role="tab" tabindex="${allOn ? 0 : -1}" aria-selected="${allOn}">All week<span class="dt-count">${total}</span></button>`;
-  html += DATA.days.map((d,i) => {
-    const on = state.day === i;
-    return `<button class="daytab ${on?'on':''}" data-day="${i}" role="tab" tabindex="${on ? 0 : -1}" aria-selected="${on}">${d.label}<span class="dt-count">${counts[i]}</span></button>`;
-  }).join('');
-  el.innerHTML = html;
+  const ti = todayIdx();
+  const tab = (key, label, n, on, today) =>
+    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}</span></button>`;
+  el.innerHTML = tab('all', 'All week', total, allOn, false) +
+    DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti)).join('');
   document.getElementById('q').placeholder = allOn
-    ? 'Search anything — talks, speakers, abstracts … “quotes” = exact phrase'
-    : `Search ${DATA.days[state.day].label} — if nothing matches here, other days are searched automatically …`;
+    ? 'Search talks, speakers, abstracts…'
+    : `Search ${DATA.days[state.day].label}…`;
 }
 function renderChips(){
   const el = document.getElementById('chips');
@@ -622,6 +697,9 @@ function renderChips(){
     const [c,bg] = CAT_COLORS[k];
     return `<button class="chip ${on?'on':''}" data-cat="${k}" style="${on?`background:${c};border-color:${c}`:''}" aria-pressed="${on}"><span class="dot" style="background:${on?'rgba(255,255,255,.9)':c}"></span>${label}</button>`;
   }).join('');
+  const n = state.cats.size, total = Object.keys(DATA.cats).length;
+  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 1 ? DATA.cats[[...state.cats][0]] : `${n} of ${total}`;
+  document.getElementById('filterMenu').classList.toggle('active', n !== total);
   const pill = document.getElementById('grpill');
   if (state.group){
     pill.style.display = 'inline-flex';
@@ -630,14 +708,38 @@ function renderChips(){
 }
 
 // ---------- search ----------
+// Folding makes search ignore case, accents and typographic punctuation:
+// "garcia" finds "García", and iOS smart quotes work like straight ones.
+const FOLD = {'‘':"'",'’':"'",'‚':"'",'′':"'",'“':'"','”':'"','„':'"','″':'"',
+  '‐':'-','‑':'-','‒':'-','–':'-','—':'-','−':'-','ß':'ss','ﬀ':'ff','ﬁ':'fi','ﬂ':'fl',
+  'ı':'i','ø':'o','Ø':'o','ł':'l','Ł':'l','æ':'ae','Æ':'ae','đ':'d','Đ':'d'};
+const NON_ASCII = /[^\x00-\x7f]/;
+const NON_ASCII_ALL = /[^\x00-\x7f]/g;
+const _folded = new Map();
+let _foldResized = false;
+function foldChar(c){
+  let f = _folded.get(c);
+  if (f === undefined){
+    f = (FOLD[c] !== undefined ? FOLD[c] : c.normalize('NFD').replace(/[̀-ͯ]/g, '')).toLowerCase();
+    _folded.set(c, f);
+  }
+  if (f.length !== c.length) _foldResized = true;
+  return f;
+}
+function fold(s){
+  s = s || '';
+  return (NON_ASCII.test(s) ? s.replace(NON_ASCII_ALL, foldChar) : s).toLowerCase();
+}
 function parseQuery(q){
   // "quoted phrases" stay together; bare words are independent terms.
-  // All terms must match (AND), in any order.
+  // All terms must match (AND), in any order. An unclosed quote runs to the end.
+  q = fold(q);
+  if ((q.match(/"/g) || []).length % 2) q += '"';
   const terms = [];
-  const re = /"([^"]*)"|(\S+)/g;
+  const re = /"([^"]*)"|([^\s"]+)/g;
   let m;
   while ((m = re.exec(q)) !== null){
-    const t = (m[1] !== undefined ? m[1] : m[2]).toLowerCase().replace(/\s+/g, ' ').trim();
+    const t = (m[1] !== undefined ? m[1] : m[2]).replace(/\s+/g, ' ').trim();
     if (t) terms.push(t);
   }
   return terms;
@@ -647,7 +749,7 @@ function curTerms(){
   if (_termCache.q !== state.q) _termCache = { q: state.q, terms: parseQuery(state.q) };
   return _termCache.terms;
 }
-function norm(s){ return (s||'').toLowerCase().replace(/\s+/g, ' '); }
+function norm(s){ return fold(s).replace(/\s+/g, ' '); }
 function textMatches(hayNorm, terms){ return terms.every(t => hayNorm.includes(t)); }
 
 function hayFor(slot){
@@ -661,11 +763,14 @@ function hayTalk(t){
   return t._hay;
 }
 
+function slotTextMatches(slot){
+  const terms = curTerms();
+  return !terms.length || textMatches(hayFor(slot), terms) || slot.talks.some(t => talkMatches(t, slot));
+}
 function slotMatches(slot){
   if (!state.cats.has(slot.cat)) return false;
   if (state.group && slot.grp !== state.group) return false;
-  const terms = curTerms();
-  return textMatches(hayFor(slot), terms) || slot.talks.some(t => talkMatches(t, slot));
+  return slotTextMatches(slot);
 }
 
 function talkMatches(t, slot){
@@ -687,18 +792,43 @@ function hl(s){
   if (_hlRe.q !== state.q){
     const pat = terms.map(t => t.split(' ').map(escRe).join('\\s+'))
                      .sort((a,b) => b.length - a.length).join('|');
-    _hlRe = { q: state.q, re: pat ? new RegExp('(' + pat + ')', 'gi') : null };
+    _hlRe = { q: state.q, re: pat ? new RegExp(pat, 'g') : null };
   }
   const re = _hlRe.re;
   if (!re) return esc(s);
+  // Match on the folded text. Folding nearly always keeps every position;
+  // when a character changes length (ß, æ, a lone accent), map positions back.
+  _foldResized = false;
+  const hay = fold(s);
+  let map = null;
+  if (_foldResized){
+    map = [];
+    let i = 0;
+    for (const c of s){
+      const n = foldChar(c).length;
+      for (let k = 0; k < n; k++) map.push(i);
+      i += c.length;
+    }
+    map.push(s.length);
+  }
   re.lastIndex = 0;
   let out = '', last = 0, m;
-  while ((m = re.exec(s)) !== null){
+  while ((m = re.exec(hay)) !== null){
     if (!m[0].length){ re.lastIndex++; continue; }
-    out += esc(s.slice(last, m.index)) + '<mark class="hlm">' + esc(m[0]) + '</mark>';
-    last = m.index + m[0].length;
+    const a = map ? map[m.index] : m.index;
+    const b = map ? map[m.index + m[0].length] : m.index + m[0].length;
+    if (a < last || b <= a) continue;
+    out += esc(s.slice(last, a)) + '<mark class="hlm">' + esc(s.slice(a, b)) + '</mark>';
+    last = b;
   }
   return out + esc(s.slice(last));
+}
+function talkById(id){
+  if (!talkById.map){
+    talkById.map = {};
+    DATA.days.forEach(d => d.slots.forEach(s => s.talks.forEach(t => talkById.map[t.id] = { s, t })));
+  }
+  return talkById.map[id];
 }
 
 function slotById(id){
@@ -709,13 +839,14 @@ function slotById(id){
   return slotById.map[id];
 }
 
-function blocksHtml(slots){
+function blocksHtml(slots, date){
   const blocks = {};
   slots.forEach(s => { (blocks[s.start] = blocks[s.start] || []).push(s); });
   let inner = '';
   Object.keys(blocks).sort().forEach(st => {
     const bl = blocks[st];
-    inner += `<section class="block" data-start="${st}"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div></div><div class="cards ${bl.length===1?'single':''}">`;
+    const end = bl.map(x => x.end).sort().slice(-1)[0];
+    inner += `<section class="block" data-date="${date}" data-start="${st}" data-end="${end}"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards ${bl.length===1?'single':''}">`;
     bl.forEach(s => inner += cardHtml(s));
     inner += `</div></section>`;
   });
@@ -727,15 +858,18 @@ function renderAgenda(){
   const main = document.getElementById('agenda');
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
+  // While searching, only build the cards that can match: filters then just toggle visibility.
+  const searching = curTerms().length > 0;
   let html = '';
   for (const [d,i] of days){
-    let inner = blocksHtml(d.slots);
+    let inner = blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
     if (all){
-      inner = `<div class="day-head"><div><span class="dh-label">${esc(d.label)} 2026</span><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day &#8594;</button></div>` + inner;
+      inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day &#8594;</button></div>` + inner;
       html += `<div class="day-section" data-dayi="${i}">${inner}</div>`;
     } else html += inner;
   }
   main.innerHTML = html;
+  document.getElementById('expandAll').textContent = 'Expand all abstracts';
   applyFilters();
 }
 
@@ -773,6 +907,7 @@ function cardHtml(s){
             ${t.d ? `<p class="abstract">${hl(t.d)}</p>` : '<p class="abstract" style="color:#94a3b8">No abstract provided.</p>'}
             <div class="tools">
               <a href="${t.u}" target="_blank" rel="noopener">View on Indico &#8599;</a>
+              <button type="button" class="linkish t-share" data-share="t=${t.id}" data-share-title="${esc(t.t)}">Share link</button>
             </div>
           </div>
         </details>
@@ -787,7 +922,7 @@ function cardHtml(s){
     <div class="card-head">
       ${grp}
       <h3 tabindex="-1">${hl(s.title)}</h3>
-      <button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session" aria-pressed="${Boolean(starOn)}">&#9733;</button>
+      <button class="star ${starOn}" data-sstar="${s.id}" aria-label="Favourite session: ${esc(s.title)}" title="Favourite session" aria-pressed="${Boolean(starOn)}">${starOn?'&#9733;':'&#9734;'}</button>
     </div>
     <div class="meta">
       <span><b>${s.start}&#8211;${s.end}</b></span>
@@ -795,6 +930,7 @@ function cardHtml(s){
       ${conv}
       ${s.talks.length ? `<span>${s.talks.length} talk${s.talks.length>1?'s':''}</span>` : ''}
       <span><a href="${s.url}" target="_blank" rel="noopener">Indico &#8599;</a></span>
+      ${s.talks.length || s.desc ? `<button type="button" class="linkish t-share" data-share="s=${s.id}" data-share-title="${esc(s.title)}">Share</button>` : ''}
     </div>
     ${talksHtml}
   </article>`;
@@ -808,7 +944,7 @@ function fallbackHtml(){
     const slots = d.slots.filter(slotMatches);
     if (!slots.length) return;
     count += slots.length;
-    out += `<div class="day-section"><div class="day-head"><div><span class="dh-label">${esc(d.label)} 2026</span><span class="dh-sub">${slots.length} matching session${slots.length>1?'s':''}</span></div><button class="dh-focus" data-focusday="${i}">Go to this day &#8594;</button></div>${blocksHtml(slots)}</div>`;
+    out += `<div class="day-section"><div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${slots.length} matching session${slots.length>1?'s':''}</span></div><button class="dh-focus" data-focusday="${i}">Go to this day &#8594;</button></div>${blocksHtml(slots, d.date)}</div>`;
   });
   if (!count) return { html:'', count:0 };
   const why = state.q ? ` for &ldquo;${esc(state.q)}&rdquo;` : ' for the current filters';
@@ -840,7 +976,7 @@ function applyFilters(){
       li.classList.toggle('hidden', !talkMatches(t, s));
       if (autoOpen && openMatchingTalk(t, s)) li.querySelector('details').open = true;
     });
-    if (autoOpen && (s.desc||'').toLowerCase().includes(state.q.toLowerCase())){
+    if (autoOpen && curTerms().some(term => norm(s.desc).includes(term))){
       const ab = card.querySelector('details.about'); if (ab) ab.open = true;
     }
   }));
@@ -890,27 +1026,36 @@ function applyFilters(){
   if (fbCount){
     rl.innerHTML = `No matches on <b>${DATA.days[state.day].label}</b> · <b>${fbCount}</b> matching session${fbCount>1?'s':''} from the rest of the week below`;
   } else {
-    rl.innerHTML = all
-      ? `All week: <b>${shownSlots}</b> of ${totalSlots} sessions · <b>${shownTalks}</b> of ${totalTalks} talks across all ${DATA.days.length} days`
-      : `Showing <b>${shownSlots}</b> of ${totalSlots} sessions · <b>${shownTalks}</b> of ${totalTalks} talks on <b>${DATA.days[state.day].label}</b>`;
+    const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
+    const of = n => filtered ? ` of ${n}` : '';
+    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} sessions · <b>${shownTalks}</b>${of(totalTalks)} talks`;
   }
   document.getElementById('starCount').textContent = state.starred.size;
+  if (state.scope === 'program') renderTabs(programCounts());
 }
 
 // everything is rendered up front; filtering just toggles visibility
-function refresh(){ if (state.layout === 'calendar') renderCalendar(); else applyFilters(); }
+function refresh(){
+  if (state.layout === 'calendar') renderCalendar(); else applyFilters();
+  paintNow(); writeHash();
+}
 
 function rerender(){
   const personal = state.scope === 'agenda';
+  if (!personal) renderChips();
   if (personal) renderBuilder();
-  if (state.layout === 'calendar'){ renderCalendar(); return; }
-  if (personal) return;
-  renderTabs(); renderChips(); renderAgenda();
+  if (state.layout === 'calendar') renderCalendar();
+  else if (!personal){ renderTabs(); renderAgenda(); }
+  paintNow(); writeHash();
 }
+
+// The toolbar's static position: offsetTop of a stuck sticky element is the scroll position.
+function programTop(){ return document.getElementById('toolbarAnchor').getBoundingClientRect().top + window.scrollY; }
+function scrollToProgramTop(){ window.scrollTo({ top: programTop() }); }
 
 // ---------- events ----------
 document.getElementById('daytabs').addEventListener('keydown', e => {
-  const tabs = [...e.currentTarget.querySelectorAll('[role="tab"]')];
+  const tabs = [...e.currentTarget.querySelectorAll('.daytab')];
   const index = tabs.indexOf(e.target);
   const destination = {ArrowRight:(index+1)%tabs.length, ArrowLeft:(index+tabs.length-1)%tabs.length,
                        Home:0, End:tabs.length-1}[e.key];
@@ -922,8 +1067,8 @@ document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
   state.day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
   rerender();
-  document.querySelector('#daytabs [aria-selected="true"]').focus({preventScroll:true});
-  window.scrollTo({ top: document.querySelector('.sticky-wrap').offsetTop - 8 });
+  document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
+  scrollToProgramTop();
 });
 
 document.getElementById('chips').addEventListener('click', e => {
@@ -949,18 +1094,18 @@ document.getElementById('agenda').addEventListener('click', e => {
   if (f){
     state.day = +f.dataset.focusday;
     rerender();
-    window.scrollTo({ top: document.querySelector('.sticky-wrap').offsetTop - 8 });
+    scrollToProgramTop();
     return;
   }
   if (e.target.closest('[data-fbclear]')){
     clearSearch();
-    renderAgenda(); qEl.focus();
+    rerender(); qEl.focus();
     return;
   }
   if (e.target.closest('[data-fball]')){
     state.day = 'all';
     rerender();
-    window.scrollTo({ top: document.querySelector('.sticky-wrap').offsetTop - 8 });
+    scrollToProgramTop();
     return;
   }
   const badge = e.target.closest('.badge[data-grp]');
@@ -975,6 +1120,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
     s.classList.toggle('on', state.starred.has(id));
     s.setAttribute('aria-pressed', state.starred.has(id));
+    s.textContent = state.starred.has(id) ? '★' : '☆';
     afterStarChange();
     return;
   }
@@ -1008,11 +1154,12 @@ qEl.addEventListener('input', () => {
     state.q = qEl.value.trim();
     document.getElementById('clr').style.display = state.q ? 'block' : 'none';
     rerender(); // re-render so highlights update
+    if (window.scrollY > programTop()) scrollToProgramTop();
   }, 160);
 });
 document.getElementById('clr').addEventListener('click', () => {
   clearSearch();
-  renderAgenda(); qEl.focus();
+  rerender(); qEl.focus();
 });
 
 // ---------- agenda builder ----------
@@ -1037,7 +1184,7 @@ function markClashes(items){
       const a = items[i], b = items[j];
       if (a.d !== b.d) continue;
       // a talk inside its own starred session is not a clash
-      if (a.s === b.s && a.kind !== b.kind) continue;
+      if (a.s === b.s && (a.kind !== b.kind || a.s.cat === 'poster')) continue;
       if (toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end)){
         a.clashes.push(b); b.clashes.push(a);
       }
@@ -1079,7 +1226,7 @@ function agRow(it){
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
     : '';
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
-  return `<li class="ag-row ${clashNames.length?'has-clash':''}" style="--c:${c};--cbg:${bg}">
+  return `<li class="ag-row ${clashNames.length?'has-clash':''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}</span>
     <div class="ag-main">
       <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':'Talk'}</span>${esc(itemTitle(it))}</span>
@@ -1159,7 +1306,8 @@ function groupFavourites(items){
 
 function weekCalendar(items){
   const starts = [...new Set(items.map(it => it.start))].sort();
-  const days = DATA.days.map(d => `<th scope="col">${esc(d.label)}</th>`).join('');
+  const today = aedtNow().date;
+  const days = DATA.days.map(d => `<th scope="col" class="${d.date === today ? 'today' : ''}">${esc(d.label)}</th>`).join('');
   const rows = starts.map(start => {
     const cells = DATA.days.map((d, di) => {
       const events = items.filter(it => it.di === di && it.start === start).map(it => {
@@ -1198,6 +1346,7 @@ function dayCalendar(dayItems, day){
     <div class="cal-scroll" tabindex="0" role="region" aria-label="Calendar for ${esc(day.label)}">
       <div class="cal-grid" style="--duration:${lastMinute-firstMinute};--lanes:${maxLanes}">
         <div aria-hidden="true">${hours}</div>
+        <div class="cal-now" hidden data-date="${day.date}" data-first="${firstMinute}" data-last="${lastMinute}" style="--offset:0"></div>
         <div class="cal-events">${events.join('')}</div>
       </div>
     </div>`;
@@ -1211,7 +1360,7 @@ function renderBuilder(){
   const clashItems = items.filter(x => x.clashes.length).length;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
-  for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda']) {
+  for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda']) {
     document.getElementById(id).disabled = items.length === 0;
   }
   document.getElementById('exportStatus').textContent = '';
@@ -1238,10 +1387,10 @@ function renderBuilder(){
     if (personalList && state.day !== 'all' && state.day !== di) return;
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
-    html += `<div class="ag-day"><div class="day-head"><div><span class="dh-label">${esc(d.label)} 2026</span><span class="dh-sub">${dayItems.length} item${dayItems.length!==1?'s':''} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
+    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${dayItems.length} item${dayItems.length!==1?'s':''} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
-  body.innerHTML = html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
-    <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`;
+  body.innerHTML = upNextHtml(items) + (html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
+    <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
 
 function showView(layout, scope){
@@ -1261,13 +1410,14 @@ function showView(layout, scope){
   document.getElementById('emptyNote').hidden = personal || calendar;
   document.getElementById('builder').hidden = !personal;
   document.getElementById('builderList').hidden = !agendaList;
-  document.getElementById('resultLine').hidden = agendaList;
+  document.querySelector('.result-row').hidden = agendaList;
   document.querySelector('.toolbar .controls').hidden = agendaList;
   document.getElementById('expandAll').hidden = calendar || personal;
   document.getElementById('programLevel').hidden = !calendar || personal;
   document.getElementById('parentOption').hidden = !calendar || !personal;
   document.querySelector('.searchbox').hidden = personal;
-  document.getElementById('chips').hidden = personal;
+  document.getElementById('filterMenu').hidden = personal;
+  if (personal) setFilterOpen(false);
   document.getElementById('grpill').hidden = personal;
   rerender();
 }
@@ -1337,7 +1487,8 @@ function agendaText(){
   markClashes(items);
   const clashItems = items.filter(x => x.clashes.length).length;
   let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
-  out += `${items.filter(x=>x.kind==='session').length} sessions · ${items.filter(x=>x.kind==='talk').length} talks · about ${plannedHours(items).toFixed(1)} h` +
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+  out += `${plural(items.filter(x=>x.kind==='session').length, 'session')} · ${plural(items.filter(x=>x.kind==='talk').length, 'talk')} · about ${plannedHours(items).toFixed(1)} h` +
          (clashItems ? ` · ${clashItems} in clash` : ' · no clashes') + '\n';
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
@@ -1373,6 +1524,8 @@ async function copyToClipboard(txt){
 }
 function downloadIcs(){
   const txt = buildIcs();
+  const n = (txt.match(/BEGIN:VEVENT/g) || []).length;
+  let ok = true;
   try {
     const blob = new Blob([txt], { type: 'text/calendar' });
     const a = document.createElement('a');
@@ -1380,9 +1533,12 @@ function downloadIcs(){
     a.download = 'aip-congress-2026-my-agenda.ics';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  } catch(e){}
+  } catch(e){ ok = false; }
+  document.getElementById('exportStatus').textContent = ok
+    ? `Saved aip-congress-2026-my-agenda.ics with ${n} event${n===1?'':'s'}. Open it to add them to your calendar.` : '';
   const note = document.getElementById('icsNote');
   note.hidden = false;
+  note.open = !ok;
   document.getElementById('icsBox').value = txt;
 }
 
@@ -1390,7 +1546,7 @@ function programCalendarItems(){
   const items = [];
   DATA.days.forEach((d,di) => {
     for (const s of d.slots.filter(slotMatches)){
-      if (state.programTalks && s.talks.length){
+      if (state.programTalks && s.talks.length && s.cat !== 'poster'){
         for (const t of s.talks.filter(t => talkMatches(t,s))){
           items.push({di,d,s,t,kind:'talk',start:t.s,end:t.e,clashes:[]});
         }
@@ -1431,6 +1587,8 @@ function renderCalendar(){
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
+  paintNow();
+  writeHash();
 }
 
 document.getElementById('scheduleLayout').addEventListener('click', e => {
@@ -1487,6 +1645,7 @@ document.addEventListener('click', e => {
     ${t ? '<p>' + esc(s.title) + '</p>' : favouriteButton(s.id,'session')}
     ${!t && s.desc ? '<p class="detail-text">' + esc(s.desc) + '</p>' : ''}
     <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
+    <button class="ag-btn" data-share="${t ? 't=' + t.id : 's=' + s.id}" data-share-title="${esc(t ? t.t : s.title)}">Share link</button>
     ${details || (!s.desc ? '<p>No abstract provided.</p>' : '')}`;
   dialogTrigger = button;
   eventDialog.showModal();
@@ -1524,12 +1683,17 @@ eventDialog.addEventListener('close', () => {
   const replacement = [...scope.querySelectorAll(selector)].find(b => b.offsetWidth);
   const scroller = replacement?.closest('.week-scroll,.cal-scroll');
   if (scroller) scroller.scrollTo({left,top,behavior:'instant'});
-  (replacement || document.querySelector('#scheduleScope [aria-pressed="true"]')).focus({preventScroll:true});
+  const fallback = state.scope === 'agenda' ? document.getElementById('builderTitle') : document.querySelector('#scheduleScope [aria-pressed="true"]');
+  (replacement || fallback).focus({preventScroll:true});
 });
 
 document.getElementById('printAgenda').addEventListener('click', () => window.print());
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
+document.getElementById('shareAgenda').addEventListener('click', () => {
+  const ids = agendaItems().map(it => it.t ? it.t.id : it.s.id);
+  shareUrl(linkTo('agenda=' + ids.join(',')), 'My AIP Congress 2026 agenda');
+});
 
 document.getElementById('builder').addEventListener('click', e => {
   const rm = e.target.closest('[data-sstar],[data-tstar]');
@@ -1548,9 +1712,11 @@ document.getElementById('builder').addEventListener('click', e => {
 });
 
 function openInProgram(go){
-  const jump = go.dataset.jump || '';
-  const dayAttr = go.dataset.goprogram;
-  state.day = dayAttr === 'all' ? 'all' : +dayAttr;
+  jumpTo(go.dataset.goprogram, go.dataset.jump || '', go.dataset.jumptalk || '');
+}
+
+function jumpTo(dayAttr, jump, jumpTalk){
+  state.day = dayAttr === 'all' || dayAttr === undefined ? 'all' : +dayAttr;
   if (jump){
     clearSearch();
     state.group = null;
@@ -1560,7 +1726,7 @@ function openInProgram(go){
   if (jump){
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
-      const talk = go.dataset.jumptalk && card.querySelector(`.talk[data-tid="${go.dataset.jumptalk}"] details`);
+      const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
       if (talk) talk.open = true;
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
       const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
@@ -1577,7 +1743,7 @@ function openInProgram(go){
       return;
     }
   }
-  document.querySelector('#daytabs [aria-selected="true"]').focus();
+  document.querySelector('#daytabs [aria-pressed="true"]').focus();
 }
 
 document.getElementById('expandAll').addEventListener('click', e => {
@@ -1589,28 +1755,288 @@ document.getElementById('expandAll').addEventListener('click', e => {
 
 document.addEventListener('keydown', e => {
   if (eventDialog.open) return;
+  if (e.key === 'Escape' && !filterPanel.hidden){ setFilterOpen(false); filterBtn.focus(); return; }
   if (e.key === '/' && state.scope === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
-  if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); renderAgenda(); qEl.blur(); }
+  if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); rerender(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
   if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
 });
 
-// countdown to 7 Dec 2026
-(function(){
-  const target = new Date('2026-12-07T09:00:00+11:00');
-  const days = Math.ceil((target - new Date()) / 864e5);
-  const el = document.getElementById('countdown');
-  if (days > 1) el.textContent = 'Starts in ' + days + ' days';
-  else if (days === 1) el.textContent = 'Starts tomorrow!';
-})();
+// ---------- streams filter menu ----------
+const filterBtn = document.getElementById('filterBtn');
+const filterPanel = document.getElementById('filterPanel');
+function setFilterOpen(open){
+  filterPanel.hidden = !open;
+  filterBtn.setAttribute('aria-expanded', open);
+}
+filterBtn.addEventListener('click', () => setFilterOpen(filterPanel.hidden));
+document.addEventListener('click', e => {
+  // composedPath still holds chips that a re-render has since replaced
+  if (!filterPanel.hidden && !e.composedPath().includes(document.getElementById('filterMenu'))) setFilterOpen(false);
+});
+document.getElementById('filterAll').addEventListener('click', () => {
+  state.cats = new Set(Object.keys(DATA.cats));
+  renderChips(); refresh();
+});
 
-rerender();
+// ---------- live "now" ----------
+// ?now=2026-12-08T11:40 (AEDT) pins the clock, for previews and testing.
+const NOW_OVERRIDE = (() => {
+  const m = /[?&]now=([^&#]+)/.exec(location.search);
+  if (!m) return null;
+  let v = decodeURIComponent(m[1]).replace(' ', 'T');
+  if (/^\d{4}-\d\d-\d\d$/.test(v)) v += 'T09:00';
+  if (!/(z|[+-]\d\d:?\d\d)$/i.test(v)) v += '+11:00';
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+})();
+function aedtNow(){
+  // The congress runs entirely in Australian Eastern Daylight Time (UTC+11).
+  const d = new Date((NOW_OVERRIDE || new Date()).getTime() + 11 * 3600e3);
+  return { date: d.toISOString().slice(0, 10), min: d.getUTCHours() * 60 + d.getUTCMinutes() };
+}
+function todayIdx(){ const n = aedtNow(); return DATA.days.findIndex(d => d.date === n.date); }
+function fmtMins(m){ return m >= 60 ? Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + m % 60 + ' min' : '') : m + ' min'; }
+
+function upNextHtml(items){
+  const n = aedtNow();
+  const today = items.filter(it => it.d.date === n.date);
+  const current = today.filter(it => toMin(it.start) <= n.min && n.min < toMin(it.end));
+  const next = today.find(it => toMin(it.start) > n.min);
+  if (!current.length && !next) return '';
+  const row = (label, it, when) =>
+    `<div><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span></div>`;
+  return `<div class="up-next" id="upNext">` +
+    current.map(it => row('Now', it, `until ${it.end}`)).join('') +
+    (next ? row('Next', next, `${next.start} · in ${fmtMins(toMin(next.start) - n.min)}`) : '') + `</div>`;
+}
+
+function paintCountdown(){
+  const el = document.getElementById('countdown');
+  const n = aedtNow(), ti = todayIdx();
+  const days = Math.ceil((new Date('2026-12-07T09:00:00+11:00') - (NOW_OVERRIDE || new Date())) / 864e5);
+  el.textContent = ti >= 0 ? 'Today: ' + DATA.days[ti].label
+    : n.date > DATA.days[DATA.days.length - 1].date ? '7–11 Dec 2026 · finished'
+    : days > 1 ? 'Starts in ' + days + ' days'
+    : days === 1 ? 'Starts tomorrow!' : '7–11 Dec 2026';
+}
+
+// Marks what is on now and next. It only toggles classes, so a timer can run it.
+function paintNow(){
+  const n = aedtNow();
+  document.getElementById('nowBtn').hidden = todayIdx() < 0 || state.scope !== 'program';
+  const blocks = [...document.querySelectorAll('#agenda .block')];
+  let next = null;
+  for (const b of blocks){
+    const today = b.dataset.date === n.date;
+    const st = toMin(b.dataset.start), en = toMin(b.dataset.end);
+    b.classList.toggle('past', today && en <= n.min);
+    b.classList.toggle('is-now', today && st <= n.min && n.min < en);
+    b.classList.remove('is-next');
+    if (!next && today && st > n.min && !b.classList.contains('hidden') && !b.closest('.day-section.hidden')) next = b;
+  }
+  if (next) next.classList.add('is-next');
+  document.querySelectorAll('#agenda .talk.is-now').forEach(li => li.classList.remove('is-now'));
+  for (const b of blocks){
+    if (!b.classList.contains('is-now')) continue;
+    for (const card of b.querySelectorAll('.card')){
+      const s = slotById(card.dataset.sid);
+      if (s.cat === 'poster') continue;
+      for (const t of s.talks){
+        if (toMin(t.s) <= n.min && n.min < toMin(t.e)) card.querySelector(`.talk[data-tid="${t.id}"]`)?.classList.add('is-now');
+      }
+    }
+  }
+  document.querySelectorAll('.cal-now').forEach(line => {
+    const first = +line.dataset.first, last = +line.dataset.last;
+    line.hidden = !(line.dataset.date === n.date && n.min >= first && n.min <= last);
+    line.style.setProperty('--offset', n.min - first);
+  });
+  document.querySelectorAll('#builder .ag-row[data-date]').forEach(r =>
+    r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
+  if (state.scope === 'agenda' && state.layout === 'list'){
+    const old = document.getElementById('upNext');
+    const html = upNextHtml(agendaItems());
+    if (old) old.outerHTML = html;
+    else if (html) document.getElementById('builderList').insertAdjacentHTML('afterbegin', html);
+  }
+  paintCountdown();
+}
+
+document.getElementById('nowBtn').addEventListener('click', () => {
+  const ti = todayIdx();
+  if (ti < 0) return;
+  if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
+  paintNow();
+  const target = state.layout === 'calendar'
+    ? document.querySelector('#agenda .cal-now:not([hidden])')
+    : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
+  if (target) target.scrollIntoView({ block: state.layout === 'calendar' ? 'center' : 'start' });
+  else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
+    ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
+});
+
+// ---------- links: the address keeps the view, and items can be shared ----------
+function stateHash(){
+  const p = new URLSearchParams();
+  if (state.scope !== 'program') p.set('view', state.scope);
+  if (state.layout !== 'list') p.set('layout', state.layout);
+  if (state.day !== 'all') p.set('day', DATA.days[state.day].date);
+  if (state.q) p.set('q', state.q);
+  if (state.cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...state.cats].join(','));
+  if (state.group) p.set('group', state.group);
+  if (state.programTalks) p.set('talks', '1');
+  return p.toString();
+}
+let hashReady = false;
+function writeHash(){
+  if (!hashReady) return;
+  const h = stateHash();
+  if (location.hash.slice(1) === h) return;
+  try { history.replaceState(null, '', location.pathname + location.search + (h ? '#' + h : '')); } catch (e) {}
+}
+function readHash(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  state.scope = p.get('view') === 'agenda' ? 'agenda' : 'program';
+  state.layout = p.get('layout') === 'calendar' ? 'calendar' : 'list';
+  const di = DATA.days.findIndex(d => d.date === p.get('day'));
+  state.day = di >= 0 ? di : 'all';
+  state.q = (p.get('q') || '').trim();
+  qEl.value = state.q;
+  document.getElementById('clr').style.display = state.q ? 'block' : 'none';
+  const cats = (p.get('streams') || '').split(',').filter(c => DATA.cats[c]);
+  state.cats = new Set(cats.length ? cats : Object.keys(DATA.cats));
+  const g = p.get('group');
+  state.group = g && DATA.days.some(d => d.slots.some(s => s.grp === g)) ? g : null;
+  state.programTalks = p.get('talks') === '1';
+  document.querySelector('#programLevel select').value = state.programTalks ? 'talks' : 'sessions';
+  return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
+}
+function followHashTargets(r){
+  const hit = r.talk ? talkById(r.talk) : null;
+  const s = hit ? hit.s : r.session ? slotById(r.session) : null;
+  if (s){
+    const di = DATA.days.findIndex(d => d.slots.includes(s));
+    jumpTo(String(di), s.id, hit ? hit.t.id : '');
+  }
+  if (r.agenda) showSharedAgenda(r.agenda.split(','));
+}
+function linkTo(hash){
+  // Share the real address: the short /AIP2026 alias answers through a 404 page,
+  // which link previews in chat apps show as "Page not found".
+  const base = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : location.href.split(/[?#]/)[0];
+  return base + '#' + hash;
+}
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  (eventDialog.open ? eventDialog : document.body).appendChild(el);
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+async function shareUrl(url, title){
+  if (navigator.share && matchMedia('(pointer: coarse)').matches){
+    try { await navigator.share({ title, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); toast('Link copied'); }
+  catch (e) { window.prompt('Copy this link:', url); }
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-share]');
+  if (!b) return;
+  e.preventDefault();
+  shareUrl(linkTo(b.dataset.share), b.dataset.shareTitle || document.title);
+});
+
+// A shared agenda arrives as #agenda=id,id,… and is only merged when asked.
+function showSharedAgenda(ids){
+  const items = [];
+  for (const id of new Set(ids)){
+    const hit = talkById(id), s = hit ? hit.s : slotById(id);
+    if (!s) continue;
+    const d = DATA.days.find(day => day.slots.includes(s));
+    items.push({ id, d, s, t: hit ? hit.t : null, start: hit ? hit.t.s : s.start, end: hit ? hit.t.e : s.end });
+  }
+  const el = document.getElementById('sharedBanner');
+  if (!items.length){ el.hidden = true; return; }
+  items.sort((a,b) => a.d.date.localeCompare(b.d.date) || a.start.localeCompare(b.start));
+  const fresh = items.filter(it => !state.starred.has(it.id));
+  el.dataset.ids = fresh.map(it => it.id).join(',');
+  const count = items.length + (items.length === 1 ? ' session or talk' : ' sessions and talks');
+  el.innerHTML = `<div class="sb-row"><div><b>Shared agenda:</b> ${count}${fresh.length < items.length ? ` (${items.length - fresh.length} already in yours)` : ''}.</div>
+    <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>Add ${fresh.length} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}<button type="button" data-sb-close>Dismiss</button></div></div>
+    <details><summary>See what’s in it</summary><ul>${items.map(it =>
+      `<li>${esc(it.d.label)} · ${it.start}–${it.end} · ${state.starred.has(it.id) ? '★ ' : ''}${esc(it.t ? it.t.t : it.s.title)}${it.t ? ' <span class="ag-sub" style="display:inline">(' + esc(it.s.title) + ')</span>' : ''}</li>`).join('')}</ul></details>`;
+  el.hidden = false;
+}
+document.getElementById('sharedBanner').addEventListener('click', e => {
+  const el = e.currentTarget;
+  if (e.target.closest('[data-sb-add]')){
+    const ids = (el.dataset.ids || '').split(',').filter(Boolean);
+    ids.forEach(id => state.starred.add(id));
+    saveStars();
+    document.getElementById('starCount').textContent = state.starred.size;
+    rerender();
+    el.innerHTML = `<div class="sb-row"><div>Added ${ids.length} item${ids.length === 1 ? '' : 's'} to My agenda.</div><div class="fb-actions"><button type="button" data-sb-open>Open My agenda</button><button type="button" data-sb-close>Dismiss</button></div></div>`;
+    el.querySelector('[data-sb-open]').focus();
+  } else if (e.target.closest('[data-sb-open]')){
+    el.hidden = true;
+    showView(state.layout, 'agenda');
+    scrollToProgramTop();
+    document.getElementById('builderTitle').focus({ preventScroll: true });
+  } else if (e.target.closest('[data-sb-close]')){
+    el.hidden = true;
+  }
+});
+
+// ---------- start ----------
+const stickyWrap = document.querySelector('.sticky-wrap');
+function syncToolbarHeight(){ document.documentElement.style.setProperty('--toolbar-h', stickyWrap.offsetHeight + 'px'); }
+if (window.ResizeObserver) new ResizeObserver(syncToolbarHeight).observe(stickyWrap);
+syncToolbarHeight();
+
+function start(){
+  const r = readHash();
+  // During the congress a plain visit opens on today.
+  if (!r.hasDay && !r.session && !r.talk && todayIdx() >= 0) state.day = todayIdx();
+  hashReady = true;
+  showView(state.layout, state.scope);
+  if (r.session || r.talk){
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  }
+  followHashTargets(r);
+}
+window.addEventListener('hashchange', () => {
+  const r = readHash();
+  showView(state.layout, state.scope);
+  followHashTargets(r);
+});
+setInterval(paintNow, 30000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) paintNow(); });
+if ('serviceWorker' in navigator && location.protocol === 'https:'){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+start();
 </script>
 </body>
 </html>
 '''
+
+
+def prepare_payload(payload):
+    """Bring a stored payload up to the current labels and categories."""
+    payload['cats'] = CATS
+    payload['groups'] = GROUP_LABELS
+    for day in payload['days']:
+        for slot in day['slots']:
+            if 'poster session' in slot['title'].lower():
+                slot['cat'], slot['grp'] = 'poster', ''
+    return payload
 
 
 def main():
@@ -1625,6 +2051,7 @@ def main():
     else:
         payload = json.loads(data_path.read_text(encoding='utf-8'))
 
+    payload = prepare_payload(payload)
     embedded = json.dumps(payload, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = HTML.replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
