@@ -1447,7 +1447,7 @@ function agRow(it){
     : (it.s.room || 'Belinda Hutchinson Building');
   const sub2 = it.kind === 'talk'
     ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
-    : (it.s.talks.length ? it.s.talks.length + ' talks' : '');
+    : (it.s.talks.length ? it.s.talks.length + (it.s.talks.length === 1 ? ' talk' : ' talks') : '');
   const clashNames = [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
@@ -2093,7 +2093,7 @@ function bdCard(s, parallel){
   const open = talks.length <= 3 || parallel <= 2 || talks.some(t => state.starred.has(t.id));
   const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
     s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
-    poster && s.talks.length ? s.talks.length + ' posters' : ''].filter(Boolean).join(' · ');
+    poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join(' · ');
   const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session' : 'Save this session';
   return `<article class="bd-card" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
