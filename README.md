@@ -13,8 +13,17 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - Browse by day or the whole week, as a list or a calendar; filter by stream or group badge.
 - Search every word in any order, ignoring case and accents; `"quotes"` for an exact phrase.
   If the selected day has no match, matches from the rest of the week appear.
-- Star talks or whole sessions to build **My agenda**: clash warnings, list or calendar,
-  print, copy as text, download `.ics`, or share it as a link the receiver can merge into theirs.
+- Star talks or whole sessions to build **My agenda**, as a list or a calendar. Overlaps show on
+  each row and in a **Clashes** panel that groups chains of overlapping items; **Hide clash
+  warnings** turns all of that off (remembered). **Clear all** has an Undo, and a saved talk can be
+  swapped for its whole session from its details.
+- Export My agenda: **Print or save as PDF** (a clean A4 list per day with a clash section),
+  copy as text, download `.ics` (each event lists what it overlaps; talks inside a saved session
+  are listed in that session's event), or share it as a link the receiver can add to or swap for
+  theirs.
+- **Move to another device**: a QR code of the agenda link (drawn offline), copy the link or a
+  short agenda code, or download a `.json` file; on the other device import the file or paste the
+  link, code or file text, then add it to the agenda there or replace it.
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
@@ -38,3 +47,6 @@ hard line wraps, all-caps names) and rewrites `aip2026-data.json` if anything ch
 Pushing to `main` runs `.github/workflows/pages.yml`, which rebuilds and deploys to GitHub Pages.
 
 `shots.js` and `shots2.js` take screenshots with Playwright (`node shots.js`).
+
+The QR code uses [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 by
+Kazuhiko Arase (MIT), inlined in the page so it works offline.
