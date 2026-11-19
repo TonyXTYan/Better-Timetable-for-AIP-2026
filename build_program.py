@@ -87,8 +87,8 @@ EVENT_DETAILS = [
              'award ceremonies. Tickets via registration.',
      'links': [('Activities & social events', AIP_CONGRESS + '/activities')]},
     {'title': 'career fair',
-     'info': 'One session in the program. Per the official pages, the Australian Physics '
-             'Teachers Day starts from 8am and the Career Fair runs 1\u20134pm.',
+     'info': 'The Australian Physics Teachers Day and the Career Fair share this slot in the '
+             'program; each official page gives its own times.',
      'links': [('Teachers Day', AIP_CONGRESS + '/teachers-day'),
                ('Career Fair', AIP_CONGRESS + '/career-fair')]},
 ]
@@ -409,11 +409,13 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    and follow the sideways scroller, which only scrolls across, never down. */
 .week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-full,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:10px 12px 12px;box-shadow:var(--shadow)}
 .week-hint{margin:0 0 8px;font-size:.8125rem;color:var(--muted)}
-.week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;background:var(--card);padding-bottom:6px}
+.week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;overflow:clip visible;background:var(--card);padding-bottom:6px}
 .week-sc{overflow:auto hidden;overscroll-behavior-x:contain}
 .week-head,.week-v .week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
 .week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;text-align:left;cursor:pointer}
 .week-dayh small{font-size:.6875rem;font-weight:500;color:var(--muted)}
+.week-dayh.week-dnar{flex-wrap:nowrap;white-space:nowrap}
+.week-dnar .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
 .week-dayh.today{background:var(--today-bg);border-color:var(--danger-line);color:var(--today-ink)}
 .week-dayh.today small{color:inherit}
@@ -453,7 +455,9 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 @media (hover:none),(pointer:coarse){.wh-ptr{display:none}.wh-tch{display:inline}}
 .week-sx{--sx-l:calc(2.6rem + var(--wgap))}
 .week-h .week-sx{--sx-l:calc(var(--dl) + var(--wgap))}
-.week-rul .sx-more{top:1px;bottom:3px;min-height:0;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
+/* the pagers hang just under the day heads (or ruler), over the faded edge of the days,
+   so they never cover a head's date or count */
+.week-rul .sx-more{top:calc(100% + 2px);min-height:24px;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
 .week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:1;pointer-events:none}
@@ -859,7 +863,9 @@ footer p{margin:4px 0}
 @media (min-width:721px){
   .ag-bar{flex-wrap:nowrap}
   .ag-bar-main{flex:1 1 auto;flex-wrap:nowrap;align-items:center}
-  .builder-stats{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .builder-stats{flex:0 1 auto;min-width:0;display:flex;white-space:pre}
+  .ag-cnt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .ag-hrs{flex:none}
   .ag-clash-slot{flex:0 0 auto}
   .builder-actions{flex:0 0 auto;flex-wrap:nowrap}
   .ag-opt{white-space:nowrap}
@@ -1182,8 +1188,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-talk.dim .hz-tt{color:var(--muted)}
 .hz-tick .hz-talk.mine{background:var(--star);border-color:var(--starOn-line)}
 .hz-tick .hz-talk.dim{background:color-mix(in srgb,var(--c) 28%,var(--card));border-color:var(--card)}
-.hz-cx{position:absolute;top:0;bottom:0;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
-.hz-cx b{position:absolute;right:3px;bottom:2px;font-size:.6875rem;line-height:1;color:var(--warn-ink)}
+/* the clash's span on the time axis: a hatched strip under the tick labels (never over them) */
+.hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
 .vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
@@ -2997,10 +3003,12 @@ function weekOverview(){
     const isToday = d.date === today;
     return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" style="--lanes:${lanes[di]}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
   });
+  // a day with almost nothing on (registration Sunday) gets a narrow column
+  const quiet = di => agenda ? !days[di].length : DATA.days[di].slots.length < 4;
   const heads = DATA.days.map((d, di) => {
     const [wd, dd, ...mon] = d.label.split(' ');
     const what = agenda ? 'item' : 'session';
-    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
+    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}${!horiz && quiet(di) ? ' week-dnar' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
       <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}<span class="visually-hidden"> ${what}${counts[di] === 1 ? '' : 's'}</span></small></button>`;
   });
   const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
@@ -3025,9 +3033,9 @@ function weekOverview(){
       ${tail}
     </div>`;
   }
-  // a day with almost nothing on (registration Sunday) gets a narrow column; on a wide
-  // screen every column is wide enough for its busiest cluster to keep readable blocks
-  const widths = sm => DATA.days.map((d, di) => (agenda ? !days[di].length : d.slots.length < 4) ? `minmax(${sm ? '0px' : '5.25rem'},.45fr)`
+  // on a wide screen every column is wide enough for its busiest cluster to keep readable
+  // blocks; on a phone the quiet day's column still holds its "Sun 6" head on one line
+  const widths = sm => DATA.days.map((d, di) => quiet(di) ? `minmax(${sm ? '2.5rem' : '5.25rem'},.45fr)`
     : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
   return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
     ${hint}
@@ -3317,7 +3325,8 @@ function renderBuilder(){
     body.innerHTML = agendaEmptyHtml();
     return;
   }
-  stats.innerHTML = `${agendaCountText(items, true)} &middot; <span class="ag-about">about </span><b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span>`;
+  // the counts may end in an ellipsis on a tight bar; the planned hours never do
+  stats.innerHTML = `<span class="ag-cnt">${agendaCountText(items, true)}</span><span class="ag-hrs"> &middot; <span class="ag-about">about </span><b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span></span>`;
   let html = '';
   DATA.days.forEach((d, di) => {
     if (personalList && state.day !== 'all' && state.day !== di) return;
@@ -3620,6 +3629,8 @@ const HZ_GROUPS = [
 const HZ_CAT_AB = { edu:'Edu', events:'Events', special:'Forums', business:'Meetings', social:'Breaks' };
 // the stream badge a bar or block shows when it is too narrow for its title
 const dvCode = s => s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
+// a narrow break bar's badge: which break it is, so two in one lane read apart
+const hzAb = s => { const t = s.cat === 'social' ? s.title : '', ab = /regist/i.test(t) ? 'Reg' : /tea\b/i.test(t) ? 'Tea' : /lunch/i.test(t) ? 'Lunch' : /breakfast/i.test(t) ? 'Bfast' : ''; return ab ? ` data-ab="${ab}"` : ''; };
 const HZ_ZOOMS = [['fit', 'Fit day'], [240, '4 h'], [120, '2 h'], [60, '1 h']];
 const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
 const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
@@ -3779,7 +3790,7 @@ function hzDraw(root, left){
   // My agenda: each clash marked on the time axis and hatched down the canvas
   if (agenda) for (const [a, b] of dvClashSpans(ents)){
     const pos = `left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px`;
-    tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"><b>&#9888;</b></i>`;
+    tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"></i>`;
     gl += `<i class="cx" style="${pos}"></i>`;
   }
   const ticksEl = h.querySelector('.hz-ticks');
@@ -3839,7 +3850,7 @@ function hzDraw(root, left){
         const tiny = (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
         const lst = listed(e).map(t => `<span class="hz-inl">★ ${esc(t.t)}</span>`).join('');
-        const inner = `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span><span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
+        const inner = `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> <span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
         if (!m.tks.length){
           let marks = '';
           if (marked(e) && !tiny){
@@ -3955,7 +3966,12 @@ function hzFitText(h){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
   const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')], nar = bars.filter(b => over(b.querySelector('.hz-title')));
   const talks = [...h.querySelectorAll('.hz-talk')], tnar = talks.filter(t => over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')));
-  for (const b of nar) b.classList.add('hz-nar');
+  for (const b of nar){
+    b.classList.add('hz-nar');
+    // a break's badge says which break ("Tea", "Lunch") rather than "Break" for all
+    const bdg = b.querySelector('.hz-bdg');
+    if (bdg.dataset.ab) bdg.textContent = bdg.dataset.ab;
+  }
   for (const t of tnar) t.classList.add('hz-nar');
   const nar0 = nar.filter(b => over(b.querySelector('.hz-in')));
   for (const b of nar0) b.classList.add('hz-nar0');
@@ -3963,6 +3979,35 @@ function hzFitText(h){
     const in_ = b.querySelector('.hz-in'), bdg = b.querySelector('.hz-bdg'), code = bdg.textContent;
     for (const n of [3, 2, 1]) if (n < code.length && over(in_)) bdg.textContent = code.slice(0, n);
     if (over(in_)) b.classList.add('hz-nar1');
+  }
+  // A narrow bar shows only its code (and time): name it by its title, then the text it
+  // shows, then the tooltip's notes (clash, shown for starred talks)
+  for (const b of nar){
+    const t = b.querySelector('.hz-title');
+    const shown = (b.classList.contains('hz-nar1') ? '' : b.querySelector('.hz-bdg').textContent + ' ') + b.querySelector('.hz-meta').textContent;
+    const notes = (b.title || '').split('\n').slice(1);
+    b.setAttribute('aria-label', [t.textContent.replace(/^[\s\u26a0\u2605]+/, '').trim(), shown,
+      t.querySelector('.hz-star') ? 'in My agenda' : '', ...notes].filter(Boolean).join(', '));
+  }
+  // Bar heights are estimated from the title's length; where the title wraps to more lines
+  // than that allowed, end it in an ellipsis (fewer lines) so the time line below stays
+  // whole, and drop the time line only if one title line is all that fits. (Text may run
+  // into a plain bar's bottom padding; a split head or a bar with talk marks clips at its
+  // content edge.)
+  const fix = bars.filter(b => !b.classList.contains('hz-nar')).map(b => {
+    const t = b.querySelector('.hz-title'), m = b.querySelector('.hz-meta'), in_ = b.querySelector('.hz-in');
+    const cs = getComputedStyle(b), ts = getComputedStyle(t), r = b.getBoundingClientRect();
+    const tight = b.classList.contains('hz-head') || b.classList.contains('marked');
+    const avail = r.bottom - parseFloat(cs.borderBottomWidth) - (tight ? parseFloat(cs.paddingBottom) : 2) - in_.getBoundingClientRect().top;
+    const lh = parseFloat(ts.lineHeight) || 16, max = parseInt(ts.webkitLineClamp) || 6;
+    const lines = Math.min(max, Math.round(t.scrollHeight / lh)), mh = m.scrollHeight + 1; // natural heights (either may be squeezed)
+    return { t, m, lh, lines, mh, avail };
+  }).filter(x => x.lines * x.lh + x.mh > x.avail + 1);
+  for (const { t, m, lh, lines, mh, avail } of fix){
+    const keep = Math.floor((avail - mh + 1) / lh);
+    if (keep >= 1){ t.style.webkitLineClamp = Math.min(lines, keep); continue; }
+    m.style.display = 'none';
+    t.style.webkitLineClamp = Math.max(1, Math.min(lines, Math.floor((avail + 1) / lh)));
   }
 }
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
