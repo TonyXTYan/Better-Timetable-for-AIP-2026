@@ -150,18 +150,6 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 #eventDialog .ev-info{margin:10px 0}
 @media(max-width:720px){.ev-links a{min-height:36px;display:inline-flex;align-items:center}}
 .session-option{display:block;margin:12px 0;font-size:.875rem}
-.calendar-hint{display:none;color:var(--muted);font-size:.8125rem;margin:6px 0}
-@media(max-width:720px){.calendar-hint{display:block}}
-.week-scroll{overflow-x:auto;border:1px solid var(--line);background:var(--surface);border-radius:10px}
-.week-scroll table{border-collapse:separate;border-spacing:0;width:100%;font-size:.8125rem}
-.week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
-.week-scroll td{min-width:9rem}
-.week-scroll thead th{position:sticky;top:0;z-index:2;background:var(--sunken-2)}
-.week-scroll thead th.today{background:var(--today-bg);color:var(--today-ink)}
-.week-scroll tbody th{position:sticky;left:0;background:var(--surface);z-index:1}
-@media (min-width:900px){.week-scroll{overflow:visible}.week-scroll thead th{top:var(--toolbar-h,150px)}}
-.week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--surface-2);font-size:.75rem}
-.week-event small,.child-talk{display:block}
 /* All week overview (Full program > Calendar > All week), in the orientation of the
    Horizontal | Vertical switch. Sessions are blocks in their stream colour labelled with
    group code and shortened title (plenaries and breaks are bands behind them); a click
@@ -277,7 +265,6 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 @keyframes week-tx-in-l{from{opacity:0;transform:translateX(-18px)}}
 @keyframes week-tx-zoom{from{opacity:0;transform:scale(.97)}}
 @keyframes week-tx-fade{from{opacity:0}}
-.child-talk{font-weight:650}
 #eventDialog,#moveDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink);background:var(--card)}
 #eventDialog::backdrop,#moveDialog::backdrop{background:#16233788}
 #eventDialog>form,#moveDialog>form{position:sticky;top:-18px;text-align:right;pointer-events:none;background:var(--card);margin:-18px -18px 0;padding:18px 18px 0;z-index:1}
@@ -475,8 +462,6 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .talk.is-now{background:var(--now-bg)}
 .talk.is-now .t-time{color:var(--live-ink)}
 .talk.is-now .t-time::after{content:"NOW";display:block;font-size:.5938rem;letter-spacing:.06em}
-.cal-now{position:absolute;inset-inline:0;top:calc(var(--offset) * var(--minute));border-top:2px solid #dc2626;z-index:3;pointer-events:none}
-.cal-now::before{content:"";position:absolute;left:calc(var(--time-gutter) - 5px);top:-6px;width:10px;height:10px;border-radius:50%;background:#dc2626}
 .ag-row.past{opacity:.6}
 .up-next{margin:14px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid #dc2626;border-radius:12px;padding:10px 14px;font-size:.875rem}
 .up-next b{font-weight:700}
@@ -770,7 +755,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
 .vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .vt-badge{flex:0 0 auto;max-width:100%;font-size:.5938rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vt-grid .vt-card:not([data-col="phys"]):not(.band) .vt-badge{display:none}
+.vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .vt-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 7px 4px;color:var(--muted);font-size:.6875rem;line-height:1.3;min-height:1.1rem}
 .vt-conv{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -804,6 +789,53 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-tk.is-now .vt-ttime{color:var(--live-ink)}
 .vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .vt-talks .vt-tk:first-child{border-top:0}
+/* My agenda in the day views and the week overview: a saved session with starred talks
+   is one item (its starred talks marked, the others greyed); a session shown only for
+   its starred talks is dashed; overlapping items get a dashed warning outline and a
+   hatch, and each clash is marked on the time axis. */
+.hz-bar.has-clash,.vt-card.has-clash{outline:2px dashed var(--warn-ink);outline-offset:1px;background-image:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 16%,transparent) 0 5px,transparent 5px 11px)}
+.hz-bar.ctx,.vt-card.ctx{border-style:dashed;background-color:var(--card)}
+.hz-cxb,.hz-lcx,.vt-hcx{color:var(--warn-ink);font-weight:700}
+.hz-lane.hz-mine .hz-label{padding:7px 8px}
+.vt-top .vt-cx{margin:0 auto 0 4px}
+.hz-label small.hz-lcx{color:var(--warn-ink)}
+.hz-inl{display:block;font-size:.6875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-talk.mine{background:var(--starOn-bg);border-color:var(--starOn-line)}
+.hz-talk.dim{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+.hz-talk.dim .hz-tt{color:var(--muted)}
+.hz-tick .hz-talk.mine{background:var(--star);border-color:var(--starOn-line)}
+.hz-tick .hz-talk.dim{background:color-mix(in srgb,var(--c) 28%,var(--card));border-color:var(--card)}
+.hz-cx{position:absolute;top:0;bottom:0;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
+.hz-cx b{position:absolute;right:3px;bottom:2px;font-size:.6875rem;line-height:1;color:var(--warn-ink)}
+.hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
+.hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
+.vt-cx{flex:0 0 auto;font-size:.5938rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
+.vt-tk.mine{background:var(--starOn-bg)}
+.vt-tk.dim{background:var(--surface-2);color:var(--muted)}
+.vt-tk.dim .vt-ttime{color:var(--muted)}
+.vt-card.is-talk .vt-conv{font-style:italic}
+.week-blk.has-clash{background-image:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--warn-ink) 50%,transparent) 6px 8px);box-shadow:inset 0 0 0 2px var(--warn-ink)}
+.week-blk.ctx{opacity:.7;box-shadow:inset 0 0 0 1px var(--cnt-ink)}
+.week-legend .week-lcx i{background:repeating-linear-gradient(135deg,var(--surface-2) 0 3px,color-mix(in srgb,var(--warn-ink) 70%,transparent) 3px 5px);box-shadow:inset 0 0 0 1.5px var(--warn-ink)}
+.ag-inner{list-style:none;margin:7px 0 2px;padding:6px 0 0;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:4px}
+.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35}
+.ag-itime{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.75rem;font-weight:700;padding-top:.1rem}
+.ag-istar{flex:none;color:var(--star)}
+.ag-imain{flex:1 1 auto;min-width:0}
+.ag-imain .linkish{font-size:.8125rem;text-align:left}
+.ag-isp{display:block;color:var(--muted);font-size:.75rem}
+.ag-iun{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font-size:.75rem;cursor:pointer}
+.ag-iun:hover,.ag-iun:focus-visible{color:var(--ink);border-color:var(--hover-line)}
+.up-next .un-in{color:var(--muted);font-size:.8125rem;margin-left:4px}
+@media (max-width:720px){
+  .ag-inner li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:6px;row-gap:1px}
+  .ag-itime{grid-row:1;grid-column:1}
+  .ag-istar{grid-row:1;grid-column:2}
+  .ag-imain{grid-row:2;grid-column:1 / 3}
+  .ag-iun{grid-row:1 / 3;grid-column:3}
+  .hz-lane.hz-mine .hz-label{padding:6px 3px 6px 4px}
+}
+.up-next .un-in .linkish{font-size:.8125rem}
 .vt-picker{display:flex;gap:6px;overflow-x:auto;position:sticky;top:var(--toolbar-h,150px);z-index:6;background:var(--bg);padding:6px 0 8px;margin:0 0 2px;scrollbar-width:none}
 .vt-picker::-webkit-scrollbar{display:none}
 .vt-picker button{flex:0 0 auto;border:1px solid var(--line);border-left:4px solid var(--c,var(--line));background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.75rem;font-weight:700;min-height:36px}
@@ -836,20 +868,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-ghost{position:absolute;left:0;right:0;padding:inherit;padding-bottom:0;pointer-events:none}
 @media (max-width:720px){.vt-god{display:none}.vt-go{padding:9px 13px}}
 .cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
-.cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
-.cal-grid{--minute:.28125rem;--time-gutter:3.5rem;position:relative;min-width:calc(var(--time-gutter) + var(--lanes) * 6.25rem);height:calc(var(--duration) * var(--minute));margin:12px 8px}
-.cal-hour{position:absolute;top:calc(var(--offset) * var(--minute));inset-inline:0;display:flex;align-items:start;color:var(--muted);font-size:.6875rem;font-variant-numeric:tabular-nums}
-.cal-hour span{flex:0 0 var(--time-gutter);padding-left:4px;transform:translateY(-50%);line-height:1}
-.cal-hour::after{content:"";flex:1;border-top:1px solid var(--line)}
-.cal-hour.half-hour::after{border-top-style:dashed}
-.cal-events{position:absolute;inset:0 0 0 var(--time-gutter)}
-.cal-event{position:absolute;top:calc(var(--offset) * var(--minute) + 1px);height:calc(var(--span) * var(--minute) - 2px);left:calc(var(--left) + 2px);width:calc(var(--width) - 4px);overflow:hidden;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--ink);padding:2px 6px;display:flex;flex-direction:column;justify-content:flex-start;font-size:.75rem;line-height:1.2}
-.cal-event:hover,.cal-event:focus-visible{outline:2px solid var(--c);outline-offset:1px;z-index:1}
-.cal-event.has-clash{border-top:2px solid var(--warn-ink)}
-.cal-event span,.cal-event strong{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
-.cal-event.multiline strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow-wrap:anywhere}
-.cal-event .cal-time,.cal-event .cal-context{font-size:.6875rem}
-.cal-event .cal-context{color:var(--ink-3)}
 .export-status{font-size:.875rem;color:var(--muted)}
 .export-status:empty{display:none}
 .ag-day{margin-top:22px}
@@ -1165,6 +1183,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .print-doc .pd-who{width:20%}
 .print-doc .pd-sess{width:20%}
 .print-doc .pd-aff,.print-doc .pd-room{display:block;color:var(--muted);font-size:8.5pt;font-weight:400}
+.print-doc .pd-inner{list-style:none;margin:2px 0 0;padding:0;font-weight:400;font-size:8.5pt}
+.print-doc .pd-inner .pd-aff{display:inline}
 .print-doc .pd-clash{display:block;font-weight:700;color:var(--warn-ink);font-size:8.5pt}
 .print-doc .pd-group{break-inside:avoid}
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
@@ -1946,6 +1966,16 @@ document.addEventListener('click', e => {
 });
 
 document.getElementById('agenda').addEventListener('click', e => {
+  // the empty My agenda, shown in the calendar too
+  const empty = e.target.closest('.ag-empty');
+  if (empty){
+    const b = e.target.closest('[data-build], [data-open-move], [data-goprogram]');
+    if (!b) return;
+    if (b.matches('[data-build]')) openBuild(b);
+    else if (b.matches('[data-open-move]')) openMoveDialog(b);
+    else openInProgram(b);
+    return;
+  }
   if (e.target.closest('[data-browse-calendar]')){
     showView('calendar','program');
     document.querySelector('[data-scope="program"]').focus();
@@ -2039,7 +2069,8 @@ document.getElementById('clr').addEventListener('click', () => {
 // ---------- agenda builder ----------
 function toMin(t){ return parseInt(t.slice(0,2),10)*60 + parseInt(t.slice(3,5),10); }
 
-function agendaItems(){
+// Every star as an item, in time order: what sharing and moving the agenda carry.
+function agendaSaved(){
   const items = [];
   DATA.days.forEach((d, di) => d.slots.forEach(s => {
     if (state.starred.has(s.id)) items.push({ kind:'session', di, d, s, t:null, start:s.start, end:s.end });
@@ -2049,6 +2080,28 @@ function agendaItems(){
   }));
   items.sort((a,b) => (a.d.date < b.d.date ? -1 : a.d.date > b.d.date ? 1 : (toMin(a.start) - toMin(b.start) || toMin(a.end) - toMin(b.end))));
   return items;
+}
+// My agenda as shown everywhere (list, calendars, Up next, exports, counts): a saved
+// session takes in its saved talks (it.inner, in time order), so the two read as one
+// item and never as a clash; a saved talk whose session is not saved stays a talk item.
+function mergeSaved(raw){
+  const hosts = new Map();
+  for (const it of raw) if (it.kind === 'session'){ it.inner = []; hosts.set(it.s, it); }
+  const out = [];
+  for (const it of raw){
+    const host = it.kind === 'talk' && hosts.get(it.s);
+    if (host) host.inner.push(it.t); else out.push(it);
+  }
+  for (const h of hosts.values()) h.inner.sort((a, b) => toMin(a.s) - toMin(b.s) || toMin(a.e) - toMin(b.e));
+  return out;
+}
+function agendaItems(){ return mergeSaved(agendaSaved()); }
+// "3 sessions (2 talks starred) · 1 talk": a session with starred talks counts once.
+function agendaCountText(items, html){
+  const nSess = items.filter(x => x.kind === 'session').length, nTalk = items.length - nSess;
+  const nInner = items.reduce((n, x) => n + (x.inner ? x.inner.length : 0), 0);
+  const pl = (n, w) => (html ? `<b>${n}</b>` : n) + ' ' + w + (n === 1 ? '' : 's');
+  return pl(nSess, 'session') + (nInner ? ` (${nInner} talk${nInner === 1 ? '' : 's'} starred)` : '') + ' · ' + pl(nTalk, 'talk');
 }
 
 function markClashes(items){
@@ -2130,20 +2183,26 @@ function agRow(it){
   const who = it.kind === 'talk'
     ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA')
     : (it.s.room || 'Belinda Hutchinson Building');
+  const word = it.s.cat === 'poster' ? 'poster' : 'talk', nIn = it.inner ? it.inner.length : 0;
   const sub2 = it.kind === 'talk'
     ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
-    : (it.s.talks.length ? it.s.talks.length + (it.s.talks.length === 1 ? ' talk' : ' talks') : '');
+    : (it.s.talks.length ? it.s.talks.length + ' ' + word + (it.s.talks.length === 1 ? '' : 's') + (nIn ? ` · ${nIn} starred` : '') : '');
   const clashNames = state.hideClashes ? [] : [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
     : '';
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
-  return `<li class="ag-row ${clashNames.length?'has-clash':''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
+  // a saved session lists the talks starred in it: one item, not a clash
+  const inner = nIn ? `<ul class="ag-inner" aria-label="Starred ${word}s in this session">${it.inner.map(t => {
+    const sp = t.sp.map(p => p.n).join(', ');
+    return `<li><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${sp ? `<span class="ag-isp">${esc(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
+  }).join('')}</ul>` : '';
+  return `<li class="ag-row ${clashNames.length?'has-clash':''}${nIn ? ' has-inner' : ''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}</span>
     <div class="ag-main">
-      <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':'Talk'}</span>${esc(itemTitle(it))}</span>
+      <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':it.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>${esc(itemTitle(it))}</span>
       <span class="ag-sub">${esc(who)}${sub2 ? ' &middot; ' + esc(sub2) : ''}</span>
-      ${clash}
+      ${inner}${clash}
     </div>
     <div class="ag-actions">
       <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
@@ -2153,87 +2212,41 @@ function agRow(it){
   </li>`;
 }
 
-function calendarGroups(items){
-  // Each set of overlapping events shares a group. A free lane can be reused
-  // as soon as its preceding event ends, and isolated events use the full width.
-  const groups = [];
-  let group = null;
-  for (const item of items){
-    const start = toMin(item.start), end = toMin(item.end);
-    if (!group || group.laneEnds.every(lastEnd => lastEnd <= start)){
-      group = { laneEnds: [], events: [] };
-      groups.push(group);
-    }
-    const freeLane = group.laneEnds.findIndex(lastEnd => lastEnd <= start);
-    const lane = freeLane === -1 ? group.laneEnds.length : freeLane;
-    group.laneEnds[lane] = end;
-    group.events.push({ item, lane, start, end });
-  }
-  return groups;
-}
-
-function calendarEvent(event, lanes, firstMinute){
-  const { item: it, lane, start, end } = event;
-  const [c,bg] = CAT_COLORS[it.s.cat];
-  const sessionLabel = it.children?.length && !state.starred.has(it.s.id) ? 'Session context' : 'Session';
-  const context = [it.t ? it.s.title : sessionLabel, it.s.room].filter(Boolean).join(' · ');
-  const time = `${it.start}–${it.end}`;
-  const clashes = it.clashes.length > 0;
-  const clashText = clashes ? ' · Overlap' : '';
-  const label = esc([time, itemTitle(it), context].join(' · ') + clashText);
-  return `<button type="button" class="cal-event ${clashes?'has-clash':''} ${end-start>=15?'multiline':''}" ${calendarDetailAttrs(it)}
-    aria-label="${label}" title="${label}"
-    style="--c:${c};--cbg:${bg};--offset:${start-firstMinute};--span:${end-start};--left:${100*lane/lanes}%;--width:${100/lanes}%">
-    <span class="cal-time">${clashes?'&#9888; ':''}${time}</span>
-    <strong>${state.starred.has(it.t?.id || it.s.id) ? '★ ' : ''}${esc(itemTitle(it))}</strong>
-    <span class="cal-context">${esc(context)}</span>${savedTalkLabels(it)}
-  </button>`;
-}
-
 function calendarDetailAttrs(it){
   return `data-session-detail="${it.s.id}" data-talk-detail="${it.t?.id || ''}"`;
 }
 
-function groupFavourites(items){
-  const includeParents = document.getElementById('includeParents').checked;
-  const parents = new Map();
-  const grouped = [];
-  for (const it of items){
-    if (!it.t || includeParents){
-      if (!parents.has(it.s.id)){
-        const parent = { ...it, kind:'session', t:null, start:it.s.start, end:it.s.end, children:[], clashes:[] };
-        parents.set(it.s.id, parent);
-        grouped.push(parent);
-      }
-    }
-  }
-  for (const it of items){
-    const parent = parents.get(it.s.id);
-    if (!parent){ grouped.push(it); continue; }
-    if (it.t) parent.children.push(it.t);
-    parent.clashes.push(...it.clashes);
-  }
-  return grouped.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
+// The agenda calendar's items: merged as everywhere (agendaItems), clashes marked, and
+// with "Show full sessions for favourite talks", each saved talk whose session is not
+// saved shown inside that session (ctx: the session itself is not in My agenda).
+function agendaCalendarItems(){
+  const items = agendaItems();
+  markClashes(items);
+  if (state.hideClashes) items.forEach(it => it.clashes = []);
+  return groupFavourites(items);
 }
-
-function weekCalendar(items){
-  const starts = [...new Set(items.map(it => it.start))].sort();
-  const today = aedtNow().date;
-  const days = DATA.days.map(d => `<th scope="col" class="${d.date === today ? 'today' : ''}">${esc(d.label)}</th>`).join('');
-  const rows = starts.map(start => {
-    const cells = DATA.days.map((d, di) => {
-      const events = items.filter(it => it.di === di && it.start === start).map(it => {
-        const [color] = CAT_COLORS[it.s.cat];
-        return `<button class="week-event" style="--c:${color}" ${calendarDetailAttrs(it)}>
-          <small>${it.start}–${it.end}${it.clashes.length?' · Overlap':''}</small>
-          ${state.starred.has(it.t?.id || it.s.id) ? '★ ' : ''}${esc(itemTitle(it))}${savedTalkLabels(it)}
-        </button>`;
-      });
-      return '<td>' + events.join('') + '</td>';
-    });
-    return `<tr><th scope="row">${start}</th>${cells.join('')}</tr>`;
-  });
-  return `<p class="calendar-hint">Scroll across to see later days.</p><div class="week-scroll" tabindex="0" role="region" aria-label="All week calendar"><table><thead><tr><th scope="col">AEDT</th>${days}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+function groupFavourites(items){
+  if (!document.getElementById('includeParents').checked) return items;
+  const hosts = new Map(), hostOf = new Map(), out = [];
+  for (const it of items){
+    if (it.kind !== 'talk'){ out.push(it); continue; }
+    let h = hosts.get(it.s);
+    if (!h){
+      h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, inner:[], clashes:[] };
+      hosts.set(it.s, h);
+      out.push(h);
+    }
+    h.inner.push(it.t);
+    hostOf.set(it, h);
+  }
+  // clashes stay those of the saved talks, now pointing at what is shown
+  const shown = x => hostOf.get(x) || x;
+  for (const it of items){
+    const h = hostOf.get(it);
+    if (h) for (const x of it.clashes){ const y = shown(x); if (y !== h && !h.clashes.includes(y)) h.clashes.push(y); }
+  }
+  for (const it of out) if (!it.ctx) it.clashes = [...new Set(it.clashes.map(shown))];
+  return out.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
 }
 
 // All week overview (Full program > Calendar > All week): the whole congress on one
@@ -2246,8 +2259,7 @@ function weekCalendar(items){
 // that day's calendar at the session.
 const WEEK_AB = { plenary:'Plenary', aip:'AIP', anzcop:'ANZCOP', commad:'COMMAD', focus:'Focus', poster:'Posters', edu:'EDU', events:'Event', special:'Forum', business:'Meeting', social:'Break' };
 const WEEK_BANDS = ['plenary', 'social'];
-function weekBounds(){
-  const slots = DATA.days.flatMap(d => d.slots);
+function weekBounds(slots = DATA.days.flatMap(d => d.slots)){
   return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
@@ -2264,8 +2276,13 @@ function weekLabel(s){
   if (new RegExp('^' + q + '\\b').test(r)) return `<b>${esc2(code)}</b>${esc2(r.slice(code.length))}`;
   return `<b>${esc2(code)}</b> · ${esc2(r)}`;
 }
+// My agenda shows its saved items the same way, merged as everywhere: no bands, a
+// talk item labelled with a star, a saved session with its starred-talk count, and
+// overlapping items hatched side by side.
 function weekOverview(){
-  const [t0, t1] = weekBounds(), dur = t1 - t0;
+  const agenda = dvAgenda();
+  const days = agenda ? DATA.days.map(d => dayEntries(d)) : DATA.days.map(d => d.slots);
+  const [t0, t1] = agenda ? weekBounds(days.flat()) : weekBounds(), dur = t1 - t0;
   const pct = m => +((m - t0) / dur * 100).toFixed(3);
   const today = aedtNow().date;
   const order = Object.keys(DATA.cats);
@@ -2273,28 +2290,32 @@ function weekOverview(){
   const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   let axis = '';
   for (let m = t0; m <= t1; m += 60) axis += `<span class="${(m - t0) % 120 ? 'week-odd' : ''}" style="--p:${pct(m)}">${hhmm(m)}</span>`;
-  const block = (s, di, l, w, band) => {
-    const on = slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
-    const a = toMin(s.start), b = toMin(s.end);
-    const label = band ? esc(s.cat === 'plenary' ? 'Plenary' : s.title) : weekLabel(s);
-    const aria = esc(`${s.title}, ${DATA.days[di].label} ${s.start}–${s.end}`);
-    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
+  const block = (x, di, l, w, band) => {
+    // x is a session, or (My agenda) an entry
+    const s = agenda ? x.s : x, on = agenda || slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
+    const a = toMin(x.start), b = toMin(x.end);
+    const clash = agenda && x.clash.length > 0;
+    const label = band ? esc(s.cat === 'plenary' ? 'Plenary' : s.title)
+      : agenda && x.t ? `<b>★</b> ${esc(x.t.t)}` : weekLabel(s) + (agenda && x.inner.size ? ` <b>★${x.inner.size}</b>` : '');
+    const aria = esc(`${agenda ? x.title : s.title}, ${DATA.days[di].label} ${x.start}–${x.end}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
+    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
-      data-week-sid="${s.id}" data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>`;
+      data-week-sid="${s.id}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>`;
   };
   const counts = [], lanes = [];
+  const isBand = s => !agenda && WEEK_BANDS.includes(s.cat);
   const cols = DATA.days.map((d, di) => {
-    const slots = [...d.slots].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
-      || (a.grp || '').localeCompare(b.grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
-    counts.push(slots.filter(slotMatches).length);
+    const slots = [...days[di]].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
+      || ((a.s || a).grp || '').localeCompare((b.s || b).grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
+    counts.push(agenda ? slots.length : slots.filter(slotMatches).length);
     let html = '';
     // longer bands first, so a short break paints over an all-day one
-    const bands = slots.filter(s => WEEK_BANDS.includes(s.cat)).sort((x, y) => (toMin(y.end) - toMin(y.start)) - (toMin(x.end) - toMin(x.start)));
+    const bands = slots.filter(isBand).sort((x, y) => (toMin(y.end) - toMin(y.start)) - (toMin(x.end) - toMin(x.start)));
     for (const s of bands) html += block(s, di, 0, 100, true);
     // clusters of overlapping sessions, greedy lanes inside each
     const clusters = [];
     let cl = null;
-    for (const s of slots.filter(s => !WEEK_BANDS.includes(s.cat))){
+    for (const s of slots.filter(s => !isBand(s))){
       const a = toMin(s.start), b = toMin(s.end);
       if (!cl || a >= cl.end){ cl = { end:b, lanes:[], items:[] }; clusters.push(cl); }
       let lane = cl.lanes.findIndex(e => e <= a);
@@ -2312,19 +2333,24 @@ function weekOverview(){
   });
   const heads = DATA.days.map((d, di) => {
     const [wd, dd, ...mon] = d.label.split(' ');
-    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" aria-label="Open ${esc(d.label)} (${counts[di]} session${counts[di] === 1 ? '' : 's'})">
+    const what = agenda ? 'item' : 'session';
+    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" aria-label="Open ${esc(d.label)} (${counts[di]} ${what}${counts[di] === 1 ? '' : 's'})">
       <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}</small></button>`;
   });
-  const cats = order.filter(k => DATA.days.some(d => d.slots.some(s => s.cat === k)));
-  const legend = cats.map(k => `<li class="${state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('');
+  const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
+  const nClash = agenda ? days.flat().filter(x => x.clash.length).length : 0;
+  const legend = cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
+    + (nClash ? `<li class="week-lcx"><i></i>Clash (${nClash} item${nClash === 1 ? '' : 's'})</li>` : '');
   const touch = matchMedia('(hover: none)').matches;
-  const hint = `<p class="week-hint">${touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.'}</p>`;
+  const hint = `<p class="week-hint">${agenda ? (touch ? 'Your saved items for the week. Tap one, or a day, to open that day.'
+      : 'Your saved items for the week, to scale. Overlapping items sit side by side, hatched. Click one, or a day, to open that day.')
+    : touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.'}</p>`;
   const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>`;
   if (horiz){
     // one row per day; the ruler sits outside the sideways scroller so it can stick
     // under the toolbar, and follows the scroller's position (weekSync)
     const rows = DATA.days.map((d, di) => `<div class="week-row${d.date === today ? ' today' : ''}">${heads[di]}${cols[di]}</div>`);
-    return `<div class="week-ov week-h" style="--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+    return `<div class="week-ov week-h${agenda ? ' week-mine' : ''}" style="--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
       ${hint}
       <div class="week-rul" aria-hidden="true"><div class="week-rul-in"><span></span><div class="week-axis">${axis}</div></div></div>
       <div class="week-sc"><div class="week-body">${rows.join('')}</div></div>
@@ -2333,9 +2359,9 @@ function weekOverview(){
   }
   // a day with almost nothing on (registration Sunday) gets a narrow column; on a wide
   // screen every column is wide enough for its busiest cluster to keep readable blocks
-  const widths = sm => DATA.days.map((d, di) => d.slots.length < 4 ? `minmax(${sm ? '0px' : '5.25rem'},.45fr)`
+  const widths = sm => DATA.days.map((d, di) => (agenda ? !days[di].length : d.slots.length < 4) ? `minmax(${sm ? '0px' : '5.25rem'},.45fr)`
     : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
-  return `<div class="week-ov week-v" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+  return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
     ${hint}
     <div class="week-rul"><div class="week-rul-in week-head"><span></span>${heads.join('')}</div></div>
     <div class="week-sc"><div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div></div>
@@ -2437,21 +2463,22 @@ function weekPaintNow(){
   }
   for (const b of ov.querySelectorAll('.week-blk')) b.classList.toggle('week-past', b.dataset.date < n.date || (b.dataset.date === n.date && +b.dataset.end <= n.min));
 }
-function weekTarget(sid){
+function weekTarget(sid, tid = ''){
   const main = document.getElementById('agenda');
-  const button = main.querySelector(`[data-session-detail="${sid}"][data-talk-detail=""]`) || main.querySelector(`[data-session-detail="${sid}"]`);
+  const button = main.querySelector(`[data-session-detail="${sid}"][data-talk-detail="${tid}"]:not(.hz-talk):not(.vt-tk)`)
+    || main.querySelector(`[data-session-detail="${sid}"][data-talk-detail=""]`) || main.querySelector(`[data-session-detail="${sid}"]`);
   return button ? { button, box: button.closest('.hz-bar, .vt-card') || button } : null;
 }
 // Click a block (or a day head) to open that day in the current Horizontal or Vertical
 // layout, scrolled to the session, zooming in from the block.
-function weekOpenDay(di, sid, from){
+function weekOpenDay(di, sid, from, tid = ''){
   const day = DATA.days[di], s = sid ? slotById(sid) : null;
   // the timeline opens with the session near its left edge
-  if (s && state.orient !== 'v') HZ.left[day.date] = toMin(s.start) - (PHONE_MQ.matches ? 15 : 30);
+  if (s && state.orient !== 'v') HZ.left[(dvAgenda() ? 'a:' : '') + day.date] = toMin(s.start) - (PHONE_MQ.matches ? 15 : 30);
   withTransition('zoom', () => {
     state.day = di;
     rerender();
-    const t = s && weekTarget(s.id);
+    const t = s && weekTarget(s.id, tid);
     if (!t){
       scrollToProgramTop();
       document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll:true });
@@ -2478,9 +2505,14 @@ function weekTip(){
 }
 function weekShowTip(b){
   const s = slotById(b.dataset.weekSid), d = DATA.days[+b.dataset.day];
+  const t = b.dataset.weekTid ? s.talks.find(x => x.id === b.dataset.weekTid) : null;
   const tip = weekTip();
   const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(' · ');
-  tip.innerHTML = `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}`;
+  // My agenda: the starred talks in a saved session, and what an item clashes with
+  const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
+  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(itemTitle(x))).join('; ')}` : '') : '';
+  tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)} · ${t.s}–${t.e}<br>in ${esc(s.title)}${extra}`
+    : `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
   tip.hidden = false;
   const r = b.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
   const right = r.right + 8 + w < innerWidth - 8;
@@ -2507,7 +2539,7 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
     }
     if (!b) return;
     weekHideTip();
-    weekOpenDay(+b.dataset.day, b.dataset.weekSid, b);
+    weekOpenDay(+b.dataset.day, b.dataset.weekSid, b, b.dataset.weekTid || '');
   });
   agendaEl.addEventListener('pointerover', e => {
     const b = e.target.closest && e.target.closest('.week-blk:not(.week-off)');
@@ -2543,41 +2575,23 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
   window.addEventListener('resize', () => { clearTimeout(weekResize); weekResize = setTimeout(() => weekFit(), 120); });
 }
 
-function savedTalkLabels(it){
-  return (it.children || []).map(t => `<span class="child-talk">★ ${t.s} · ${esc(t.t)}</span>`).join('');
-}
-
-function dayCalendar(dayItems, day){
-  const tick = 30;
-  const firstMinute = Math.floor(toMin(dayItems[0].start) / tick) * tick;
-  const lastMinute = Math.ceil(Math.max(...dayItems.map(it => toMin(it.end))) / tick) * tick;
-  let hours = '';
-  for (let minute = firstMinute; minute <= lastMinute; minute += tick){
-    const halfHour = minute % 60 !== 0;
-    const label = String(Math.floor(minute / 60)).padStart(2, '0') + (halfHour ? ':30' : ':00');
-    hours += `<div class="cal-hour ${halfHour?'half-hour':''}" style="--offset:${minute-firstMinute}"><span>${label}</span></div>`;
-  }
-  const groups = calendarGroups(dayItems);
-  const maxLanes = Math.max(...groups.map(group => group.laneEnds.length));
-  const events = groups.flatMap(group => group.events.map(event => calendarEvent(event, group.laneEnds.length, firstMinute)));
-  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>
-    ${maxLanes > 2 ? '<p class="calendar-hint">Scroll across to see parallel events.</p>' : ''}
-    <div class="cal-scroll" tabindex="0" role="region" aria-label="Calendar for ${esc(day.label)}">
-      <div class="cal-grid" style="--duration:${lastMinute-firstMinute};--lanes:${maxLanes}">
-        <div aria-hidden="true">${hours}</div>
-        <div class="cal-now" hidden data-date="${day.date}" data-first="${firstMinute}" data-last="${lastMinute}" style="--offset:0"></div>
-        <div class="cal-events">${events.join('')}</div>
+function agendaEmptyHtml(){
+  return `<div class="ag-empty">
+      <div class="ag-empty-icon">&#9733;</div>
+      <h3>Your agenda is empty</h3>
+      <p>Let <b>Build my agenda</b> walk you through the week one time slot at a time, or use the star beside any talk or session in the program, or bring your agenda over from another device.</p>
+      <div class="ag-empty-actions">
+        <button class="toggle primary" data-build>Build my agenda</button>
+        <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
+        <button class="toggle" data-open-move>Import from another device</button>
       </div>
     </div>`;
 }
-
 function renderBuilder(){
   const items = agendaItems();
   markClashes(items);
-  const nSess = items.filter(x => x.kind === 'session').length;
-  const nTalk = items.length - nSess;
   const clashItems = items.filter(x => x.clashes.length).length;
-  const personalDay = state.layout === 'list' && state.scope === 'agenda' && state.day !== 'all';
+  const personalDay = state.scope === 'agenda' && state.day !== 'all';
   const dayClashItems = personalDay ? items.filter(x => x.di === state.day && x.clashes.length).length : clashItems;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
@@ -2594,19 +2608,10 @@ function renderBuilder(){
   if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
   if (!items.length){
     stats.textContent = 'Nothing saved yet.';
-    body.innerHTML = `<div class="ag-empty">
-      <div class="ag-empty-icon">&#9733;</div>
-      <h3>Your agenda is empty</h3>
-      <p>Let <b>Build my agenda</b> walk you through the week one time slot at a time, or use the star beside any talk or session in the program, or bring your agenda over from another device.</p>
-      <div class="ag-empty-actions">
-        <button class="toggle primary" data-build>Build my agenda</button>
-        <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
-        <button class="toggle" data-open-move>Import from another device</button>
-      </div>
-    </div>`;
+    body.innerHTML = agendaEmptyHtml();
     return;
   }
-  stats.innerHTML = `Full agenda &middot; <b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
+  stats.innerHTML = `Full agenda &middot; ${agendaCountText(items, true).replace(' · ', ' &middot; ')} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
     (!clashItems ? `<span class="ag-ok">&#10003; no clashes</span>`
       : state.hideClashes ? `${clashItems} overlapping item${clashItems!==1?'s':''} (warnings hidden)`
       : !dayClashItems ? `<span class="ag-ok">&#10003; no clashes on this day</span> (${clashItems} item${clashItems!==1?'s':''} with overlaps on other days)`
@@ -2710,7 +2715,7 @@ function showView(layout, scope){
   document.querySelector('.toolbar .controls').hidden = agendaList;
   document.getElementById('expandAll').hidden = calendar || personal || people;
   document.getElementById('programLevel').hidden = !calendar || personal;
-  document.getElementById('programOrient').hidden = !calendar || personal;
+  document.getElementById('programOrient').hidden = !calendar;
   document.getElementById('parentOption').hidden = !calendar || !personal;
   document.getElementById('scheduleLayout').hidden = people;
   document.getElementById('daytabs').hidden = people;
@@ -2761,28 +2766,22 @@ function exportClashes(items){
 function buildIcs(){
   const items = agendaItems();
   exportClashes(items);
-  // A saved session is one event; its separately saved talks go in its description.
-  const savedSessions = new Map(items.filter(x => x.kind === 'session').map(x => [x.s, x]));
-  const eventOf = x => (x.kind === 'talk' && savedSessions.get(x.s)) || x;
-  const order = new Map(items.map((x, i) => [x, i]));
+  // A saved session is one event; the talks starred in it lead its description.
   const speakers = t => t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
   const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AIP Congress 2026 Program Explorer//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:AIP Congress 2026 - My agenda'];
-  items.filter(it => eventOf(it) === it).forEach(it => {
+  items.forEach(it => {
     let desc = it.kind === 'talk' ? (it.t.d || '') : (it.s.desc || '');
     const chars = Array.from(desc);
     if (chars.length > 900) desc = chars.slice(0, 900).join('') + '…';
     const who = it.kind === 'talk' ? speakers(it.t) : (it.s.conv || []).join('; ');
     const url = it.kind === 'talk' ? it.t.u : it.s.url;
     const parent = it.kind === 'talk' ? 'Part of: ' + it.s.title : '';
-    const inside = items.filter(x => x.kind === 'talk' && x !== it && eventOf(x) === it);
-    const savedTalks = inside.length ? 'Saved talks in this session:\n' +
-      inside.map(x => `${x.start}–${x.end} ${x.t.t}${x.t.sp.length ? ' — ' + speakers(x.t) : ''}`).join('\n') : '';
-    const overlaps = [...new Set([it, ...inside].flatMap(x => x.clashes).map(eventOf))]
-      .filter(x => x !== it).sort((a, b) => order.get(a) - order.get(b))
-      .map(x => `${itemTitle(x)} (${x.start}–${x.end})`);
-    const clashLine = overlaps.length ? 'Overlaps: ' + overlaps.join('; ') : '';
-    const body = [who ? 'Speakers: ' + who : '', clashLine, savedTalks, desc, parent, url].filter(Boolean).join('\n\n');
+    const word = it.s.cat === 'poster' ? 'posters' : 'talks';
+    const starred = it.inner && it.inner.length ? `Starred ${word} in this session:\n` +
+      it.inner.map(t => `★ ${t.s}–${t.e} ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}`).join('\n') : '';
+    const clashLine = it.clashes.length ? 'Overlaps: ' + it.clashes.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
+    const body = [starred, who ? (it.kind === 'talk' ? 'Speakers: ' : 'Convened by: ') + who : '', clashLine, desc, parent, url].filter(Boolean).join('\n\n');
     lines.push('BEGIN:VEVENT');
     lines.push(icsFold('UID:' + it.s.id + (it.t ? '-' + it.t.id : '') + '@aip2026-program'));
     lines.push('DTSTAMP:' + stamp);
@@ -2802,19 +2801,20 @@ function agendaText(){
   exportClashes(items);
   const clashItems = items.filter(x => x.clashes.length).length;
   let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
-  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
-  out += `${plural(items.filter(x=>x.kind==='session').length, 'session')} · ${plural(items.filter(x=>x.kind==='talk').length, 'talk')} · about ${plannedHours(items).toFixed(1)} h` +
+  const speakers = t => t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
+  out += `${agendaCountText(items, false)} · about ${plannedHours(items).toFixed(1)} h` +
          (clashItems ? ` · ${clashItems} in clash` : ' · no clashes') + '\n';
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
     out += `\n${d.label} 2026\n${'-'.repeat(d.label.length + 5)}\n`;
     dayItems.forEach(it => {
-      out += `  ${it.start}–${it.end}  ${itemTitle(it)}  [${it.kind === 'session' ? 'Session' : 'Talk'}]\n`;
-      const who = it.kind === 'talk' ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA') : (it.s.room || '');
+      out += `  ${it.start}–${it.end}  ${itemTitle(it)}  [${kindLabel(it)}]\n`;
+      const who = it.kind === 'talk' ? (speakers(it.t) || 'Speaker TBA') : (it.s.room || '');
       if (who) out += `             ${who}\n`;
       if (it.kind === 'talk') out += `             part of ${it.s.title}\n`;
       if (it.kind === 'talk' && it.s.room) out += `             ${it.s.room}\n`;
+      (it.inner || []).forEach(t => out += `             ★ ${t.s}–${t.e}  ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}\n`);
       it.clashes.forEach(x => out += `             ⚠ clashes with “${itemTitle(x)}” (${x.start}–${x.end})\n`);
     });
   });
@@ -2921,14 +2921,58 @@ function hzBounds(slots){
   return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
-const hzZoomKey = date => date + (state.programTalks ? ':t' : ':s');
+// Day views (Horizontal and Vertical) draw entries: the Full program's sessions that
+// match the search and streams, or My agenda's saved items (agendaCalendarItems).
+// An entry is { s, t (the talk of a saved talk item, else null), start, end, title,
+// cat, star (in My agenda), and for My agenda: inner (ids of the talks starred inside
+// a saved session), ctx (a session shown only for its starred talks), clash (what the
+// item overlaps, empty when clash warnings are hidden) }.
+const dvAgenda = () => state.scope === 'agenda';
+function dayEntries(day){
+  if (!dvAgenda()) return programDaySlots(day).map(s => ({ s, t:null, start:s.start, end:s.end, title:s.title, cat:s.cat, star:state.starred.has(s.id) }));
+  const di = DATA.days.indexOf(day);
+  return agendaCalendarItems().filter(it => it.di === di).map(it => ({
+    s: it.s, t: it.t, start: it.start, end: it.end, title: itemTitle(it), cat: it.s.cat, star: !it.ctx, ctx: !!it.ctx,
+    inner: new Set((it.inner || []).map(t => t.id)), clash: it.clashes,
+  }));
+}
+const dvTid = e => e.t ? e.t.id : '';
+const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
+// Where saved items overlap: merged [start, end] minute ranges, for the time axis.
+function dvClashSpans(ents){
+  const iv = [];
+  for (const e of ents) for (const x of e.clash || []){
+    const a = Math.max(toMin(e.start), toMin(x.start)), b = Math.min(toMin(e.end), toMin(x.end));
+    if (b > a) iv.push([a, b]);
+  }
+  iv.sort((p, q) => p[0] - q[0]);
+  const out = [];
+  for (const [a, b] of iv){
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b); else out.push([a, b]);
+  }
+  return out;
+}
+// My agenda's horizontal rows: items that overlap go on separate rows.
+function dvTimeRows(ents){
+  const rows = [];
+  for (const e of ents){
+    const a = toMin(e.start);
+    let r = rows.find(x => x.end <= a);
+    if (!r){ r = { end: 0, items: [] }; rows.push(r); }
+    r.end = Math.max(r.end, toMin(e.end)); r.items.push(e);
+  }
+  return rows.map(r => r.items);
+}
+const hzKey = h => h.dataset.key || h.dataset.date;
+const hzZoomKey = key => key + (key.startsWith('a:') ? '' : state.programTalks ? ':t' : ':s');
 // Minutes across the viewport: the zoom the user picked, else the default
 // (4 h on a desktop, 2 h on a phone; Talks mode zooms in until a 15-minute
 // talk is 6rem wide on a phone, or wide enough for full talk text on a desktop).
-function hzSpan(date, trackW, d0, d1){
-  const z = HZ.zoom[hzZoomKey(date)];
+function hzSpan(key, trackW, d0, d1){
+  const z = HZ.zoom[hzZoomKey(key)];
   let span = z === 'fit' ? d1 - d0 : typeof z === 'number' ? z : PHONE_MQ.matches ? 120 : 240;
-  if (z === undefined && state.programTalks) span = Math.min(span, trackW / (PHONE_MQ.matches ? 6 * remPx() / 15 : 5.2));
+  if (z === undefined && state.programTalks && !key.startsWith('a:')) span = Math.min(span, trackW / (PHONE_MQ.matches ? 6 * remPx() / 15 : 5.2));
   return Math.max(20, Math.min(d1 - d0, span));
 }
 function hzPack(items, ppm){
@@ -2953,14 +2997,16 @@ function hzTargets(d0, d1, date){
 }
 
 function hzDayView(day){
-  const slots = programDaySlots(day);
-  if (!slots.length) return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3><div class="hz-empty">No sessions match.</div>`;
-  const [d0, d1] = hzBounds(slots), full = d1 - d0;
+  const ents = dayEntries(day), agenda = dvAgenda();
+  if (!ents.length) return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3><div class="hz-empty">No sessions match.</div>`;
+  const [d0, d1] = hzBounds(ents), full = d1 - d0;
   const pc = m => ((m - d0) / full * 100).toFixed(3);
-  // minimap: every session as a tick, one row per stream group (overlaps merge)
-  const gsets = HZ_GROUPS.map(g => slots.filter(s => g.cats.includes(s.cat))).filter(gs => gs.length);
+  // minimap: every session as a tick, one row per stream group (overlaps merge);
+  // My agenda: one row per row of the canvas, its clashes marked
+  const gsets = agenda ? dvTimeRows(ents) : HZ_GROUPS.map(g => ents.filter(s => g.cats.includes(s.cat))).filter(gs => gs.length);
   const R = Math.max(6, gsets.length), off = (R - gsets.length) / 2;
   let mt = '';
+  if (agenda) for (const [a, b] of dvClashSpans(ents)) mt += `<i class="hz-mcx" style="left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%"></i>`;
   gsets.forEach((gs, i) => { for (const s of gs){
     const a = toMin(s.start), b = toMin(s.end), [col] = CAT_COLORS[s.cat];
     mt += `<i class="hz-mtk" style="--c:${col};left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%;top:${((i + off) / R * 100).toFixed(2)}%;height:${(0.8 / R * 100).toFixed(2)}%"></i>`;
@@ -2978,7 +3024,7 @@ function hzDayView(day){
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
       <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
     </div>
-    <div class="hz-day" data-date="${day.date}" data-d0="${d0}" data-d1="${d1}">
+    <div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
         <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
         <div class="hz-map" aria-label="Whole day. Drag the window or click to move through the day.">
@@ -2995,19 +3041,22 @@ function hzDayView(day){
 function hzDraw(root, left){
   const h = root.querySelector('.hz-day');
   if (!h) return;
-  const date = h.dataset.date, day = DATA.days.find(d => d.date === date);
+  const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
   const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
   const trackW = Math.max(120, vp.clientWidth - lw);
-  const span = hzSpan(date, trackW, d0, d1), ppm = trackW / span, W = Math.floor(full * ppm + 1e-6); // floor: Fit day fits exactly
+  const span = hzSpan(key, trackW, d0, d1), ppm = trackW / span, W = Math.floor(full * ppm + 1e-6); // floor: Fit day fits exactly
   const X = m => ((m - d0) * ppm).toFixed(1);
-  const slots = programDaySlots(day);
-  const talksMode = state.programTalks;
+  const ents = dayEntries(day), agenda = dvAgenda();
+  const talksMode = state.programTalks && !agenda;
   const tmode = ppm >= 5.2 ? 'full' : ppm >= 2.4 ? 'mid' : 'tick';
   Object.assign(h.dataset, { ppm, tw: trackW, w: W, span });
-  h.classList.toggle('hz-mid', talksMode && tmode === 'mid');
-  h.classList.toggle('hz-tick', talksMode && tmode === 'tick');
-  const talksOf = s => talksMode && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s)) : [];
+  // My agenda splits a saved session into its talks when some are starred
+  const talksOf = e => e.t || e.s.cat === 'poster' ? [] : agenda ? (e.inner.size ? e.s.talks : [])
+    : talksMode ? e.s.talks.filter(t => talkMatches(t, e.s)) : [];
+  const splits = agenda ? ents.some(e => talksOf(e).length) : talksMode;
+  h.classList.toggle('hz-mid', splits && tmode === 'mid');
+  h.classList.toggle('hz-tick', splits && tmode === 'tick');
   const star = id => state.starred.has(id) ? '<span class="hz-star" aria-label="In my agenda">★</span> ' : '';
   // ruler + grid
   const px60 = ppm * 60;
@@ -3020,6 +3069,12 @@ function hzDraw(root, left){
     gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px${m === d1 ? ';margin-left:-1px' : ''}"></i>`;
     if (m < d1 && (major || px60 >= 96)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
   }
+  // My agenda: each clash marked on the time axis and hatched down the canvas
+  if (agenda) for (const [a, b] of dvClashSpans(ents)){
+    const pos = `left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px`;
+    tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"><b>&#9888;</b></i>`;
+    gl += `<i class="cx" style="${pos}"></i>`;
+  }
   const ticksEl = h.querySelector('.hz-ticks');
   ticksEl.innerHTML = tk; ticksEl.style.width = W + 'px';
   h.querySelector('.hz-lines').innerHTML = gl;
@@ -3027,12 +3082,16 @@ function hzDraw(root, left){
   // lane heights: talks mode lets the bar grow with the text it must show
   const rs = remPx() / 16, lineH = 16.5 * rs;
   const estLines = (len, w, cw) => Math.max(1, Math.ceil(len * cw * rs / Math.max(24, w)));
-  const barModel = s => {
-    const a = toMin(s.start), b = toMin(s.end), w = Math.min((b - a) * ppm, trackW);
-    const tks = talksOf(s);
-    const markRoom = !talksMode && s.cat !== 'poster' && s.talks.length ? 14 : 0;
-    if (!tks.length) return { s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(s.title.length, w - 16, 6.7)) * lineH + 14 * rs) + markRoom };
-    const hl2 = Math.min(2, estLines(s.title.length, Math.min(w, 520) - 16, 7.1));
+  // starred posters (no split) are listed in their session's bar
+  const listed = e => agenda && !talksOf(e).length ? e.s.talks.filter(t => e.inner.has(t.id)) : [];
+  const marked = e => !e.t && !talksOf(e).length && !listed(e).length && (agenda || !talksMode) && e.s.cat !== 'poster' && e.s.talks.length;
+  const barModel = e => {
+    const s = e.s, a = toMin(e.start), b = toMin(e.end), w = Math.min((b - a) * ppm, trackW);
+    const tks = talksOf(e);
+    const markRoom = marked(e) ? 14 : 0;
+    if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(e.title.length, w - 16, 6.7)) * lineH + 14 * rs) + markRoom
+      + Math.min(4, listed(e).length) * 14 * rs };
+    const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.1));
     const head = 9 + hl2 * 15.5 * rs + 14 * rs;
     let segs;
     if (tmode === 'full'){
@@ -3044,24 +3103,85 @@ function hzDraw(root, left){
         segs = Math.max(segs, hh);
       }
     } else segs = tmode === 'mid' ? 64 * rs : 24;
-    return { s, a, b, w, tks, h: head + segs, head };
+    return { e, s, a, b, w, tks, h: head + segs, head };
   };
-  // groups -> lanes (a lane is shown if it has anything that day)
+  // One lane's bars, packed into rows where they overlap. `col` is the lane's
+  // colour (program), else each bar takes its stream's.
+  const laneBars = (models, col, shownOf) => {
+    const subs = hzPack(models.map(m => ({ m, a: m.a, b: m.b })), ppm);
+    let yy = 5, bars = '';
+    for (const sub of subs){
+      const hh = Math.max(...sub.items.map(x => x.m.h));
+      for (const { m } of sub.items){
+        const e = m.e, s = m.s, n = s.talks.length, [lc, lbg] = col || CAT_COLORS[e.cat];
+        const clash = dvClashText(e);
+        const word = s.cat === 'poster' ? 'poster' : 'talk';
+        const meta = (e.t ? [`${e.start}–${e.end}`, 'in ' + s.title]
+          : [`${s.start}–${s.end}`, n ? `${n} ${word}${n > 1 ? 's' : ''}${e.inner && e.inner.size ? ` · ★ ${e.inner.size} starred` : ''}` : '',
+            s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(' · ');
+        const conv = !e.t && s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
+        const tip = esc(e.t ? `${e.title} (${e.start}–${e.end}, in ${s.title})${clash ? '\n' + clash : ''}`
+          : `${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})${e.ctx ? '\nShown for your starred talks; the session is not in My agenda' : ''}${clash ? '\n' + clash : ''}`);
+        const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
+        const attrs = `data-date="${day.date}" data-start="${m.a}" data-end="${m.b}"`;
+        const cls = (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '');
+        const tiny = (m.b - m.a) * ppm < 30;
+        const shown = shownOf ? shownOf(s) : e.title;
+        const lst = listed(e).map(t => `<span class="hz-inl">★ ${esc(t.t)}</span>`).join('');
+        const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
+        if (!m.tks.length){
+          let marks = '';
+          if (marked(e) && !tiny){
+            for (const t of s.talks){
+              const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
+              if (tb <= ta) continue;
+              const fa = (ta - m.a) / (m.b - m.a), fw = (tb - ta) / (m.b - m.a);
+              // left/width are of the bar's padding box (4px left border, 1px right)
+              marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
+            }
+          }
+          bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}${cls}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}">${inner}${marks}</button>`;
+        } else {
+          let segs = '';
+          const bw = m.b - m.a;
+          for (const t of m.tks){
+            const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
+            const sp = t.sp.map(p => p.n).join(', ');
+            const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
+            const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
+            segs += `<button type="button" class="hz-talk${mine}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.t + ', ' + t.s + (sp ? ', ' + sp : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+              <span class="hz-tt">${t.s}</span><span class="hz-tl">${star(t.id)}${hl(t.t)}</span>${sp ? `<span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+          }
+          bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} title="${tip}">
+            <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
+        }
+      }
+      yy += hh + 4;
+    }
+    return { bars, yy, rows: subs.length };
+  };
   let rows = '';
-  for (const g of HZ_GROUPS){
-    const gs = slots.filter(s => g.cats.includes(s.cat));
+  if (agenda){
+    // My agenda: one lane in time order; items that overlap take rows of their own
+    const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null);
+    const nClash = ents.filter(e => e.clash.length).length;
+    rows = `<div class="hz-lane sole hz-mine" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${ents.length} item${ents.length === 1 ? '' : 's'}</small>${nClash ? `<small class="hz-lcx">&#9888; ${nClash} in clash${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+  }
+  // groups -> lanes (a lane is shown if it has anything that day)
+  for (const g of agenda ? [] : HZ_GROUPS){
+    const gs = ents.filter(e => g.cats.includes(e.cat));
     if (!gs.length) continue;
     const lanes = new Map();
-    for (const s of gs){
-      const k = g.split === 'grp' ? (s.grp || 'other') : g.split === 'cat' ? s.cat : g.k;
+    for (const e of gs){
+      const k = g.split === 'grp' ? (e.s.grp || 'other') : g.split === 'cat' ? e.cat : g.k;
       if (!lanes.has(k)) lanes.set(k, []);
-      lanes.get(k).push(s);
+      lanes.get(k).push(e);
     }
     const laneKeys = [...lanes.keys()].sort((a,b) => g.split === 'grp' ? Object.keys(DATA.groups).indexOf(a) - Object.keys(DATA.groups).indexOf(b)
       : g.cats.indexOf(a) - g.cats.indexOf(b));
     const col = CAT_COLORS[g.cats[0]], multi = laneKeys.length > 1, collapsed = HZ.collapsed.has(g.k);
-    const ticks = () => gs.map(s => {
-      const a = toMin(s.start), b = toMin(s.end), [c] = CAT_COLORS[s.cat];
+    const ticks = () => gs.map(e => {
+      const s = e.s, a = toMin(s.start), b = toMin(s.end), [c] = CAT_COLORS[s.cat];
       return `<i class="hz-colt" style="--c:${c};left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px" title="${esc(s.title + ' (' + s.start + '–' + s.end + ')')}"></i>`;
     }).join('');
     const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car">▾</span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
@@ -3073,51 +3193,9 @@ function hzDraw(root, left){
     for (const k of laneKeys){
       const ls = lanes.get(k);
       const cat = ls[0].cat, [lc, lbg] = CAT_COLORS[cat];
-      const models = ls.map(barModel);
-      const subs = hzPack(models.map(m => ({ m, a: m.a, b: m.b })), ppm);
-      let yy = 5, bars = '';
-      for (const sub of subs){
-        const hh = Math.max(...sub.items.map(x => x.m.h));
-        for (const { m } of sub.items){
-          const s = m.s, n = s.talks.length;
-          const meta = [`${s.start}–${s.end}`, n ? `${n} ${s.cat === 'poster' ? 'poster' : 'talk'}${n > 1 ? 's' : ''}` : '',
-            s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : ''].filter(Boolean).join(' · ');
-          const conv = s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
-          const tip = esc(`${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})`);
-          const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
-          const attrs = `data-date="${day.date}" data-start="${m.a}" data-end="${m.b}"`;
-          const tiny = (m.b - m.a) * ppm < 30;
-          // a lane already named after the group (QST, ANZCOP …) needs no "AIP QST:" in each title
-          const shown = multi && g.split === 'grp' ? s.title.replace(/^AIP(\s+[A-Z]{2,6})?\s*:\s*/, '') : !multi ? s.title.replace(/^(ANZCOP|COMMAD)\s*:\s*/, '') : s.title;
-          const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${star(s.id)}${hl(shown || s.title)}</span><span class="hz-meta">${meta}</span></span>`;
-          if (!m.tks.length){
-            let marks = '';
-            if (!talksMode && s.cat !== 'poster' && !tiny){
-              for (const t of s.talks){
-                const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
-                if (tb <= ta) continue;
-                const fa = (ta - m.a) / (m.b - m.a), fw = (tb - ta) / (m.b - m.a);
-                // left/width are of the bar's padding box (4px left border, 1px right)
-                marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
-              }
-            }
-            bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}${marks}</button>`;
-          } else {
-            let segs = '';
-            const bw = m.b - m.a;
-            for (const t of m.tks){
-              const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
-              const sp = t.sp.map(p => p.n).join(', ');
-              const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
-              segs += `<button type="button" class="hz-talk" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.t + ', ' + t.s + (sp ? ', ' + sp : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-                <span class="hz-tt">${t.s}</span><span class="hz-tl">${star(t.id)}${hl(t.t)}</span>${sp ? `<span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
-            }
-            bars += `<div class="hz-bar hz-split" style="${pos}" ${attrs} title="${tip}">
-              <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
-          }
-        }
-        yy += hh + 4;
-      }
+      // a lane already named after the group (QST, ANZCOP …) needs no "AIP QST:" in each title
+      const shownOf = s => multi && g.split === 'grp' ? s.title.replace(/^AIP(\s+[A-Z]{2,6})?\s*:\s*/, '') : !multi ? s.title.replace(/^(ANZCOP|COMMAD)\s*:\s*/, '') : s.title;
+      const { bars, yy } = laneBars(ls.map(barModel), [lc, lbg], shownOf);
       let label;
       if (!multi) label = `<div class="hz-label" style="--c:${lc}">${gbtn}</div>`;
       else {
@@ -3136,18 +3214,18 @@ function hzDraw(root, left){
     return { el, x: parseFloat(bar.style.left), w: parseFloat(bar.style.width), pad: 0 };
   });
   // zoom buttons
-  const z = HZ.zoom[hzZoomKey(date)];
+  const z = HZ.zoom[hzZoomKey(key)];
   h.parentElement.querySelectorAll('[data-hzzoom]').forEach(b => {
     const v = b.dataset.hzzoom === 'fit' ? full : +b.dataset.hzzoom;
-    b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5 && (z !== undefined || !state.programTalks || !PHONE_MQ.matches));
+    b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5 && (z !== undefined || !talksMode || !PHONE_MQ.matches));
     b.hidden = b.dataset.hzzoom !== 'fit' && v >= full;
   });
   h.querySelectorAll('[data-hzstep]').forEach(b => { b.disabled = +b.dataset.hzstep > 0 ? span >= full - 0.5 : span <= 30.5; });
   // scroll: the minute asked for, the kept one, else now on a congress day, else the first session
-  if (left === undefined) left = HZ.left[date];
+  if (left === undefined) left = HZ.left[key];
   if (left === undefined){
     const n = aedtNow();
-    left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...slots.map(s => toMin(s.start))) - 10;
+    left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...ents.map(e => toMin(e.start))) - 10;
   }
   vp.scrollLeft = Math.max(0, (left - d0) * ppm);
   hzSync(h);
@@ -3166,7 +3244,7 @@ function hzSync(h){
     if (pad !== e.pad){ e.pad = pad; e.el.style.paddingLeft = pad ? `calc(${pad}px + 6px)` : ''; }
   }
   const a = d0 + sl / ppm, b = Math.min(d1, a + tw / ppm);
-  HZ.left[h.dataset.date] = a;
+  HZ.left[hzKey(h)] = a;
   const f = m => (m - d0) / full * 100;
   const brush = h.querySelector('.hz-brush');
   brush.style.left = f(a) + '%'; brush.style.width = (b - a) / full * 100 + '%';
@@ -3222,9 +3300,9 @@ function hzReveal(bar){
 // New zoom (minutes across), keeping minute `m` at fraction `at` of the visible width.
 function hzZoom(root, span, m, at){
   const h = root.querySelector('.hz-day'), d0 = +h.dataset.d0, d1 = +h.dataset.d1, cur = +h.dataset.span;
-  if (m === undefined){ at = 0.5; m = HZ.left[h.dataset.date] + cur * at; }
+  if (m === undefined){ at = 0.5; m = HZ.left[hzKey(h)] + cur * at; }
   span = span === 'fit' ? 'fit' : Math.max(30, Math.min(d1 - d0, span));
-  HZ.zoom[hzZoomKey(h.dataset.date)] = span === 'fit' || span >= d1 - d0 - 0.5 ? 'fit' : span;
+  HZ.zoom[hzZoomKey(hzKey(h))] = span === 'fit' || span >= d1 - d0 - 0.5 ? 'fit' : span;
   const s = span === 'fit' ? d1 - d0 : span;
   hzDraw(root, m - at * s);
 }
@@ -3254,7 +3332,7 @@ function hzInit(root){
       const tw = +h.dataset.tw, cur = +h.dataset.span, rect = vp.getBoundingClientRect();
       const lw = h.querySelector('.hz-corner').offsetWidth;
       const at = Math.max(0, Math.min(1, (zx - rect.left - lw) / tw));
-      const m = HZ.left[date] + at * cur;
+      const m = HZ.left[hzKey(h)] + at * cur;
       hzZoom(root, cur * zf, m, at);
       zf = 1;
     });
@@ -3286,7 +3364,7 @@ function hzInit(root){
   });
   h.querySelector('.hz-brush').addEventListener('keydown', e => {
     const step = { ArrowLeft: -30, ArrowRight: 30, PageUp: -120, PageDown: 120 }[e.key];
-    if (step) hzScrollTo(h, HZ.left[date] + step, 0, 'instant');
+    if (step) hzScrollTo(h, HZ.left[hzKey(h)] + step, 0, 'instant');
     else if (e.key === 'Home') hzScrollTo(h, d0, 0, 'instant');
     else if (e.key === 'End') hzScrollTo(h, d1, 1, 'instant');
     else return;
@@ -3350,67 +3428,84 @@ const VT_COLS = [
 const VT_BAND_CATS = ['plenary','events','special','business','social'];
 const VT_TRACK_REM = 7.5;   // narrowest sub-column
 
+// My agenda's one column: saved items in time order, side by side where they overlap.
+const VT_MINE = { key:'mine', label:'My agenda', short:'My agenda', col:'var(--accent)', of:() => true };
+
 function vtDayView(day){
-  const slots = programDaySlots(day);
+  const slots = dayEntries(day), agenda = dvAgenda();
   const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   const who = t => t.sp.map(p => p.n).join(', ');
-  const talksOf = s => s.cat === 'poster' ? [] : s.talks.filter(t => talkMatches(t, s));
-  const isOpen = s => (state.programTalks || vtOpen.has(s.id)) && talksOf(s).length > 0;
+  // My agenda opens a saved session on its talks when some are starred (starred
+  // posters only, as a list); otherwise talks open with Talks mode or "N talks"
+  const talksOf = e => agenda ? (e.t ? [] : e.s.cat === 'poster' ? e.s.talks.filter(t => e.inner.has(t.id)) : e.s.talks)
+    : e.s.cat === 'poster' ? [] : e.s.talks.filter(t => talkMatches(t, e.s));
+  const merged = e => agenda && e.inner && e.inner.size > 0;
+  const isOpen = e => (merged(e) || (!agenda && state.programTalks) || vtOpen.has(e.s.id)) && talksOf(e).length > 0;
+  const listOnly = e => e.s.cat === 'poster';
   const star = id => state.starred.has(id) ? '<span class="vt-star" aria-label="In my agenda">★</span> ' : '';
-  const isBandCat = s => VT_BAND_CATS.includes(s.cat);
+  const isBandCat = e => !agenda && VT_BAND_CATS.includes(e.cat);
   const regular = slots.filter(s => !isBandCat(s));
   const overlaps = (s, o) => toMin(s.start) < toMin(o.end) && toMin(o.start) < toMin(s.end);
-  const colOf = s => VT_COLS.find(c => c.of(s));
+  const colOf = e => agenda ? VT_MINE : VT_COLS.find(c => c.of(e.s));
   const bands = [], colSlots = {};
-  VT_COLS.forEach(c => colSlots[c.key] = []);
+  for (const c of agenda ? [VT_MINE] : VT_COLS) colSlots[c.key] = [];
   for (const s of slots){
     if (isBandCat(s) && !regular.some(o => overlaps(s, o))) bands.push(s);
     else colSlots[colOf(s).key].push(s);
   }
-  const cols = VT_COLS.filter(c => colSlots[c.key].length).map(c => ({ ...c }));
+  const cols = (agenda ? [VT_MINE] : VT_COLS).filter(c => colSlots[c.key].length).map(c => ({ ...c }));
   // The day heading sits between previous/next day buttons; the whole view is
   // one focusable box, so arrow keys work on it (vtDayNav below).
   const step = d => { const i = vtDayStep(d); return i < 0 ? null : DATA.days[i]; };
   const go = (d, to) => to
     ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
     : `<span class="vt-go none"></span>`;
-  const head = `<div class="vt-day" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1, step(1))}</div>`;
+  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1, step(1))}</div>`;
 
   // One card. With `rows` the card shows its talks on the grid rows given
   // (subgrid); without, talks (if open) are a plain list under the heading.
-  const card = (s, o) => {
-    const [col, bg] = CAT_COLORS[s.cat];
-    const tk = talksOf(s), open = isOpen(s), nTalk = s.talks.length;
+  const card = (e, o) => {
+    const s = e.s, [col, bg] = CAT_COLORS[s.cat];
+    const tk = talksOf(e), open = isOpen(e), nTalk = s.talks.length;
     const label = s.grp ? s.grp : DATA.cats[s.cat];
-    const conv = s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
+    const clash = dvClashText(e);
+    const conv = e.t ? `<span class="vt-conv" title="${esc(s.title)}">in ${esc(s.title)}</span>`
+      : s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
       : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv">${hl(s.room)}</span>` : '<span></span>';
     const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
-    const tog = tk.length && !state.programTalks ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
-      : nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
-    const talkBtn = (t, style) => `<button type="button" class="vt-tk" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
+    const tog = merged(e) ? `<span class="vt-count">${count} · ★ ${e.inner.size}</span>`
+      : tk.length && (agenda || !state.programTalks) ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
+      : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
+    const talkBtn = (t, style) => {
+      const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
+      return `<button type="button" class="vt-tk${mine}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
+    };
     let talks = '';
-    if (open && o.rows){
+    if (open && o.rows && !listOnly(e)){
       const { a, b, lineR, lineAt } = o.rows;
       tk.forEach((t, i) => {
-        const r0 = Math.min(b - 1, Math.max(a + 1, lineR.get(Math.max(toMin(t.s), toMin(s.start)))));
+        const r0 = Math.min(b - 1, Math.max(a + 1, lineR.get(Math.max(toMin(t.s), toMin(e.start)))));
         // a talk runs to the next talk's row (or the card's end) when they are back to back
         const next = tk[i + 1];
-        let r1 = Math.min(b, toMin(t.e) >= toMin(s.end) ? b : lineAt(toMin(t.e)));
+        let r1 = Math.min(b, toMin(t.e) >= toMin(e.end) ? b : lineAt(toMin(t.e)));
         if (next) r1 = toMin(t.e) >= toMin(next.s) ? lineR.get(toMin(next.s)) : Math.min(r1, lineR.get(toMin(next.s)));
         talks += talkBtn(t, `grid-row:${r0 - a + 1} / ${Math.max(r0 + 1, r1) - a + 1}`);
       });
     } else if (open){
       talks = `<div class="vt-talks">${tk.map(t => talkBtn(t, '')).join('')}</div>`;
     }
-    const cls = 'vt-card' + (o.band ? ' band' : '') + (open && o.rows ? ' sub' : '') + (open ? ' open' : '');
-    return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" data-col="${colOf(s).key}" data-date="${day.date}" data-start="${toMin(s.start)}" data-end="${toMin(s.end)}">
-      <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="">
-        <span class="vt-top"><span class="vt-time">${s.start}–${s.end}</span><span class="vt-badge">${esc(label)}</span></span>
-        <span class="vt-title" title="${esc(s.title)}">${star(s.id)}${hl(s.title)}</span></button>
+    const cls = 'vt-card' + (o.band ? ' band' : '') + (open && o.rows && !listOnly(e) ? ' sub' : '') + (open ? ' open' : '')
+      + (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '') + (e.t ? ' is-talk' : '');
+    const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">&#9888; Clash</span>` : '';
+    const what = e.ctx ? ' title="Shown for your starred talks; the session is not in My agenda"' : '';
+    return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
+      <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${clash ? ` aria-description="${esc(clash)}"` : ''}>
+        <span class="vt-top"><span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
+        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(e.title)}</span></button>
       <span class="vt-foot">${conv}${tog}</span></div>${talks}</div>`;
   };
 
-  if (PHONE_MQ.matches){
+  if (PHONE_MQ.matches && !agenda){
     // Phone: one list grouped by start time, filtered by the stream chips.
     const pickKey = vtPick !== 'all' && cols.some(c => c.key === vtPick) ? vtPick : 'all';
     let html = head + `<div class="vt-picker" role="group" aria-label="Show stream"><button type="button" data-vtpick="all" aria-pressed="${pickKey === 'all'}">All<small>${slots.length}</small></button>${cols.map(c => `<button type="button" style="--c:${c.col}" data-vtpick="${c.key}" aria-pressed="${pickKey === c.key}">${esc(c.short)}<small>${colSlots[c.key].length}</small></button>`).join('')}</div>`;
@@ -3458,7 +3553,7 @@ function vtDayView(day){
   const mark = (m, k) => { if (!marks.has(m)) marks.set(m, {}); marks.get(m)[k] = true; };
   for (const s of slots){
     mark(toMin(s.start), 'h');
-    if (isOpen(s)) talksOf(s).forEach(t => mark(Math.max(toMin(t.s), toMin(s.start)), 'r'));
+    if (isOpen(s) && !listOnly(s)) talksOf(s).forEach(t => mark(Math.max(toMin(t.s), toMin(s.start)), 'r'));
   }
   const rows = [], lineH = new Map(), lineR = new Map();
   let line = 2;
@@ -3471,15 +3566,17 @@ function vtDayView(day){
   const lineAt = m => (rows.find(r => r.m >= m) || { line:endLine }).line;
   const span = s => { const a = lineH.get(toMin(s.start)); return { a, b: Math.max(a + 1, lineAt(toMin(s.end))) }; };
 
-  const talksCls = state.programTalks ? ' talks' : '';
+  const talksCls = state.programTalks && !agenda ? ' talks' : '';
   const tr = scroll ? `${VT_TRACK_REM}rem` : 'minmax(0,1fr)';
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
-  const heads = '<div class="vt-corner"></div>' + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span><small>${colSlots[c.key].length}</small></div>`).join('');
+  const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
+  const headNote = c => agenda ? `<small>${colSlots[c.key].length} item${colSlots[c.key].length === 1 ? '' : 's'}${nClash ? ` · <span class="vt-hcx">&#9888; ${nClash} in clash</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
+  const heads = '<div class="vt-corner"></div>' + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
   // inside the scroll box could only stick to the box, not the page).
   let html = head + (scroll ? `<div class="vt-hbar"><div class="vt-hgrid" style="${colsCss}">${heads}</div></div>` : '')
-    + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="Timetable by stream">`;
+    + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
   html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
   // Each time has a solid line and label on its first row; a talk row under a
   // heading row of the same time gets a dashed line and a lighter label.
@@ -3527,11 +3624,13 @@ document.getElementById('agenda').addEventListener('click', e => {
 // it turns the day only when the gesture starts with the grid at its edge.
 function vtDayStep(dir){
   if (state.day === 'all') return -1;
+  const has = dvAgenda() ? (() => { const n = new Set(agendaSaved().map(it => it.di)); return i => n.has(i); })()
+    : i => DATA.days[i].slots.some(slotMatches);
   for (let i = state.day + dir; i >= 0 && i < DATA.days.length; i += dir)
-    if (DATA.days[i].slots.some(slotMatches)) return i;
+    if (has(i)) return i;
   return -1;
 }
-const vtShown = () => programDayShown() && state.orient === 'v' && !!document.querySelector('#agenda > .vt-day');
+const vtShown = () => dayViewShown() && state.orient === 'v' && !!document.querySelector('#agenda > .vt-day');
 // [can scroll left, can scroll right] for the grid's sideways scroll box
 const vtCanScroll = w => w ? [w.scrollLeft > 1, w.scrollLeft < w.scrollWidth - w.clientWidth - 1] : [false, false];
 // The time row near the top of the screen, to keep the same time of day in view.
@@ -3660,15 +3759,8 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
 
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
-  let items;
-  if (favourites){
-    const saved = agendaItems();
-    markClashes(saved);
-    if (state.hideClashes) saved.forEach(it => it.clashes = []);
-    items = groupFavourites(saved);
-  } else {
-    items = programCalendarItems();
-  }
+  // My agenda draws its saved items with the program's own day views and week overview
+  const items = favourites ? agendaCalendarItems() : programCalendarItems();
   renderTabs(DATA.days.map((d,i) => items.filter(it => it.di === i).length));
   const main = document.getElementById('agenda');
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
@@ -3682,17 +3774,16 @@ function renderCalendar(){
     result.textContent = message;
   } else {
     const empty = favourites
-      ? '<p>No favourites for this period.</p><button class="toggle" data-browse-calendar>Browse full program</button>'
+      ? (!items.length || state.day === 'all' ? agendaEmptyHtml() : `<div class="ag-empty"><h3>Nothing saved on ${esc(DATA.days[state.day].label)}</h3><button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`)
       : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
-      : state.day === 'all' ? (favourites ? weekCalendar(selected) : weekOverview())
-      : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
+      : state.day === 'all' ? weekOverview() : programDayGrid(DATA.days[state.day]);
     if (main.querySelector('.hz-day')) hzInit(main);
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     main.classList.toggle('wide', true);
-    result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
+    result.textContent = selected.length + (favourites ? ' agenda items' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
   weekFit(main);
@@ -3757,9 +3848,10 @@ document.getElementById('programOrient').addEventListener('click', e => {
     renderCalendar();
   });
 });
-const programDayShown = () => state.layout === 'calendar' && state.scope === 'program' && state.day !== 'all';
+// A day of the Full program or of My agenda in Horizontal or Vertical.
+const dayViewShown = () => state.layout === 'calendar' && state.scope !== 'participants' && state.day !== 'all';
 PHONE_MQ.addEventListener('change', () => {
-  if (programDayShown()) renderCalendar();
+  if (dayViewShown()) renderCalendar();
 });
 let dayViewResize = 0;
 window.addEventListener('resize', () => {
@@ -3893,7 +3985,6 @@ function buildPrintDoc(){
   const groupNo = new Map();
   groups.forEach((g, i) => g.forEach(it => groupNo.set(it, i + 1)));
   const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
-  const nSess = items.filter(x => x.kind === 'session').length;
   let generated;
   try { generated = new Date().toLocaleString('en-AU', { day:'numeric', month:'long', year:'numeric', hour:'numeric', minute:'2-digit' }); }
   catch (e) { generated = new Date().toString(); }
@@ -3903,10 +3994,12 @@ function buildPrintDoc(){
     const sess = it.t ? `${esc(it.s.title)}${it.s.room ? `<span class="pd-room">${esc(it.s.room)}</span>` : ''}`
       : `${esc(it.s.room || 'Belinda Hutchinson Building')}${it.s.talks.length ? `<span class="pd-room">${plural(it.s.talks.length, it.s.cat === 'poster' ? 'poster' : 'talk')}</span>` : ''}`;
     const clash = groupNo.has(it) ? `<span class="pd-clash">&#9888; Clash ${groupNo.get(it)}</span>` : '';
-    return `<tr><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
+    const inner = it.inner && it.inner.length ? `<ul class="pd-inner">${it.inner.map(t =>
+      `<li>&#9733; ${t.s}&#8211;${t.e} ${esc(t.t)}${t.sp.length ? ` <span class="pd-aff">${esc(t.sp.map(p => p.n).join(', '))}</span>` : ''}</li>`).join('')}</ul>` : '';
+    return `<tr><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${inner}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
   };
   let html = `<h1>AIP Congress 2026 — My agenda</h1>
-    <p class="pd-meta">Generated ${esc(generated)} &middot; ${plural(nSess, 'session')} &middot; ${plural(items.length - nSess, 'talk')} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? groups.length + (groups.length === 1 ? ' clash' : ' clashes') : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
+    <p class="pd-meta">Generated ${esc(generated)} &middot; ${esc(agendaCountText(items, false)).replace(' · ', ' &middot; ')} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? groups.length + (groups.length === 1 ? ' clash' : ' clashes') : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
@@ -4003,7 +4096,7 @@ document.getElementById('builderList').addEventListener('toggle', e => {
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
 document.getElementById('shareAgenda').addEventListener('click', () => {
-  const ids = agendaItems().map(it => it.t ? it.t.id : it.s.id);
+  const ids = agendaSaved().map(it => it.t ? it.t.id : it.s.id);
   shareUrl(linkTo('agenda=' + ids.join(',')), 'My AIP Congress 2026 agenda');
 });
 
@@ -4014,6 +4107,9 @@ document.getElementById('builder').addEventListener('click', e => {
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
     state.starred.delete(id);
     afterStarChange();
+    // a talk unstarred inside its saved session: stay on that session
+    const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
+    if (host){ host.focus(); toast('Talk unstarred · the session stays in My agenda'); return; }
     const remaining = document.querySelectorAll('#builder .rm');
     const next = remaining[Math.min(removedIndex, remaining.length - 1)];
     (next || document.querySelector('#builderBody [data-goprogram]')).focus();
@@ -4131,7 +4227,6 @@ function bdRenderSlot(){
   if (bd.done){
     const items = agendaItems();
     markClashes(items);
-    const nSess = items.filter(x => x.kind === 'session').length, nTalk = items.length - nSess;
     const added = [...state.starred].filter(id => !bd.before.has(id)).length;
     const removed = [...bd.before].filter(id => !state.starred.has(id)).length;
     const clashes = items.filter(x => x.clashes.length).length;
@@ -4139,7 +4234,7 @@ function bdRenderSlot(){
     body.innerHTML = `<div class="bd-done">
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
-      <p>My agenda has ${nSess} session${nSess !== 1 ? 's' : ''} and ${nTalk} talk${nTalk !== 1 ? 's' : ''}${items.length ? `, about ${plannedHours(items).toFixed(1)} h` : ''}.${run}
+      <p>My agenda has ${agendaCountText(items, false).replace(' · ', ' and ')}${items.length ? `, about ${plannedHours(items).toFixed(1)} h` : ''}.${run}
       ${clashes ? `<br><span class="ag-warn">&#9888;&#65039; ${clashes} item${clashes !== 1 ? 's' : ''} overlap</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
@@ -4178,7 +4273,7 @@ function bdPaintChecks(){
     const count = card.querySelector('.bd-tcount');
     if (count) count.textContent = state.starred.has(s.id) ? ' · all included' : n ? ` · ${n} saved` : '';
   });
-  const items = bdSlotItems(bd.slots[bd.i]);
+  const items = mergeSaved(bdSlotItems(bd.slots[bd.i]));
   markClashes(items);
   const clashing = items.filter(x => x.clashes.length).length;
   bdEl('bdSlotSaved').innerHTML = (items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet') +
@@ -4836,8 +4931,15 @@ function upNextHtml(items){
   const nextStart = today.find(it => toMin(it.start) > n.min)?.start;
   const next = today.filter(it => it.start === nextStart);
   if (!current.length && !next.length) return '';
+  // a saved session names the starred talk in it that is on now, or comes next
+  const starred = it => {
+    const t = (it.inner || []).find(t => toMin(t.e) > n.min);
+    if (!t) return '';
+    const on = toMin(t.s) <= n.min;
+    return ` <span class="un-in">&#9733; <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button> ${on ? `until ${t.e}` : t.s}</span>`;
+  };
   const row = (label, it, when) =>
-    `<div><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span></div>`;
+    `<div><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
   return `<div class="up-next" id="upNext">` +
     current.map(it => row('Now', it, `until ${it.end}`)).join('') +
     next.map(it => row('Next', it, `${it.start} · in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
@@ -4856,7 +4958,7 @@ function paintCountdown(){
 // Marks what is on now and next. It only toggles classes, so a timer can run it.
 function paintNow(){
   const n = aedtNow();
-  document.getElementById('nowBtn').hidden = todayIdx() < 0 || state.scope !== 'program';
+  document.getElementById('nowBtn').hidden = todayIdx() < 0 || !(state.scope === 'program' || (state.scope === 'agenda' && state.layout === 'calendar'));
   const blocks = [...document.querySelectorAll('#agenda .block')];
   let next = null;
   for (const b of blocks){
@@ -4905,11 +5007,6 @@ function paintNow(){
     line.hidden = y === null;
     if (y !== null){ line.style.top = y + 'px'; line.style.width = (g.scrollWidth - line.offsetLeft) + 'px'; }
   });
-  document.querySelectorAll('.cal-now').forEach(line => {
-    const first = +line.dataset.first, last = +line.dataset.last;
-    line.hidden = !(line.dataset.date === n.date && n.min >= first && n.min <= last);
-    line.style.setProperty('--offset', n.min - first);
-  });
   document.querySelectorAll('#builder .ag-row[data-date]').forEach(r =>
     r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
   if (state.scope === 'agenda' && state.layout === 'list'){
@@ -4931,11 +5028,11 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   if (hzOn) hzGo(document.getElementById('agenda'), 'now');
   const topmost = sel => [...document.querySelectorAll(sel)].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
   const target = state.layout === 'calendar'
-    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .vt-nowl:not([hidden])')
+    ? document.querySelector('#agenda .vt-nowl:not([hidden])')
       || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
   if (hzOn && target) return hzReveal(target);
-  if (target) target.scrollIntoView({ block: target.matches('.cal-now, .vt-nowl') ? 'center' : 'start' });
+  if (target) target.scrollIntoView({ block: target.matches('.vt-nowl') ? 'center' : 'start' });
   else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });
@@ -5193,7 +5290,7 @@ const moveDialog = document.getElementById('moveDialog');
 const APP_ID = 'aip2026-program';
 let moveTrigger = null, pendingImport = null;
 qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
-function agendaIds(){ return agendaItems().map(it => it.t ? it.t.id : it.s.id); }
+function agendaIds(){ return agendaSaved().map(it => it.t ? it.t.id : it.s.id); }
 // QR code as SVG with a 4-module quiet zone, dark on light in both colour schemes;
 // null when the text needs a code too dense to scan reliably.
 function qrSvg(text){
