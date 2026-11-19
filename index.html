@@ -279,6 +279,25 @@ footer p{margin:4px 0}
 .agenda-views button[aria-pressed="true"]{background:var(--surface);border-color:var(--line);color:var(--ink)}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
+.agenda.wide{max-width:none}
+.pg-scroll{overflow-x:auto;margin:0 0 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+.pg-cluster{display:grid;grid-template-columns:3.6rem repeat(var(--cols),minmax(11.5rem,1fr));gap:4px;padding:6px;align-items:stretch;scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
+.pg-time{grid-column:1;position:sticky;left:0;z-index:1;background:var(--card);font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding:6px 4px 0 2px}
+.pg-range{color:var(--ink);font-size:12.5px}
+.pg-range span{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
+.pg-cell{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--surface);color:var(--ink);padding:6px 8px;font-size:12.5px;line-height:1.35;overflow-wrap:anywhere}
+.pg-session{background:var(--cbg)}
+.pg-cell:hover,.pg-cell:focus-visible{outline:2px solid var(--c);outline-offset:1px}
+.pg-kind{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c)}
+.pg-title{font-weight:650;font-size:13px}
+.pg-meta,.pg-who,.pg-ttime,.pg-in{color:var(--muted);font-size:11.5px}
+.pg-who{color:var(--ink-2)}
+.pg-ttime{font-weight:700;font-variant-numeric:tabular-nums}
+.pg-star{color:var(--star)}
+.pg-cluster.past .pg-title{color:var(--muted)}
+.pg-cluster.is-now{box-shadow:inset 3px 0 0 var(--live-ink)}
+.pg-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
+.pg-talk.is-now .pg-ttime{color:var(--live-ink)}
 .cal-day-title{font-size:17px;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
 .cal-grid{--minute:4.5px;--time-gutter:3.5rem;position:relative;min-width:calc(var(--time-gutter) + var(--lanes) * 6.25rem);height:calc(var(--duration) * var(--minute));margin:12px 8px}
@@ -341,6 +360,7 @@ footer p{margin:4px 0}
   .builder-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .builder-actions .toggle{width:100%;justify-content:center}
   .t-body{padding-left:17px}
+  .pg-cluster{grid-template-columns:3rem repeat(var(--cols),minmax(10rem,1fr))}
   .controls{position:relative}
   .filter-menu{position:static}
   .filter-panel{left:0;right:0;width:auto}
@@ -742,6 +762,7 @@ function renderAgenda(){
     } else html += inner;
   }
   main.innerHTML = html;
+  main.classList.remove('wide');
   document.getElementById('expandAll').textContent = 'Expand all abstracts';
   applyFilters();
 }
@@ -1433,6 +1454,52 @@ function programCalendarItems(){
   return items.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
 }
 
+// Program day view: each group of overlapping sessions is a grid with one
+// column per session, so Sessions and Individual talks keep the same columns.
+// Rows follow the talks' start times and grow with their text, so nothing is
+// cut short and no empty time is drawn.
+function programDayGrid(day){
+  const slots = day.slots.filter(slotMatches)
+    .sort((a,b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
+  const clusters = [];
+  let cur = null;
+  for (const s of slots){
+    if (!cur || toMin(s.start) >= cur.end){ cur = { slots: [], start: toMin(s.start), end: toMin(s.end) }; clusters.push(cur); }
+    cur.slots.push(s);
+    cur.end = Math.max(cur.end, toMin(s.end));
+  }
+  const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const who = t => t.sp.map(p => hl(p.n)).join(', ');
+  const talksOf = s => state.programTalks && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s)) : [];
+  const star = id => state.starred.has(id) ? '<span class="pg-star" aria-label="In my agenda">★</span> ' : '';
+  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>` + clusters.map(c => {
+    const times = [...new Set(c.slots.flatMap(s => talksOf(s).map(t => t.s)))].sort();
+    const last = times.length + 2;
+    let cells = `<div class="pg-time pg-range" style="grid-row:1">${hhmm(c.start)}<span>–${hhmm(c.end)}</span></div>`;
+    times.forEach((t, i) => { cells += `<div class="pg-time" style="grid-row:${i + 2}">${t}</div>`; });
+    c.slots.forEach((s, ci) => {
+      const [col, bg] = CAT_COLORS[s.cat];
+      const style = `--c:${col};--cbg:${bg};grid-column:${ci + 2}`;
+      const tk = talksOf(s);
+      const label = s.grp ? s.grp : DATA.cats[s.cat];
+      const meta = [toMin(s.start) !== c.start || toMin(s.end) !== c.end ? `${s.start}–${s.end}` : '',
+        s.conv.length ? 'Convened by ' + s.conv.map(hl).join(', ') : '',
+        s.talks.length ? `${s.talks.length} ${s.cat === 'poster' ? 'poster' : 'talk'}${s.talks.length > 1 ? 's' : ''}` : '',
+        s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : ''].filter(Boolean).join(' · ');
+      cells += `<button type="button" class="pg-cell pg-session" style="${style};grid-row:1${tk.length ? '' : ' / ' + last}" data-session-detail="${s.id}" data-talk-detail="">
+        <span class="pg-kind">${esc(label)}</span><span class="pg-title">${star(s.id)}${hl(s.title)}</span>${meta ? `<span class="pg-meta">${meta}</span>` : ''}</button>`;
+      for (const t of tk){
+        const r0 = times.indexOf(t.s) + 2;
+        const endRow = times.findIndex(x => x >= t.e);
+        const r1 = Math.max(endRow === -1 ? last : endRow + 2, r0 + 1);
+        cells += `<button type="button" class="pg-cell pg-talk" style="${style};grid-row:${r0} / ${r1}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+          <span class="pg-ttime">${t.s}–${t.e}</span><span class="pg-title">${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="pg-who">${who(t)}</span>` : ''}<span class="pg-in">${hl(s.title)}</span></button>`;
+      }
+    });
+    return `<div class="pg-scroll" tabindex="-1"><section class="pg-cluster" data-date="${day.date}" data-start="${c.start}" data-end="${c.end}" style="--cols:${c.slots.length}" aria-label="${hhmm(c.start)} to ${hhmm(c.end)}">${cells}</section></div>`;
+  }).join('');
+}
+
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
   let items;
@@ -1448,6 +1515,7 @@ function renderCalendar(){
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
   const fallback = !favourites && !selected.length && items.length > 0;
   const result = document.getElementById('resultLine');
+  main.classList.remove('wide');
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekCalendar(items);
@@ -1457,7 +1525,9 @@ function renderCalendar(){
       ? '<p>No favourites for this period.</p><button class="toggle" data-browse-calendar>Browse full program</button>'
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
-      : state.day === 'all' ? weekCalendar(selected) : dayCalendar(selected, DATA.days[state.day]);
+      : state.day === 'all' ? weekCalendar(selected)
+      : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
+    main.classList.toggle('wide', !favourites && state.day !== 'all');
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
@@ -1727,6 +1797,17 @@ function paintNow(){
       }
     }
   }
+  let nextCluster = null;
+  document.querySelectorAll('#agenda .pg-cluster').forEach(c => {
+    const today = c.dataset.date === n.date, st = +c.dataset.start, en = +c.dataset.end;
+    c.classList.toggle('past', today && en <= n.min);
+    c.classList.toggle('is-now', today && st <= n.min && n.min < en);
+    c.classList.remove('is-next');
+    if (!nextCluster && today && st > n.min) nextCluster = c;
+  });
+  if (nextCluster) nextCluster.classList.add('is-next');
+  document.querySelectorAll('#agenda .pg-talk').forEach(x =>
+    x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
   document.querySelectorAll('.cal-now').forEach(line => {
     const first = +line.dataset.first, last = +line.dataset.last;
     line.hidden = !(line.dataset.date === n.date && n.min >= first && n.min <= last);
@@ -1749,9 +1830,9 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
   paintNow();
   const target = state.layout === 'calendar'
-    ? document.querySelector('#agenda .cal-now:not([hidden])')
+    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .pg-cluster.is-now, #agenda .pg-cluster.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
-  if (target) target.scrollIntoView({ block: state.layout === 'calendar' ? 'center' : 'start' });
+  if (target) target.scrollIntoView({ block: target.classList.contains('cal-now') ? 'center' : 'start' });
   else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });
