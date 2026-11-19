@@ -42,13 +42,13 @@ window.applyDisplay = function(d){
   --accent:#2563eb; --accent-ink:#ffffff;
   --plenary:#be123c; --plenary-bg:#ffe4e6;
   --aip:#1d4ed8; --aip-bg:#dbeafe;
-  --anzcop:#15803d; --anzcop-bg:#dcfce7;
+  --anzcop:#047857; --anzcop-bg:#d1fae5;
   --commad:#c2410c; --commad-bg:#ffedd5;
   --focus:#0e7490; --focus-bg:#cffafe;
-  --edu:#806000; --edu-bg:#fef9c3;
-  --poster:#6d28d9; --poster-bg:#ede9fe;
-  --events:#a21caf; --events-bg:#fae8ff;
-  --special:#4d7c0f; --special-bg:#ecfccb;
+  --edu:#906100; --edu-bg:#fef9c3;
+  --poster:#5b21b6; --poster-bg:#ede9fe;
+  --events:#b5179e; --events-bg:#fce7f6;
+  --special:#5b7500; --special-bg:#ecfccb;
   --business:#475569; --business-bg:#e2e8f0;
   --social:#57534e; --social-bg:#f5f5f4;
   --star:#f59e0b;
@@ -62,7 +62,7 @@ window.applyDisplay = function(d){
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* solid fills for selected chips: white text on these in both modes */
-  --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#15803d; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#806000; --poster-fill:#6d28d9; --events-fill:#a21caf; --special-fill:#4d7c0f; --business-fill:#475569; --social-fill:#57534e;
+  --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#047857; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#906100; --poster-fill:#5b21b6; --events-fill:#b5179e; --special-fill:#5b7500; --business-fill:#475569; --social-fill:#57534e;
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
    Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
@@ -72,13 +72,13 @@ window.applyDisplay = function(d){
   --bg:#0f1218; --card:#171b23; --ink:#e6e9ef; --muted:#9aa3b2; --line:#2a303c; --accent:#2563eb; --accent-ink:#ffffff;
   --plenary:#ff8a9a; --plenary-bg:#43141f;
   --aip:#93acf1; --aip-bg:#142043;
-  --anzcop:#7ce9a5; --anzcop-bg:#144325;
+  --anzcop:#6ee7b7; --anzcop-bg:#123d2e;
   --commad:#f7a17d; --commad-bg:#432114;
   --focus:#74d6f1; --focus-bg:#143943;
-  --edu:#fde047; --edu-bg:#352d0c;
-  --poster:#c4b5fd; --poster-bg:#251a4a;
-  --events:#ec8cf9; --events-bg:#3d1443;
-  --special:#bef264; --special-bg:#26330f;
+  --edu:#fbbf24; --edu-bg:#352a0c;
+  --poster:#a78bfa; --poster-bg:#251a4a;
+  --events:#f9a8d4; --events-bg:#3d1430;
+  --special:#c8ea4c; --special-bg:#2a330f;
   --business:#a5b9d4; --business-bg:#232a34;
   --social:#cdb598; --social-bg:#312c26;
   --star:#fbbf24;
@@ -95,13 +95,13 @@ window.applyDisplay = function(d){
   --bg:#0f1218; --card:#171b23; --ink:#e6e9ef; --muted:#9aa3b2; --line:#2a303c; --accent:#2563eb; --accent-ink:#ffffff;
   --plenary:#ff8a9a; --plenary-bg:#43141f;
   --aip:#93acf1; --aip-bg:#142043;
-  --anzcop:#7ce9a5; --anzcop-bg:#144325;
+  --anzcop:#6ee7b7; --anzcop-bg:#123d2e;
   --commad:#f7a17d; --commad-bg:#432114;
   --focus:#74d6f1; --focus-bg:#143943;
-  --edu:#fde047; --edu-bg:#352d0c;
-  --poster:#c4b5fd; --poster-bg:#251a4a;
-  --events:#ec8cf9; --events-bg:#3d1443;
-  --special:#bef264; --special-bg:#26330f;
+  --edu:#fbbf24; --edu-bg:#352a0c;
+  --poster:#a78bfa; --poster-bg:#251a4a;
+  --events:#f9a8d4; --events-bg:#3d1430;
+  --special:#c8ea4c; --special-bg:#2a330f;
   --business:#a5b9d4; --business-bg:#232a34;
   --social:#cdb598; --social-bg:#312c26;
   --star:#fbbf24;
@@ -199,7 +199,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-blk.week-mic span{padding:3px 0 0}
 .week-blk.week-mic .k-ic{margin:0}
 .week-blk.week-hid{display:none}
-.week-h .week-blk.has-tk.week-up::before{max-height:calc(100% - 10px)}
+.week-h .week-blk.has-tk.week-up::before{max-height:calc(100% - 13px)}
 .week-blk.week-tiny span{padding:2px 1px 0;font-size:.82em;letter-spacing:-.02em}
 /* parallel items beyond what a vertical column has room for, folded into one chip */
 .week-blk.week-nmore{justify-content:center;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink-2);border-radius:5px;font-weight:800;letter-spacing:-.02em}
@@ -208,19 +208,22 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    one under another (never sideways text); the full name is in its tooltip and name */
 .week-blk.week-up{justify-content:center}
 .week-blk.week-up span{display:none}
-.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:var(--upf,.625rem);font-weight:800;line-height:1.05;letter-spacing:-.22em;pointer-events:none;box-sizing:border-box;max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.week-upm{position:absolute;left:0;top:0;visibility:hidden;writing-mode:vertical-lr;text-orientation:upright;font-size:var(--upf,.625rem);font-style:normal;font-weight:800;line-height:1.05;letter-spacing:-.22em;white-space:nowrap;pointer-events:none}
+.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:var(--upf,.6875rem);font-weight:800;line-height:1.05;letter-spacing:-.22em;pointer-events:none;box-sizing:border-box;max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.week-blk.week-ab{justify-content:center}
+.week-blk.week-ab span{display:none}
+.week-blk.week-ab::before{content:attr(data-ab);padding-top:2px;font-weight:800;line-height:1.12;white-space:nowrap;overflow:hidden;pointer-events:none}
+.week-upm{position:absolute;left:0;top:0;visibility:hidden;writing-mode:vertical-lr;text-orientation:upright;font-size:var(--upf,.6875rem);font-style:normal;font-weight:800;line-height:1.05;letter-spacing:-.22em;white-space:nowrap;pointer-events:none}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
-.week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:3px;background:var(--cbg);color:var(--c);font-size:.625rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:3px;background:var(--cbg);color:var(--c);font-size:.6875rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .week-blab-over{box-shadow:0 1px 3px var(--pop-shadow)}
 /* past: the stream tint with dark text (light text in dark mode) and a thin stream-colour
    outline, instead of a dimmed solid block */
 .week-blab.week-past{color:var(--past-ink)}
 .week-blk.week-past:not(.week-band){background:var(--cbg);color:var(--past-ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent)}
 .week-blk.week-band.week-past{border-left-color:color-mix(in srgb,var(--c) 45%,var(--line))}
-.week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.625rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.6875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 /* a head on one line keeps "Past" for screen readers only, and is muted instead */
 .week-dayh.week-dnar.week-pastday{color:var(--muted)}
 .week-dayh.week-dnar.week-pastday::after{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
@@ -246,6 +249,8 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    that fits the width where it can; each day row is as tall as its busiest cluster,
    with a strip on top for the band labels. */
 .week-h{--dl:5.75rem;--wl:1.8rem;--bs:1.05rem;--hppm:.055rem}
+/* My agenda: a lane holds a line of label above its starred-talk marks */
+.week-h.week-mine{--wl:2rem}
 .week-h .week-rul-in,.week-h .week-body{min-width:calc(var(--dl) + var(--wgap) + var(--dur) * var(--hppm))}
 .week-h .week-rul-in,.week-row{display:grid;grid-template-columns:var(--dl) minmax(0,1fr);column-gap:var(--wgap)}
 .week-h .week-rul{padding-bottom:4px}
@@ -263,7 +268,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-h .week-col{height:calc(var(--bs) + var(--lanes) * var(--wl));background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px calc(100% * 60 / var(--dur)))}
 .week-h .week-blk{left:calc(var(--a) * 1% + 1px);width:calc(var(--h) * 1% - 2px);top:calc(var(--bs) + (100% - var(--bs)) * var(--l) / 100 + 1px);height:calc((100% - var(--bs)) * var(--w) / 100 - 2px);min-height:0;min-width:3px}
 .week-h .week-blk.week-band{top:0;height:100%;left:calc(var(--a) * 1%);width:calc(var(--h) * 1%)}
-.week-h .week-band span{padding:1px 4px 0;font-size:.625rem;line-height:calc(var(--bs) - 1px)}
+.week-h .week-band span{padding:1px 4px 0;font-size:.6875rem;line-height:calc(var(--bs) - 1px)}
 .week-h .week-now{top:-3px;bottom:-3px;left:calc(var(--np) * 1%);right:auto;width:2px;height:auto;margin:0 0 0 -1px}
 .week-h .week-now::before{left:-3px;top:-2px}
 .week-h .week-legend{margin-left:calc(var(--dl) + var(--wgap))}
@@ -282,11 +287,11 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 @media (max-width:720px){
   .week-ov{--wh:clamp(26rem, calc(100vh - var(--toolbar-full,150px) - 9rem), 40rem);--wgap:3px;padding:8px 6px 10px}
   .week-head,.week-v .week-body{grid-template-columns:2.1rem var(--week-cols-sm)}
-  .week-v .week-axis span{font-size:.625rem}
+  .week-v .week-axis span{font-size:.6875rem}
   .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
   .week-v .week-axis .week-odd{display:none}
   .week-dayh .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-  .week-v .week-blk{font-size:.625rem;--upf:.5625rem}
+  .week-v .week-blk{font-size:.6875rem;--upf:.6875rem}
   /* a little taller than the screen allows at a glance, so a 90-minute session holds its code */
   .week-ov.week-v{--wh:clamp(30rem, calc(var(--dur) * .045rem), 46rem)}
   .week-v .week-blk span{padding:2px 2px 0}
@@ -636,6 +641,8 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .talk-star:hover{border-color:var(--line);background:var(--surface-2)}
 .talk-star.on{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:3px;padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+/* in the calendars' tight, clamped titles a match keeps to its own letters */
+:is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
 
 .empty-note{display:none;text-align:center;color:var(--muted);font-size:.9062rem;padding:40px 10px}
 .empty-note.show{display:block}
@@ -692,7 +699,11 @@ footer p{margin:4px 0}
 @media (min-width:721px) and (max-width:1279px){.ag-sx{display:none}}
 @media (max-width:1439px){.favourites-calendar .ag-sx{display:none}}
 @media (min-width:721px) and (max-width:1023px){.ag-opt-show,.ag-about{display:none}.ag-opt-f{display:inline}}
-@media (min-width:721px) and (max-width:819px){.ag-build-long{display:none}}
+/* Build my agenda reads "Build" where its full name does not fit (beside the Full sessions
+   option at 360-374px; below that the option takes its own line); the full name stays
+   its accessible name */
+@media (min-width:721px) and (max-width:819px){.ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
+@media (min-width:360px) and (max-width:374px){.builder-actions:has(#parentOption:not([hidden])) .ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 /* The counts keep their words: when the title, counts and clash indicator do not fit on
    one line, the indicator moves to a second line (and only a count wider than the whole
    line ends in an ellipsis) */
@@ -773,7 +784,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 /* Full program day view: Horizontal (hz-, one sideways-scrolling canvas) or Vertical (vt-, stream columns) */
 .hz-ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 8px}
 .hz-pre{display:flex;gap:4px;flex-wrap:wrap}
-.hz-pre button{min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.78rem;font-weight:650}
+.hz-pre button{min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.8125rem;font-weight:650}
 .hz-pre button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .hz-pre button[hidden]{display:none}
 .hz-pre button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -800,7 +811,10 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.hz-mlab{position:absolute;z-index:1;bottom:4px;padding-left:4px;font-size:.5625rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+/* a label near the right edge moves in so it is never cut (its left is capped in hzDayView);
+   one under an edge of the window takes a background (hzSync) so the outline never runs through it */
+.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:2px;padding:1px 2px;border-radius:3px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+.hz-mlab.on-edge{background:color-mix(in srgb,var(--card) 60%,var(--surface-2))}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
 .hz-sl{left:0}.hz-sr{right:0}
@@ -815,7 +829,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-ticks span.t{position:absolute;top:0;height:100%;box-sizing:border-box;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .hz-ticks span.t.m{border-left-color:transparent;font-weight:500;color:var(--muted)}
 .hz-ticks span.t.cut{color:transparent}
-.hz-nowpill{position:absolute;top:6px;transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
+.hz-nowpill{position:absolute;top:6px;transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
 .hz-nowpill[hidden],.hz-nowl[hidden]{display:none}
 /* the canvas: sideways only; its height is its content's height */
 .hz-vp{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:0 0 var(--radius) var(--radius)}
@@ -827,20 +841,20 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-lane,.hz-grp{display:flex;border-bottom:1px solid var(--line)}
 .hz-rows>:last-child{border-bottom:0}
 .hz-grp{background:var(--surface-3);height:30px}
-.hz-label{position:sticky;left:0;z-index:6;flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.78rem;line-height:1.25;overflow:hidden}
+.hz-label{position:sticky;left:0;z-index:6;flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.8125rem;line-height:1.25;overflow:hidden}
 .hz-label b{font-weight:750;color:var(--ink)}
-.hz-label small{color:var(--muted);font-size:.6562rem;line-height:1.25}
+.hz-label small{color:var(--muted);font-size:.6875rem;line-height:1.25}
 .hz-grp .hz-label{background:var(--surface-3);flex-direction:row;align-items:center;padding:0}
-button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 6px 0 7px;font-size:.7188rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--c);white-space:nowrap;overflow:hidden}
+button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 6px 0 7px;font-size:.75rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--c);white-space:nowrap;overflow:hidden}
 button.hz-gl:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .hz-car{display:inline-block;width:.7em;transition:transform .15s;font-size:.8em}
 button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
-.hz-cnt{margin-left:auto;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--card);border-radius:999px;padding:0 6px;font-size:.6562rem}
+.hz-cnt{margin-left:auto;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--card);border-radius:999px;padding:0 6px;font-size:.6875rem}
 .hz-lane.sole .hz-label{padding:0}
-.hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 7px;text-transform:none;letter-spacing:0;font-size:.78rem;color:var(--ink)}
+.hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 7px;text-transform:none;letter-spacing:0;font-size:.8125rem;color:var(--ink)}
 .hz-lane.sole button.hz-gl .hz-cnt{display:none}
 .hz-lane.sole.col{height:30px}
-.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0;text-transform:uppercase;letter-spacing:.04em;font-size:.7188rem;color:var(--c)}
+.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0;text-transform:uppercase;letter-spacing:.04em;font-size:.75rem;color:var(--c)}
 .hz-ab{display:none}
 .hz-track{position:relative;flex:0 0 auto}
 .hz-colt{position:absolute;top:10px;height:10px;border-radius:2px;background:var(--c);opacity:.85;min-width:2px;z-index:2}
@@ -856,20 +870,20 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-nar0>.hz-in>.hz-meta{display:none}
 .hz-nar>.hz-in>.hz-bdg{display:block}
 .hz-nar0{padding-left:2px!important;padding-right:1px!important}
-.hz-nar0>.hz-in>.hz-bdg{font-size:.625rem;letter-spacing:0}
+.hz-nar0>.hz-in>.hz-bdg{font-size:.6875rem;letter-spacing:0}
 .hz-nar1>.hz-in{visibility:hidden}
 .hz-meta{color:var(--bar-meta);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .hz-star{color:var(--star)}
 .hz-split{display:flex;flex-direction:column}
 .hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--bar-ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
-.hz-head .hz-title{-webkit-line-clamp:2;font-size:.78rem}
+.hz-head .hz-title{-webkit-line-clamp:2;font-size:.8125rem}
 .hz-segs{position:relative;flex:1 1 auto;min-height:0}
 /* every bar and talk has a set size: each is laid out on its own, so fitting their text
    (hzFitText) never lays out the whole page again */
 .hz-bar,.hz-talk{contain:size layout}
 .hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
-.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem;white-space:nowrap}
-.hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.7188rem}
+.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem;white-space:nowrap}
+.hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.75rem}
 .hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
 .hz-talk.hz-nar .hz-ts{display:none}
 .hz-talk.hz-notl .hz-tl{display:none!important}
@@ -886,7 +900,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-talk.hz-mm .hz-tt{font-size:.5625rem;letter-spacing:0}
 .hz-talk.hz-thin .k-ic,.hz-talk.hz-noic .k-ic,.hz-talk.hz-sliver>*{display:none!important}
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
-.hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
+.hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.6875rem}
 .hz-mid .hz-ts{display:none}
 .hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
 .hz-tick .hz-talk>*{display:none}
@@ -912,7 +926,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-full{display:none}.hz-ab{display:inline}
 .hz-corner{padding:4px 3px 6px 5px;align-items:flex-start}
 .hz-zb,.hz-read{display:none}
-.hz-tz{font-size:.5625rem;letter-spacing:.02em}
+.hz-tz{font-size:.6875rem;letter-spacing:.02em}
 .hz-map{margin:6px 8px 4px}
 .hz-day.stuck .hz-map{margin:1px 8px 1px}
 .hz-label{padding:6px 3px 6px 4px;font-size:.6875rem;align-items:flex-start;overflow-wrap:normal}
@@ -1000,7 +1014,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* the time stays on one line; the stream badge keeps its full short code and moves
    under the time when the card is too narrow for both */
 .vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
-.vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vt-time{font-size:.75rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .vt-badge{flex:0 0 auto;max-width:100%;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
@@ -1098,7 +1112,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
   .hz-zb{display:none}
   .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
-.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
+.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
 .kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 1px}
 .kind.k-t::before,.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
@@ -1138,13 +1152,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* Fit day in My agenda: each talk keeps its time and a line of its title */
 .hz-agenda.hz-tick .hz-talk{padding:1px 3px}
 .hz-agenda.hz-tick .hz-talk>.hz-tt{display:block;overflow:hidden}
-.hz-agenda.hz-tick .hz-talk:not(.hz-thin)>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.65rem;font-weight:600;flex:none}
+.hz-agenda.hz-tick .hz-talk:not(.hz-thin)>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.6875rem;font-weight:600;flex:none}
 /* a kind pill wider than its bar is left out (hzFitText); a bar narrower than a letter
    sets its stream code upright */
 .hz-nokind .hz-meta .kind{display:none}
 .hz-mtx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hz-agenda .hz-bar.hz-vert>.hz-in{visibility:visible;padding:4px 0;align-items:center}
-.hz-vert>.hz-in>.hz-bdg{writing-mode:vertical-rl;font-size:.625rem;line-height:1;letter-spacing:.02em}
+.hz-vert>.hz-in>.hz-bdg{writing-mode:vertical-rl;font-size:.6875rem;line-height:1;letter-spacing:.02em}
 .hz-tick .hz-talk.dim{background:transparent;border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line))}
 .hz-cxb,.hz-lcx,.vt-hcx{color:var(--warn-ink);font-weight:700}
 .hz-lane.hz-mine .hz-label{padding:7px 8px}
@@ -1170,7 +1184,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
    height, so a tall row set by another card leaves the session's body showing, not a big empty box */
 .vt-agenda .vt-tk.dim{align-self:start;padding:2px 6px 3px;font-size:.6875rem;line-height:1.2}
 .vt-agenda .vt-tk.dim .vt-ttl{-webkit-line-clamp:2}
-.vt-agenda .vt-tk.dim .vt-tsp{font-size:.625rem}
+.vt-agenda .vt-tk.dim .vt-tsp{font-size:.6875rem}
 .vt-agenda .vt-tk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow)}
 .vt-agenda .vt-tk.mine .vt-ttl{font-weight:650}
 .vt-ttime .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
@@ -1184,7 +1198,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-ov{--tkw:15px}
 .week-v .week-blk.has-tk{padding-right:var(--tkw)}
 .week-tk{position:absolute;z-index:3;overflow:hidden;box-sizing:border-box;margin:0;padding:0;border:1px solid var(--c);border-radius:3px;background:var(--card);color:inherit;font:inherit;box-shadow:0 0 0 1px var(--card);cursor:pointer}
-.week-tk::before{content:"";position:absolute;left:50%;top:2px;width:.375rem;height:.5rem;margin-left:-.1875rem;background:var(--c);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+.week-tk::before{content:"";position:absolute;left:50%;top:2px;width:.4375rem;height:.5625rem;margin-left:-.2188rem;background:var(--c);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
 .week-tk:hover,.week-tk:focus-visible{z-index:5;box-shadow:0 0 0 2px var(--ink);outline:0}
 .week-tk.ctx{background:var(--c);box-shadow:none}
 .week-tk.ctx::before{background:var(--card)}
@@ -1192,11 +1206,14 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-tk[hidden]{display:none}
 /* a mark sits over its session block's edge (the block's --a/--h/--l/--w): down its right
    side in the vertical overview, along its bottom in the horizontal one */
-.week-v .week-tk{left:calc((var(--l) + var(--w)) * 1% - var(--tkw));width:calc(var(--tkw) - 1px);top:calc((var(--a) + var(--h) * var(--ta) / 100) * 1%);height:calc(var(--h) * var(--tw) / 100 * 1%);min-height:9px}
-.week-h .week-tk{top:calc(var(--bs) + (100% - var(--bs)) * (var(--l) + var(--w)) / 100 - 10px);height:8px;left:calc(var(--a) * 1% + 1px + (var(--h) * 1% - 2px) * var(--ta) / 100);width:calc((var(--h) * 1% - 2px) * var(--tw) / 100);min-width:10px}
-.week-h .week-tk::before{top:0}
+.week-v .week-tk{left:calc((var(--l) + var(--w)) * 1% - var(--tkw));width:calc(var(--tkw) - 1px);top:calc((var(--a) + var(--h) * var(--ta) / 100) * 1%);height:calc(var(--h) * var(--tw) / 100 * 1%);min-height:12px}
+.week-h .week-tk{top:calc(var(--bs) + (100% - var(--bs)) * (var(--l) + var(--w)) / 100 - 13px);height:11px;left:calc(var(--a) * 1% + 1px + (var(--h) * 1% - 2px) * var(--ta) / 100);width:calc((var(--h) * 1% - 2px) * var(--tw) / 100);min-width:12px}
+.week-h .week-tk::before{top:0;height:calc(100% - 1px)}
 .week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
 .week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+/* a clash's stripe keeps clear of the label (weekFit counts the extra 2px) */
+.week-blk.has-clash span,.week-blk.has-clash.week-ab::before{padding-top:4px}
+.week-blk.has-clash.week-up::before{padding-top:6px}
 .week-legend i{position:relative;overflow:hidden}
 .week-legend .week-lcx i{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--warn-ink)}
 .week-legend .wk-k i{background:var(--ink-2)}
@@ -1243,7 +1260,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-lb .vt-card{margin:0;scroll-margin-top:calc(var(--toolbar-h,150px) + 5.5rem)}
 .vt-lb .vt-title{font-size:.875rem}
 .vt-lb .vt-open{padding:6px 9px 3px}
-.vt-lb .vt-foot{padding:0 9px 5px;font-size:.7188rem}
+.vt-lb .vt-foot{padding:0 9px 5px;font-size:.75rem}
 .vt-lb .vt-tk{padding:5px 9px;font-size:.75rem}
 .vt-lb .vt-card.band,.vt-lb .vt-card.band .vt-hd,.vt-lb .vt-card.band .vt-open{flex-direction:column;align-items:stretch}
 .vt-lb .vt-card.band .vt-title{-webkit-line-clamp:3}
@@ -1588,7 +1605,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .schedule-nav .agenda-views{margin:0}
 .nav-main{display:contents}
-@media (max-width:720px){.schedule-nav{margin-bottom:4px}}
+@media (max-width:720px){.schedule-nav{margin-bottom:4px}
+  body.wide-view .sticky-wrap:not(.tb-compact) .result-row.rl-quiet{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 #starCount{font-size:.82em;font-variant-numeric:tabular-nums}
 .nav-short{display:none}
 @media(max-width:480px){.schedule-nav{gap:4px}.schedule-nav button{font-size:.8125rem;padding:6px 8px}
@@ -1603,11 +1621,23 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 }
 @media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 4px;font-size:.7188rem}
   .nav-main{gap:3px}.schedule-nav .agenda-views{gap:1px}
-  /* My agenda's actions: Build keeps its full name for screen readers only, and a row that
-     still does not fit wraps instead of widening the page */
+  /* My agenda's actions: a row that still does not fit wraps instead of widening the page */
   .builder-actions{flex-wrap:wrap}
-  .builder-actions:has(#parentOption:not([hidden])) .ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .ag-actions .ag-btn{min-width:0;padding-left:6px;padding-right:6px;overflow:hidden;text-overflow:ellipsis}
+  /* room for the search box's own word: Streams drops "All" (it says so when filtered)
+     and the buttons and the magnifier sit a little tighter */
+  .filter-menu:not(.active) #filterBtn .fs-sum{display:none}
+  .controls{gap:6px}
+  .controls .toggle{padding-left:9px;padding-right:9px}
+  .searchbox input{padding-left:1.75rem}
+  .searchbox .mag{left:8px}
+  /* the Vertical day nav: just the weekday beside a heading without its year, and My
+     agenda's one column head keeps its counts (the page heading names it) */
+  .vt-go{padding-left:10px;padding-right:10px}
+  .vt-daynav{gap:6px}
+  .vt-yr{display:none}
+  .vt-agenda .vt-head>span:first-child:not(:only-child){display:none}
+  .vt-agenda .vt-head{justify-content:flex-end}
 }
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
@@ -1767,18 +1797,24 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .sticky-wrap{margin-top:10px}
 }
 @media (max-height:500px) and (orientation:landscape){
-  /* the toolbar: switches and search on one row, day tabs under them; the result line
-     stays for screen readers only */
-  .sticky-wrap:not(.tb-compact) .toolbar{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;padding-top:6px}
+  /* the toolbar in two rows: the switches, then the day tabs with the search box,
+     Streams and Now beside them (the controls' box steps aside so its parts share the
+     row with the tabs); the result line stays for screen readers only */
+  .sticky-wrap:not(.tb-compact) .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-top:6px;padding-bottom:6px}
+  .sticky-wrap:not(.tb-compact) .toolbar::after{content:"";order:2;flex:1 0 100%;height:0}
   .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{order:1;margin:0;flex:0 1 auto;min-width:0;gap:6px}
-  .sticky-wrap:not(.tb-compact) .toolbar>.controls{order:2;flex:1 1 240px;min-width:0;flex-wrap:nowrap;padding:0}
-  .sticky-wrap:not(.tb-compact) .toolbar>.daytabs{order:3;flex:1 0 100%;padding:6px 0}
-  .sticky-wrap:not(.tb-compact) .toolbar>.grpill{order:4}
-  .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:5;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .sticky-wrap:not(.tb-compact) .toolbar>.controls{display:contents}
+  .sticky-wrap:not(.tb-compact) .toolbar>.daytabs{order:3;flex:3 1 0;min-width:0;padding:0}
+  .sticky-wrap:not(.tb-compact) .searchbox{order:4;flex:0 1 150px}
+  .sticky-wrap:not(.tb-compact) .filter-menu{order:5}
+  .sticky-wrap:not(.tb-compact) #nowBtn{order:6}
+  .sticky-wrap:not(.tb-compact) .toolbar>.grpill{order:7;margin:0}
+  .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:8;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
   .schedule-nav .agenda-views button{padding:5px 9px}
   .daytab{padding-top:4px;padding-bottom:4px}
-  .searchbox{flex-basis:140px}
+  /* My agenda's one stream column needs no sticky head: it would cover the cards under it */
+  .favourites-calendar .vt-grid>.vt-head{position:relative;top:auto}
 }
 </style>
 </head>
@@ -2180,7 +2216,7 @@ function revealDayTab(){
 const phCanvas = document.createElement('canvas').getContext('2d');
 function fitPlaceholder(list){
   const q = document.getElementById('q');
-  if (list) q._ph = [...list.filter(Boolean), 'Search…'];
+  if (list) q._ph = [...list.filter(Boolean), 'Search…', 'Search'];
   if (!q._ph) return;
   const cs = getComputedStyle(q), room = q.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
   if (room <= 0){ if (list) q.placeholder = q._ph[0]; return; }
@@ -3331,9 +3367,11 @@ function weekOverview(){
     + (nClash ? `<li class="week-lcx"><i></i>${agendaClashWords()}</li>` : '');
   // the hint for a mouse or for touch (CSS shows the one that fits the device)
   const hint = `<h2 class="week-title">${agenda ? 'My agenda, all week' : 'All week'} <small>${esc(DATA.days[0].label)} – ${esc(DATA.days[DATA.days.length - 1].label)} 2026</small></h2>
-    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side with an orange edge. Click one, or a day, to open that day.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
-    : `<span class="wh-ptr">The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.</span><span class="wh-tch">The whole congress at a glance. Tap a session to open its day.</span>`}</p>`;
-  const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>`;
+    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side with an orange edge. Click one, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
+    : `<span class="wh-ptr">The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">The whole congress at a glance. Tap a session to open its day.</span>`}</p>`;
+  // what the keys do, read with the grid's one tab stop (weekFit) until the keys are used
+  const keys = `<p class="visually-hidden" id="weekKeys">The grid is one stop for the Tab key. ${horiz ? 'Left and right arrows move along a day, up and down to the day before or after' : 'Up and down arrows move along a day, left and right to the day before or after'}${agenda ? ', stopping at the starred talks marked on a saved session' : ''}; Home and End go to a day's first and last ${agenda ? 'item' : 'session'}. Enter opens that day at the ${agenda ? 'item' : 'session'}.</p>`;
+  const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>${keys}`;
   if (horiz){
     // one row per day; the ruler sits outside the sideways scroller so it can stick
     // under the toolbar, and follows the scroller's position (weekSync)
@@ -3398,9 +3436,9 @@ function weekFit(root = document.getElementById('agenda')){
   const adv = probe.getBoundingClientRect().height / 10 || 9, upw = probe.getBoundingClientRect().width || 9;
   probe.remove();
   const cs = getComputedStyle(ov.querySelector('.week-blk') || ov);
-  const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12;
+  const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12, abFont = `800 ${fs}px ${cs.fontFamily}`;
   // (cleared first: a refit, on resize, must not read the last fit's hidden labels)
-  for (const b of ov.querySelectorAll('.week-blk:not(.week-nmore)')){ b.firstElementChild.hidden = false; b.classList.remove('week-up', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny'); }
+  for (const b of ov.querySelectorAll('.week-blk:not(.week-nmore)')){ b.firstElementChild.hidden = false; b.classList.remove('week-up', 'week-ab', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny'); }
   const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
   const over = el => el.scrollWidth > el.clientWidth + 1;
   const todo = [];
@@ -3408,11 +3446,11 @@ function weekFit(root = document.getElementById('agenda')){
     const span = b.firstElementChild;
     if (b.classList.contains('week-nmore')) continue;
     span.hidden = false;
-    b.classList.remove('week-up', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny');
+    b.classList.remove('week-up', 'week-ab', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny');
     if (b.classList.contains('week-off') || b.classList.contains('week-hid') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
     // (horizontal: a session's starred-talk marks take a strip along its bottom)
     const tk = !vert && b.classList.contains('has-tk');
-    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (tk ? 10 : 0)) / lh);
+    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - (b.classList.contains('has-clash') ? 4 : 2) - (tk ? 13 : 0)) / lh);
     if (lines < 1 || w < 10){
       if (b.classList.contains('w-talk') && w >= 10 && h >= 10) b.classList.add('week-mic'); else span.hidden = true;
       continue;
@@ -3430,8 +3468,12 @@ function weekFit(root = document.getElementById('agenda')){
     // upright letters (below a 4px top pad): the whole code, or at least three letters
     // of it and an ellipsis
     // (horizontal: a tall, narrow block too, above its starred-talk strip)
-    const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - 5 - (!vert && b.classList.contains('has-tk') ? 10 : 0)) / adv) : 0;
+    const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - (b.classList.contains('has-clash') ? 7 : 5) - (!vert && b.classList.contains('has-tk') ? 13 : 0)) / adv) : 0;
     const up = () => { b.classList.remove('week-bdg'); b.classList.add('week-up'); };
+    // a short code across, its first four or three letters, reads better than the whole
+    // code set upright: shown where it fits
+    const ab = [4, 3].filter(k => k < n).map(k => b.dataset.code.slice(0, k).trim()).find(t => t.length >= 3 && hzMeasure(abFont, t) <= w - 4);
+    if (ab && h >= lh + (b.classList.contains('has-clash') ? 4 : 2)){ b.dataset.ab = ab; b.classList.remove('week-bdg'); b.classList.add('week-ab'); continue; }
     if (slots >= Math.min(n, 4)){ up(); continue; }
     // the code cut to an ellipsis still shows three letters of it (a talk's without its
     // mic, if need be); failing that, two upright letters and an ellipsis, a talk's
@@ -3448,6 +3490,8 @@ function weekFit(root = document.getElementById('agenda')){
   for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
   const blocks = weekBlocks(ov);
   if (!blocks.some(b => b.tabIndex === 0) && !ov.querySelector('.week-tk[tabindex="0"]:not([hidden])') && blocks[0]) blocks[0].tabIndex = 0;
+  const stop = !ov._keyed && ov.querySelector('.week-blk[tabindex="0"], .week-tk[tabindex="0"]');
+  if (stop) stop.setAttribute('aria-describedby', 'weekKeys');
   weekSync(ov);
   weekPaintNow();
 }
@@ -3717,6 +3761,8 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
       }
     } else return;
     e.preventDefault();
+    // (the keys are known now, even at an edge where focus stays: the hint is not read again)
+    b.removeAttribute('aria-describedby'); ov._keyed = true;
     if (!next) return;
     b.tabIndex = -1; next.tabIndex = 0;
     next.focus();
@@ -4503,10 +4549,11 @@ function hzDayView(day){
     mt += `<i class="hz-mtk" style="--c:${col};left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%;top:${((i + off) / R * 100).toFixed(2)}%;height:${(0.8 / R * 100).toFixed(2)}%"></i>`;
   } });
   let mh = '';
-  const lstep = full > 600 ? 120 : 60;
-  for (let m = Math.ceil(d0 / 60) * 60; m <= d1; m += 60){
+  // a label on every hour; hzMapLabels shows as many as fit apart at the drawn width
+  const h0 = Math.ceil(d0 / 60) * 60, lstep = full > 600 ? 120 : 60;
+  for (let m = h0; m <= d1; m += 60){
     mh += `<i class="hz-mh" style="left:${pc(m)}%"></i>`;
-    if ((m - d0) % lstep === 0 && m < d1) mh += `<span class="hz-mlab" style="left:${pc(m)}%">${hzHM(m)}</span>`;
+    if (m < d1) mh += `<span class="hz-mlab" style="left:min(${pc(m)}%, calc(100% - 3.7em))"${(m - h0) % lstep ? ' hidden' : ''}>${hzHM(m)}</span>`;
   }
   const t = hzTargets(d0, d1, day.date);
   const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
@@ -4600,7 +4647,7 @@ function hzDraw(root, left){
     const codeOnly = w - 14 < longest * 6 * rs;
     if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + (codeOnly ? 1 : Math.min(7, estLines(e.title.length, w - 16, agenda && e.t ? 7.6 : 6.7))) * lineH + 14 * rs) + markRoom + extra
       + Math.min(4, listed(e).length) * 14 * rs };
-    const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.1));
+    const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.4));
     // (a clash's hatched band adds to the head's top padding)
     const head = 9 + hl2 * 15.5 * rs + 14 * rs + extra + (agenda ? 2 : 0) + (agenda && e.clash.length ? 5 : 0);
     let segs;
@@ -4727,7 +4774,9 @@ function hzDraw(root, left){
   }
   h.querySelector('.hz-rows').innerHTML = rows;
   hzFitText(h);
+  hlUnclip(h);
   h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
+  hzMapLabels(h);
   // bars that can start off to the left: hzSync pads their text into view
   // (My agenda's bars pad their header strip, which carries the padding there)
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
@@ -4752,6 +4801,27 @@ function hzDraw(root, left){
   vp.scrollLeft = Math.max(0, (left - d0) * ppm);
   hzSync(h);
   paintNow();
+}
+
+// Minimap hour labels: every 1, 2, 3, 4 or 6 hours (a long day at least every 2), the closest
+// that keeps them apart at the minimap's width; one moved in from the right edge goes if it
+// would meet the one before.
+function hzMapLabels(h){
+  const map = h.querySelector('.hz-map'), labs = [...map.querySelectorAll('.hz-mlab')], mw = map.clientWidth;
+  if (!labs.length || !mw || +map.dataset.mw === mw) return;
+  map.dataset.mw = mw;
+  for (const l of labs) l.hidden = false;
+  const pos = labs.map(l => [l.offsetLeft, l.offsetWidth]), gap = 6;
+  const full = +h.dataset.d1 - +h.dataset.d0, lw = Math.max(...pos.map(p => p[1])) + gap, ph = mw * 60 / full;
+  const step = [1, 2, 3, 4, 6].find(k => k * 60 >= (full > 600 ? 120 : 60) && k * ph >= lw) || 12;
+  let end = -Infinity;
+  map._labs = [];
+  labs.forEach((l, i) => {
+    const [x, w] = pos[i], show = i % step === 0 && x >= end + gap;
+    l.hidden = !show;
+    l.classList.remove('on-edge');
+    if (show){ end = x + w; map._labs.push({ el: l, x, w, on: false }); }
+  });
 }
 
 // Whole words in lines `w` px wide, at most n lines (the first starts after `lead`, the
@@ -4782,6 +4852,27 @@ function hzWords(words, w, n, font, lead = ''){
 // only its time when thinner still); the title is in its tooltip and details. A badge that does not fit either is set tighter (hz-nar0) and
 // then cut to three, two or one letters ("ASTRO" -> "AST" -> "AS" -> "A"); only a sliver too thin
 // for one letter is left as colour alone (hz-nar1).
+// A search match cut off whole by a calendar card's clamped title loses its highlight:
+// hidden, it would only leave a gap in the text the card shows (which screen readers and
+// checkers compare with the card's name). Read every position first, then unwrap.
+function hlUnclip(root){
+  const ms = root.querySelectorAll('mark.hlm');
+  if (!ms.length) return;
+  const gone = [];
+  for (const m of ms){
+    const r = m.getBoundingClientRect();
+    if (!r.width && !r.height) continue;
+    for (let a = m.parentElement; a && a !== root; a = a.parentElement){
+      const cs = getComputedStyle(a);
+      if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible'){
+        const c = a.getBoundingClientRect();
+        if (r.left >= c.right - 1 || r.top >= c.bottom - 1 || r.right <= c.left + 1 || r.bottom <= c.top + 1){ gone.push(m); break; }
+      }
+      if (a.matches('button, .vt-card, .week-blk, .vt-tk')) break;
+    }
+  }
+  for (const m of gone) m.replaceWith(m.textContent);
+}
 function hzFitText(h){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
   const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')].filter(b => b.querySelector('.hz-title')), nar = bars.filter(b => over(b.querySelector('.hz-title')));
@@ -4928,6 +5019,15 @@ function hzSync(h){
   brush.setAttribute('aria-valuetext', hzHM(a) + ' to ' + hzHM(b));
   h.querySelector('.hz-sl').style.width = f(a) + '%';
   h.querySelector('.hz-sr').style.left = f(b) + '%';
+  // a minimap label under either edge of the window is lifted clear of its outline
+  const map = h.querySelector('.hz-map'), mw = +map.dataset.mw;
+  if (map._labs && mw){
+    const ex = [f(a) / 100 * mw, f(b) / 100 * mw - 2];
+    for (const l of map._labs){
+      const on = ex.some(e => l.x < e + 2 && l.x + l.w > e);
+      if (on !== l.on){ l.on = on; l.el.classList.toggle('on-edge', on); }
+    }
+  }
   const r = h.querySelector('.hz-read'), txt = `${hzHM(Math.round(a / 5) * 5)}–${hzHM(Math.round(b / 5) * 5)}`;
   if (r.textContent !== txt) r.textContent = txt;
 }
@@ -5148,7 +5248,7 @@ function vtDayView(day){
   const go = (d, to) => to
     ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day: Alt + ${d < 0 ? 'Left' : 'Right'} arrow, or ${d < 0 ? 'Left' : 'Right'} arrow once the timetable is scrolled to its ${d < 0 ? 'left' : 'right'} edge">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
     : `<span class="vt-go none"></span>`;
-  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)} 2026</h2>${go(1, step(1))}</div>${agenda ? dvKey(slots) : ''}`;
+  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)}<span class="vt-yr"> 2026</span></h2>${go(1, step(1))}</div>${agenda ? dvKey(slots) : ''}`;
 
   // One card. With `rows` the card shows its talks on the grid rows given
   // (subgrid); without, talks (if open) are a plain list under the heading.
@@ -5497,12 +5597,15 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
     vtSlideTo(i, { focus: e.target.closest('[data-vtgo]') ? 'nav' : 'view', edge: !e.altKey });
   });
   // Touch: a mostly sideways swipe of 60px or more (or a quick flick).
-  let touch = null;
+  // (the first swipe that brings a wide grid to its edge says, once, that the next one
+  // turns the day)
+  let touch = null, swipeHint = false;
   main.addEventListener('touchstart', e => {
     touch = null;
     if (e.touches.length !== 1 || !vtShown() || e.target.closest('.vt-picker, input, select, textarea')) return;
     const t = e.touches[0];
-    touch = { x: t.clientX, y: t.clientY, at: performance.now(), can: vtCanScroll(e.target.closest('.vt-wrap.scroll')) };
+    const w = e.target.closest('.vt-wrap.scroll');
+    touch = { x: t.clientX, y: t.clientY, at: performance.now(), w, can: vtCanScroll(w) };
   }, { passive: true });
   main.addEventListener('touchmove', e => { if (e.touches.length > 1) touch = null; }, { passive: true });
   main.addEventListener('touchcancel', () => { touch = null; });
@@ -5513,7 +5616,15 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
     const v = ax / Math.max(1, performance.now() - s.at);
     if (ax < 1.5 * Math.abs(dy) || (ax < 60 && !(ax > 30 && v > 0.5))) return;
     const dir = dx < 0 ? 1 : -1;
-    if (s.can[dir > 0 ? 1 : 0]) return;
+    if (s.can[dir > 0 ? 1 : 0]){
+      if (!swipeHint) setTimeout(() => {
+        const i = vtDayStep(dir);
+        if (swipeHint || !s.w.isConnected || vtCanScroll(s.w)[dir > 0 ? 1 : 0] || i < 0) return;
+        swipeHint = true;
+        toast(`End of the day's streams: swipe ${dir > 0 ? 'left' : 'right'} again for ${DATA.days[i].label}`);
+      }, 500);
+      return;
+    }
     vtSlideTo(vtDayStep(dir), { edge: true });
   }, { passive: true });
   // Trackpad: sideways wheel deltas add up within one gesture (events less than
@@ -5551,7 +5662,7 @@ function agendaEmptyDay(day, msg){
     const [wd, ...rest] = to.label.split(' ');
     return `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(wd)}<span class="vt-god"> ${esc(rest.join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`;
   };
-  return `<div class="vt-day vt-agenda vt-none" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1)}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1)}</div>${msg}</div>`;
+  return `<div class="vt-day vt-agenda vt-none" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1)}<h3 class="cal-day-title">${esc(day.label)}<span class="vt-yr"> 2026</span></h3>${go(1)}</div>${msg}</div>`;
 }
 // The same when My agenda's search or streams hide everything on the day (or all week).
 function agendaNoMatchDay(items){
@@ -5599,7 +5710,12 @@ function renderCalendar(){
       : (favourites ? countWord(shownSel.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
+  // with no search or stream filter the line only repeats the counts: phones keep it for
+  // screen readers only, so the calendar starts higher
+  result.parentElement.classList.toggle('rl-quiet', !fallback && !(favourites ? agendaFiltered()
+    : termsOf(state.q).length || state.cats.size !== Object.keys(DATA.cats).length || state.group));
   weekFit(main);
+  if (!main.querySelector('.hz-day')) hlUnclip(main);
   for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
   paintNow();
   writeHash();
