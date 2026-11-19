@@ -843,11 +843,27 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--bar-ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
 .hz-head .hz-title{-webkit-line-clamp:2;font-size:.78rem}
 .hz-segs{position:relative;flex:1 1 auto;min-height:0}
+/* every bar and talk has a set size: each is laid out on its own, so fitting their text
+   (hzFitText) never lays out the whole page again */
+.hz-bar,.hz-talk{contain:size layout}
 .hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
-.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem}
+.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem;white-space:nowrap}
 .hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.7188rem}
 .hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
-.hz-talk.hz-nar .hz-tl,.hz-talk.hz-nar .hz-ts{display:none}
+.hz-talk.hz-nar .hz-ts{display:none}
+.hz-talk.hz-notl .hz-tl{display:none!important}
+/* a talk too narrow for whole words: its title on one line, ending in an ellipsis */
+.hz-day:not(.hz-tick) .hz-talk.hz-nar:not(.hz-thin) .hz-tl{display:block;overflow:hidden;flex:none}
+.hz-talk.hz-nar .hz-tl:not(.hz-fit){white-space:nowrap;text-overflow:ellipsis}
+.hz-tl.hz-fit>.hz-ln{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-talk.hz-thin{padding-left:2px;padding-right:1px}
+/* a talk too thin for its time at the usual size: the time smaller (on one line, never
+   split at the colon) and the start of its title on one line under it */
+.hz-talk.hz-thin .hz-tt{font-size:.5rem;letter-spacing:-.03em;overflow:hidden;text-overflow:clip}
+.hz-day:not(.hz-tick) .hz-talk.hz-thin .hz-tl,.hz-agenda.hz-tick .hz-talk.hz-thin>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.5625rem;letter-spacing:-.01em;flex:none}
+.hz-talk.hz-thin .hz-star,.hz-talk.hz-mm .hz-hh{display:none}
+.hz-talk.hz-mm .hz-tt{font-size:.5625rem;letter-spacing:0}
+.hz-talk.hz-thin .k-ic,.hz-talk.hz-noic .k-ic,.hz-talk.hz-sliver>*{display:none!important}
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
 .hz-mid .hz-ts{display:none}
@@ -899,8 +915,20 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-t{scroll-margin-top:calc(var(--toolbar-h,150px) + 2.75rem)}
 .hz-bar{scroll-margin-top:calc(var(--toolbar-h,150px) + 4rem)}
 .vt-t.tk{color:var(--muted);font-weight:700;font-size:.6875rem}
+/* a talk row at the same time as the heading row above it repeats that time: kept for
+   the grid, not shown */
+.vt-t.tk{visibility:hidden}
 .vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:0;border-top:2px solid var(--live-ink);z-index:4;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0}
-.vt-nowl::before{content:"";position:absolute;left:-6px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--live-ink)}
+/* the now line runs under the cards (never through their text); its dot (vt-nowd) sits
+   over the time gutter */
+.vt-grid .vt-nowl{z-index:1}
+.vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:999px;background:var(--live-ink);color:var(--card);font-size:.6875rem;font-weight:800;line-height:1.35;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg);z-index:4;pointer-events:none}
+/* inside a saved session the line shows in the session's margins and between its talks
+   (drawn on the session's own background, so under every card and its text) */
+.vt-grid .vt-card.sub.now-in{background-image:linear-gradient(var(--live-ink),var(--live-ink));background-size:100% 2px;background-repeat:no-repeat;background-position:0 calc(var(--nowy) - 2px)}
+.vt-agenda .vt-card.now-in .vt-tk.dim{background:var(--body)}
+.vt-nowd[hidden]{display:none}
+.vt-t.now-hid{visibility:hidden}
 .vt-tcol{display:none}
 .vt-wrap{margin:0 0 14px}
 .vt-grp{display:contents}
@@ -942,7 +970,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-hgrid .vt-corner{position:sticky;left:0;top:auto;z-index:7;margin:0;background:var(--bg)}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
-.vt-wrap.scroll .vt-nowl{z-index:4}
+.vt-wrap.scroll .vt-nowl{z-index:1}
 .vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
@@ -1009,6 +1037,46 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ak-cx{outline:2px solid var(--warn-ink);outline-offset:-2px;background:var(--surface-2)}
 .ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
 .vt-agenda .ag-key{margin-top:-4px}
+/* the key as a popover from a Key button (phones and short landscape screens) */
+.dv-keyb{display:none;align-items:center;justify-content:center;flex:none;min-height:26px;padding:0 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.6875rem;font-weight:750;line-height:1;cursor:pointer}
+.dv-keyb::before{content:"";width:.5rem;height:.5rem;margin-right:4px;border-radius:2px;border:1.5px solid currentColor;box-sizing:border-box}
+.dv-keyb:hover,.dv-keyb:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+.dv-keypop{position:fixed;inset:auto;margin:0;box-sizing:border-box;max-width:min(22rem,calc(100vw - 16px));padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);box-shadow:0 8px 24px var(--pop-shadow)}
+.dv-keypop .ag-key{flex-direction:column;align-items:flex-start;gap:7px;margin:0}
+/* (a browser without popovers shows the key in line instead) */
+.no-popover .dv-keypop{display:none}
+@media (max-width:720px),(max-height:500px){
+  .dv-keyb{display:inline-flex}
+  .ag-key.ak-inline{display:none}
+  .no-popover .dv-keyb{display:none}
+  .no-popover .ag-key.ak-inline{display:flex}
+  .hz-corner .dv-keyb{margin-bottom:auto;align-self:flex-start}
+  .hz-day.stuck .hz-corner .dv-keyb{margin:0 0 0 auto;order:2;min-height:22px}
+  .vt-corner{display:flex;align-items:center;justify-content:center}
+  .vt-hbar>.dv-keyb{position:absolute;left:2px;top:50%;transform:translateY(-50%);z-index:8}
+  .vt-corner .dv-keyb,.vt-hbar>.dv-keyb{padding:0 6px}
+  .vt-corner .dv-keyb::before,.vt-hbar>.dv-keyb::before{display:none}
+  /* zoom and jump buttons on one row that scrolls sideways */
+  .hz-ctl{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:3px 18px 3px 2px;margin:0 0 4px;-webkit-mask-image:linear-gradient(to left,transparent,#000 18px);mask-image:linear-gradient(to left,transparent,#000 18px)}
+  .hz-ctl::-webkit-scrollbar{display:none}
+  .hz-pre{flex-wrap:nowrap;flex:none}
+  .hz-pre button{min-height:30px;padding:3px 10px;white-space:nowrap}
+  .cal-day-title{font-size:1rem;margin:0 0 6px;padding:4px 0 6px}
+  /* the day's title and its zoom and jump buttons share a row */
+  .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;border-bottom:2px solid var(--day-rule)}
+  .hz-hd .cal-day-title{flex:none;margin:0;border:0;padding:4px 0}
+  .hz-hd .hz-ctl{flex:1 1 auto;min-width:0;margin:0}
+  .vt-daynav{margin:0 0 8px;padding:0 0 6px}
+}
+@media (max-height:500px){
+  .hz-day{--hzd:28px}
+  .hz-map{height:34px}
+}
+/* a phone on its side: no zoom steps (the presets stay); the readout is still announced */
+@media (max-height:500px) and (max-width:960px){
+  .hz-zb{display:none}
+  .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+}
 .kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
 .kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 1px}
@@ -1028,6 +1096,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-agenda .hz-in{gap:2px}
 .hz-sp{color:var(--bar-meta);font-size:.6875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hz-of,.hz-agenda .hz-of{font-style:italic;display:block}
+/* a talk's session runs to two lines, cut at a whole word */
+.hz-agenda .hz-of{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:normal}
 .hz-agenda .hz-bar.has-clash>.hz-in,.hz-agenda .hz-bar.has-clash>.hz-head{padding-top:8px}
 .hz-agenda .hz-bar.is-talk,.vt-agenda .vt-card.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-radius:11px;box-shadow:0 1px 3px var(--pop-shadow)}
 .hz-agenda .hz-bar.is-talk>.hz-in{background:none;padding-top:5px}
@@ -1044,8 +1114,16 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-tt .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
 .hz-talk.dim .k-ic{display:none}
 .hz-tick .hz-talk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-top:5px solid var(--c)}
-.hz-agenda.hz-tick .hz-talk.mine{padding:1px 3px}
-.hz-agenda.hz-tick .hz-talk.mine>.hz-tt{display:block;white-space:nowrap;overflow:hidden}
+/* Fit day in My agenda: each talk keeps its time and a line of its title */
+.hz-agenda.hz-tick .hz-talk{padding:1px 3px}
+.hz-agenda.hz-tick .hz-talk>.hz-tt{display:block;overflow:hidden}
+.hz-agenda.hz-tick .hz-talk:not(.hz-thin)>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.65rem;font-weight:600;flex:none}
+/* a kind pill wider than its bar is left out (hzFitText); a bar narrower than a letter
+   sets its stream code upright */
+.hz-nokind .hz-meta .kind{display:none}
+.hz-mtx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hz-agenda .hz-bar.hz-vert>.hz-in{visibility:visible;padding:4px 0;align-items:center}
+.hz-vert>.hz-in>.hz-bdg{writing-mode:vertical-rl;font-size:.625rem;line-height:1;letter-spacing:.02em}
 .hz-tick .hz-talk.dim{background:transparent;border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line))}
 .hz-cxb,.hz-lcx,.vt-hcx{color:var(--warn-ink);font-weight:700}
 .hz-lane.hz-mine .hz-label{padding:7px 8px}
@@ -1067,6 +1145,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-agenda .vt-tk{margin:0 5px 3px;width:auto;border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line));border-radius:6px;background:transparent;color:var(--bar-meta)}
 .vt-agenda .vt-card .vt-tk:last-child{border-radius:6px}
 .vt-agenda .vt-tk.dim .vt-ttime,.vt-agenda .vt-tk.dim .vt-tsp{color:var(--bar-meta)}
+/* the session's other talks are compact: two title lines (in full on hover) and their own
+   height, so a tall row set by another card leaves the session's body showing, not a big empty box */
+.vt-agenda .vt-tk.dim{align-self:start;padding:2px 6px 3px;font-size:.6875rem;line-height:1.2}
+.vt-agenda .vt-tk.dim .vt-ttl{-webkit-line-clamp:2}
+.vt-agenda .vt-tk.dim .vt-tsp{font-size:.625rem}
 .vt-agenda .vt-tk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow)}
 .vt-agenda .vt-tk.mine .vt-ttl{font-weight:650}
 .vt-ttime .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
@@ -2907,7 +2990,18 @@ function calendarDetailAttrs(it){
 // the whole agenda, then My agenda's search and streams applied (all = true skips them),
 // and with "Show full sessions for favourite talks", each saved talk whose session is
 // not saved shown inside that session (ctx: the session itself is not in My agenda).
+// One render asks for these several times (tabs, each view, its key): they are kept until the
+// current task ends, and only while the stars, filters and options they depend on are unchanged.
+const acMemo = new Map();
 function agendaCalendarItems(all = false){
+  const sig = [all, [...state.starred].join(), state.aq, [...state.acats].join(), document.getElementById('includeParents').checked, state.hideClashes].join('|');
+  if (acMemo.has(sig)) return acMemo.get(sig);
+  if (!acMemo.size) queueMicrotask(() => acMemo.clear());
+  const out = agendaCalendarItemsNow(all);
+  acMemo.set(sig, out);
+  return out;
+}
+function agendaCalendarItemsNow(all){
   const items = agendaItems();
   markClashes(items);
   const shown = all ? items : agendaFilter(items);
@@ -3537,6 +3631,8 @@ function renderBuilder(){
     document.querySelector('.result-row').hidden = !filtered;
     if (filtered) document.getElementById('resultLine').innerHTML = agendaFilterLine(onDay.length, total, !total || onDay.length && onDay.length < 10 ? items.length - onDay.length : 0);
   }
+  // the calendar hides the list: it is built when the list is shown (showView rerenders)
+  if (state.layout === 'calendar'){ body.innerHTML = ''; return; }
   // a day with nothing saved gets the plain empty note below, not "nothing matches"
   const daySaved = state.day === 'all' || whole.some(x => x.di === state.day);
   if (filtered && !onDay.length && daySaved){
@@ -4069,7 +4165,7 @@ const dvTid = e => e.t ? e.t.id : '';
 const dvKind = e => e.t ? `<span class="kind k-t">${e.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>`
   : e.ctx ? '<span class="kind k-g">Session · not saved</span>' : '<span class="kind">Session</span>';
 // My agenda's key under the day heading: the shapes the day uses, as drawn.
-function dvKey(ents){
+function dvKey(ents, inline = true){
   const has = f => ents.some(f), n = c => `<i class="ak-sw ${c}" aria-hidden="true"></i>`;
   // talks and posters carry their own pill (dvKind), so the key names the ones drawn
   const starred = e => e.t || e.inner.size, post = e => e.s.cat === 'poster';
@@ -4082,8 +4178,35 @@ function dvKey(ents){
     has(e => e.ctx) ? `<li><span class="kind k-g">Session · not saved</span> shown for your starred ${gw}</li>` : '',
     has(e => !e.t && e.inner.size && e.s.cat !== 'poster' && e.s.talks.length > e.inner.size) ? `<li>${n('ak-dim')} the session’s other talks</li>` : '',
     has(e => e.clash.length) ? `<li>${n('ak-cx')} clash</li>` : ''].join('');
-  return `<ul class="ag-key" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
+  return `<ul class="ag-key${inline ? ' ak-inline' : ''}" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
 }
+// On a phone (or a short landscape screen) the key folds into a small Key button in the
+// calendar's top-left corner, which opens it as a popover (dvKeyPlace puts it under the button).
+const DV_KEY_BTN = '<button type="button" class="dv-keyb" popovertarget="dvKeyPop" aria-controls="dvKeyPop" aria-expanded="false" title="What the shapes mean">Key</button>';
+const dvKeyPop = ents => `<div class="dv-keypop" id="dvKeyPop" popover>${dvKey(ents, false)}</div>`;
+const DV_POPOVER = 'popover' in HTMLElement.prototype;
+if (!DV_POPOVER) document.documentElement.classList.add('no-popover');
+function dvKeyPlace(pop, btn){
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + 'px';
+  pop.style.top = (r.bottom + 6 + h > innerHeight - 8 && r.top - 6 - h > 8 ? r.top - 6 - h : r.bottom + 6) + 'px';
+}
+document.addEventListener('toggle', e => {
+  const pop = e.target;
+  if (pop.id !== 'dvKeyPop') return;
+  const btn = document.querySelector('#agenda .dv-keyb');
+  if (!btn) return;
+  btn.setAttribute('aria-expanded', e.newState === 'open');
+  if (e.newState === 'open') dvKeyPlace(pop, btn);
+}, true);
+// A resize (a phone's toolbar folding away as the page scrolls, or turning the phone) keeps
+// the key open under its button; it closes only when the button itself is gone (a wide screen).
+window.addEventListener('resize', () => {
+  const pop = DV_POPOVER && document.getElementById('dvKeyPop');
+  if (!pop || !pop.matches(':popover-open')) return;
+  const btn = document.querySelector('#agenda .dv-keyb');
+  if (btn && btn.offsetWidth) dvKeyPlace(pop, btn); else pop.hidePopover();
+});
 const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})${x.off ? ', hidden by your search or streams' : ''}`).join('; ') : '';
 // Where saved items overlap: merged [start, end] minute ranges, for the time axis.
 function dvClashSpans(ents){
@@ -4166,14 +4289,14 @@ function hzDayView(day){
   }
   const t = hzTargets(d0, d1, day.date);
   const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
-  return `<h2 class="cal-day-title">${esc(day.label)} 2026</h2>
+  return `<div class="hz-hd"><h2 class="cal-day-title">${esc(day.label)} 2026</h2>
     <div class="hz-ctl">
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
       <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
-    </div>
+    </div></div>
     ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
-        <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
+        <div class="hz-corner">${agenda ? DV_KEY_BTN : ''}<span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
         <div class="hz-map" role="group" aria-label="Whole day. Drag the window or click to move through the day.">
           <div class="hz-mt" aria-hidden="true">${mt}</div><div aria-hidden="true">${mh}</div><div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div>
           <div class="hz-brush" tabindex="0" role="slider" aria-label="Visible time window" aria-valuemin="${d0}" aria-valuemax="${d1}"></div>
@@ -4181,7 +4304,7 @@ function hzDayView(day){
         <div class="hz-ruler" aria-hidden="true"><div class="hz-ticks"></div></div>
       </div>
       <div class="hz-vp"><div class="hz-inner"><div class="hz-lines"></div><div class="hz-nowl" hidden></div><div class="hz-rows"></div></div></div>
-    </div>`;
+    </div>${agenda ? dvKeyPop(ents) : ''}`;
 }
 
 // Build the canvas at the current zoom; scroll it to `left` (a minute) or the kept position.
@@ -4257,17 +4380,19 @@ function hzDraw(root, left){
     if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + (codeOnly ? 1 : Math.min(7, estLines(e.title.length, w - 16, agenda && e.t ? 7.6 : 6.7))) * lineH + 14 * rs) + markRoom + extra
       + Math.min(4, listed(e).length) * 14 * rs };
     const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.1));
-    const head = 9 + hl2 * 15.5 * rs + 14 * rs + extra + (agenda ? 2 : 0);
+    // (a clash's hatched band adds to the head's top padding)
+    const head = 9 + hl2 * 15.5 * rs + 14 * rs + extra + (agenda ? 2 : 0) + (agenda && e.clash.length ? 5 : 0);
     let segs;
     if (tmode === 'full'){
       segs = 0;
       for (const t of tks){
         const tw = (toMin(t.e) - toMin(t.s)) * ppm - 10;
         const sp = t.sp.map(p => p.n).join(', ');
-        const hh = 18 * rs + Math.min(9, wrapLines(t.t, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, wrapLines(sp, tw, 6.1)) * 13 * rs : 0) + 4;
+        const narrow = tw < 100; // a few lines with an ellipsis, not a column of single words
+        const hh = 18 * rs + Math.min(narrow ? 4 : 9, wrapLines(t.t, tw, 7)) * 14.5 * rs + (sp ? Math.min(narrow ? 1 : 3, wrapLines(sp, tw, 6.1)) * 13 * rs : 0) + 4;
         segs = Math.max(segs, hh);
       }
-    } else segs = tmode === 'mid' ? 64 * rs : 24;
+    } else segs = tmode === 'mid' ? 64 * rs : agenda ? 42 * rs : 24;
     return { e, s, a, b, w, tks, h: head + segs, head };
   };
   // One lane's bars, packed into rows where they overlap. `col` is the lane's
@@ -4282,7 +4407,7 @@ function hzDraw(root, left){
         const clash = dvClashText(e);
         const word = s.cat === 'poster' ? 'poster' : 'talk';
         const meta = (e.t ? [`${e.start}–${e.end}`, agenda ? '' : 'in ' + s.title]
-          : [`${s.start}–${s.end}`, n ? `${n} ${word}${n > 1 ? 's' : ''}${e.inner && e.inner.size ? ` · ★ ${e.inner.size} starred` : ''}` : '',
+          : [`${s.start}–${s.end}`, n ? `${e.inner && e.inner.size ? `★${e.inner.size}<span class="visually-hidden"> starred</span> of ` : ''}${n} ${word}${n > 1 ? 's' : ''}` : '',
             s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(' · ');
         const conv = !e.t && s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
         const tip = esc(e.t ? `${e.title} (${e.start}–${e.end}, in ${s.title})${clash ? '\n' + clash : ''}`
@@ -4290,14 +4415,14 @@ function hzDraw(root, left){
         const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
         const attrs = `data-date="${day.date}" data-start="${m.a}" data-end="${m.b}"`;
         const cls = (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '');
-        const tiny = (m.b - m.a) * ppm < 30;
+        const tiny = !agenda && (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
         const lst = listed(e).map(t => `<span class="hz-inl" data-tid="${t.id}">★ ${esc(t.t)}</span>`).join('');
-        const title = `<span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span>`;
+        const title = `<span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(shown || e.title))}</span>`;
         // My agenda says what each item is: its kind first, then title; a talk adds its speakers and session
         const sp = e.t ? e.t.sp.map(p => p.n).join(', ') : '';
         const inner = tiny ? '' : agenda
-          ? `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> <span class="hz-meta">${dvKind(e)} ${meta}</span>${title}${sp ? ` <span class="hz-sp">${hl(sp)}</span>` : ''}${e.t ? ` <span class="hz-meta hz-of">in ${hl(s.title)}</span>` : ''}${lst}</span>`
+          ? `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> <span class="hz-meta">${dvKind(e)} <span class="hz-mtx">${meta}</span></span>${title}${sp ? ` <span class="hz-sp">${hl(sp)}</span>` : ''}${e.t ? ` <span class="hz-meta hz-of">in ${hl(s.title)}</span>` : ''}${lst}</span>`
           : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> ${title}<span class="hz-meta">${meta}</span>${lst}</span>`;
         const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
         if (!m.tks.length){
@@ -4320,8 +4445,8 @@ function hzDraw(root, left){
             const sp = t.sp.map(p => p.n).join(', ');
             const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
             const mine = agenda ? (e.inner.has(t.id) ? ' mine' : e.hits.has(t.id) ? ' hit' : ' dim') : '';
-            segs += `<button type="button" class="hz-talk${mine}" data-tid="${t.id}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-              <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+            segs += `<button type="button" class="hz-talk${mine}" data-tid="${t.id}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" title="" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+              <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}<span class="hz-hh">${t.s.slice(0, 2)}</span>${t.s.slice(2)}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
           bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} ${ids} title="${tip}">
             <button type="button" class="hz-head" style="height:${m.head}px" title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
@@ -4408,28 +4533,78 @@ function hzDraw(root, left){
   paintNow();
 }
 
+// Whole words in lines `w` px wide, at most n lines (the first starts after `lead`, the
+// star). A word longer than a line gets a line of its own and the last line takes the rest
+// of the title; both are cut by CSS with an ellipsis, so the text itself stays whole.
+const hzMeasure = (() => { let c; return (font, s) => { c = c || document.createElement('canvas').getContext('2d'); if (c.font !== font) c.font = font; return c.measureText(s).width; }; })();
+function hzWords(words, w, n, font, lead = ''){
+  const fit = s => hzMeasure(font, s) <= w, lines = [];
+  let cur = '';
+  for (let i = 0; i < words.length; i++){
+    const pre = lines.length ? '' : lead;
+    if (!cur){
+      // the star alone on the first line rather than the first word cut short
+      if (pre && !fit(pre + words[i]) && fit(words[i]) && n > 1) lines.push('');
+      cur = words[i];
+      continue;
+    }
+    const cand = cur + ' ' + words[i];
+    if (fit(pre + cand)){ cur = cand; continue; }
+    if (lines.length === n - 1) return [...lines, cur + ' ' + words.slice(i).join(' ')];
+    lines.push(cur);
+    cur = words[i];
+  }
+  return [...lines, cur];
+}
 // Titles wrap at whole words only: a bar (or talk) whose title has a word wider than
-// the bar shows just its stream badge (or the talk's time); the title is in its
-// tooltip and details. A badge that does not fit either is set tighter (hz-nar0) and
+// the bar shows just its stream badge (a talk: its title on one line with an ellipsis, or
+// only its time when thinner still); the title is in its tooltip and details. A badge that does not fit either is set tighter (hz-nar0) and
 // then cut to three, two or one letters ("ASTRO" -> "AST" -> "AS" -> "A"); only a sliver too thin
 // for one letter is left as colour alone (hz-nar1).
 function hzFitText(h){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
   const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')].filter(b => b.querySelector('.hz-title')), nar = bars.filter(b => over(b.querySelector('.hz-title')));
-  const talks = [...h.querySelectorAll('.hz-talk')], tnar = talks.filter(t => over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')));
+  const talks = [...h.querySelectorAll('.hz-talk')];
+  // Measure everything first and write after, so the canvas is laid out a few times in
+  // all rather than once per bar or talk. A talk too narrow for whole words shows its
+  // title on one line with an ellipsis (hz-nar); one too thin for that shows its time only
+  // (hz-thin). My agenda leaves out a kind pill (SESSION, TALK) wider than its bar.
+  // (thin: narrower than 30px, or than its time at the usual size; hz-noic: no room for
+  // the time and its kind icon both; hz-mm: thinner than its time even when small, so it
+  // shows the minutes alone, ":30", under the hour on the ruler)
+  const ttw = talks.length ? hzMeasure(getComputedStyle(talks[0].querySelector('.hz-tt')).font, '00:00') : 0;
+  const tfit = talks.map(t => { const w = t.clientWidth; return [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), w < 30 || w - 8 < ttw, w < 18, w - 8 < ttw + 10, w - 3 < ttw * .8]; });
+  // (it needs room beside it for the start of the time)
+  const nokind = bars.filter(b => { const k = b.querySelector('.hz-meta .kind'), m = k && k.parentElement; return k && k.offsetLeft + k.offsetWidth + 28 > m.offsetLeft + m.clientWidth; });
   for (const b of nar){
     b.classList.add('hz-nar');
     // a break's badge says which break ("Tea", "Lunch") rather than "Break" for all
     const bdg = b.querySelector('.hz-bdg');
     if (bdg.dataset.ab) bdg.textContent = bdg.dataset.ab;
+    b._code = bdg.textContent;
   }
-  for (const t of tnar) t.classList.add('hz-nar');
+  talks.forEach((t, i) => { if (tfit[i][0]) t.classList.add('hz-nar'); if (tfit[i][1]) t.classList.add('hz-thin'); if (tfit[i][2]) t.classList.add('hz-sliver'); if (tfit[i][3]) t.classList.add('hz-noic'); if (tfit[i][1] && tfit[i][4]) t.classList.add('hz-mm'); });
+  for (const b of nokind) b.classList.add('hz-nokind');
   const nar0 = nar.filter(b => over(b.querySelector('.hz-in')));
   for (const b of nar0) b.classList.add('hz-nar0');
-  for (const b of nar0){
-    const in_ = b.querySelector('.hz-in'), bdg = b.querySelector('.hz-bdg'), code = bdg.textContent;
-    for (const n of [3, 2, 1]) if (n < code.length && over(in_)) bdg.textContent = code.slice(0, n);
-    if (over(in_)) b.classList.add('hz-nar1');
+  // codes cut to three, two or one letters, every bar at each step
+  let cut = nar0;
+  for (const n of [3, 2, 1]){
+    cut = cut.filter(b => over(b.querySelector('.hz-in')));
+    for (const b of cut){ const bdg = b.querySelector('.hz-bdg'); if (n < bdg.textContent.length) bdg.textContent = bdg.textContent.slice(0, n); }
+  }
+  const nar1 = cut.filter(b => over(b.querySelector('.hz-in')));
+  for (const b of nar1) b.classList.add('hz-nar1');
+  // My agenda: a bar too narrow for its whole code sets it upright when it is tall enough
+  const vert = h.classList.contains('hz-agenda') ? nar0.filter(b => b.clientWidth >= 9 && b.clientHeight > 2 * b.clientWidth
+    && (b.classList.contains('hz-nar1') || b.querySelector('.hz-bdg').textContent !== b._code)) : [];
+  for (const b of vert){ const bdg = b.querySelector('.hz-bdg'); b._cut = bdg.textContent; b.classList.add('hz-vert'); bdg.textContent = b._code; }
+  for (const n of [3, 2, 1]){
+    for (const b of vert.filter(b => b.querySelector('.hz-bdg').getBoundingClientRect().bottom > b.getBoundingClientRect().bottom - 3)){
+      const bdg = b.querySelector('.hz-bdg');
+      if (n < bdg.textContent.length) bdg.textContent = bdg.textContent.slice(0, n);
+      else if (b.classList.contains('hz-vert')){ b.classList.remove('hz-vert'); bdg.textContent = b._cut; }
+    }
   }
   // A narrow bar shows only its code (and time): name it by its title, then the text it
   // shows, then the tooltip's notes (clash, shown for starred talks)
@@ -4437,28 +4612,52 @@ function hzFitText(h){
     const t = b.querySelector('.hz-title');
     // (My agenda's bars also show a kind pill, speakers and the talk's session)
     const vis = [...b.querySelector('.hz-in').children].filter(c => c !== t && !c.classList.contains('hz-bdg') && getComputedStyle(c).display !== 'none');
-    const shown = (b.classList.contains('hz-nar1') ? '' : b.querySelector('.hz-bdg').textContent + ' ') + vis.map(c => c.textContent.trim()).filter(Boolean).join(' ');
+    // (a kind pill left out for room is not read either)
+    const text = c => [...c.childNodes].filter(n => !(n.classList && n.classList.contains('kind') && b.classList.contains('hz-nokind'))).map(n => n.textContent).join('').trim();
+    const shown = (b.classList.contains('hz-nar1') && !b.classList.contains('hz-vert') ? '' : b.querySelector('.hz-bdg').textContent + ' ') + vis.map(text).filter(Boolean).join(' ');
     const notes = (b.title || '').split('\n').slice(1);
-    b.setAttribute('aria-label', [t.textContent.replace(/^[\s\u26a0\u2605]+/, '').trim(), shown,
+    const kind = b.classList.contains('hz-nokind') ? b.querySelector('.hz-meta .kind').textContent : '';
+    b.setAttribute('aria-label', [t.textContent.replace(/^[\s\u26a0\u2605]+/, '').trim(), shown, kind,
       t.querySelector('.hz-star') ? 'in My agenda' : '', ...notes].filter(Boolean).join(', '));
   }
   // Row heights are estimated (and capped): a talk still taller than its row keeps its
   // whole title if it can and shortens its speakers, else drops them and ends the title
   // with an ellipsis, so no line is cut through.
-  for (const t of talks){
+  const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 13;
+  // A talk too narrow for whole words (hz-nar) gets its title set here (hzWords): whole
+  // words on as many lines as fit, a word too long for a line cut with an ellipsis, so it
+  // reads "Spectral / amplifica… / for / simulation…" rather than one cut line.
+  const fits = [], notl = [];
+  const clamp = talks.map(t => {
     const tl = t.querySelector('.hz-tl'), ts = t.querySelector('.hz-ts'), tt = t.querySelector('.hz-tt');
-    if (t.classList.contains('hz-nar') || t.scrollHeight <= t.clientHeight + 1 || !tl || getComputedStyle(tl).display === 'none') continue;
+    if (!tl || getComputedStyle(tl).display === 'none') return null;
     const cs = getComputedStyle(t), room = t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (tt ? tt.offsetHeight + 1 : 0);
-    const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 13;
-    const showsSp = ts && getComputedStyle(ts).display !== 'none';
-    if (showsSp && tl.offsetHeight <= room - lh(ts) - 1){
-      ts.classList.add('hz-clamp');
-      ts.style.setProperty('--cl', Math.floor((room - tl.offsetHeight - 1) / lh(ts)));
-    } else {
-      if (showsSp) ts.hidden = true;
-      tl.classList.add('hz-clamp');
-      tl.style.setProperty('--cl', Math.max(1, Math.floor(room / lh(tl))));
+    // a thin talk's one title line, where there is room for it under the time
+    if (t.classList.contains('hz-thin')){ if (room < lh(tl) - 1) notl.push(t); return null; }
+    if (t.classList.contains('hz-nar')){
+      const ls = getComputedStyle(tl);
+      fits.push([tl, t.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth) - 1,
+        Math.max(1, Math.floor(room / (parseFloat(ls.lineHeight) || 13))), ls.font]);
+      return null;
     }
+    if (t.scrollHeight <= t.clientHeight + 1) return null;
+    const showsSp = ts && getComputedStyle(ts).display !== 'none', th = tl.offsetHeight;
+    return showsSp && th <= room - lh(ts) - 1 ? [ts, Math.floor((room - th - 1) / lh(ts))]
+      : [tl, Math.max(1, Math.floor(room / lh(tl))), showsSp ? ts : null];
+  }).filter(Boolean);
+  for (const t of notl) t.classList.add('hz-notl');
+  for (const [el, n, hide] of clamp){
+    if (hide) hide.hidden = true;
+    el.classList.add('hz-clamp');
+    el.style.setProperty('--cl', n);
+  }
+  for (const [tl, w, n, font] of fits){
+    const star = tl.querySelector('.hz-star');
+    const words = [...tl.childNodes].filter(x => x !== star).map(x => x.textContent).join('').trim().split(/\s+/);
+    // (each line marked again for My agenda's search)
+    tl.innerHTML = hzWords(words, w, n, font, star ? '★ ' : '').map(l => `<span class="hz-ln">${hl(l)}</span>`).join(' ');
+    if (star) tl.firstChild.prepend(star, ' ');
+    tl.classList.add('hz-fit');
   }
   // Bar heights are estimated from the title's length; where the title wraps to more lines
   // than that allowed, end it in an ellipsis (fewer lines) so the time line below stays
@@ -4650,7 +4849,9 @@ function hzInit(root){
   if (!tip){ tip = document.createElement('div'); tip.id = 'hzTip'; tip.hidden = true; document.body.appendChild(tip); }
   const showTip = e => {
     const t = e.target.closest && e.target.closest('.hz-talk');
-    if (!t || !(h.classList.contains('hz-tick') || h.classList.contains('hz-mid') || t.classList.contains('hz-nar'))){ tip.hidden = true; return; }
+    // every talk card in My agenda; in the program, those whose text is cut
+    const cut = t && (h.classList.contains('hz-agenda') || h.classList.contains('hz-tick') || h.classList.contains('hz-mid') || t.classList.contains('hz-nar') || !!t.querySelector('.hz-clamp, [hidden]'));
+    if (!t || !cut){ tip.hidden = true; return; }
     tip.textContent = t.dataset.tip; tip.hidden = false;
     const r = t.getBoundingClientRect(), w = tip.offsetWidth, hh = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
@@ -4839,16 +5040,16 @@ function vtDayView(day){
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
   const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
   const headNote = c => agenda ? `<small>${colSlots[c.key].length} item${colSlots[c.key].length === 1 ? '' : 's'}${nClash ? ` · <span class="vt-hcx">&#9888; ${nClash} in clash</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
-  const heads = '<div class="vt-corner"></div>' + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
+  const heads = `<div class="vt-corner">${agenda && !scroll ? DV_KEY_BTN : ''}</div>` + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
   // inside the scroll box could only stick to the box, not the page).
   // Columns off to either side show as a shade on that edge and a "More" button in the
   // heads bar (sxEdges).
   const more = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← More' : 'More →'}</button>`;
-  let html = head + (scroll ? `<div class="vt-sx sx-box"><div class="vt-hbar"><div class="vt-hsc"><div class="vt-hgrid" style="${colsCss}" aria-hidden="true">${heads}</div></div>${more(-1)}${more(1)}</div>` : '')
+  let html = head + (scroll ? `<div class="vt-sx sx-box"><div class="vt-hbar"><div class="vt-hsc"><div class="vt-hgrid" style="${colsCss}" aria-hidden="true">${heads}</div></div>${agenda ? DV_KEY_BTN : ''}${more(-1)}${more(1)}</div>` : '')
     + `<div class="vt-wrap${scroll ? ' scroll sx-sc' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
-  html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
+  html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div><div class="vt-nowd" aria-hidden="true" hidden></div>`;
   // Each time has a solid line and label on its first row; a talk row under a
   // heading row of the same time gets a dashed line and a lighter label.
   for (const r of rows){
@@ -4877,7 +5078,7 @@ function vtDayView(day){
     html += '</div>';
   }
   if (bands.length) html += `<div class="vt-grp" role="group" aria-label="Plenaries, events and breaks (all streams)">${cells.filter(c => c.band).map(c => placed(c.slots[0], '2 / -1', 1, true)).join('')}</div>`;
-  return html + `</section></div>${scroll ? '<i class="sx-fade l" aria-hidden="true"></i><i class="sx-fade r" aria-hidden="true"></i></div>' : ''}</div>`;
+  return html + `</section></div>${scroll ? '<i class="sx-fade l" aria-hidden="true"></i><i class="sx-fade r" aria-hidden="true"></i></div>' : ''}${agenda ? dvKeyPop(slots) : ''}</div>`;
 }
 
 document.getElementById('agenda').addEventListener('click', e => {
@@ -6651,6 +6852,19 @@ function paintNow(){
     }
     line.hidden = y === null;
     if (y !== null){ line.style.top = y + 'px'; line.style.width = (g.scrollWidth - line.offsetLeft) + 'px'; }
+    // the time itself in the gutter, and the line through any saved session it crosses
+    const dot = g.querySelector('.vt-nowd');
+    if (dot){ dot.hidden = y === null; if (y !== null){ dot.style.top = y + 'px'; const hm = hzHM(Math.floor(n.min)); if (dot.textContent !== hm) dot.textContent = hm; } }
+    // (a gutter time the pill would half cover steps aside)
+    const ph = dot && y !== null ? dot.offsetHeight / 2 + 1 : 0;
+    const under = [...g.querySelectorAll('.vt-t:not(.tk)')].map(t => [t, ph > 0 && t.offsetTop < y + ph && t.offsetTop + t.offsetHeight > y - ph]);
+    for (const [t, on] of under) if (on !== t.classList.contains('now-hid')) t.classList.toggle('now-hid', on);
+    const subs = [...g.querySelectorAll('.vt-card.sub')].map(c => [c, c.offsetTop, c.offsetHeight]);
+    for (const [c, top, h] of subs){
+      const on = y !== null && y > top + 2 && y < top + h - 2;
+      if (on) c.style.setProperty('--nowy', (y - top) + 'px');
+      if (on !== c.classList.contains('now-in')) c.classList.toggle('now-in', on);
+    }
   });
   document.querySelectorAll('#builder .ag-row[data-date]').forEach(r =>
     r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
