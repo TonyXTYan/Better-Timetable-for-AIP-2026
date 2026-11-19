@@ -472,11 +472,11 @@ footer p{margin:4px 0}
 .cal-days button{flex:none;padding:6px 10px}
 .agenda.wide{max-width:none}
 .pg-scroll{overflow-x:auto;margin:0 0 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
-.pg-cluster{display:grid;grid-template-columns:3.6rem repeat(var(--cols),minmax(11.5rem,1fr));gap:4px;padding:6px;align-items:stretch;scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
+.pg-cluster{display:grid;grid-template-columns:3.6rem repeat(var(--cols),minmax(0,1fr));gap:4px;padding:6px;align-items:stretch;scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .pg-time{grid-column:1;position:sticky;left:0;z-index:1;background:var(--card);font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding:6px 4px 0 2px}
 .pg-range{color:var(--ink);font-size:12.5px}
 .pg-range span{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
-.pg-cell{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--surface);color:var(--ink);padding:6px 8px;font-size:12.5px;line-height:1.35;overflow-wrap:anywhere}
+.pg-cell{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--surface);color:var(--ink);padding:6px 8px;font-size:12.5px;line-height:1.35;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .pg-session{background:var(--cbg)}
 .pg-cell:hover,.pg-cell:focus-visible{outline:2px solid var(--c);outline-offset:1px}
 .pg-kind{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c)}
@@ -485,6 +485,10 @@ footer p{margin:4px 0}
 .pg-who{color:var(--ink-2)}
 .pg-ttime{font-weight:700;font-variant-numeric:tabular-nums}
 .pg-star{color:var(--star)}
+.pg-cluster.dense{gap:3px}
+.pg-cluster.dense .pg-cell{padding:5px 6px;font-size:11.5px;border-left-width:3px}
+.pg-cluster.dense .pg-title{font-size:12px}
+.pg-cluster.dense .pg-meta,.pg-cluster.dense .pg-who,.pg-cluster.dense .pg-ttime,.pg-cluster.dense .pg-in{font-size:10.5px}
 .pg-cluster.past .pg-title{color:var(--muted)}
 .pg-cluster.is-now{box-shadow:inset 3px 0 0 var(--live-ink)}
 .pg-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
@@ -551,7 +555,7 @@ footer p{margin:4px 0}
   .builder-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .builder-actions .toggle{width:100%;justify-content:center}
   .t-body{padding-left:17px}
-  .pg-cluster{grid-template-columns:3rem repeat(var(--cols),minmax(10rem,1fr))}
+  .pg-cluster{grid-template-columns:3rem repeat(var(--cols),minmax(9.5rem,1fr))}
   .controls{position:relative}
   .filter-menu{position:static}
   .filter-panel{left:0;right:0;width:auto}
@@ -1687,7 +1691,7 @@ function programDayGrid(day){
           <span class="pg-ttime">${t.s}–${t.e}</span><span class="pg-title">${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="pg-who">${who(t)}</span>` : ''}<span class="pg-in">${hl(s.title)}</span></button>`;
       }
     });
-    return `<div class="pg-scroll" tabindex="-1"><section class="pg-cluster" data-date="${day.date}" data-start="${c.start}" data-end="${c.end}" style="--cols:${c.slots.length}" aria-label="${hhmm(c.start)} to ${hhmm(c.end)}">${cells}</section></div>`;
+    return `<div class="pg-scroll" tabindex="-1"><section class="pg-cluster${c.slots.length >= 7 ? ' dense' : ''}" data-date="${day.date}" data-start="${c.start}" data-end="${c.end}" style="--cols:${c.slots.length}" aria-label="${hhmm(c.start)} to ${hhmm(c.end)}">${cells}</section></div>`;
   }).join('');
 }
 
