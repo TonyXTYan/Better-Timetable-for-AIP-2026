@@ -56,6 +56,9 @@ window.applyDisplay = function(d){
   --radius:14px;
   /* surfaces and text (light values equal the original hard-coded colours) */
   --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9; --sunken:#eef1f6; --sunken-2:#eef2fa; --sticky-bg:rgba(246,247,251,.92); --hover-line:#c7cede; --ink-2:#4b5563; --ink-3:#374151; --faint:#94a3b8; --caret:#b6c0cf; --cnt-ink:#ffffff; --pop-shadow:rgba(16,24,40,.18); --flash:#fef9c3; --mark-bg:#fde68a; --mark-ink:#1f2937; --toast-bg:#1e2433; --toast-ink:#ffffff; --warn-ink:#b45309; --ok-ink:#15803d; --now-text:#b91c1c; --live-ink:#dc2626; --now-bg:#fef2f2; --now-line:#fecaca; --next-bg:#dbeafe; --next-ink:#1e40af; --danger-bg:#fee2e2; --danger-line:#fecaca; --today-bg:#fee2e2; --today-ink:#991b1b; --clash-bg:#fef3c7; --clash-line:#fde68a; --clash-ink:#92400e; --clash-row-bg:#fffbeb; --clash-row-line:#fcd34d; --warm-bg:#fff7ed; --warm-line:#fdba74; --warm-ink:#9a3412; --starOn-bg:#fff7eb; --starOn-line:#fcd34d; --starOn-ink:#92400e; --active-bg:#eff6ff; --active-ink:#1e40af; --grp-bg:#eef2ff; --grp-line:#c7d2fe; --grp-ink:#3730a3; --grp-btn:#c7d2fe; --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-strong:#064e3b; --ok-btn:#047857; --info-bg:#eef4ff; --info-line:#c7d8f7; --info-ink:#1e3a5f; --info-strong:#12306b; --info-btn:#1d4ed8; --info-hover:#f3f8ff; --link:#2563eb; --day-rule:#1e2433; --toast-ring:transparent; --backdrop:rgba(22,35,55,.53); --switch-off:#cbd2dd; --focus-ring:rgba(37,99,235,.3);
+  /* calendar engines: text on every --<cat>-bg tint (at least 4.5:1 on all of them, light
+     and dark), the edge shade of a sideways scroller, and text on past week blocks */
+  --bar-ink:#1e2433; --bar-meta:#4b5563; --sx-shade:rgba(16,24,40,.2); --past-ink:#374151;
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* solid fills for selected chips: white text on these in both modes */
@@ -82,6 +85,7 @@ window.applyDisplay = function(d){
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
+  --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
 
 }
 }
@@ -103,6 +107,7 @@ window.applyDisplay = function(d){
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
+  --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
 
 }
 }
@@ -174,19 +179,32 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-col{position:relative;border-radius:6px;background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
 .week-col.today{box-shadow:0 0 0 1px var(--danger-line)}
 .week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
-.week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:break-word;hyphens:auto;pointer-events:none}
+.week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual;pointer-events:none}
 .week-blk b{font-weight:800;letter-spacing:.02em}
-.week-blk.week-vl span{writing-mode:vertical-rl;padding:3px 2px 0 0;max-height:100%}
+.week-blk em{font-style:normal}
+.week-blk.week-bdg em{display:none}
+.week-blk.week-vl span{display:block;writing-mode:vertical-rl;padding:3px 2px 0 0;max-height:100%;white-space:nowrap;text-overflow:ellipsis}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
 .week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:3px;background:var(--cbg);color:var(--c);font-size:.625rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .week-blab-over{box-shadow:0 1px 3px var(--pop-shadow)}
-.week-blab.week-past{opacity:.68}
-.week-blk.week-past{filter:saturate(.5);opacity:.68}
+/* past: the stream tint with dark text (light text in dark mode) and a thin stream-colour
+   outline, instead of a dimmed solid block */
+.week-blab.week-past{color:var(--past-ink)}
+.week-blk.week-past:not(.week-band){background:var(--cbg);color:var(--past-ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent)}
+.week-blk.week-band.week-past{border-left-color:color-mix(in srgb,var(--c) 45%,var(--line))}
+.week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.625rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.week-title{margin:0 0 2px;font-size:1rem;font-weight:800;line-height:1.3}
+.week-title small{margin-left:6px;font-size:.8125rem;font-weight:600;color:var(--muted)}
+.wh-tch{display:none}
+@media (hover:none),(pointer:coarse){.wh-ptr{display:none}.wh-tch{display:inline}}
+.week-sx{--sx-l:calc(2.6rem + var(--wgap))}
+.week-h .week-sx{--sx-l:calc(var(--dl) + var(--wgap))}
+.week-rul .sx-more{top:1px;bottom:3px;min-height:0;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
-.week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:5;pointer-events:none}
+.week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:1;pointer-events:none}
 .week-now::before{content:"";position:absolute;left:-2px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--live-ink)}
 .week-now[hidden]{display:none}
 .week-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 0 0 calc(2.6rem + var(--wgap));padding:0;list-style:none;font-size:.75rem;color:var(--ink-2)}
@@ -233,7 +251,8 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
   .week-head,.week-v .week-body{grid-template-columns:2.1rem var(--week-cols-sm)}
   .week-v .week-axis span{font-size:.625rem}
   .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
-  .week-dayh .week-mon,.week-v .week-axis .week-odd{display:none}
+  .week-v .week-axis .week-odd{display:none}
+  .week-dayh .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .week-v .week-blk span{display:none}
   .week-blk:hover{outline:0}
   .week-legend,.week-h .week-legend{margin-left:0;gap:4px 10px}
@@ -654,11 +673,15 @@ footer p{margin:4px 0}
    nothing below it moves */
 .hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 1.875rem;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow);transition:margin-bottom .2s ease}
 .hz-day.stuck .hz-top{margin-bottom:var(--hzd);border-radius:0}
-.hz-corner{grid-row:1 / 3;grid-column:1;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:2px 6px 4px 10px;min-width:0;overflow:hidden}
+.hz-corner{grid-row:1 / 3;grid-column:1;min-height:0;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:2px 6px 4px 10px;min-width:0;overflow:hidden}
 .hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
 .hz-zb{display:inline-flex;gap:3px;margin-left:auto}
-.hz-zb button{width:1.5rem;height:1.125rem;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
+.hz-zb button{width:max(2rem,32px);height:max(2rem,32px);display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
 .hz-zb button:disabled{opacity:.35}
+@media (pointer:coarse){.hz-zb button{width:44px;height:44px}}
+.hz-day.stuck .hz-corner{flex-direction:row;align-items:center;padding-top:1px;padding-bottom:1px}
+.hz-day.stuck .hz-tz{flex:1 1 auto}
+.hz-day.stuck .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .hz-zb button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .hz-read{font-size:.6875rem;line-height:1.15;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:6px 10px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:height .2s ease,margin .2s ease}
@@ -667,7 +690,7 @@ footer p{margin:4px 0}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-.hz-mlab{position:absolute;bottom:1px;padding-left:3px;font-size:.5625rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+.hz-mlab{position:absolute;z-index:1;bottom:4px;padding-left:4px;font-size:.5625rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
 .hz-sl{left:0}.hz-sr{right:0}
@@ -681,6 +704,7 @@ footer p{margin:4px 0}
 .hz-ticks{position:absolute;left:0;top:0;bottom:0;will-change:transform}
 .hz-ticks span.t{position:absolute;top:0;height:100%;box-sizing:border-box;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .hz-ticks span.t.m{border-left-color:transparent;font-weight:500;color:var(--muted)}
+.hz-ticks span.t.cut{color:transparent}
 .hz-nowpill{position:absolute;top:6px;transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
 .hz-nowpill[hidden],.hz-nowl[hidden]{display:none}
 /* the canvas: sideways only; its height is its content's height */
@@ -689,7 +713,7 @@ footer p{margin:4px 0}
 .hz-lines{position:absolute;left:var(--lw);top:0;bottom:0;pointer-events:none;z-index:1}
 .hz-lines i{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
 .hz-lines i.m{border-left-color:color-mix(in srgb,var(--line) 45%,transparent)}
-.hz-nowl{position:absolute;top:0;bottom:0;width:0;z-index:4;pointer-events:none;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
+.hz-nowl{position:absolute;top:0;bottom:0;width:0;z-index:1;pointer-events:none;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
 .hz-lane,.hz-grp{display:flex;border-bottom:1px solid var(--line)}
 .hz-rows>:last-child{border-bottom:0}
 .hz-grp{background:var(--surface-3);height:30px}
@@ -711,22 +735,28 @@ button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
 .hz-track{position:relative;flex:0 0 auto}
 .hz-colt{position:absolute;top:10px;height:10px;border-radius:2px;background:var(--c);opacity:.85;min-width:2px;z-index:2}
 .hz-empty{padding:26px 16px;color:var(--muted);font-size:.9rem;text-align:center}
-.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px}
+.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px}
 button.hz-bar{padding:4px 7px 4px 6px;display:flex;align-items:flex-start;justify-content:flex-start}
 button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
 .hz-in{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:100%;box-sizing:border-box}
-.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
-.hz-meta{color:var(--muted);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual}
+/* a bar too narrow for whole words shows its stream badge only (title in its tooltip and details) */
+.hz-bdg{display:none;font-size:.6875rem;font-weight:800;letter-spacing:.03em;color:var(--bar-ink);white-space:nowrap}
+.hz-nar>.hz-in>:not(.hz-bdg){display:none}
+.hz-nar>.hz-in>.hz-bdg{display:block}
+.hz-nar0>.hz-in{visibility:hidden}
+.hz-meta{color:var(--bar-meta);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .hz-star{color:var(--star)}
 .hz-split{display:flex;flex-direction:column}
-.hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
+.hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--bar-ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
 .hz-head .hz-title{-webkit-line-clamp:2;font-size:.78rem}
 .hz-segs{position:relative;flex:1 1 auto;min-height:0}
 .hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
 .hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem}
-.hz-tl{font-weight:600;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;font-size:.7188rem}
-.hz-ts{color:var(--muted);font-size:.65rem;overflow-wrap:break-word}
-.hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
+.hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.7188rem}
+.hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
+.hz-talk.hz-nar .hz-tl,.hz-talk.hz-nar .hz-ts{display:none}
+.hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
 .hz-mid .hz-ts{display:none}
 .hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
 .hz-tick .hz-talk>*{display:none}
@@ -737,28 +767,30 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-bar.marked{padding-bottom:15px}
 .hz-bar.marked .hz-in{max-height:100%;overflow:hidden}
 .hz-bar.marked .hz-title{flex-shrink:0}
-.hz-bar.past{opacity:.55}
+/* past: a paler tint and softer text, still at least 4.5:1 (no opacity) */
+.hz-bar.past{background:color-mix(in srgb,var(--cbg) 50%,var(--card));border-color:color-mix(in srgb,var(--c) 45%,var(--line))}
+.hz-bar.past .hz-title,.hz-bar.past .hz-tl{color:var(--bar-meta)}
 .hz-bar.is-now{border-color:var(--live-ink);border-left-color:var(--c);box-shadow:inset 0 0 0 1px var(--live-ink)}
 .hz-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
 .hz-tick .hz-talk.is-now{background:var(--live-ink)}
-.hz-talk.is-now .hz-tt{color:var(--live-ink)}
+.hz-talk.is-now .hz-tt{color:var(--now-text)}
 #hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:8px;font-size:.75rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px var(--pop-shadow)}
 #hzTip[hidden]{display:none}
 @media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}}
 @media (max-width:720px){
-.hz-day{--lw:3.1rem}
+.hz-day{--lw:4.75rem}
 .hz-full{display:none}.hz-ab{display:inline}
 .hz-corner{padding:4px 3px 6px 5px;align-items:flex-start}
 .hz-zb,.hz-read{display:none}
 .hz-tz{font-size:.5625rem;letter-spacing:.02em}
 .hz-map{margin:6px 8px 4px}
 .hz-day.stuck .hz-map{margin:1px 8px 1px}
-.hz-label{padding:6px 3px 6px 4px;font-size:.66rem;align-items:flex-start}
+.hz-label{padding:6px 3px 6px 4px;font-size:.6875rem;align-items:flex-start;overflow-wrap:normal}
 .hz-label small{display:none}
 .hz-cnt{display:none}
-button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
-.hz-lane.sole button.hz-gl{font-size:.625rem;padding:8px 2px 0 3px;font-weight:800}
-.hz-lane.sole.col button.hz-gl{font-size:.625rem}
+button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;text-transform:none}
+.hz-lane.sole button.hz-gl{font-size:.6875rem;padding:8px 2px 0 3px;font-weight:800}
+.hz-lane.sole.col button.hz-gl{font-size:.6875rem;text-transform:none;letter-spacing:0}
 .hz-pre button{padding:4px 10px}
 .hz-ctl{gap:6px}
 }
@@ -778,6 +810,34 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-nowl::before{content:"";position:absolute;left:-6px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--live-ink)}
 .vt-tcol{display:none}
 .vt-wrap{margin:0 0 14px}
+.vt-grp{display:contents}
+/* sideways scrollers (vertical day grid, horizontal week timeline): a shade on the edge
+   with more off that way, and a More button in the sticky bar above */
+.sx-box{position:relative}
+.sx-fade{position:absolute;top:0;bottom:0;z-index:5;width:1.75rem;pointer-events:none;opacity:0;transition:opacity .15s}
+.sx-fade.l{left:var(--sx-l,0px);background:linear-gradient(to right,var(--sx-shade),transparent)}
+.sx-fade.r{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
+.sx-l>.sx-fade.l,.sx-r>.sx-fade.r{opacity:1}
+.sx-more{position:absolute;top:50%;z-index:8;display:none;align-items:center;transform:translateY(-50%);min-height:28px;padding:0 10px;border:1px solid var(--accent);border-radius:999px;background:var(--card);color:var(--link);font:inherit;font-size:.75rem;font-weight:750;line-height:1.2;white-space:nowrap;box-shadow:0 2px 8px var(--pop-shadow);cursor:pointer}
+.sx-more.l{left:calc(var(--sx-l,0px) + 4px)}
+.sx-more.r{right:4px}
+.sx-l .sx-more.l,.sx-r .sx-more.r{display:inline-flex}
+@media (pointer:coarse){.sx-more{min-height:36px}}
+.vt-sx{--sx-l:calc(3.1rem + 1px);margin:0 0 14px}
+.vt-sx .vt-wrap{margin:0}
+.vt-hsc{overflow:hidden}
+.vt-hbar::before,.vt-hbar::after{content:"";position:absolute;top:0;bottom:0;z-index:7;width:1.75rem;pointer-events:none;opacity:0;transition:opacity .15s}
+.vt-hbar::before{left:var(--sx-l);background:linear-gradient(to right,var(--sx-shade),transparent)}
+.vt-hbar::after{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
+.sx-l .vt-hbar::before,.sx-r .vt-hbar::after{opacity:1}
+/* a clamped title in full, over its card (vtPopShow) */
+#vtPop{position:absolute;z-index:45;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:5px 7px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;box-shadow:0 6px 18px var(--pop-shadow);pointer-events:none}
+#vtPop.tk{background:var(--card);color:var(--ink);padding:3px 6px 5px}
+#vtPop[hidden]{display:none}
+#vtPop .vt-title,#vtPop .vt-ttl{display:block;-webkit-line-clamp:none;overflow:visible}
+#vtPop .vt-tsp{white-space:normal}
+#vtPop .vt-pfoot{color:var(--bar-meta)}
+@media print{#vtPop,.sx-more,.sx-fade{display:none!important}}
 .vt-wrap .vt-grid{margin:0}
 /* sideways only: vertical scrolling stays with the page */
 .vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
@@ -790,7 +850,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
 .vt-wrap.scroll .vt-nowl{z-index:4}
-.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--ink);font-size:.75rem;line-height:1.3;overflow-wrap:anywhere;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
+.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
@@ -799,21 +859,22 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
    under the time when the card is too narrow for both */
 .vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
 .vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-.vt-badge{flex:0 0 auto;max-width:100%;font-size:.5938rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-badge{flex:0 0 auto;max-width:100%;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
-.vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
-.vt-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 7px 4px;color:var(--muted);font-size:.6875rem;line-height:1.3;min-height:1.1rem}
-.vt-conv{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
+.vt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 6px;padding:0 7px 4px;color:var(--bar-meta);font-size:.75rem;line-height:1.3;min-height:1.1rem}
+.vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .vt-count{flex:0 0 auto;white-space:nowrap}
-.vt-tog{flex:0 0 auto;margin-left:auto;background:none;border:0;padding:1px 2px;font:inherit;font-weight:700;color:var(--ink-2);cursor:pointer;border-radius:4px;white-space:nowrap}
-.vt-tog:hover,.vt-tog:focus-visible{background:var(--card);outline:1px solid var(--c)}
+.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 9px;font:inherit;font-weight:700;color:var(--bar-ink);cursor:pointer;border-radius:999px;white-space:nowrap}
+@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}}
+.vt-tog:hover,.vt-tog:focus-visible{border-color:var(--c);outline:1px solid var(--c)}
 .vt-tog::after{content:" \25B8"}
 .vt-tog[aria-expanded="true"]::after{content:" \25BE"}
-.vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.6875rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
+.vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.75rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
 .vt-card .vt-tk:last-child{border-radius:0 0 6px 4px}
-.vt-ttl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
-.vt-ttime{font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);font-size:.6562rem}
-.vt-tsp{display:block;color:var(--muted);font-size:.625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-ttl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
+.vt-ttime{font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);font-size:.6875rem}
+.vt-tsp{display:block;color:var(--muted);font-size:.6875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-star{color:var(--star)}
 .vt-card.band{flex-direction:row;flex-wrap:wrap;align-items:center}
 .vt-card.band.sub{display:grid}
@@ -822,16 +883,17 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-card.band .vt-top{justify-content:flex-start;gap:10px}
 .vt-card.band .vt-title{-webkit-line-clamp:1;flex:1 1 auto}
 .vt-card.band .vt-foot{padding:0 8px 0 0;flex:0 0 auto}
+.vt-foot>span:empty{display:none}
 .vt-card.band .vt-tk{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;padding:3px 8px}
 .vt-card.band .vt-ttl{-webkit-line-clamp:2}
 .vt-grid.talks .vt-open{padding:4px 6px 2px}
 .vt-grid.talks .vt-foot{padding:0 6px 3px}
 .vt-grid.talks .vt-title{font-size:.75rem}
 .vt-grid.talks .vt-card:not(.band) .vt-badge{display:none}
-.vt-card.past .vt-title{color:var(--muted)}
+.vt-card.past .vt-title{color:var(--bar-meta)}
 .vt-card.is-now{box-shadow:0 0 0 1px var(--live-ink),var(--shadow)}
 .vt-tk.is-now{background:var(--now-bg)}
-.vt-tk.is-now .vt-ttime{color:var(--live-ink)}
+.vt-tk.is-now .vt-ttime{color:var(--now-text)}
 .vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .vt-talks .vt-tk:first-child{border-top:0}
 /* My agenda in the day views and the week overview: a saved session with starred talks
@@ -854,7 +916,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .hz-cx b{position:absolute;right:3px;bottom:2px;font-size:.6875rem;line-height:1;color:var(--warn-ink)}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
-.vt-cx{flex:0 0 auto;font-size:.5938rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
+.vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
 .vt-tk.mine{background:var(--starOn-bg)}
 .vt-tk.dim{background:var(--surface-2);color:var(--muted)}
 .vt-tk.dim .vt-ttime{color:var(--muted)}
@@ -901,6 +963,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-lb .vt-card.band .vt-open,.vt-lb .vt-card.band .vt-foot{flex:none}
 .vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
 .vt-day{outline:none}
+.vt-day:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+.vt-daynav .cal-day-title:focus{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 .vt-daynav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0 0 10px;padding:2px 0 8px;border-bottom:2px solid var(--day-rule)}
 .vt-daynav .cal-day-title{margin:0;padding:0;border:0;text-align:center;white-space:nowrap}
 .vt-go{justify-self:start;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font:inherit;font-size:.8125rem;font-weight:700;line-height:1.4;white-space:nowrap;cursor:pointer}
@@ -2584,17 +2648,22 @@ function weekBounds(slots = DATA.days.flatMap(d => d.slots)){
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
 // "AIP QST: Quantum sensing, estimation & entanglement" -> QST · Quantum sensing, …
-function weekLabel(s){
+// Returns [code, rest]: the block shows <b>code</b> and the rest, or the code alone
+// (its badge) when too narrow for whole words (weekFit).
+function weekLabelParts(s){
   const code = s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
   const r = s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '');
-  const esc2 = x => esc(x);
   const q = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (s.cat === 'focus' ? '(?: Session)?' : '');
   let m = r.match(new RegExp('^' + q + '\\s*[:\\-–]\\s*(.+)$'));
-  if (m) return `<b>${esc2(code)}</b> · ${esc2(m[1])}`;
+  if (m) return [code, ' · ' + m[1]];
   m = r.match(new RegExp('^' + q + '(\\s+\\d+)?$'));
-  if (m) return `<b>${esc2(code)}</b>${esc2(m[1] || '')}`;
-  if (new RegExp('^' + q + '\\b').test(r)) return `<b>${esc2(code)}</b>${esc2(r.slice(code.length))}`;
-  return `<b>${esc2(code)}</b> · ${esc2(r)}`;
+  if (m) return [code, m[1] || ''];
+  if (new RegExp('^' + q + '\\b').test(r)) return [code, r.slice(code.length)];
+  return [code, ' · ' + r];
+}
+function weekLabel(s){
+  const [code, rest] = weekLabelParts(s);
+  return `<b>${esc(code)}</b>${rest ? `<em>${esc(rest)}</em>` : ''}`;
 }
 // My agenda shows its saved items the same way, merged as everywhere: no bands, a
 // talk item labelled with a star, a saved session with its starred-talk count, and
@@ -2615,9 +2684,13 @@ function weekOverview(){
     const s = agenda ? x.s : x, on = agenda || slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
     const a = toMin(x.start), b = toMin(x.end);
     const clash = agenda && x.clash.length > 0;
-    const label = band ? esc(s.cat === 'plenary' ? 'Plenary' : s.title)
-      : agenda && x.t ? `<b>★</b> ${esc(x.t.t)}` : weekLabel(s) + (agenda && x.inner.size ? ` <b>★${x.inner.size}</b>` : '');
-    const aria = esc(`${agenda ? x.title : s.title}, ${DATA.days[di].label} ${x.start}–${x.end}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
+    const bandText = s.cat === 'plenary' ? 'Plenary' : s.title, parts = weekLabelParts(s);
+    const label = band ? esc(bandText)
+      : agenda && x.t ? `<b aria-hidden="true">★</b><em> ${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b aria-hidden="true">★${x.inner.size}</b>` : '');
+    // the accessible name starts with the text shown (the full label; CSS may clamp it)
+    const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + parts[1];
+    const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
+    const aria = esc(`${shown}, ${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
     return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
       data-week-sid="${s.id}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>`;
@@ -2654,17 +2727,17 @@ function weekOverview(){
   const heads = DATA.days.map((d, di) => {
     const [wd, dd, ...mon] = d.label.split(' ');
     const what = agenda ? 'item' : 'session';
-    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" aria-label="Open ${esc(d.label)} (${counts[di]} ${what}${counts[di] === 1 ? '' : 's'})">
-      <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}</small></button>`;
+    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
+      <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}<span class="visually-hidden"> ${what}${counts[di] === 1 ? '' : 's'}</span></small></button>`;
   });
   const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
   const nClash = agenda ? days.flat().filter(x => x.clash.length).length : 0;
   const legend = cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
     + (nClash ? `<li class="week-lcx"><i></i>Clash (${nClash} item${nClash === 1 ? '' : 's'})</li>` : '');
-  const touch = matchMedia('(hover: none)').matches;
-  const hint = `<p class="week-hint">${agenda ? (touch ? 'Your saved items for the week. Tap one, or a day, to open that day.'
-      : 'Your saved items for the week, to scale. Overlapping items sit side by side, hatched. Click one, or a day, to open that day.')
-    : touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.'}</p>`;
+  // the hint for a mouse or for touch (CSS shows the one that fits the device)
+  const hint = `<h2 class="week-title">${agenda ? 'My agenda, all week' : 'All week'} <small>${esc(DATA.days[0].label)} – ${esc(DATA.days[DATA.days.length - 1].label)} 2026</small></h2>
+    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale. Overlapping items sit side by side, hatched. Click one, or a day, to open that day.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
+    : `<span class="wh-ptr">The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.</span><span class="wh-tch">The whole congress at a glance. Tap a session to open its day.</span>`}</p>`;
   const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>`;
   if (horiz){
     // one row per day; the ruler sits outside the sideways scroller so it can stick
@@ -2672,8 +2745,10 @@ function weekOverview(){
     const rows = DATA.days.map((d, di) => `<div class="week-row${d.date === today ? ' today' : ''}">${heads[di]}${cols[di]}</div>`);
     return `<div class="week-ov week-h${agenda ? ' week-mine' : ''}" style="--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
       ${hint}
-      <div class="week-rul" aria-hidden="true"><div class="week-rul-in"><span></span><div class="week-axis">${axis}</div></div></div>
-      <div class="week-sc"><div class="week-body">${rows.join('')}</div></div>
+      <div class="week-sx sx-box">
+      <div class="week-rul"><div class="week-rul-in" aria-hidden="true"><span></span><div class="week-axis">${axis}</div></div>${weekMore(-1)}${weekMore(1)}</div>
+      <div class="week-sc sx-sc"><div class="week-body">${rows.join('')}</div></div>
+      <i class="sx-fade l" aria-hidden="true"></i><i class="sx-fade r" aria-hidden="true"></i></div>
       ${tail}
     </div>`;
   }
@@ -2683,36 +2758,49 @@ function weekOverview(){
     : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
   return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
     ${hint}
-    <div class="week-rul"><div class="week-rul-in week-head"><span></span>${heads.join('')}</div></div>
-    <div class="week-sc"><div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div></div>
+    <div class="week-sx sx-box">
+    <div class="week-rul"><div class="week-rul-in week-head"><span></span>${heads.join('')}</div>${weekMore(-1)}${weekMore(1)}</div>
+    <div class="week-sc sx-sc"><div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div></div>
+    <i class="sx-fade l" aria-hidden="true"></i><i class="sx-fade r" aria-hidden="true"></i></div>
     ${tail}
   </div>`;
 }
-// After rendering: fit each label to its block, across (wrapping onto as many lines as
-// the block holds) or sideways in tall, narrow blocks, whichever shows more; and one tab
-// stop for the blocks (arrow keys move between them).
+const weekMore = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← Earlier' : 'Later →'}</button>`;
+// After rendering: fit each label to its block, across, wrapping at whole words onto as
+// many lines as the block holds. A block too narrow for its words shows its badge (the
+// stream code) alone; one too narrow for that shows none (its name is in its tooltip and
+// accessible name). Only the vertical overview's tall, narrow columns, where nothing
+// fits across, set the label sideways (one line, ellipsis). One tab stop for the blocks
+// (arrow keys move between them).
 function weekFit(root = document.getElementById('agenda')){
   const ov = root.querySelector('.week-ov');
   if (!ov) return;
   const cs = getComputedStyle(ov.querySelector('.week-blk') || ov);
   const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12, cw = fs * .56;
   const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
+  const vert = ov.classList.contains('week-v');
+  const over = el => el.scrollWidth > el.clientWidth + 1;
+  const todo = [];
   for (const b of ov.querySelectorAll('.week-blk')){
     const span = b.firstElementChild;
     span.hidden = false;
-    b.classList.remove('week-vl');
-    if (b.classList.contains('week-off') || !shown){ span.hidden = true; continue; }
-    const w = b.clientWidth, h = b.clientHeight;
-    if (b.classList.contains('week-band')){ span.hidden = true; continue; }
-    const across = [Math.floor((h - 2) / lh), Math.floor((w - 6) / cw)];
-    const side = [Math.floor((w - 3) / lh), Math.floor((h - 6) / cw)];
-    // characters shown, counting a line of under six characters as nearly useless
-    const score = ([n, c]) => n < 1 || c < 3 ? 0 : n * c * (c < 6 ? .3 : 1);
-    const vl = score(side) > score(across);
-    const [lines, chars] = vl ? side : across;
-    if (lines < 1 || chars < 3){ span.hidden = true; continue; }
-    b.classList.toggle('week-vl', vl);
+    b.classList.remove('week-vl', 'week-bdg');
+    if (b.classList.contains('week-off') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
+    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2) / lh);
+    if (lines < 1 || w < 12){ span.hidden = true; continue; }
     span.style.setProperty('--lines', lines);
+    todo.push(b);
+  }
+  // measure after all labels are set (one layout), then fall back to the badge
+  const nar = todo.filter(b => over(b.firstElementChild));
+  for (const b of nar) b.classList.add('week-bdg');
+  for (const b of nar.filter(b => over(b.firstElementChild))){
+    const span = b.firstElementChild, w = b.clientWidth, h = b.clientHeight;
+    b.classList.remove('week-bdg');
+    if (vert && h > 2.5 * w && Math.floor((w - 3) / lh) >= 1 && (h - 6) / cw >= 4){
+      b.classList.add('week-vl');
+      span.style.setProperty('--lines', 1);
+    } else span.hidden = true;
   }
   for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
   const blocks = weekBlocks(ov);
@@ -2782,6 +2870,7 @@ function weekPaintNow(){
     line.style.setProperty('--np', (n.min - t0) / (t1 - t0) * 100);
   }
   for (const b of ov.querySelectorAll('.week-blk')) b.classList.toggle('week-past', b.dataset.date < n.date || (b.dataset.date === n.date && +b.dataset.end <= n.min));
+  for (const d of ov.querySelectorAll('.week-dayh')) d.classList.toggle('week-pastday', d.dataset.date < n.date);
 }
 function weekTarget(sid, tid = ''){
   const main = document.getElementById('agenda');
@@ -3241,17 +3330,20 @@ function programDayGrid(day){
 // splits bars into talks, with a zoom that keeps a 15-minute talk readable.
 const HZ = { zoom: {}, left: {}, collapsed: new Set() };
 const HZ_GROUPS = [
-  { k:'plenary', name:'Plenary', ab:'PLN', cats:['plenary'] },
-  { k:'events', name:'Congress events', ab:'EVT', cats:['events'] },
+  { k:'plenary', name:'Plenary', ab:'Plenary', cats:['plenary'] },
+  { k:'events', name:'Congress events', ab:'Events', cats:['events'] },
   { k:'aip', name:'AIP groups', ab:'AIP', cats:['aip'], split:'grp' },
-  { k:'anzcop', name:'ANZCOP', ab:'ANZ', cats:['anzcop'] },
-  { k:'commad', name:'COMMAD', ab:'CMD', cats:['commad'] },
-  { k:'focus', name:'Focus', ab:'FOC', cats:['focus'] },
-  { k:'poster', name:'Posters', ab:'POS', cats:['poster'] },
-  { k:'edu', name:'Education & PEG', ab:'EDU', cats:['edu'] },
-  { k:'misc', name:'Forums, meetings, breaks', ab:'MTG', cats:['special','business','social'], split:'cat' },
+  { k:'anzcop', name:'ANZCOP', ab:'ANZCOP', cats:['anzcop'] },
+  { k:'commad', name:'COMMAD', ab:'COMMAD', cats:['commad'] },
+  { k:'focus', name:'Focus', ab:'Focus', cats:['focus'] },
+  { k:'poster', name:'Posters', ab:'Posters', cats:['poster'] },
+  { k:'edu', name:'Education & PEG', ab:'Edu', cats:['edu'] },
+  { k:'misc', name:'Forums, meetings, breaks', ab:'Other', cats:['special','business','social'], split:'cat' },
 ];
-const HZ_CAT_AB = { edu:'EDU', events:'EVT', special:'FOR', business:'MTG', social:'BRK' };
+// short lane names for phones (whole words, never three-letter codes)
+const HZ_CAT_AB = { edu:'Edu', events:'Events', special:'Forums', business:'Meetings', social:'Breaks' };
+// the stream badge a bar or block shows when it is too narrow for its title
+const dvCode = s => s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
 const HZ_ZOOMS = [['fit', 'Fit day'], [240, '4 h'], [120, '2 h'], [60, '1 h']];
 const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
 const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
@@ -3337,7 +3429,7 @@ function hzTargets(d0, d1, date){
 
 function hzDayView(day){
   const ents = dayEntries(day), agenda = dvAgenda();
-  if (!ents.length) return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3><div class="hz-empty">No sessions match.</div>`;
+  if (!ents.length) return `<h2 class="cal-day-title">${esc(day.label)} 2026</h2><div class="hz-empty">No sessions match.</div>`;
   const [d0, d1] = hzBounds(ents), full = d1 - d0;
   const pc = m => ((m - d0) / full * 100).toFixed(3);
   // minimap: every session as a tick, one row per stream group (overlaps merge);
@@ -3358,19 +3450,19 @@ function hzDayView(day){
   }
   const t = hzTargets(d0, d1, day.date);
   const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
-  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>
+  return `<h2 class="cal-day-title">${esc(day.label)} 2026</h2>
     <div class="hz-ctl">
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
       <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
     </div>
     <div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
-        <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
-        <div class="hz-map" aria-label="Whole day. Drag the window or click to move through the day.">
-          <div class="hz-mt">${mt}</div>${mh}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div>
+        <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
+        <div class="hz-map" role="group" aria-label="Whole day. Drag the window or click to move through the day.">
+          <div class="hz-mt" aria-hidden="true">${mt}</div><div aria-hidden="true">${mh}</div><div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div>
           <div class="hz-brush" tabindex="0" role="slider" aria-label="Visible time window" aria-valuemin="${d0}" aria-valuemax="${d1}"></div>
         </div>
-        <div class="hz-ruler"><div class="hz-ticks"></div></div>
+        <div class="hz-ruler" aria-hidden="true"><div class="hz-ticks"></div></div>
       </div>
       <div class="hz-vp"><div class="hz-inner"><div class="hz-lines"></div><div class="hz-nowl" hidden></div><div class="hz-rows"></div></div></div>
     </div>`;
@@ -3467,7 +3559,7 @@ function hzDraw(root, left){
         const tiny = (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
         const lst = listed(e).map(t => `<span class="hz-inl">★ ${esc(t.t)}</span>`).join('');
-        const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
+        const inner = tiny ? '' : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span><span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
         if (!m.tks.length){
           let marks = '';
           if (marked(e) && !tiny){
@@ -3488,8 +3580,8 @@ function hzDraw(root, left){
             const sp = t.sp.map(p => p.n).join(', ');
             const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
             const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
-            segs += `<button type="button" class="hz-talk${mine}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.t + ', ' + t.s + (sp ? ', ' + sp : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-              <span class="hz-tt">${t.s}</span><span class="hz-tl">${star(t.id)}${hl(t.t)}</span>${sp ? `<span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+            segs += `<button type="button" class="hz-talk${mine}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+              <span class="hz-tt">${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
           bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} title="${tip}">
             <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
@@ -3504,7 +3596,7 @@ function hzDraw(root, left){
     // My agenda: one lane in time order; items that overlap take rows of their own
     const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null);
     const nClash = ents.filter(e => e.clash.length).length;
-    rows = `<div class="hz-lane sole hz-mine" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${ents.length} item${ents.length === 1 ? '' : 's'}</small>${nClash ? `<small class="hz-lcx">&#9888; ${nClash} in clash${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${ents.length} item${ents.length === 1 ? '' : 's'}</small>${nClash ? `<small class="hz-lcx">&#9888; ${nClash} in clash${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
   }
   // groups -> lanes (a lane is shown if it has anything that day)
   for (const g of agenda ? [] : HZ_GROUPS){
@@ -3525,28 +3617,31 @@ function hzDraw(root, left){
     }).join('');
     const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car">▾</span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
     if (collapsed){
-      rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px">${ticks()}</div></div>`;
+      rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" role="group" aria-label="${esc(g.name)}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px">${ticks()}</div></div>`;
       continue;
     }
-    if (multi) rows += `<div class="hz-grp" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px"></div></div>`;
+    if (multi) rows += `<div class="hz-grp" role="group" aria-label="${esc(g.name)}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px"></div></div>`;
     for (const k of laneKeys){
       const ls = lanes.get(k);
       const cat = ls[0].cat, [lc, lbg] = CAT_COLORS[cat];
       // a lane already named after the group (QST, ANZCOP …) needs no "AIP QST:" in each title
       const shownOf = s => multi && g.split === 'grp' ? s.title.replace(/^AIP(\s+[A-Z]{2,6})?\s*:\s*/, '') : !multi ? s.title.replace(/^(ANZCOP|COMMAD)\s*:\s*/, '') : s.title;
       const { bars, yy } = laneBars(ls.map(barModel), [lc, lbg], shownOf);
-      let label;
+      let label, gname = g.name;
       if (!multi) label = `<div class="hz-label" style="--c:${lc}">${gbtn}</div>`;
       else {
         const isGrp = g.split === 'grp';
         const main = isGrp ? k : DATA.cats[cat], ab = isGrp ? k : (HZ_CAT_AB[cat] || k.toUpperCase());
         const sub = isGrp ? (DATA.groups[k] || '') : '';
+        gname = isGrp ? `${k}${sub ? ' ' + sub : ''}` : main;
         label = `<div class="hz-label" style="--c:${lc}" title="${esc(sub || main)}"><b><span class="hz-full">${esc(main)}</span><span class="hz-ab">${esc(ab)}</span></b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
       }
-      rows += `<div class="hz-lane${multi ? '' : ' sole'}" style="--c:${lc};--cbg:${lbg}">${label}<div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+      rows += `<div class="hz-lane${multi ? '' : ' sole'}" role="group" aria-label="${esc(gname)}" style="--c:${lc};--cbg:${lbg}">${label}<div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
     }
   }
   h.querySelector('.hz-rows').innerHTML = rows;
+  hzFitText(h);
+  h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
   // bars that can start off to the left: hzSync pads their text into view
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
     const bar = el.classList.contains('hz-head') ? el.parentElement : el;
@@ -3571,12 +3666,28 @@ function hzDraw(root, left){
   paintNow();
 }
 
+// Titles wrap at whole words only: a bar (or talk) whose title has a word wider than
+// the bar shows just its stream badge (or the talk's time); the title is in its
+// tooltip and details. A badge that does not fit either is hidden.
+function hzFitText(h){
+  const over = el => el && el.scrollWidth > el.clientWidth + 1;
+  const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')], nar = bars.filter(b => over(b.querySelector('.hz-title')));
+  const talks = [...h.querySelectorAll('.hz-talk')], tnar = talks.filter(t => over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')));
+  for (const b of nar) b.classList.add('hz-nar');
+  for (const t of tnar) t.classList.add('hz-nar');
+  for (const b of nar.filter(b => over(b.querySelector('.hz-in')))) b.classList.add('hz-nar0');
+}
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
 function hzSync(h){
   const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm, tw = +h.dataset.tw;
   if (!ppm) return;
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0, sl = vp.scrollLeft;
   h.querySelector('.hz-ticks').style.transform = `translateX(${-sl}px)`;
+  // a ruler label cut by the left edge would read as a stray digit
+  for (const t of h._ticks || []){
+    const cut = t.x < sl - 1 && t.x + t.w > sl;
+    if (cut !== t.cut){ t.cut = cut; t.el.classList.toggle('cut', cut); }
+  }
   // a bar cut by the left edge keeps the start of its title in view
   for (const e of h._edge || []){
     const cut = sl - e.x, pad = cut > 0 && cut < e.w - 48 ? Math.round(cut) : 0;
@@ -3612,7 +3723,11 @@ function hzStuck(){
   const h = document.querySelector('#agenda .hz-day');
   if (!h) return;
   const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
-  h.classList.toggle('stuck', h.getBoundingClientRect().top < th - 0.5);
+  // Slim, the head keeps the full head's height as bottom margin (--hzd) so nothing
+  // below moves; it turns slim only once that margin is under it, so no blank band
+  // opens between the ruler and the first lane.
+  const keep = parseFloat(getComputedStyle(h).getPropertyValue('--hzd')) || 0;
+  h.classList.toggle('stuck', h.getBoundingClientRect().top < th - keep - 0.5);
 }
 let hzStuckRaf = 0;
 window.addEventListener('scroll', () => {
@@ -3729,7 +3844,7 @@ function hzInit(root){
   if (!tip){ tip = document.createElement('div'); tip.id = 'hzTip'; tip.hidden = true; document.body.appendChild(tip); }
   const showTip = e => {
     const t = e.target.closest && e.target.closest('.hz-talk');
-    if (!t || !(h.classList.contains('hz-tick') || h.classList.contains('hz-mid'))){ tip.hidden = true; return; }
+    if (!t || !(h.classList.contains('hz-tick') || h.classList.contains('hz-mid') || t.classList.contains('hz-nar'))){ tip.hidden = true; return; }
     tip.textContent = t.dataset.tip; tip.hidden = false;
     const r = t.getBoundingClientRect(), w = tip.offsetWidth, hh = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
@@ -3767,6 +3882,8 @@ const VT_COLS = [
 const VT_BAND_CATS = ['plenary','events','special','business','social'];
 const VT_TRACK_REM = 7.5;   // narrowest sub-column
 
+// Titles may break after a slash ("Atomic/Molecular") rather than mid-word.
+const vtWbr = h => h.replace(/([^<])\/(?=\S)/g, '$1/<wbr>');
 // My agenda's one column: saved items in time order, side by side where they overlap.
 const VT_MINE = { key:'mine', label:'My agenda', short:'My agenda', col:'var(--accent)', of:() => true };
 
@@ -3797,9 +3914,9 @@ function vtDayView(day){
   // one focusable box, so arrow keys work on it (vtDayNav below).
   const step = d => { const i = vtDayStep(d); return i < 0 ? null : DATA.days[i]; };
   const go = (d, to) => to
-    ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
+    ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day: Alt + ${d < 0 ? 'Left' : 'Right'} arrow, or ${d < 0 ? 'Left' : 'Right'} arrow once the timetable is scrolled to its ${d < 0 ? 'left' : 'right'} edge">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
     : `<span class="vt-go none"></span>`;
-  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1, step(1))}</div>`;
+  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)} 2026</h2>${go(1, step(1))}</div>`;
 
   // One card. With `rows` the card shows its talks on the grid rows given
   // (subgrid); without, talks (if open) are a plain list under the heading.
@@ -3817,7 +3934,7 @@ function vtDayView(day){
       : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
     const talkBtn = (t, style) => {
       const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
-      return `<button type="button" class="vt-tk${mine}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
+      return `<button type="button" class="vt-tk${mine}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${vtWbr(hl(t.t))}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
     };
     let talks = '';
     if (open && o.rows && !listOnly(e)){
@@ -3840,7 +3957,7 @@ function vtDayView(day){
     return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
       <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${clash ? ` aria-description="${esc(clash)}"` : ''}>
         <span class="vt-top"><span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
-        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(e.title)}</span></button>
+        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span></button>
       <span class="vt-foot">${conv}${tog}</span></div>${talks}</div>`;
   };
 
@@ -3914,32 +4031,41 @@ function vtDayView(day){
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
   // inside the scroll box could only stick to the box, not the page).
-  let html = head + (scroll ? `<div class="vt-hbar"><div class="vt-hgrid" style="${colsCss}">${heads}</div></div>` : '')
-    + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
+  // Columns off to either side show as a shade on that edge and a "More" button in the
+  // heads bar (sxEdges).
+  const more = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← More' : 'More →'}</button>`;
+  let html = head + (scroll ? `<div class="vt-sx sx-box"><div class="vt-hbar"><div class="vt-hsc"><div class="vt-hgrid" style="${colsCss}" aria-hidden="true">${heads}</div></div>${more(-1)}${more(1)}</div>` : '')
+    + `<div class="vt-wrap${scroll ? ' scroll sx-sc' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
   html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
   // Each time has a solid line and label on its first row; a talk row under a
   // heading row of the same time gets a dashed line and a lighter label.
   for (const r of rows){
     html += r.also ? `<div class="vt-line tk" style="grid-row:${r.line}"></div>`
       : `<div class="vt-line f" data-m="${r.m}" style="grid-row:${r.line}"></div>`;
-    html += `<div class="vt-t${r.also ? ' tk' : ''}" data-date="${day.date}" data-m="${r.m}" data-row="${r.k}" style="grid-row:${r.line}">${hhmm(r.m)}</div>`;
+    html += `<div class="vt-t${r.also ? ' tk' : ''}" aria-hidden="true" data-date="${day.date}" data-m="${r.m}" data-row="${r.k}" style="grid-row:${r.line}">${hhmm(r.m)}</div>`;
   }
-  html += `<div class="vt-t end" data-date="${day.date}" data-m="${lastEnd}" style="grid-row:${endLine}">${hhmm(lastEnd)}</div>`;
+  html += `<div class="vt-t end" aria-hidden="true" data-date="${day.date}" data-m="${lastEnd}" style="grid-row:${endLine}">${hhmm(lastEnd)}</div>`;
   const placed = (s, cols0, base, band) => {
     const { a, b } = span(s);
     return card(s, { band, place: `grid-column:${cols0};grid-row:${a - base + 1} / ${b - base + 1}`, rows: { a, b, lineR, lineAt } });
   };
-  for (const c of cells){
-    if (c.band){ html += placed(c.slots[0], '2 / -1', 1, true); continue; }
-    // every stream has a sub-column per parallel session, so no card ever
-    // stacks under another: each one's top sits on its start-time row
-    const L = c.lanes.length, K = c.col.k;
-    for (const s of c.slots){
-      const l = c.lane.get(s), a = Math.floor(l * K / L), b = Math.floor((l + 1) * K / L);
-      html += placed(s, `${c.col.t0 + a} / ${c.col.t0 + b}`, 1);
+  // Each stream's cards are a labelled group (display:contents, so they stay grid
+  // items); the full-width bands are a group of their own.
+  for (const col of cols){
+    html += `<div class="vt-grp" role="group" aria-label="${esc(col.label)}">`;
+    for (const c of cells.filter(c => c.col === col)){
+      // every stream has a sub-column per parallel session, so no card ever
+      // stacks under another: each one's top sits on its start-time row
+      const L = c.lanes.length, K = c.col.k;
+      for (const s of c.slots){
+        const l = c.lane.get(s), a = Math.floor(l * K / L), b = Math.floor((l + 1) * K / L);
+        html += placed(s, `${c.col.t0 + a} / ${c.col.t0 + b}`, 1);
+      }
     }
+    html += '</div>';
   }
-  return html + '</section></div></div>';
+  if (bands.length) html += `<div class="vt-grp" role="group" aria-label="Plenaries, events and breaks (all streams)">${cells.filter(c => c.band).map(c => placed(c.slots[0], '2 / -1', 1, true)).join('')}</div>`;
+  return html + `</section></div>${scroll ? '<i class="sx-fade l" aria-hidden="true"></i><i class="sx-fade r" aria-hidden="true"></i></div>' : ''}</div>`;
 }
 
 document.getElementById('agenda').addEventListener('click', e => {
@@ -3985,12 +4111,67 @@ function vtAnchor(){
   }
   return best;
 }
+// Sideways scrollers (the vertical day grid in its scroll box, the horizontal week
+// timeline): a shade on each edge with more off that way, and "More" buttons in the
+// sticky bar above (.sx-box holds them, .sx-sc is the scroller).
+function sxEdges(box){
+  const sc = box && box.querySelector('.sx-sc');
+  if (!sc) return;
+  const max = sc.scrollWidth - sc.clientWidth;
+  box.classList.toggle('sx-l', sc.scrollLeft > 1);
+  box.classList.toggle('sx-r', sc.scrollLeft < max - 1);
+  // name what is off to the right (vertical day: the stream heads past the edge)
+  const r = box.querySelector('.sx-more.r'), heads = [...box.querySelectorAll('.vt-head')];
+  if (r && heads.length){
+    const edge = sc.getBoundingClientRect().right, left = sc.getBoundingClientRect().left + 3.1 * remPx();
+    const off = d => heads.filter(h => d > 0 ? h.getBoundingClientRect().right > edge + 2 : h.getBoundingClientRect().left < left - 2).map(h => h.firstElementChild.textContent);
+    r.title = off(1).length ? 'More to the right: ' + off(1).join(', ') : '';
+    box.querySelector('.sx-more.l').title = off(-1).length ? 'More to the left: ' + off(-1).join(', ') : '';
+  }
+}
+document.getElementById('agenda').addEventListener('click', e => {
+  const m = e.target.closest('[data-sxmore]');
+  if (!m) return;
+  const sc = m.closest('.sx-box').querySelector('.sx-sc');
+  sc.scrollBy({ left: +m.dataset.sxmore * Math.max(120, sc.clientWidth * .7), behavior: hzSmooth() });
+});
+// A clamped title in the vertical view (a session heading or a talk) opens in full over
+// its card on hover or focus, as a pop-over that moves nothing.
+function vtPopHide(){ const p = document.getElementById('vtPop'); if (p) p.hidden = true; }
+function vtPopShow(el){
+  const clamped = [...el.querySelectorAll('.vt-title, .vt-ttl, .vt-conv')].some(x => x.scrollHeight > x.clientHeight + 1 || x.scrollWidth > x.clientWidth + 1);
+  if (!clamped) return vtPopHide();
+  let p = document.getElementById('vtPop');
+  if (!p){ p = document.createElement('div'); p.id = 'vtPop'; p.setAttribute('aria-hidden', 'true'); document.body.appendChild(p); }
+  const card = el.closest('.vt-card'), r = el.getBoundingClientRect();
+  p.className = el.classList.contains('vt-tk') ? 'tk' : '';
+  p.innerHTML = el.innerHTML + (el.matches('.vt-open') && card.querySelector('.vt-conv') ? `<span class="vt-pfoot">${card.querySelector('.vt-conv').innerHTML}</span>` : '');
+  for (const k of ['--c', '--cbg']) p.style.setProperty(k, card.style.getPropertyValue(k));
+  const w = Math.max(r.width, Math.min(14 * remPx(), innerWidth - 16));
+  p.style.width = w + 'px';
+  p.style.left = Math.max(8 + scrollX, Math.min(r.left + scrollX, scrollX + innerWidth - w - 8)) + 'px';
+  p.style.top = (r.top + scrollY) + 'px';
+  p.hidden = false;
+}
+{
+  const main = document.getElementById('agenda');
+  const target = e => e.target.closest && e.target.closest('.vt-grid .vt-open, .vt-grid .vt-tk');
+  main.addEventListener('pointerover', e => { const el = target(e); if (el && e.pointerType === 'mouse') vtPopShow(el); else if (!el) vtPopHide(); });
+  main.addEventListener('pointerleave', vtPopHide);
+  main.addEventListener('focusin', e => { const el = target(e); if (el && el.matches(':focus-visible')) vtPopShow(el); else vtPopHide(); });
+  main.addEventListener('focusout', vtPopHide);
+  main.addEventListener('click', vtPopHide);
+  window.addEventListener('scroll', vtPopHide, { passive: true });
+  window.addEventListener('resize', () => { for (const b of main.querySelectorAll('.sx-box')) sxEdges(b); });
+}
 let vtSlideEnd = null;
 function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   if (i < 0 || state.day === 'all' || i === state.day) return false;
   if (vtSlideEnd) vtSlideEnd();
   const main = document.getElementById('agenda'), dir = i > state.day ? 1 : -1;
   const anchor = toTop ? null : vtAnchor(), top0 = main.getBoundingClientRect().top;
+  const hadFocus = main.contains(document.activeElement);
+  vtPopHide();
   const oldWrap = main.querySelector('.vt-wrap.scroll'), oldLeft = oldWrap ? oldWrap.scrollLeft : 0;
   let ghost = null;
   if (!motionReduced() && main.querySelector(':scope > .vt-day')){
@@ -4015,9 +4196,11 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
     if (to) window.scrollBy(0, to.getBoundingClientRect().top - anchor.top);
   }
   const view = main.querySelector(':scope > .vt-day');
+  // a swipe while focus was in the old day keeps focus in the view (on its heading)
+  if (!focus && hadFocus) focus = 'view';
   if (focus === 'tab') document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll: true });
   else if (focus && view)
-    (focus === 'nav' && (view.querySelector(`[data-vtgo="${dir}"]`) || view.querySelector('[data-vtgo]')) || view).focus({ preventScroll: true });
+    (focus === 'nav' && (view.querySelector(`[data-vtgo="${dir}"]`) || view.querySelector('[data-vtgo]')) || view.querySelector('.cal-day-title') || view).focus({ preventScroll: true });
   if (!ghost || !view) return true;
   ghost.style.top = (top0 - main.getBoundingClientRect().top) + 'px';
   main.classList.add('vt-sliding');
@@ -4038,21 +4221,33 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   // The heads bar follows the grid's sideways scroll.
   main.addEventListener('scroll', e => {
     const w = e.target, bar = w.matches?.('.vt-wrap.scroll') && w.previousElementSibling;
-    if (bar && bar.matches('.vt-hbar')) bar.scrollLeft = w.scrollLeft;
+    if (bar && bar.matches('.vt-hbar')) bar.querySelector('.vt-hsc').scrollLeft = w.scrollLeft;
+    if (w.matches?.('.sx-sc')) sxEdges(w.closest('.sx-box'));
+    vtPopHide();
   }, { capture: true, passive: true });
   main.addEventListener('click', e => {
     const b = e.target.closest('[data-vtgo]');
     if (b) vtSlideTo(vtDayStep(+b.dataset.vtgo), { focus: 'nav' });
   });
+  // Left/Right anywhere in the vertical calendar: the grid scrolls sideways while it
+  // can that way, then the day turns; Alt (Option) + Left/Right always turns the day.
   main.addEventListener('keydown', e => {
-    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented || !vtShown()) return;
-    if (e.target.closest('input, select, textarea, [contenteditable], .vt-picker')) return;
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented || !vtShown()) return;
+    if (!e.target.closest('.vt-day') || e.target.closest('input, select, textarea, [contenteditable], .vt-picker')) return;
     const dir = e.key === 'ArrowRight' ? 1 : -1;
-    if (vtCanScroll(e.target.closest('.vt-wrap.scroll'))[dir > 0 ? 1 : 0]) return;   // the grid scrolls first
+    if (!e.altKey){
+      const w = main.querySelector(':scope > .vt-day .vt-wrap.scroll');
+      if (vtCanScroll(w)[dir > 0 ? 1 : 0]){
+        // one sub-column per press
+        e.preventDefault();
+        w.scrollBy({ left: dir * (VT_TRACK_REM * remPx() + 6), behavior: 'instant' });
+        return;
+      }
+    }
     const i = vtDayStep(dir);
     if (i < 0) return;
     e.preventDefault();
-    vtSlideTo(i, { focus: e.target.closest('[data-vtgo]') ? 'nav' : 'view', edge: true });
+    vtSlideTo(i, { focus: e.target.closest('[data-vtgo]') ? 'nav' : 'view', edge: !e.altKey });
   });
   // Touch: a mostly sideways swipe of 60px or more (or a quick flick).
   let touch = null;
@@ -4138,11 +4333,13 @@ function renderCalendar(){
     if (main.querySelector('.hz-day')) hzInit(main);
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
+    vtPopHide();
     main.classList.toggle('wide', true);
     result.innerHTML = (favourites ? countWord(selected.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
   weekFit(main);
+  for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
   paintNow();
   writeHash();
 }
