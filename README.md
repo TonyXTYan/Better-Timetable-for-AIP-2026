@@ -18,6 +18,10 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
+- **Display settings** (the **Aa** button): text size (Smaller 90 %, Default, Larger 115 %,
+  Largest 130 %), theme (System, Light or Dark), high-contrast text and reduce motion (follows
+  the device by default). Saved on the device (`aip2026-display`, only the changed settings) and
+  applied before the page paints; printing is always light.
 - Installable, and works offline once loaded (`sw.js`, network first with a 4 s fallback to the
   saved copy for slow conference wifi).
 
