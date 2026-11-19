@@ -282,7 +282,6 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .calendar-hint{display:none;color:var(--muted);font-size:13px;margin:6px 0}
 @media(max-width:720px){.calendar-hint{display:block}}
 .week-scroll{max-height:70vh;overflow:auto;border:1px solid var(--line);background:var(--surface);border-radius:10px}
-#programLevel select{font:inherit;font-size:13.5px;height:40px;box-sizing:border-box;padding:8px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .week-scroll table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
 .week-scroll td{min-width:9rem}
@@ -559,10 +558,6 @@ footer p{margin:4px 0}
   .controls{position:relative}
   .filter-menu{position:static}
   .filter-panel{left:0;right:0;width:auto}
-  .controls:has(#programLevel:not([hidden])){flex-wrap:wrap}
-  .controls:has(#programLevel:not([hidden])) .searchbox{flex:1 1 0;min-width:150px}
-  #programLevel{flex:1 1 100%}
-  #programLevel select{width:100%}
   .shared-banner .fb-actions{margin-left:0;width:100%}
   .shared-banner .fb-actions button{min-height:36px}
   .card .star{min-width:44px;min-height:44px}
@@ -643,6 +638,10 @@ footer p{margin:4px 0}
         <button data-layout="list" aria-pressed="true">List</button>
         <button data-layout="calendar" aria-pressed="false">Calendar</button>
       </div>
+      <div id="programLevel" class="agenda-views" role="group" aria-label="Calendar shows" hidden>
+        <button data-level="sessions" aria-pressed="true">Sessions</button>
+        <button data-level="talks" aria-pressed="false">Talks</button>
+      </div>
     </div>
     <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
     <div class="controls">
@@ -661,7 +660,6 @@ footer p{margin:4px 0}
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
       <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
-      <label id="programLevel" hidden><select aria-label="Program calendar events"><option value="sessions">Sessions</option><option value="talks">Individual talks</option></select></label>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter">&#10005;</button></div>
     <div class="result-row"><div class="result-line" id="resultLine"></div><button class="linkish" id="expandAll" type="button">Expand all abstracts</button></div>
@@ -1749,8 +1747,14 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
   next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
 });
-document.querySelector('#programLevel select').addEventListener('change', e => {
-  state.programTalks = e.target.value === 'talks';
+function paintLevel(){
+  for (const b of document.querySelectorAll('[data-level]')) b.setAttribute('aria-pressed', (b.dataset.level === 'talks') === state.programTalks);
+}
+document.getElementById('programLevel').addEventListener('click', e => {
+  const b = e.target.closest('[data-level]');
+  if (!b || (b.dataset.level === 'talks') === state.programTalks) return;
+  state.programTalks = b.dataset.level === 'talks';
+  paintLevel();
   renderCalendar();
 });
 document.getElementById('includeParents').addEventListener('change', renderCalendar);
@@ -2070,7 +2074,7 @@ function readHash(){
   const g = p.get('group');
   state.group = g && DATA.days.some(d => d.slots.some(s => s.grp === g)) ? g : null;
   state.programTalks = p.get('talks') === '1';
-  document.querySelector('#programLevel select').value = state.programTalks ? 'talks' : 'sessions';
+  paintLevel();
   return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
 }
 function followHashTargets(r){
