@@ -51,8 +51,11 @@ user site's `404.html` that keeps `?query` and `#hash`).
   institution, short forms included; `#view=participants&pq=anu` links to a search.
   Affiliations are grouped by `canonical_affiliation()` in `normalize.py`: department prefixes,
   a leading "The", case, country codes and typos are ignored, and Adelaide University and the
-  University of Adelaide (merged in 2026) are one group. The affiliation text itself is never
-  changed; talk details show each speaker as "Name (Affiliation)".
+  University of Adelaide (merged in 2026) are one group. The affiliation text itself is only
+  changed to fix known misspellings ("Macquaire"); talk details show each speaker as
+  "Name (Affiliation)". Names the source gives surname first ("O'Keeffe Dan") are put right
+  from a small table in `normalize.py`, and organisation-only speakers (an all-caps name that
+  is also the affiliation, such as ANZOS) stay on their talk but are left out of the list.
 - Star talks or whole sessions to build **My agenda**, as a list or a calendar. Overlaps show on
   each row and in a **Clashes** panel that groups chains of overlapping items; **Hide clash
   warnings** turns all of that off (remembered). **Clear all** has an Undo, and a saved talk can be

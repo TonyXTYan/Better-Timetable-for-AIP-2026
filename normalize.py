@@ -13,7 +13,7 @@ normalize_payload(payload, ctx=None) -> dict
 
 Helpers: clean_chars, collapse_ws, fix_typos, convert_latex, html_to_text,
 strip_markdown, drop_abstract_heading, unwrap_paragraphs, recase_name,
-collapse_honorific.
+collapse_honorific, fix_name_order, fix_affiliation_typos.
 
 Each string field runs a fixed list of steps. The list is applied repeatedly
 until a pass changes nothing (a fixpoint), which is what makes the whole
@@ -451,6 +451,24 @@ def collapse_honorific(name):
     return _HONORIFIC_DUP.sub(lambda m: m.group(1) + ' ', name, count=1)
 
 
+# Names the source gives surname first, put right so they sort under the
+# surname. Exact matches only; add a row when another one turns up.
+_NAME_ORDER = {
+    "O'Keeffe Dan": "Dan O'Keeffe",
+}
+
+
+def fix_name_order(name):
+    return _NAME_ORDER.get(name, name)
+
+
+def fix_affiliation_typos(s):
+    """Misspelt institution names in a displayed affiliation (_AFF_TYPOS)."""
+    for wrong, right in _AFF_TYPOS:
+        s = s.replace(wrong, right)
+    return s
+
+
 # ---------------------------------------------------------------------------
 # Pipelines
 # ---------------------------------------------------------------------------
@@ -484,6 +502,10 @@ PERSON_STEPS = [
     ('6 recase', _plain(recase_name)),
     ('6 honorific', _plain(collapse_honorific)),
     ('2 whitespace', _plain(collapse_ws)),
+    ('6 name order', _plain(fix_name_order)),
+]
+AFFILIATION_STEPS = LINE_STEPS + [
+    ('3 affiliation typos', _plain(fix_affiliation_typos)),
 ]
 TEXT_STEPS = [
     ('1 characters', _plain(clean_chars)),
@@ -547,15 +569,16 @@ def normalize_payload(payload, ctx=None):
                 talk['d'] = _settle(TEXT_STEPS, talk['d'], ctx, trec, 'd')
                 for sp in talk.get('sp', []):
                     sp['n'] = _settle(PERSON_STEPS, sp['n'], ctx, trec, 'n')
-                    sp['a'] = _settle(LINE_STEPS, sp['a'], ctx, trec, 'a')
+                    sp['a'] = _settle(AFFILIATION_STEPS, sp['a'], ctx, trec, 'a')
     return out
 
 
 # ---------------------------------------------------------------------------
 # Affiliations: a canonical institution per affiliation string, for grouping
 # ---------------------------------------------------------------------------
-# The displayed affiliation text is never changed; this only computes a group
-# key and label. The first listed institution wins: text after ';' (or after
+# Apart from the misspellings in _AFF_TYPOS (fixed in the displayed text too,
+# by fix_affiliation_typos), the displayed affiliation text is never changed;
+# this only computes a group key and label. The first listed institution wins: text after ';' (or after
 # a second numbered affiliation, "... Germany 2Department ...") is a second
 # affiliation, and "A / B", "A & B", "A and University of B" list A first.
 # Within the first affiliation a known institution below wins wherever it

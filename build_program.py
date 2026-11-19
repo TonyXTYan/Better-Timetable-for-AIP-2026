@@ -325,21 +325,28 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .hero .links a:hover{background:rgba(255,255,255,.26);text-decoration:none}
 
 /* ---------- highlights ---------- */
-.highlights{max-width:1180px;margin:8px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px}
-.hl{background:var(--card);border-radius:var(--radius);padding:12px 14px 12px 16px;box-shadow:var(--shadow);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));display:flex;flex-direction:column;min-width:0}
+.highlights{max-width:1180px;margin:8px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 12px}
+/* Each card spans five rows of the shared grid (kicker, title, date and time,
+   description, actions), so within a row of cards the date/time lines and the action
+   rows line up however the titles wrap. */
+.hl{background:var(--card);border-radius:var(--radius);padding:12px 14px 12px 16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));display:grid;grid-row:span 5;grid-template-rows:subgrid;row-gap:0;min-width:0}
 .hl .hl-k{font-size:.6875rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--c,var(--muted))}
 .hl .hl-t{font-weight:700;margin:3px 0 2px;font-size:.9375rem;line-height:1.3}
 .hl .hl-when span{white-space:nowrap}
 .hl .hl-when{margin:0 0 4px;font-size:.8125rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
-.hl .hl-d{font-size:.8125rem;color:var(--muted);margin:0 0 10px;flex:1 0 auto}
+.hl .hl-d{font-size:.8125rem;color:var(--muted);margin:0 0 10px}
 .hl .hl-d b{color:var(--ink);font-weight:600}
-.hl-acts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.hl-acts{display:flex;flex-wrap:wrap;align-items:center;align-self:start;gap:6px 8px}
 .hl-acts .ag-btn{color:var(--link);border-color:var(--line)}
 .hl-acts .ag-btn:hover{background:var(--surface-3)}
 .hl-acts .star{font-size:1.25rem;min-width:36px;min-height:32px}
 .hl-acts .star.on{background:var(--starOn-bg)}
+.hl-det{padding:4px 2px;border:0;background:none;color:var(--link);font:inherit;font-size:.75rem;font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.hl-links{display:flex;flex-wrap:wrap;gap:2px 10px;margin-left:auto}
 .hl-link{font-size:.75rem;font-weight:600;margin-left:auto;white-space:nowrap}
-@media(max-width:720px){.highlights{padding:0 16px;grid-template-columns:minmax(0,1fr)}.hl-acts .ag-btn,.hl-acts .star{min-height:40px}.hl-acts .star{min-width:44px}.hl-link{min-height:40px;display:inline-flex;align-items:center}}
+.hl-links .hl-link{margin-left:0}
+@supports not (grid-template-rows:subgrid){.highlights{row-gap:12px}.hl{display:flex;flex-direction:column;margin-bottom:0}.hl .hl-d{flex:1 0 auto}}
+@media(max-width:720px){.highlights{padding:0 16px;grid-template-columns:minmax(0,1fr)}.hl-acts .ag-btn,.hl-acts .star,.hl-det{min-height:40px}.hl-acts .star{min-width:44px}.hl-link{min-height:40px;display:inline-flex;align-items:center}}
 
 .highlight-wrap:not([open])+#toolbarAnchor+.sticky-wrap{margin-top:0}
 .highlight-wrap:not([open])>summary{margin-bottom:4px}
@@ -357,28 +364,36 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 @media (min-width:900px){.week-scroll{overflow:visible}.week-scroll thead th{top:var(--toolbar-h,150px)}}
 .week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--surface-2);font-size:.75rem}
 .week-event small,.child-talk{display:block}
-/* All week overview (Full program > Calendar > All week): one slim column per day on a
-   shared, compressed time axis, sized to about one screen. Sessions are blocks in their
-   stream colour (plenaries and breaks are bands behind them); a click opens that day. */
+/* All week overview (Full program > Calendar > All week), in the orientation of the
+   Horizontal | Vertical switch. Sessions are blocks in their stream colour labelled with
+   group code and shortened title (plenaries and breaks are bands behind them); a click
+   opens that day. The ruler (horizontal) or day heads (vertical) stick under the toolbar
+   and follow the sideways scroller, which only scrolls across, never down. */
 .week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-h,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:10px 12px 12px;box-shadow:var(--shadow)}
 .week-hint{margin:0 0 8px;font-size:.8125rem;color:var(--muted)}
-.week-head,.week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
+.week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;background:var(--card);padding-bottom:6px}
+.week-sc{overflow:auto hidden;overscroll-behavior-x:contain}
+.week-head,.week-v .week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
 .week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;text-align:left;cursor:pointer}
 .week-dayh small{font-size:.6875rem;font-weight:500;color:var(--muted)}
 .week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
 .week-dayh.today{background:var(--today-bg);border-color:var(--danger-line);color:var(--today-ink)}
 .week-dayh.today small{color:inherit}
-.week-body{height:var(--wh);margin-top:6px}
+.week-v .week-body{height:var(--wh)}
 .week-axis{position:relative}
-.week-axis span{position:absolute;right:2px;transform:translateY(-50%);font-size:.6875rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.week-axis span{position:absolute;font-size:.6875rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.week-v .week-axis span{top:calc(var(--p) * 1%);right:2px;transform:translateY(-50%)}
+.week-v .week-sc{padding-top:.4rem}
+.week-v .week-axis{position:sticky;left:0;z-index:3;background:var(--card)}
 .week-col{position:relative;border-radius:6px;background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
 .week-col.today{box-shadow:0 0 0 1px var(--danger-line)}
-.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:center;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.625rem;font-weight:700;line-height:1.1;letter-spacing:.02em;overflow:hidden;cursor:pointer;z-index:2}
-.week-blk span{padding:3px 1px 0;white-space:nowrap;pointer-events:none}
-.week-blk.week-vl span{writing-mode:vertical-rl;padding:3px 0 0}
+.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
+.week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:break-word;hyphens:auto;pointer-events:none}
+.week-blk b{font-weight:800;letter-spacing:.02em}
+.week-blk.week-vl span{writing-mode:vertical-rl;padding:3px 2px 0 0;max-height:100%}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
-.week-blk.week-band{left:0;width:100%;justify-content:flex-start;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
-.week-band span{max-width:100%;padding:2px 4px 0;overflow:hidden;text-overflow:ellipsis;font-weight:650}
+.week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
+.week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
 .week-blk.week-past{filter:saturate(.5);opacity:.68}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
@@ -389,19 +404,52 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-legend li{display:flex;align-items:center;gap:6px}
 .week-legend i{flex:none;width:.75rem;height:.75rem;border-radius:3px;background:var(--c)}
 .week-legend li.week-off{opacity:.45;text-decoration:line-through}
+/* Horizontal: one row per day (label pinned on the left), time across on a shared axis
+   that fits the width where it can; each day row is as tall as its busiest cluster,
+   with a strip on top for the band labels. */
+.week-h{--dl:5.75rem;--wl:1.8rem;--bs:1.05rem;--hppm:.055rem}
+.week-h .week-rul-in,.week-h .week-body{min-width:calc(var(--dl) + var(--wgap) + var(--dur) * var(--hppm))}
+.week-h .week-rul-in,.week-row{display:grid;grid-template-columns:var(--dl) minmax(0,1fr);column-gap:var(--wgap)}
+.week-h .week-rul{padding-bottom:4px}
+.week-h .week-rul::before{content:"";position:absolute;z-index:1;left:0;top:0;bottom:0;width:calc(var(--dl) + var(--wgap));background:var(--card);opacity:0}
+.week-h.week-scrolled .week-rul::before{opacity:1}
+.week-h .week-axis{height:1.25rem;border-bottom:1px solid var(--line)}
+.week-h .week-axis span{left:calc(var(--p) * 1%);bottom:4px;transform:translateX(-50%)}
+.week-h .week-axis span:first-child{transform:none}
+.week-h .week-axis span:last-child{transform:translateX(-100%)}
+.week-h .week-axis span::after{content:"";position:absolute;left:50%;bottom:-4px;height:3px;border-left:1px solid var(--line-strong,var(--line))}
+.week-h .week-axis span:first-child::after{left:0}
+.week-h .week-axis span:last-child::after{left:100%}
+.week-h .week-body{display:grid;row-gap:5px;padding:4px 0 2px}
+.week-h .week-dayh{position:sticky;left:0;z-index:6;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;justify-content:flex-start;gap:1px;box-shadow:var(--wgap) 0 0 var(--card)}
+.week-h .week-col{height:calc(var(--bs) + var(--lanes) * var(--wl));background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px calc(100% * 60 / var(--dur)))}
+.week-h .week-blk{left:calc(var(--a) * 1% + 1px);width:calc(var(--h) * 1% - 2px);top:calc(var(--bs) + (100% - var(--bs)) * var(--l) / 100 + 1px);height:calc((100% - var(--bs)) * var(--w) / 100 - 2px);min-height:0;min-width:3px}
+.week-h .week-blk.week-band{top:0;height:100%;left:calc(var(--a) * 1%);width:calc(var(--h) * 1%)}
+.week-h .week-band span{padding:1px 4px 0;font-size:.625rem;line-height:calc(var(--bs) - 1px)}
+.week-h .week-now{top:-3px;bottom:-3px;left:calc(var(--np) * 1%);right:auto;width:2px;height:auto;margin:0 0 0 -1px}
+.week-h .week-now::before{left:-3px;top:-2px}
+.week-h .week-legend{margin-left:calc(var(--dl) + var(--wgap))}
 #weekTip{position:fixed;z-index:90;max-width:18rem;padding:6px 9px;border-radius:8px;background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;box-shadow:0 4px 14px var(--pop-shadow);pointer-events:none}
 #weekTip b{display:block;font-weight:650}
 #weekTip[hidden]{display:none}
 .week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit 1.4s ease-out}
 @keyframes week-hit{0%{box-shadow:0 0 0 8px var(--focus-ring)}100%{box-shadow:0 0 0 0 transparent}}
+/* Vertical on a wide screen: about 1.75px a minute, and columns wide enough that the
+   busiest cluster's blocks keep a readable (sideways) label */
+@media (min-width:721px){
+  .week-v{--wh:calc(var(--dur) * .11rem);--vbw:1.3rem}
+}
 @media (max-width:720px){
   .week-ov{--wh:clamp(26rem, calc(100vh - var(--toolbar-h,150px) - 9rem), 40rem);--wgap:3px;padding:8px 6px 10px}
-  .week-head,.week-body{grid-template-columns:1.9rem var(--week-cols-sm)}
+  .week-head,.week-v .week-body{grid-template-columns:2.1rem var(--week-cols-sm)}
+  .week-v .week-axis span{font-size:.625rem}
   .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
-  .week-dayh .week-mon,.week-axis .week-odd{display:none}
-  .week-blk span{display:none}
+  .week-dayh .week-mon,.week-v .week-axis .week-odd{display:none}
+  .week-v .week-blk span{display:none}
   .week-blk:hover{outline:0}
-  .week-legend{margin-left:0;gap:4px 10px}
+  .week-legend,.week-h .week-legend{margin-left:0;gap:4px 10px}
+  .week-h{--dl:3.1rem;--hppm:.07rem}
+  .week-h .week-dayh{align-items:flex-start;padding:4px 5px}
 }
 /* View changes (withTransition): the main area cross-fades with a slight slide or zoom;
    the toolbar swaps at once and stays above it. Only set while a transition runs. The
@@ -1350,17 +1398,11 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     <p class="hl-d">From Physics PhD to YouTuber: what Veritasium learned about explaining the universe. Open to the public.</p>
     <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
   </article>
-  <article class="hl" style="--c:var(--edu)" data-ev="teachers day" data-ev-keep-time>
-    <div class="hl-k">Friday program</div><h3 class="hl-t">Australian Physics Teachers Day</h3>
-    <p class="hl-when">Fri 11 Dec · from 8am</p>
-    <p class="hl-d">A day for physics teachers on the congress's last day; details on the official page.</p>
-    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/teachers-day" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
-  </article>
-  <article class="hl" style="--c:var(--special)" data-ev="career fair" data-ev-keep-time>
-    <div class="hl-k">Friday program</div><h3 class="hl-t">Australian Physics Career Fair</h3>
-    <p class="hl-when">Fri 11 Dec · 1–4pm</p>
-    <p class="hl-d">Physics careers fair on the congress's final afternoon; details on the official page.</p>
-    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/career-fair" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  <article class="hl" style="--c:var(--public)" data-ev="teachers day">
+    <div class="hl-k">Friday program</div><h3 class="hl-t">Teachers Day &amp; Career Fair</h3>
+    <p class="hl-when">Fri 11 Dec</p>
+    <p class="hl-d">One session in the program. Per the official pages, the Australian Physics Teachers Day starts from 8am and the Career Fair runs 1–4pm.</p>
+    <div class="hl-acts"><span class="hl-links"><a class="hl-link" href="https://www.aip.org.au/congress/teachers-day" target="_blank" rel="noopener">Teachers Day&nbsp;↗<span class="visually-hidden"> (official page, opens in a new tab)</span></a><a class="hl-link" href="https://www.aip.org.au/congress/career-fair" target="_blank" rel="noopener">Career Fair&nbsp;↗<span class="visually-hidden"> (official page, opens in a new tab)</span></a></span></div>
   </article>
 </section></details>
 
@@ -2391,10 +2433,13 @@ function weekCalendar(items){
 }
 
 // All week overview (Full program > Calendar > All week): the whole congress on one
-// screen. One column per day on a shared time axis; sessions are slim blocks in their
-// stream colour, packed in lanes per cluster of overlapping sessions; plenaries and
-// breaks are full-width bands behind them. Sessions the search or stream filters leave
-// out stay as faint shapes. A click opens that day's calendar at the session.
+// page, following the Horizontal | Vertical switch. Horizontal: one row per day on a
+// shared time axis running left to right, with an hour ruler that sticks under the
+// toolbar. Vertical: one column per day, time running down. Sessions are blocks in their
+// stream colour, packed in lanes per cluster of overlapping sessions and labelled with
+// their group code and a shortened title; plenaries and breaks are bands behind them.
+// Sessions the search or stream filters leave out stay as faint shapes. A click opens
+// that day's calendar at the session.
 const WEEK_AB = { plenary:'Plenary', aip:'AIP', anzcop:'ANZCOP', commad:'COMMAD', focus:'Focus', poster:'Posters', edu:'EDU', public:'Public', special:'Forum', business:'Meeting', social:'Break' };
 const WEEK_BANDS = ['plenary', 'social'];
 function weekBounds(){
@@ -2402,30 +2447,46 @@ function weekBounds(){
   return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
+// "AIP QST: Quantum sensing, estimation & entanglement" -> QST · Quantum sensing, …
+function weekLabel(s){
+  const code = s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
+  const r = s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '');
+  const esc2 = x => esc(x);
+  const q = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (s.cat === 'focus' ? '(?: Session)?' : '');
+  let m = r.match(new RegExp('^' + q + '\\s*[:\\-–]\\s*(.+)$'));
+  if (m) return `<b>${esc2(code)}</b> · ${esc2(m[1])}`;
+  m = r.match(new RegExp('^' + q + '(\\s+\\d+)?$'));
+  if (m) return `<b>${esc2(code)}</b>${esc2(m[1] || '')}`;
+  if (new RegExp('^' + q + '\\b').test(r)) return `<b>${esc2(code)}</b>${esc2(r.slice(code.length))}`;
+  return `<b>${esc2(code)}</b> · ${esc2(r)}`;
+}
 function weekOverview(){
   const [t0, t1] = weekBounds(), dur = t1 - t0;
   const pct = m => +((m - t0) / dur * 100).toFixed(3);
   const today = aedtNow().date;
   const order = Object.keys(DATA.cats);
+  const horiz = state.orient !== 'v';
   const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   let axis = '';
-  for (let m = t0; m <= t1; m += 60) axis += `<span class="${(m - t0) % 120 ? 'week-odd' : ''}" style="top:${pct(m)}%">${hhmm(m)}</span>`;
+  for (let m = t0; m <= t1; m += 60) axis += `<span class="${(m - t0) % 120 ? 'week-odd' : ''}" style="--p:${pct(m)}">${hhmm(m)}</span>`;
   const block = (s, di, l, w, band) => {
     const on = slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
     const a = toMin(s.start), b = toMin(s.end);
-    const label = band ? (s.cat === 'plenary' ? 'Plenary' : s.title) : s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
+    const label = band ? esc(s.cat === 'plenary' ? 'Plenary' : s.title) : weekLabel(s);
     const aria = esc(`${s.title}, ${DATA.days[di].label} ${s.start}–${s.end}`);
     return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
-      data-week-sid="${s.id}" data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${esc(label)}</span></button>`;
+      data-week-sid="${s.id}" data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>`;
   };
-  const counts = [];
+  const counts = [], lanes = [];
   const cols = DATA.days.map((d, di) => {
     const slots = [...d.slots].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
       || (a.grp || '').localeCompare(b.grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
     counts.push(slots.filter(slotMatches).length);
     let html = '';
-    for (const s of slots.filter(s => WEEK_BANDS.includes(s.cat))) html += block(s, di, 0, 100, true);
+    // longer bands first, so a short break paints over an all-day one
+    const bands = slots.filter(s => WEEK_BANDS.includes(s.cat)).sort((x, y) => (toMin(y.end) - toMin(y.start)) - (toMin(x.end) - toMin(x.start)));
+    for (const s of bands) html += block(s, di, 0, 100, true);
     // clusters of overlapping sessions, greedy lanes inside each
     const clusters = [];
     let cl = null;
@@ -2437,51 +2498,87 @@ function weekOverview(){
       cl.lanes[lane] = b; cl.end = Math.max(cl.end, b);
       cl.items.push({ s, lane });
     }
+    lanes.push(Math.max(1, ...clusters.map(c => c.lanes.length)));
     for (const c of clusters){
       const n = c.lanes.length;
       for (const it of c.items) html += block(it.s, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false);
     }
     const isToday = d.date === today;
-    return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
+    return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" style="--lanes:${lanes[di]}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
   });
   const heads = DATA.days.map((d, di) => {
     const [wd, dd, ...mon] = d.label.split(' ');
     return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" aria-label="Open ${esc(d.label)} (${counts[di]} session${counts[di] === 1 ? '' : 's'})">
       <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}</small></button>`;
   });
-  // a day with almost nothing on (registration Sunday) gets a narrow column
-  const widths = min => DATA.days.map(d => d.slots.length < 4 ? `minmax(${min},.45fr)` : 'minmax(0,1fr)').join(' ');
   const cats = order.filter(k => DATA.days.some(d => d.slots.some(s => s.cat === k)));
   const legend = cats.map(k => `<li class="${state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('');
   const touch = matchMedia('(hover: none)').matches;
-  return `<div class="week-ov" style="--week-cols:${widths('5.25rem')};--week-cols-sm:${widths('0px')};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
-    <p class="week-hint">${touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its title; click it, or a day, to open that day.'}</p>
-    <div class="week-head"><span></span>${heads.join('')}</div>
-    <div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div>
-    <ul class="week-legend" aria-label="Stream colours">${legend}</ul>
+  const hint = `<p class="week-hint">${touch ? 'Tap a session or a day to open it.' : 'The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.'}</p>`;
+  const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>`;
+  if (horiz){
+    // one row per day; the ruler sits outside the sideways scroller so it can stick
+    // under the toolbar, and follows the scroller's position (weekSync)
+    const rows = DATA.days.map((d, di) => `<div class="week-row${d.date === today ? ' today' : ''}">${heads[di]}${cols[di]}</div>`);
+    return `<div class="week-ov week-h" style="--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+      ${hint}
+      <div class="week-rul" aria-hidden="true"><div class="week-rul-in"><span></span><div class="week-axis">${axis}</div></div></div>
+      <div class="week-sc"><div class="week-body">${rows.join('')}</div></div>
+      ${tail}
+    </div>`;
+  }
+  // a day with almost nothing on (registration Sunday) gets a narrow column; on a wide
+  // screen every column is wide enough for its busiest cluster to keep readable blocks
+  const widths = sm => DATA.days.map((d, di) => d.slots.length < 4 ? `minmax(${sm ? '0px' : '5.25rem'},.45fr)`
+    : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
+  return `<div class="week-ov week-v" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+    ${hint}
+    <div class="week-rul"><div class="week-rul-in week-head"><span></span>${heads.join('')}</div></div>
+    <div class="week-sc"><div class="week-body"><div class="week-axis" aria-hidden="true">${axis}</div>${cols.join('')}</div></div>
+    ${tail}
   </div>`;
 }
-// After rendering: short labels only where they fit (sideways in tall, narrow blocks),
-// and one tab stop for the blocks (arrow keys move between them).
+// After rendering: fit each label to its block, across (wrapping onto as many lines as
+// the block holds) or sideways in tall, narrow blocks, whichever shows more; and one tab
+// stop for the blocks (arrow keys move between them).
 function weekFit(root = document.getElementById('agenda')){
   const ov = root.querySelector('.week-ov');
   if (!ov) return;
+  const cs = getComputedStyle(ov.querySelector('.week-blk') || ov);
+  const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12, cw = fs * .56;
+  const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
   for (const b of ov.querySelectorAll('.week-blk')){
     const span = b.firstElementChild;
     span.hidden = false;
     b.classList.remove('week-vl');
-    if (b.classList.contains('week-off')){ span.hidden = true; continue; }
+    if (b.classList.contains('week-off') || !shown){ span.hidden = true; continue; }
     const w = b.clientWidth, h = b.clientHeight;
-    if (b.classList.contains('week-band')){ span.hidden = h < 13 || w < 30; continue; }
-    if (span.offsetWidth <= w && h >= 14) continue;
-    b.classList.add('week-vl');
-    if (span.offsetHeight <= h && span.offsetWidth <= w) continue;
-    b.classList.remove('week-vl');
-    span.hidden = true;
+    if (b.classList.contains('week-band')){
+      span.hidden = ov.classList.contains('week-h') ? w < 26 : h < 13 || w < 30;
+      continue;
+    }
+    const across = [Math.floor((h - 2) / lh), Math.floor((w - 6) / cw)];
+    const side = [Math.floor((w - 3) / lh), Math.floor((h - 6) / cw)];
+    // characters shown, counting a line of under six characters as nearly useless
+    const score = ([n, c]) => n < 1 || c < 3 ? 0 : n * c * (c < 6 ? .3 : 1);
+    const vl = score(side) > score(across);
+    const [lines, chars] = vl ? side : across;
+    if (lines < 1 || chars < 3){ span.hidden = true; continue; }
+    b.classList.toggle('week-vl', vl);
+    span.style.setProperty('--lines', lines);
   }
   const blocks = weekBlocks(ov);
   if (!blocks.some(b => b.tabIndex === 0) && blocks[0]) blocks[0].tabIndex = 0;
+  weekSync(ov);
   weekPaintNow();
+}
+// The sticky ruler (horizontal) or day heads (vertical) follow the sideways scroller.
+function weekSync(ov){
+  const sc = ov.querySelector('.week-sc'), rul = ov.querySelector('.week-rul-in');
+  if (!sc || !rul) return;
+  const move = () => { rul.style.transform = sc.scrollLeft ? `translateX(${-sc.scrollLeft}px)` : ''; ov.classList.toggle('week-scrolled', sc.scrollLeft > 0); };
+  sc.onscroll = move;
+  move();
 }
 const weekBlocks = (root, di) => [...root.querySelectorAll(di === undefined ? '.week-blk:not(.week-off)' : `.week-col[data-day="${di}"] .week-blk:not(.week-off)`)];
 function weekPaintNow(){
@@ -2557,7 +2654,8 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
     if (!b && col){
       // a tap between blocks (or on a faint one) opens the nearest session in time
       const r = col.getBoundingClientRect(), ov = col.closest('.week-ov');
-      const m = +ov.dataset.t0 + (e.clientY - r.top) / r.height * (+ov.dataset.t1 - +ov.dataset.t0);
+      const f = ov.classList.contains('week-h') ? (e.clientX - r.left) / r.width : (e.clientY - r.top) / r.height;
+      const m = +ov.dataset.t0 + f * (+ov.dataset.t1 - +ov.dataset.t0);
       const dist = x => m < +x.dataset.start ? +x.dataset.start - m : m > +x.dataset.end ? m - +x.dataset.end : 0;
       b = weekBlocks(col.closest('.week-ov'), col.dataset.day).sort((x, y) => dist(x) - dist(y))[0];
       if (!b || dist(b) > 45){ weekOpenDay(+col.dataset.day, null, null); return; }
@@ -2577,15 +2675,17 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
   agendaEl.addEventListener('keydown', e => {
     const b = e.target.closest('.week-blk');
     if (!b) return;
-    const ov = b.closest('.week-ov'), di = +b.dataset.day;
-    const col = weekBlocks(ov, di).sort((x, y) => x.dataset.start - y.dataset.start || x.offsetLeft - y.offsetLeft), i = col.indexOf(b);
+    const ov = b.closest('.week-ov'), di = +b.dataset.day, h = ov.classList.contains('week-h');
+    const col = weekBlocks(ov, di).sort((x, y) => x.dataset.start - y.dataset.start || (h ? x.offsetTop - y.offsetTop : x.offsetLeft - y.offsetLeft)), i = col.indexOf(b);
+    // along a day: down in the vertical overview, right in the horizontal one
+    const [later, earlier, nextDay, prevDay] = h ? ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'] : ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'];
     let next = null;
-    if (e.key === 'ArrowDown') next = col[i + 1];
-    else if (e.key === 'ArrowUp') next = col[i - 1];
+    if (e.key === later) next = col[i + 1];
+    else if (e.key === earlier) next = col[i - 1];
     else if (e.key === 'Home') next = col[0];
     else if (e.key === 'End') next = col[col.length - 1];
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
-      for (let d = di + (e.key === 'ArrowLeft' ? -1 : 1); d >= 0 && d < DATA.days.length && !next; d += e.key === 'ArrowLeft' ? -1 : 1){
+    else if (e.key === prevDay || e.key === nextDay){
+      for (let d = di + (e.key === prevDay ? -1 : 1); d >= 0 && d < DATA.days.length && !next; d += e.key === prevDay ? -1 : 1){
         next = weekBlocks(ov, d).sort((x, y) => Math.abs(x.dataset.start - b.dataset.start) - Math.abs(y.dataset.start - b.dataset.start))[0];
       }
     } else return;
@@ -4513,6 +4613,9 @@ function peopleIndex(){
       if (!p.roles.some(r => r.s === s && !r.t)) p.roles.push({ di, d, s, t: null, start: s.start });
     }
     for (const t of s.talks) for (const sp of t.sp){
+      // an organisation listed as the speaker ("ANZOS", affiliation "ANZOS") stays on
+      // the talk but is not a participant
+      if (sp.n === sp.a && /^[A-Z0-9&]{2,}$/.test(sp.n)) continue;
       const p = person(sp.n);
       if (!p.roles.some(r => r.t === t)) p.roles.push({ di, d, s, t, start: t.s });
       if (!sp.a) continue;
@@ -4769,7 +4872,9 @@ function closeRailPanel(){
 RAIL.letters.addEventListener('pointerover', e => {
   if (e.pointerType !== 'mouse' || RAIL.drag || !railHover.matches) return;
   const b = e.target.closest('button[data-l]');
-  if (b && b.getAttribute('aria-disabled') !== 'true') openRailPanel(b);
+  if (!b) return;
+  if (b.getAttribute('aria-disabled') !== 'true') openRailPanel(b);
+  else { clearTimeout(RAIL.closeT); RAIL.closeT = setTimeout(closeRailPanel, 90); } // a dimmed letter has no panel
 });
 RAIL.nav.firstElementChild.addEventListener('pointerleave', e => {
   if (e.pointerType === 'mouse') RAIL.closeT = setTimeout(closeRailPanel, 280);
@@ -4879,11 +4984,14 @@ for (const card of document.querySelectorAll('.highlights [data-ev]')){
   if (!('evKeepTime' in card.dataset)) card.querySelector('.hl-when').innerHTML = `${esc(d.label)} · <span>${s.start}–${s.end}</span>`;
   const name = card.querySelector('.hl-t').textContent;
   card.querySelector('.hl-acts').insertAdjacentHTML('afterbegin',
-    `<button type="button" class="ag-btn" data-session-detail="${s.id}" data-talk-detail="" aria-label="View ${esc(name)} in the program">View in program</button>` +
+    `<button type="button" class="ag-btn" data-ev-go="${DATA.days.indexOf(d)}" data-ev-jump="${s.id}" aria-label="View ${esc(name)} in the program">View in program</button>` +
+    `<button type="button" class="hl-det" data-session-detail="${s.id}" data-talk-detail="" aria-label="Details of ${esc(name)}">Details</button>` +
     `<button type="button" class="star" data-ev-star="${s.id}" aria-pressed="false" aria-label="Save ${esc(name)} to My agenda">☆</button>`);
 }
 paintEventStars();
 document.querySelector('.highlights').addEventListener('click', e => {
+  const go = e.target.closest('[data-ev-go]');
+  if (go){ jumpTo(go.dataset.evGo, go.dataset.evJump, ''); return; }
   const b = e.target.closest('[data-ev-star]');
   if (!b) return;
   const id = b.dataset.evStar;
