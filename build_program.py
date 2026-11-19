@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Build a self-contained, user-friendly HTML viewer for the AIP Congress 2026 program.
 
-Source data: /tmp/timetable.json (extracted from the official Indico timetable,
-https://indico.global/event/16926/timetable/ which is what aip.org.au/congress/program embeds).
+Build both HTML entry points from the checked-in aip2026-data.json.
+Pass an exported Indico timetable JSON file to refresh the program data:
+https://indico.global/event/16926/timetable/.
 """
+import argparse
 import json
+from pathlib import Path
 import re
 import datetime
-
-RAW = json.load(open('/tmp/timetable.json'))
 
 RETRIEVED = "19 November 2026"
 
@@ -129,63 +130,56 @@ def person_list(p):
     return out
 
 
-# ---------------------------------------------------------------- build payload
-days = []
-for date in sorted(RAW.keys()):
-    slots = []
-    for sid, s in RAW[date].items():
-        title = fix_title(s['title'])
-        cat, grp = classify(title, s.get('entryType'))
-        st = s['startDate']['time'][:5]
-        en = s['endDate']['time'][:5]
-        talks = []
-        for cid, c in sorted((s.get('entries') or {}).items(),
-                             key=lambda kv: (kv[1]['startDate']['time'], kv[1]['title'])):
-            talks.append({
-                'id': cid,
-                't': fix_title(c['title']),
-                's': c['startDate']['time'][:5],
-                'e': c['endDate']['time'][:5],
-                'sp': person_list(c.get('presenters')),
-                'd': clean_text(c.get('description')),
-                'u': 'https://indico.global' + (c.get('url') or ''),
+def build_payload(raw):
+    days = []
+    for date in sorted(raw.keys()):
+        slots = []
+        for sid, s in raw[date].items():
+            title = fix_title(s['title'])
+            cat, grp = classify(title, s.get('entryType'))
+            st = s['startDate']['time'][:5]
+            en = s['endDate']['time'][:5]
+            talks = []
+            for cid, c in sorted((s.get('entries') or {}).items(),
+                                 key=lambda kv: (kv[1]['startDate']['time'], kv[1]['title'])):
+                talks.append({
+                    'id': cid,
+                    't': fix_title(c['title']),
+                    's': c['startDate']['time'][:5],
+                    'e': c['endDate']['time'][:5],
+                    'sp': person_list(c.get('presenters')),
+                    'd': clean_text(c.get('description')),
+                    'u': 'https://indico.global' + (c.get('url') or ''),
+                })
+            slots.append({
+                'id': sid,
+                'title': title,
+                'cat': cat,
+                'grp': grp,
+                'start': st,
+                'end': en,
+                'room': (s.get('room') or '').strip(),
+                'desc': clean_text(s.get('description')),
+                'conv': [p['n'] for p in person_list(s.get('conveners'))],
+                'url': 'https://indico.global' + (s.get('url') or ''),
+                'talks': talks,
             })
-        slots.append({
-            'id': sid,
-            'title': title,
-            'cat': cat,
-            'grp': grp,
-            'start': st,
-            'end': en,
-            'room': (s.get('room') or '').strip(),
-            'desc': clean_text(s.get('description')),
-            'conv': [p['n'] for p in person_list(s.get('conveners'))],
-            'url': 'https://indico.global' + (s.get('url') or ''),
-            'talks': talks,
+        slots.sort(key=lambda x: (x['start'], x['end'], x['title']))
+        d = datetime.date.fromisoformat(date)
+        days.append({
+            'date': d.isoformat(),
+            'label': f'{d:%a} {d.day} {d:%b}',
+            'short': f'{d.day} Dec',
+            'slots': slots,
         })
-    slots.sort(key=lambda x: (x['start'], x['end'], x['title']))
-    d = datetime.date.fromisoformat(date)
-    days.append({
-        'date': d.isoformat(),
-        'label': d.strftime('%a %-d %b'),
-        'short': d.strftime('%-d Dec'),
-        'slots': slots,
-    })
 
-payload = {
-    'retrieved': RETRIEVED,
-    'cats': CATS,
-    'groups': GROUP_LABELS,
-    'days': days,
-}
-data_json = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
-data_json = data_json.replace('</', '<\\/')  # safe inside <script>
+    return {
+        'retrieved': RETRIEVED,
+        'cats': CATS,
+        'groups': GROUP_LABELS,
+        'days': days,
+    }
 
-json.dump(payload, open('/home/user/aip2026-data.json', 'w'), ensure_ascii=False, indent=1)
-
-n_slots = sum(len(d['slots']) for d in days)
-n_talks = sum(len(s['talks']) for d in days for s in d['slots'])
-print(f'slots={n_slots} talks={n_talks} json={len(data_json)/1e6:.2f} MB')
 
 HTML = r'''<!DOCTYPE html>
 <html lang="en">
@@ -353,6 +347,9 @@ footer p{margin:4px 0}
 .ag-warn{color:#b45309;font-weight:700}
 .ag-ok{color:#15803d;font-weight:700}
 .builder-actions{display:flex;flex-wrap:wrap;gap:8px}
+.builder-actions button:disabled{opacity:.55;cursor:default}
+.export-status{font-size:14px;color:var(--muted)}
+.export-status:empty{display:none}
 .ag-day{margin-top:22px}
 .ag-day .day-head{padding-top:8px}
 .ag-list{list-style:none;margin:0;padding:0}
@@ -360,7 +357,7 @@ footer p{margin:4px 0}
 .ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
 .ag-row.has-clash{border-color:#fcd34d;background:#fffbeb}
 .ag-time{flex:0 0 92px;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;line-height:1.5}
-.ag-main{flex:1;min-width:0}
+.ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
 .ag-title{display:block;font-size:14.5px;font-weight:650;line-height:1.4}
 .ag-sub{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
 .ag-kind{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--cbg,#eef);color:var(--c,#555);margin-right:8px;vertical-align:1px}
@@ -377,17 +374,26 @@ footer p{margin:4px 0}
 .ics-note textarea{width:100%;margin-top:8px;font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;color:var(--ink);resize:vertical}
 @keyframes cardflash{0%{background:#fef9c3}100%{background:#fff}}
 .card.flash{animation:cardflash 1.4s ease-out}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .card.flash{animation:none}
+}
 
 @media (max-width:720px){
   .block{grid-template-columns:1fr;gap:6px}
   .block-time{position:static;text-align:left;display:flex;gap:10px;align-items:baseline;padding-top:6px}
   .cards{grid-template-columns:1fr}
   .cards.single{grid-template-columns:1fr}
+  .ag-row{flex-direction:column;gap:6px}
+  .ag-time{flex:auto}
+  .ag-main{width:100%}
+  .ag-actions{flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .ag-btn{min-height:36px}
 }
 @media print{
-  .sticky-wrap,.star,.more-star,.hero .links,.chips,.controls,.builder-actions,.ics-note{display:none!important}
+  .sticky-wrap,.star,.more-star,.hero .links,.chips,.controls,.builder-actions,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   body{background:#fff}
-  .card{box-shadow:none;break-inside:avoid}
+  .card,.ag-row{box-shadow:none;break-inside:avoid}
   header.hero{background:#0f2b6b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
@@ -449,8 +455,8 @@ footer p{margin:4px 0}
 <section id="builder" class="builder" hidden>
   <div class="builder-head">
     <div>
-      <h2>My agenda</h2>
-      <p class="builder-stats" id="builderStats"></p>
+      <h2 id="builderTitle" tabindex="-1">My agenda</h2>
+      <p class="builder-stats" id="builderStats" aria-live="polite"></p>
     </div>
     <div class="builder-actions">
       <button class="toggle" id="backToProgram">&#8592; Back to program</button>
@@ -459,11 +465,16 @@ footer p{margin:4px 0}
       <button class="toggle" id="icsAgenda">Download .ics</button>
     </div>
   </div>
-  <div id="builderBody"></div>
+  <p class="export-status" id="exportStatus" role="status"></p>
+  <div class="ics-note" id="copyNote" hidden>
+    <label for="copyBox">Select and copy your agenda text below.</label>
+    <textarea id="copyBox" readonly rows="6"></textarea>
+  </div>
   <div class="ics-note" id="icsNote" hidden>
     <p><b>Tip:</b> if the download didn&#8217;t start, copy the text below and save it as <b>my-agenda.ics</b> (or paste it into any calendar app that accepts imports).</p>
     <textarea id="icsBox" readonly rows="6" aria-label="Calendar file text"></textarea>
   </div>
+  <div id="builderBody"></div>
 </section>
 
 <footer>
@@ -566,9 +577,7 @@ function textMatches(hayNorm, terms){ return terms.every(t => hayNorm.includes(t
 
 function hayFor(slot){
   if (slot._hay) return slot._hay;
-  let h = slot.title + ' ' + (slot.desc||'') + ' ' + (slot.conv||[]).join(' ');
-  slot.talks.forEach(t => { h += ' ' + t.t + ' ' + (t.d||'') + ' ' + t.sp.map(p => p.n + ' ' + p.a).join(' '); });
-  slot._hay = norm(h);
+  slot._hay = norm([slot.title, slot.desc, slot.room, ...(slot.conv || [])].join(' '));
   return slot._hay;
 }
 function hayTalk(t){
@@ -581,19 +590,17 @@ function slotMatches(slot){
   if (!state.cats.has(slot.cat)) return false;
   if (state.group && slot.grp !== state.group) return false;
   const terms = curTerms();
-  if (terms.length && !textMatches(hayFor(slot), terms)) return false;
-  return true;
-}
-
-function talkSelfMatches(t){
-  const terms = curTerms();
-  return terms.length > 0 && textMatches(hayTalk(t), terms);
+  return textMatches(hayFor(slot), terms) || slot.talks.some(t => talkMatches(t, slot));
 }
 
 function talkMatches(t, slot){
   const terms = curTerms();
-  if (!terms.length) return true;
-  return talkSelfMatches(t) || textMatches(norm(slot.title), terms);
+  return terms.every(term => hayFor(slot).includes(term) || hayTalk(t).includes(term));
+}
+
+function openMatchingTalk(t, slot){
+  const terms = curTerms();
+  return terms.some(term => !hayFor(slot).includes(term)) && talkMatches(t, slot);
 }
 
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -689,7 +696,7 @@ function cardHtml(s){
           <div class="t-body">
             ${t.d ? `<p class="abstract">${hl(t.d)}</p>` : '<p class="abstract" style="color:#94a3b8">No abstract provided.</p>'}
             <div class="tools">
-              <button class="more-star ${tStar}" data-tstar="${t.id}">&#9733; ${tStar?'Saved':'Save this talk'}</button>
+              <button class="more-star ${tStar}" data-tstar="${t.id}" aria-pressed="${Boolean(tStar)}">&#9733; ${tStar?'Saved':'Save this talk'}</button>
               <a href="${t.u}" target="_blank" rel="noopener">View on Indico &#8599;</a>
             </div>
           </div>
@@ -703,8 +710,8 @@ function cardHtml(s){
   return `<article class="card" data-sid="${s.id}" data-cat="${s.cat}" data-grp="${s.grp||''}" style="--c:${c};--cbg:${bg}">
     <div class="card-head">
       ${grp}
-      <h3>${hl(s.title)}</h3>
-      <button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session">&#9733;</button>
+      <h3 tabindex="-1">${hl(s.title)}</h3>
+      <button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session" aria-pressed="${Boolean(starOn)}">&#9733;</button>
     </div>
     <div class="meta">
       <span><b>${s.start}&#8211;${s.end}</b></span>
@@ -755,7 +762,7 @@ function applyFilters(){
       const li = card.querySelector(`.talk[data-tid="${t.id}"]`);
       if (!li) return;
       li.classList.toggle('hidden', !talkMatches(t, s));
-      if (autoOpen && talkSelfMatches(t) && li.querySelector('details')) li.querySelector('details').open = true;
+      if (autoOpen && openMatchingTalk(t, s)) li.querySelector('details').open = true;
     });
     if (autoOpen && (s.desc||'').toLowerCase().includes(state.q.toLowerCase())){
       const ab = card.querySelector('details.about'); if (ab) ab.open = true;
@@ -791,7 +798,7 @@ function applyFilters(){
           const li = card.querySelector(`.talk[data-tid="${t.id}"]`);
           if (!li) return;
           li.classList.toggle('hidden', !talkMatches(t, s));
-          if (state.q && talkSelfMatches(t) && li.querySelector('details')) li.querySelector('details').open = true;
+          if (openMatchingTalk(t, s)) li.querySelector('details').open = true;
         });
       });
     }
@@ -851,8 +858,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     return;
   }
   if (e.target.closest('[data-fbclear]')){
-    qEl.value = ''; state.q = '';
-    document.getElementById('clr').style.display = 'none';
+    clearSearch();
     renderAgenda(); qEl.focus();
     return;
   }
@@ -873,6 +879,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     const id = s.dataset.sstar;
     state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
     s.classList.toggle('on', state.starred.has(id));
+    s.setAttribute('aria-pressed', state.starred.has(id));
     afterStarChange();
     return;
   }
@@ -881,6 +888,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     const id = t.dataset.tstar;
     state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
     t.classList.toggle('on', state.starred.has(id));
+    t.setAttribute('aria-pressed', state.starred.has(id));
     t.innerHTML = '&#9733; ' + (state.starred.has(id) ? 'Saved' : 'Save this talk');
     afterStarChange();
     return;
@@ -893,6 +901,12 @@ document.getElementById('grpclr').addEventListener('click', () => {
 
 const qEl = document.getElementById('q');
 let qTimer = null;
+function clearSearch(){
+  clearTimeout(qTimer);
+  qEl.value = '';
+  state.q = '';
+  document.getElementById('clr').style.display = 'none';
+}
 qEl.addEventListener('input', () => {
   clearTimeout(qTimer);
   qTimer = setTimeout(() => {
@@ -902,8 +916,7 @@ qEl.addEventListener('input', () => {
   }, 160);
 });
 document.getElementById('clr').addEventListener('click', () => {
-  qEl.value = ''; state.q = '';
-  document.getElementById('clr').style.display = 'none';
+  clearSearch();
   renderAgenda(); qEl.focus();
 });
 
@@ -958,12 +971,15 @@ function agRow(it){
   const who = it.kind === 'talk'
     ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA')
     : (it.s.room || 'Belinda Hutchinson Building');
-  const sub2 = it.kind === 'talk' ? 'part of ' + it.s.title : (it.s.talks.length ? it.s.talks.length + ' talks' : '');
+  const sub2 = it.kind === 'talk'
+    ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
+    : (it.s.talks.length ? it.s.talks.length + ' talks' : '');
   const clashNames = [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
     : '';
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
+  const jumpTalk = it.t ? ` data-jumptalk="${it.t.id}"` : '';
   return `<li class="ag-row ${clashNames.length?'has-clash':''}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}</span>
     <div class="ag-main">
@@ -972,8 +988,8 @@ function agRow(it){
       ${clash}
     </div>
     <div class="ag-actions">
-      <button class="ag-btn" data-goprogram="${it.di}" data-jump="${it.s.id}">View in program</button>
-      <button class="ag-btn rm"${tid}>&#10005; Remove</button>
+      <button class="ag-btn" data-goprogram="${it.di}" data-jump="${it.s.id}"${jumpTalk}>View in program</button>
+      <button class="ag-btn rm"${tid} aria-label="Remove ${esc(itemTitle(it))}">&#10005; Remove</button>
     </div>
   </li>`;
 }
@@ -986,6 +1002,12 @@ function renderBuilder(){
   const clashItems = items.filter(x => x.clashes.length).length;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderBody');
+  for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda']) {
+    document.getElementById(id).disabled = items.length === 0;
+  }
+  document.getElementById('exportStatus').textContent = '';
+  document.getElementById('copyNote').hidden = true;
+  document.getElementById('icsNote').hidden = true;
   if (!items.length){
     stats.textContent = 'Nothing saved yet.';
     body.innerHTML = `<div class="ag-empty">
@@ -996,8 +1018,9 @@ function renderBuilder(){
     </div>`;
     return;
   }
-  stats.innerHTML = `<b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> of your week planned &middot; ` +
-    (clashItems ? `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} in clash</span>` : `<span class="ag-ok">&#10003; no clashes</span>`);
+  stats.innerHTML = `<b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
+    (clashItems ? `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>` : `<span class="ag-ok">&#10003; no clashes</span>`) +
+    ' &middot; All times AEDT';
   let html = '';
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
@@ -1016,21 +1039,37 @@ function showView(v){
   document.getElementById('emptyNote').hidden = isAgenda;
   document.querySelector('.sticky-wrap').hidden = isAgenda;
   document.querySelector('.highlights').hidden = isAgenda;
-  if (isAgenda){ renderBuilder(); window.scrollTo({ top: 0 }); }
+  if (isAgenda){
+    renderBuilder();
+    document.getElementById('builderTitle').focus();
+  }
 }
 
 function afterStarChange(){
   saveStars();
-  refresh();
+  document.getElementById('starCount').textContent = state.starred.size;
   if (state.view === 'agenda') renderBuilder();
 }
 
 // ---------- export helpers ----------
-function icsEscape(s){ return (s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+function icsEscape(s){ return (s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r\n?|\n/g,'\\n'); }
 function icsFold(line){
-  const out = []; let s = line;
-  while (s.length > 74){ out.push(s.slice(0,74)); s = ' ' + s.slice(74); }
-  out.push(s); return out.join('\r\n');
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= 75) return line;
+  const out = [];
+  let chunk = '', bytes = 0;
+  for (const char of line){
+    const size = encoder.encode(char).length;
+    if (bytes + size > 75){
+      out.push(chunk);
+      chunk = ' ';
+      bytes = 1;
+    }
+    chunk += char;
+    bytes += size;
+  }
+  out.push(chunk);
+  return out.join('\r\n');
 }
 function toUTCStamp(date, time){
   // Congress runs on Australian Eastern Daylight Time (UTC+11) in December 2026
@@ -1044,7 +1083,8 @@ function buildIcs(){
   const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AIP Congress 2026 Program Explorer//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:AIP Congress 2026 - My agenda'];
   items.forEach(it => {
     let desc = it.kind === 'talk' ? (it.t.d || '') : (it.s.desc || '');
-    if (desc.length > 900) desc = desc.slice(0, 900) + '…';
+    const chars = Array.from(desc);
+    if (chars.length > 900) desc = chars.slice(0, 900).join('') + '…';
     const who = it.kind === 'talk'
       ? it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ')
       : (it.s.conv || []).join('; ');
@@ -1063,13 +1103,13 @@ function buildIcs(){
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  return lines.join('\r\n') + '\r\n';
 }
 function agendaText(){
   const items = agendaItems();
   markClashes(items);
   const clashItems = items.filter(x => x.clashes.length).length;
-  let out = 'AIP Congress 2026 — My agenda\n=============================\n';
+  let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
   out += `${items.filter(x=>x.kind==='session').length} sessions · ${items.filter(x=>x.kind==='talk').length} talks · about ${plannedHours(items).toFixed(1)} h` +
          (clashItems ? ` · ${clashItems} in clash` : ' · no clashes') + '\n';
   DATA.days.forEach((d, di) => {
@@ -1081,30 +1121,28 @@ function agendaText(){
       const who = it.kind === 'talk' ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA') : (it.s.room || '');
       if (who) out += `             ${who}\n`;
       if (it.kind === 'talk') out += `             part of ${it.s.title}\n`;
+      if (it.kind === 'talk' && it.s.room) out += `             ${it.s.room}\n`;
       it.clashes.forEach(x => out += `             ⚠ clashes with “${itemTitle(x)}” (${x.start}–${x.end})\n`);
     });
   });
   out += '\nSource: official AIP Congress 2026 Indico timetable — https://indico.global/event/16926/timetable/\n';
   return out;
 }
-function copyToClipboard(txt){
-  const done = () => {
-    const b = document.getElementById('copyAgenda');
-    if (b){ const old = b.textContent; b.textContent = 'Copied ✓'; setTimeout(() => b.textContent = old, 1600); }
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
-  } else fallbackCopy(txt, done);
-}
-function fallbackCopy(txt, done){
-  const ta = document.createElement('textarea');
-  ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); done && done(); } catch(e){
-    const note = document.getElementById('icsNote');
-    if (note){ note.hidden = false; document.getElementById('icsBox').value = txt; }
+async function copyToClipboard(txt){
+  const status = document.getElementById('exportStatus');
+  const note = document.getElementById('copyNote');
+  try {
+    await navigator.clipboard.writeText(txt);
+    note.hidden = true;
+    status.textContent = 'Agenda copied to clipboard.';
+  } catch {
+    const box = document.getElementById('copyBox');
+    status.textContent = '';
+    note.hidden = false;
+    box.value = txt;
+    box.focus();
+    box.select();
   }
-  ta.remove();
 }
 function downloadIcs(){
   const txt = buildIcs();
@@ -1122,7 +1160,10 @@ function downloadIcs(){
 }
 
 document.getElementById('agendaBtn').addEventListener('click', () => showView('agenda'));
-document.getElementById('backToProgram').addEventListener('click', () => showView('program'));
+document.getElementById('backToProgram').addEventListener('click', () => {
+  showView('program');
+  document.getElementById('agendaBtn').focus();
+});
 document.getElementById('printAgenda').addEventListener('click', () => window.print());
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
@@ -1131,8 +1172,12 @@ document.getElementById('builder').addEventListener('click', e => {
   const rm = e.target.closest('[data-sstar],[data-tstar]');
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
-    state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
+    const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
+    state.starred.delete(id);
     afterStarChange();
+    const remaining = document.querySelectorAll('#builder .rm');
+    const next = remaining[Math.min(removedIndex, remaining.length - 1)];
+    (next || document.querySelector('#builderBody [data-goprogram]')).focus();
     return;
   }
   const go = e.target.closest('[data-goprogram]');
@@ -1140,16 +1185,28 @@ document.getElementById('builder').addEventListener('click', e => {
     const jump = go.dataset.jump || '';
     const dayAttr = go.dataset.goprogram;
     showView('program');
-    if (dayAttr !== 'all'){ state.day = +dayAttr; }
+    state.day = dayAttr === 'all' ? 'all' : +dayAttr;
+    if (jump){
+      clearSearch();
+      state.group = null;
+      state.cats = new Set(Object.keys(DATA.cats));
+    }
     rerender();
     if (jump){
       const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
       if (card){
-        card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        const talk = go.dataset.jumptalk && card.querySelector(`.talk[data-tid="${go.dataset.jumptalk}"] details`);
+        if (talk) talk.open = true;
+        const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
+        const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
+        target.focus({ preventScroll: true });
+        window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - toolbarHeight - 16, behavior: 'instant' });
         card.classList.add('flash');
         setTimeout(() => card.classList.remove('flash'), 1500);
+        return;
       }
     }
+    document.querySelector('#daytabs [aria-selected="true"]').focus();
   }
 });
 
@@ -1161,11 +1218,12 @@ document.getElementById('expandAll').addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === '/' && document.activeElement !== qEl){ e.preventDefault(); qEl.focus(); }
-  if (e.key === 'Escape' && document.activeElement === qEl){ qEl.value=''; state.q=''; renderAgenda(); qEl.blur(); }
+  if (e.key === '/' && state.view === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
+      !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
+  if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); renderAgenda(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
-  document.querySelectorAll('details').forEach(d => d.open = true);
+  if (state.view === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
 });
 
 // countdown to 7 Dec 2026
@@ -1183,7 +1241,25 @@ rerender();
 </html>
 '''
 
-HTML = HTML.replace('@@DATA@@', data_json).replace('@@RETRIEVED@@', RETRIEVED)
-for _path in ('/home/user/aip-2026-program.html', '/home/user/index.html'):
-    open(_path, 'w', encoding='utf-8').write(HTML)
-    print('wrote', _path, round(len(HTML)/1e6, 2), 'MB')
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('indico_json', type=Path, nargs='?', help='raw Indico timetable export')
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parent
+    data_path = root / 'aip2026-data.json'
+    if args.indico_json:
+        payload = build_payload(json.loads(args.indico_json.read_text(encoding='utf-8')))
+        data_path.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding='utf-8')
+    else:
+        payload = json.loads(data_path.read_text(encoding='utf-8'))
+
+    embedded = json.dumps(payload, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    html = HTML.replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
+    for name in ('index.html', 'aip-2026-program.html'):
+        (root / name).write_text(html, encoding='utf-8')
+        print(f'wrote {name}')
+
+
+if __name__ == '__main__':
+    main()
