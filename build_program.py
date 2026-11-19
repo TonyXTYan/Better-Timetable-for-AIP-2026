@@ -239,15 +239,15 @@ def build_payload(raw):
 # Light is picked in Display settings) and under data-theme="dark".
 DARK_TOKENS = """\
   --bg:#0f1218; --card:#171b23; --ink:#e6e9ef; --muted:#9aa3b2; --line:#2a303c; --accent:#2563eb; --accent-ink:#ffffff;
-  --plenary:#f594ac; --plenary-bg:#43141f;
+  --plenary:#ff8a9a; --plenary-bg:#43141f;
   --aip:#93acf1; --aip-bg:#142043;
   --anzcop:#7ce9a5; --anzcop-bg:#144325;
   --commad:#f7a17d; --commad-bg:#432114;
-  --focus:#c79aee; --focus-bg:#2d1443;
-  --edu:#f8a96d; --edu-bg:#432814;
-  --poster:#a49ee5; --poster-bg:#171443;
-  --events:#e695ee; --events-bg:#3f1443;
-  --special:#74d6f1; --special-bg:#143943;
+  --focus:#74d6f1; --focus-bg:#143943;
+  --edu:#fde047; --edu-bg:#352d0c;
+  --poster:#c4b5fd; --poster-bg:#251a4a;
+  --events:#ec8cf9; --events-bg:#3d1443;
+  --special:#bef264; --special-bg:#26330f;
   --business:#a5b9d4; --business-bg:#232a34;
   --social:#cdb598; --social-bg:#312c26;
   --star:#fbbf24;
@@ -304,11 +304,11 @@ window.applyDisplay = function(d){
   --aip:#1d4ed8; --aip-bg:#dbeafe;
   --anzcop:#15803d; --anzcop-bg:#dcfce7;
   --commad:#c2410c; --commad-bg:#ffedd5;
-  --focus:#7e22ce; --focus-bg:#f3e8ff;
-  --edu:#b45309; --edu-bg:#fef3c7;
-  --poster:#4338ca; --poster-bg:#e0e7ff;
+  --focus:#0e7490; --focus-bg:#cffafe;
+  --edu:#806000; --edu-bg:#fef9c3;
+  --poster:#6d28d9; --poster-bg:#ede9fe;
   --events:#a21caf; --events-bg:#fae8ff;
-  --special:#0e7490; --special-bg:#cffafe;
+  --special:#4d7c0f; --special-bg:#ecfccb;
   --business:#475569; --business-bg:#e2e8f0;
   --social:#57534e; --social-bg:#f5f5f4;
   --star:#f59e0b;
@@ -319,7 +319,7 @@ window.applyDisplay = function(d){
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* solid fills for selected chips: white text on these in both modes */
-  --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#15803d; --commad-fill:#c2410c; --focus-fill:#7e22ce; --edu-fill:#b45309; --poster-fill:#4338ca; --events-fill:#a21caf; --special-fill:#0e7490; --business-fill:#475569; --social-fill:#57534e;
+  --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#15803d; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#806000; --poster-fill:#6d28d9; --events-fill:#a21caf; --special-fill:#4d7c0f; --business-fill:#475569; --social-fill:#57534e;
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
    Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
@@ -622,8 +622,9 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 10px;padding:6px 0 8px;border-bottom:2px solid var(--day-rule);font-size:1.0625rem;font-weight:800;letter-spacing:.1px;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
 .pp-n{font-size:0.7812rem;font-weight:600;color:var(--muted)}
 .pp-none .pp-aff{color:var(--muted)}
-.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
-.pp-person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;min-width:0;box-shadow:var(--shadow)}
+/* columns, so a short card leaves no hole under it; the order runs down each column */
+.pp-people{list-style:none;margin:0;padding:0;columns:300px auto;column-gap:10px}
+.pp-person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;min-width:0;box-shadow:var(--shadow);break-inside:avoid;margin:0 0 10px}
 .pp-name{font-weight:700;font-size:0.9375rem;line-height:1.35;overflow-wrap:anywhere}
 .pp-raw{margin-top:1px;font-size:0.75rem;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .pp-roles{list-style:none;margin:6px -6px 0;padding:0}
@@ -708,7 +709,9 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .block-time .bt{font-weight:800;font-size:1.0625rem;letter-spacing:-.01em}
 .block-time .bd{font-size:.7188rem;color:var(--muted);font-weight:600}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
-.cards.single{grid-template-columns:minmax(330px,600px)}
+/* a session alone in its time slot takes the full width; long text keeps a readable measure */
+.cards.single{grid-template-columns:minmax(0,1fr)}
+.cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:78ch}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
 .card.hidden{display:none}
@@ -760,7 +763,7 @@ mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:3px;paddi
 .empty-note.show{display:block}
 
 footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
-footer h4{color:var(--ink);margin:0 0 6px;font-size:.875rem}
+footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -1281,7 +1284,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .searchbox input{padding-left:2rem}
   .searchbox .mag{left:10px}
   .result-row{padding-bottom:4px}
-  .result-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.7812rem}
+  .result-line{font-size:.7812rem}
   .block-time .live{margin-left:0;margin-top:0}
   .talk-star{width:44px;height:44px;margin-right:2px}
   .searchbox input{font-size:max(1rem,16px)}
@@ -1291,8 +1294,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .people{padding:10px 16px 50px}
   .people-title{font-size:1.3125rem}
   .people-intro{font-size:0.8438rem}
-  .pp-people{grid-template-columns:minmax(0,1fr);gap:8px}
-  .pp-person{padding:8px 10px 4px}
+  .pp-people{columns:1}
+  .pp-person{padding:8px 10px 4px;margin-bottom:8px}
   .pp-aff{font-size:16px}
   .pp-role{min-height:44px;justify-content:center;padding:6px}
   .pp-controls{gap:8px}
@@ -1370,7 +1373,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .dd-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding-top:12px;border-top:1px solid var(--line)}
 .dd-foot p{margin:0;color:var(--muted);font-size:.75rem}
 @media (max-width:720px){
-  .display-btn .display-word{display:none}
+  .display-btn .display-word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .display-btn{min-width:44px;justify-content:center}
   .hero h1{padding-right:3.5rem}
   .seg.sizes{--n:2!important}
@@ -1417,31 +1420,110 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .print-doc .pd-group{break-inside:avoid}
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
 .print-doc .pd-foot{margin-top:14pt;color:var(--muted);font-size:8.5pt}
+/* ---------- page-wide: skip link, focus ring, hit areas, compact header ---------- */
+.skip-link{position:absolute;left:12px;top:-200px;z-index:300;padding:10px 16px;border-radius:10px;background:var(--card);color:var(--link);font-weight:700;text-decoration:underline;box-shadow:0 6px 24px var(--pop-shadow)}
+.skip-link:focus{top:12px}
+#main:focus{outline:none}
+/* One focus ring for every control outside the calendars (they draw their own): it sits
+   just outside the control, in white on the blue header. */
+:where(a,button,input,select,textarea,summary,[tabindex]:not(#main)):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hero :focus-visible,.skip-link:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.skip-link:focus-visible{outline-color:var(--accent)}
+.card summary:focus-visible,.pp-role:focus-visible,.pp-pi:focus-visible,.chip-wrap :focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.daytab:focus-visible,.toggle:focus-visible,.agenda-views button:focus-visible,.dh-focus:focus-visible,.fp-all:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Links inside running text are underlined, so they don't rely on colour alone. */
+footer p a,main p a:not(.toggle),dialog p a:not(.toggle),.ev-info a{text-decoration:underline;text-underline-offset:.15em}
+.ev-info a{color:var(--ink)}
+/* Hit areas: at least 24px with a mouse and 40px on touch; the visible parts stay small
+   (a transparent border or padding outside them). */
+.card-head .star{display:inline-flex;align-items:center;justify-content:center;min-width:1.75rem;min-height:1.75rem;top:8px;right:8px}
+button.badge{min-height:24px;display:inline-flex;align-items:center}
+.card .meta a,.card .meta .linkish,.t-body .tools a,.t-body .tools .linkish{display:inline-block;padding:3px 2px;margin:-3px -2px}
+.foot-links a{display:inline-block;padding:3px 0}
+#expandAll{display:inline-flex;align-items:center;min-height:24px}
+.rl-act{display:inline-block;padding:2px 0;margin:-2px 0}
+.grpill button{width:24px;height:24px}
+.searchbox .clr{width:24px;height:24px;right:6px}
+@media (pointer:coarse){
+  button.badge,.grpill button,.searchbox .clr{border:8px solid transparent;background-clip:padding-box;box-sizing:content-box}
+  button.badge{min-height:0;padding:4px 9px;margin:-6px -8px -8px}
+  .grpill button{margin:-8px -8px -8px 0}
+  .searchbox .clr{right:0}
+  .card-head .star{min-width:44px;min-height:44px;top:4px;right:4px}
+  .card .meta a,.card .meta .linkish,.t-body .tools a,.t-body .tools .linkish,.foot-links a,.ev-links a{display:inline-flex;align-items:center;min-height:40px;padding:0 2px;margin:-6px -2px}
+  /* in the result line the hit area grows into the padding around it, not the line */
+  #expandAll,.rl-act{min-height:0;padding:10px 0;margin:-10px 0}
+  .result-row{padding-top:4px;padding-bottom:8px}
+  .dh-focus,.fp-all,.chip,.chip-wrap .chip,.chip-only{min-height:40px}
+}
+@media print{.skip-link{display:none!important}}
+/* Mouse and keyboard wording versus touch wording */
+.on-touch{display:none}
+@media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
+.kbd-hint kbd{font:inherit;font-weight:700;background:rgba(255,255,255,.2);border-radius:5px;padding:0 6px}
+@media (hover:none),(pointer:coarse){.kbd-hint{display:none!important}}
+/* Result line: a quick "Search all week" and what a short form matched */
+.result-line{overflow-wrap:anywhere}
+.rl-n{font-weight:500}
+@media (max-width:720px){.xa-word{display:none}}
+.alias-chip{display:inline-block;margin:2px 0 0 6px;padding:1px 9px;border-radius:999px;background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.75rem;font-weight:600;line-height:1.5}
+.alias-chip b{color:inherit}
+.fallback-banner,#peopleList .ag-empty h3{overflow-wrap:anywhere}
+/* A calendar uses the full width; the header and toolbar line up with it. */
+body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
+/* Compact header on phones and in landscape on phones: title, countdown and one line of facts */
+.facts-short{display:none}
+@media (max-width:720px),(max-height:500px) and (orientation:landscape){
+  header.hero{padding:12px 16px 12px}
+  .hero h1{font-size:1.25rem;line-height:1.25;gap:4px 10px;margin:0}
+  .hero h1 svg{width:26px;height:26px}
+  .hero .tag{font-size:.6875rem;padding:2px 9px}
+  .hero .h1-more{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .hero p.sub,.hero .facts{display:none}
+  .facts-short{display:block;margin:6px 0 0;font-size:.8125rem;line-height:1.4;opacity:.95}
+  .sticky-wrap{margin-top:10px}
+}
+@media (max-height:500px) and (orientation:landscape){
+  /* the toolbar: switches and search on one row, day tabs under them; the result line
+     stays for screen readers only */
+  .sticky-wrap:not(.tb-compact) .toolbar{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;padding-top:6px}
+  .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{order:1;margin:0;flex:0 1 auto;min-width:0;gap:6px}
+  .sticky-wrap:not(.tb-compact) .toolbar>.controls{order:2;flex:1 1 240px;min-width:0;flex-wrap:nowrap;padding:0}
+  .sticky-wrap:not(.tb-compact) .toolbar>.daytabs{order:3;flex:1 0 100%;padding:6px 0}
+  .sticky-wrap:not(.tb-compact) .toolbar>.grpill{order:4}
+  .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:5;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
+  .schedule-nav .agenda-views button{padding:5px 9px}
+  .daytab{padding-top:4px;padding-bottom:4px}
+  .searchbox{flex-basis:140px}
+}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main" id="skipLink">Skip to program</a>
 <header class="hero">
   <div class="hero-inner">
-    <button type="button" class="display-btn" id="displayBtn" aria-label="Display settings" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span><span class="display-word" aria-hidden="true">Display</span></button>
+    <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
     <h1>
       <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="4" fill="#fff"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2" transform="rotate(60 16 16)"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2" transform="rotate(120 16 16)"/></svg>
-      AIP Congress 2026 — Program Explorer
+      <span>AIP Congress 2026<span class="h1-more"> — Program Explorer</span></span>
       <span class="tag" id="countdown">7–11 Dec 2026</span>
     </h1>
     <p class="sub">26th Australian Institute of Physics Congress, co-locating with the Australian &amp; New Zealand Conference on Optics and Photonics (ANZCOP), with COMMAD as a dedicated topical track.</p>
+    <p class="facts-short"><span aria-hidden="true">&#128197;</span> Mon 7 – Fri 11 Dec · University of Sydney · times AEDT</p>
     <div class="facts">
       <span>&#128197; Monday 7 – Friday 11 December 2026 (registration from Sunday 6 Dec)</span>
       <span>&#128205; Belinda Hutchinson Building, The University of Sydney</span>
       <span>&#128337; All times AEDT (Australia/Sydney)</span>
-      <span>&#128269; Press <b style="background:rgba(255,255,255,.2);border-radius:5px;padding:0 6px">/</b> to search</span>
+      <span class="kbd-hint">&#128269; Press <kbd>/</kbd> to search</span>
     </div>
   </div>
 </header>
-<div class="shared-banner" id="sharedBanner" hidden></div>
+<section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
 
 
 <div id="toolbarAnchor"></div>
-<div class="sticky-wrap">
+<nav class="sticky-wrap" aria-label="Program controls">
   <div class="toolbar">
     <div class="schedule-nav">
       <div class="nav-main">
@@ -1467,9 +1549,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
     <div class="controls">
       <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><span aria-hidden="true">&#128269;</span><span class="tb-q" id="searchMiniQ"></span></button>
-      <div class="searchbox">
+      <div class="searchbox" role="search">
         <span class="mag" aria-hidden="true">&#128269;</span>
-        <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program" autocomplete="off" spellcheck="false">
+        <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program" autocomplete="off" spellcheck="false" maxlength="200">
         <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
       </div>
       <div class="filter-menu" id="filterMenu">
@@ -1478,21 +1560,21 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
           <div class="fp-head"><b>Show streams</b><div class="fp-actions"><button type="button" class="fp-all" id="filterAll">Select all</button><button type="button" class="fp-all" id="filterNone">Deselect all</button><button type="button" class="fp-all" id="filterReset" title="Show every stream and clear the group filter and search">Reset filters</button></div></div>
           <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
           <p class="fp-none" id="filterEmpty" hidden>No streams selected &mdash; <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
-          <p class="fp-tip">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream. Click a group badge on a session (e.g. QST) to show only that group.</p>
+          <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream. Click a group badge on a session (e.g. QST) to show only that group.</span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream. Tap a group badge on a session (e.g. QST) to show only that group.</span></p>
         </div>
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
       <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter">&#10005;</button></div>
-    <div class="result-row"><div class="result-line" id="resultLine"></div><button class="linkish" id="expandAll" type="button">Expand all abstracts</button></div>
+    <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
   </div>
-</div>
+</nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 
 
-<main id="main">
+<main id="main" aria-label="Full program" tabindex="-1">
 <section id="builder" class="builder" hidden>
   <div class="builder-head">
     <div>
@@ -1644,12 +1726,12 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 <footer>
   <div class="cols">
     <div>
-      <h4>About this page</h4>
+      <h2>About this page</h2>
       <p>An independent, mobile-friendly view of the AIP Congress 2026 program, built from the official Indico timetable (event 16926), retrieved @@RETRIEVED@@. Session and talk titles are as published; a few obvious typos were corrected.</p>
       <p>Times, rooms and abstracts can still change — always confirm on the official pages close to the event.</p>
     </div>
     <div>
-      <h4>Links</h4>
+      <h2>Links</h2>
       <ul class="foot-links">
         <li><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a></li>
         <li><a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official program page</a></li>
@@ -1662,8 +1744,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <p>Public lectures, the Welcome Reception, the Congress Dinner, Teachers Day and the Career Fair: <a href="#streams=events" data-show-stream="events">show the Congress events stream</a>.</p>
     </div>
     <div>
-      <h4>Tips</h4>
-      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
+      <h2>Tips</h2>
+      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. <span class="on-fine">Click</span><span class="on-touch">Tap</span> a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
       <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
     </div>
   </div>
@@ -1726,7 +1808,7 @@ function paras(text, fmt = hl){
 }
 
 function personStr(sp){
-  return sp.map(p => p.a ? hl(p.n) + ' <span class="aff">(' + hl(p.a) + ')</span>' : hl(p.n)).join('; ');
+  return sp.map(p => p.a ? hl(p.n) + ' <span class="aff">(' + (speakerInAlias(p) ? '<mark class="hlm">' + esc(p.a) + '</mark>' : hl(p.a)) + ')</span>' : hl(p.n)).join('; ');
 }
 
 // ---------- header tabs & chips ----------
@@ -1792,6 +1874,7 @@ function fold(s){
   s = s || '';
   return (NON_ASCII.test(s) ? s.replace(NON_ASCII_ALL, foldChar) : s).toLowerCase();
 }
+const EDGE_PUNCT = /^[.,;:!?()[\]{}<>]+|[.,;:!?()[\]{}<>]+$/g;
 function parseQuery(q){
   // "quoted phrases" stay together; bare words are independent terms.
   // All terms must match (AND), in any order. An unclosed quote runs to the end.
@@ -1801,7 +1884,8 @@ function parseQuery(q){
   const re = /"([^"]*)"|([^\s"]+)/g;
   let m;
   while ((m = re.exec(q)) !== null){
-    const t = (m[1] !== undefined ? m[1] : m[2]).replace(/\s+/g, ' ').trim();
+    // punctuation at a term's edges is dropped, so "univ." finds "university"
+    const t = (m[1] !== undefined ? m[1] : m[2]).replace(/\s+/g, ' ').trim().replace(EDGE_PUNCT, '');
     if (t) terms.push(t);
   }
   return terms;
@@ -1818,7 +1902,46 @@ function termsOf(q){
 }
 function curTerms(){ return termsOf(state.q); }
 function norm(s){ return fold(s).replace(/\s+/g, ' '); }
-function textMatches(hayNorm, terms){ return terms.every(t => hayNorm.includes(t)); }
+
+// Institution short forms ("unsw", "anu", "uq" …) from the build's affiliation groups.
+// A short one (up to four letters) is a word, not a fragment: it finds talks by people
+// at that institution and the word itself in titles, abstracts and affiliations, but
+// never a piece of a name or another word ("anu" is not in "Panu" or "manuscript").
+const ALIAS = new Map();
+for (const [g, [, al]] of Object.entries(AFF.groups)) for (const a of al.split(',')){
+  const k = norm(a).trim();
+  if (k){ if (!ALIAS.has(k)) ALIAS.set(k, new Set()); ALIAS.get(k).add(g); }
+}
+const shortAlias = term => term.length <= 4 && ALIAS.has(term);
+const _wordRe = new Map();
+function wordRe(term){
+  let re = _wordRe.get(term);
+  if (!re) _wordRe.set(term, re = new RegExp('(?:^|[^a-z0-9])' + escRe(term) + '(?![a-z0-9])'));
+  return re;
+}
+// Text without people's names, for the short forms.
+function plainSlot(slot){
+  return slot._plain || (slot._plain = norm([slot.title, slot.desc, slot.info, slot.room].join(' ')));
+}
+function plainTalk(t){
+  return t._plain || (t._plain = norm(t.t + ' ' + (t.d||'') + ' ' + t.sp.map(p => p.a).join(' ')));
+}
+function slotHas(slot, term){
+  return shortAlias(term) ? wordRe(term).test(plainSlot(slot)) : hayFor(slot).includes(term);
+}
+function talkHas(t, term){
+  if (!shortAlias(term)) return hayTalk(t).includes(term);
+  const gs = ALIAS.get(term);
+  return t.sp.some(p => gs.has(AFF.map[p.a])) || wordRe(term).test(plainTalk(t));
+}
+// The institutions the search's short forms stand for: {term, groups} for each.
+function aliasTerms(q = state.q){
+  return termsOf(q).filter(t => ALIAS.has(t)).map(t => ({ term: t, groups: ALIAS.get(t) }));
+}
+function speakerInAlias(p, q = state.q){
+  const g = p.a && AFF.map[p.a];
+  return Boolean(g) && aliasTerms(q).some(a => a.groups.has(g));
+}
 
 function hayFor(slot){
   if (slot._hay) return slot._hay;
@@ -1839,7 +1962,7 @@ function hayTalk(t){
 
 function slotTextMatches(slot){
   const terms = curTerms();
-  return !terms.length || textMatches(hayFor(slot), terms) || slot.talks.some(t => talkMatches(t, slot));
+  return !terms.length || terms.every(term => slotHas(slot, term)) || slot.talks.some(t => talkMatches(t, slot));
 }
 function slotMatches(slot){
   if (!state.cats.has(slot.cat)) return false;
@@ -1849,12 +1972,12 @@ function slotMatches(slot){
 
 function talkMatches(t, slot){
   const terms = curTerms();
-  return terms.every(term => hayFor(slot).includes(term) || hayTalk(t).includes(term));
+  return terms.every(term => slotHas(slot, term) || talkHas(t, term));
 }
 
 function openMatchingTalk(t, slot){
   const terms = curTerms();
-  return terms.some(term => !hayFor(slot).includes(term)) && talkMatches(t, slot);
+  return terms.some(term => !slotHas(slot, term)) && talkMatches(t, slot);
 }
 
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -1865,7 +1988,8 @@ function hlWith(s, q){
   const terms = termsOf(q);
   if (!terms.length) return esc(s);
   if (_hlRe.q !== q){
-    const pat = terms.filter(t => t.length > 1).map(t => t.split(' ').map(escRe).join('\\s+'))
+    const pat = terms.filter(t => t.length > 1)
+                     .map(t => { const p = t.split(' ').map(escRe).join('\\s+'); return shortAlias(t) ? '(?<![a-z0-9])' + p + '(?![a-z0-9])' : p; })
                      .sort((a,b) => b.length - a.length).join('|');
     _hlRe = { q, re: pat ? new RegExp(pat, 'g') : null };
   }
@@ -1935,7 +2059,8 @@ function renderAgenda(){
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
   // While searching, only build the cards that can match: filters then just toggle visibility.
   const searching = curTerms().length > 0;
-  let html = '';
+  // every view has an h2 above the session cards (h3): a day heading, hidden on a single day
+  let html = all ? '' : `<h2 class="visually-hidden">${esc(DATA.days[state.day].label)} 2026</h2>`;
   for (const [d,i] of days){
     let inner = blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
     if (all){
@@ -1945,7 +2070,7 @@ function renderAgenda(){
   }
   main.innerHTML = html;
   main.classList.remove('wide');
-  document.getElementById('expandAll').textContent = 'Expand all abstracts';
+  document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
   applyFilters();
 }
 
@@ -2111,15 +2236,40 @@ function applyFilters(){
 
   const rl = document.getElementById('resultLine');
   if (fbCount){
-    rl.innerHTML = `No matches on <b>${DATA.days[state.day].label}</b> · <b>${fbCount}</b> matching session${fbCount>1?'s':''} from the rest of the week below`;
+    rl.innerHTML = `No matches on <b>${DATA.days[state.day].label}</b> · <b>${fbCount}</b> matching session${fbCount>1?'s':''} from the rest of the week below` + aliasChipsHtml();
   } else {
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
-    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`;
+    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`
+      + searchWeekHtml(shownSlots) + aliasChipsHtml();
   }
   document.getElementById('starCount').textContent = state.starred.size;
   if (state.scope === 'program') renderTabs(programCounts());
 }
+
+// A search on one day with few results offers the rest of the week (with none, the
+// rest of the week shows by itself).
+function searchWeekHtml(shown){
+  if (!state.q || state.day === 'all' || !shown || shown > 10) return '';
+  const others = DATA.days.reduce((n, d, i) => i === state.day ? n : n + d.slots.filter(slotMatches).length, 0);
+  return others ? ` · <button type="button" class="linkish rl-act" data-search-week>Search all week <span class="rl-n">(${others} more)</span></button>` : '';
+}
+// "Matched UNSW → University of New South Wales": a short form whose institution's
+// name doesn't spell it out.
+function aliasChipsHtml(q = state.q){
+  return aliasTerms(q).map(({ term, groups }) => {
+    const names = [...groups].map(g => { const l = AFF.groups[g][0], m = /\(([^)]+)\)\s*$/.exec(l); return m ? m[1] : l; });
+    if (names.every(n => wordRe(term).test(norm(n)))) return '';
+    return ` <span class="alias-chip">Matched <b>${esc(term.length <= 5 ? term.toUpperCase() : term)}</b> &rarr; ${esc(names.join(', '))}</span>`;
+  }).join('');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('[data-search-week]')) return;
+  state.day = 'all';
+  rerender();
+  document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll: true });
+  if (window.scrollY > programTop()) scrollToProgramTop();
+});
 
 // everything is rendered up front; filtering just toggles visibility
 function refresh(){
@@ -2928,6 +3078,9 @@ function showView(layout, scope){
   const agendaList = personal && !calendar;
   document.body.classList.toggle('favourites-calendar', personal && calendar);
   document.body.classList.toggle('participants-view', people);
+  // a calendar uses the full width, and the header and toolbar line up with it
+  document.body.classList.toggle('wide-view', calendar);
+  document.getElementById('main').setAttribute('aria-label', people ? 'Participants' : personal ? 'My agenda' : 'Full program');
   for (const button of document.querySelectorAll('[data-scope]')){
     button.setAttribute('aria-pressed', button.dataset.scope === scope);
   }
@@ -4011,7 +4164,7 @@ function renderCalendar(){
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     main.classList.toggle('wide', true);
-    result.textContent = selected.length + (favourites ? ' agenda items' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
+    result.innerHTML = selected.length + (favourites ? ' agenda items' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
   weekFit(main);
@@ -4658,29 +4811,29 @@ function openInProgram(go){
   jumpTo(go.dataset.goprogram, go.dataset.jump || '', go.dataset.jumptalk || '');
 }
 
-function jumpTo(dayAttr, jump, jumpTalk){
+// Open the program on a day and, with `jump`, at that session (and talk). A link in the
+// calendar layout (#s=…&layout=calendar) stays in the calendar, in its orientation.
+function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
   state.day = dayAttr === 'all' || dayAttr === undefined ? 'all' : +dayAttr;
   if (jump){
     clearSearch('q');
     state.group = null;
     state.cats = new Set(Object.keys(DATA.cats));
   }
-  showView('list','program');
+  const s = jump && slotById(jump);
+  // the timeline opens with the session near its left edge
+  if (layout === 'calendar' && s && state.day !== 'all' && state.orient !== 'v')
+    HZ.left[DATA.days[state.day].date] = toMin(s.start) - (PHONE_MQ.matches ? 15 : 30);
+  showView(layout, 'program');
+  if (s && layout === 'calendar' && calendarJump(s, jumpTalk)) return;
   if (jump){
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
       const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
       if (talk) talk.open = true;
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
-      const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
       target.focus({ preventScroll: true });
-      window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - toolbarHeight - 16, behavior: 'instant' });
-      requestAnimationFrame(() => {
-        if (document.activeElement !== target) return;
-        const toolbarBottom = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
-        const clearance = target.getBoundingClientRect().top - toolbarBottom - 12;
-        if (clearance < 0) window.scrollBy({top: clearance, behavior:'instant'});
-      });
+      revealInCard(card, talk && talk.querySelector('summary'));
       card.classList.add('flash');
       setTimeout(() => card.classList.remove('flash'), 1500);
       return;
@@ -4688,12 +4841,37 @@ function jumpTo(dayAttr, jump, jumpTalk){
   }
   document.querySelector('#daytabs [aria-pressed="true"]').focus();
 }
+// Scroll a session card to just under the sticky toolbar, so its header shows above
+// the talk; a talk far down a long session goes a quarter of the way down the screen.
+function revealInCard(card, summary){
+  const bar = stickyWrap.getBoundingClientRect().height, room = window.innerHeight - bar;
+  const y = el => el.getBoundingClientRect().top + window.scrollY;
+  let top = y(card) - bar - 12;
+  if (summary && y(summary) + summary.offsetHeight - top - bar > room * 0.7) top = y(summary) - bar - room * 0.25;
+  window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+}
+// The same in a day calendar: the session (or talk) scrolled into view and focused.
+function calendarJump(s, tid){
+  const t = weekTarget(s.id, tid || '');
+  if (!t) return false;
+  const hz = t.box.closest('.hz-day');
+  if (hz) hzScrollTo(hz, toMin(s.start) - (PHONE_MQ.matches ? 15 : 30), 0, 'instant');
+  t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
+  const bar = stickyWrap.getBoundingClientRect().bottom;
+  const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
+  const top = t.box.getBoundingClientRect().top - bar - stick - 12;
+  if (top < 0) window.scrollBy({ top, behavior:'instant' });
+  t.button.focus({ preventScroll:true });
+  t.box.classList.add('week-hit');
+  setTimeout(() => t.box.classList.remove('week-hit'), 1600);
+  return true;
+}
 
 document.getElementById('expandAll').addEventListener('click', e => {
   const ds = document.querySelectorAll('.card:not(.hidden) details');
   const anyClosed = [...ds].some(d => !d.open);
   ds.forEach(d => d.open = anyClosed);
-  e.currentTarget.textContent = anyClosed ? 'Collapse all abstracts' : 'Expand all abstracts';
+  e.currentTarget.innerHTML = (anyClosed ? 'Collapse all' : 'Expand all') + '<span class="xa-word"> abstracts</span>';
 });
 
 document.addEventListener('keydown', e => {
@@ -4701,7 +4879,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !filterPanel.hidden){ setFilterOpen(false); filterBtn.focus(); return; }
   if (e.key === '/' && state.scope !== 'agenda' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); tbCompact(false); qEl.focus({ preventScroll:true }); }
-  if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); rerender(); qEl.blur(); }
+  // Escape leaves the search box and keeps the search; the ✕ button clears it.
+  if (e.key === 'Escape' && document.activeElement === qEl){ e.preventDefault(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
   if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
@@ -4877,8 +5056,9 @@ function paintPeopleControls(matching, cat){
   const counts = {};
   for (const p of matching) for (const c of p.cats) counts[c] = (counts[c] || 0) + 1;
   const sel = document.getElementById('peopleCat');
-  sel.innerHTML = `<option value="">All (${matching.length})</option>` + Object.entries(DATA.cats).map(([k, label]) =>
-    `<option value="${k}"${counts[k] || k === cat ? '' : ' disabled'}>${esc(label)} (${counts[k] || 0})</option>`).join('');
+  // categories nobody in the list is in are left out (the chosen one stays)
+  sel.innerHTML = `<option value="">All (${matching.length})</option>` + Object.entries(DATA.cats).filter(([k]) => counts[k] || k === cat).map(([k, label]) =>
+    `<option value="${k}">${esc(label)} (${counts[k] || 0})</option>`).join('');
   sel.value = cat;
   sel.classList.toggle('pp-on', Boolean(cat));
 }
@@ -4890,7 +5070,7 @@ function renderPeople(){
   const terms = termsOf(q);
   const fullName = alias ? norm(groupLabel(alias)).replace(/^the /, '').replace(/ \(.*\)$/, '').trim() : '';
   const byQuery = alias ? p => p.groups.has(alias) || (fullName.length > 6 && p.hay.includes(fullName))
-    : terms.length ? p => terms.every(t => p.hay.includes(t)) : () => true;
+    : terms.length ? p => terms.every(t => shortAlias(t) ? [...ALIAS.get(t)].some(g => p.groups.has(g)) : p.hay.includes(t)) : () => true;
   const cat = DATA.cats[state.pcat] ? state.pcat : '';
   const shown = cat ? p => byQuery(p) && p.cats.has(cat) : byQuery;
   paintPeopleControls(people.filter(byQuery), cat);
@@ -5301,13 +5481,15 @@ function writeHash(){
 function readHash(){
   const p = new URLSearchParams(location.hash.slice(1));
   state.scope = ['agenda', 'participants'].includes(p.get('view')) ? p.get('view') : 'program';
-  state.pq = (p.get('pq') || '').trim();
+  // searches are capped at 200 characters, as the search box is
+  state.pq = (p.get('pq') || '').trim().slice(0, 200);
   state.psort = ['first', 'last'].includes(p.get('psort')) ? p.get('psort') : 'aff';
   state.pcat = DATA.cats[p.get('pcat')] ? p.get('pcat') : '';
-  state.layout = p.get('layout') === 'calendar' ? 'calendar' : 'list';
+  // Horizontal | Vertical only applies to the calendar, so orient=v alone asks for it
+  state.layout = p.get('layout') === 'calendar' || (!p.get('layout') && p.get('orient') === 'v') ? 'calendar' : 'list';
   const di = DATA.days.findIndex(d => d.date === p.get('day'));
   state.day = di >= 0 ? di : 'all';
-  state.q = (p.get('q') || '').trim();
+  state.q = (p.get('q') || '').trim().slice(0, 200);
   qEl.value = state.q;
   document.getElementById('clr').style.display = state.q ? 'block' : 'none';
   // 'public' was the stream of the public lectures before Congress events took them
@@ -5328,8 +5510,10 @@ function followHashTargets(r){
   pinnedFor = null;
   if (s){
     const di = DATA.days.findIndex(d => d.slots.includes(s));
-    jumpTo(String(di), s.id, hit ? hit.t.id : '');
+    jumpTo(String(di), s.id, hit ? hit.t.id : '', state.layout);
   }
+  if (r.talk && !hit) toast('That talk wasn’t found');
+  else if (r.session && !s) toast('That session wasn’t found');
   pinnedFor = stateHash();
   pinnedAgenda = '';
   if (r.agenda) showSharedAgenda(r.agenda.split(','));
@@ -5810,6 +5994,14 @@ PHONE_MQ.addEventListener('change', () => tbCompact(false));
 if (window.ResizeObserver) new ResizeObserver(syncToolbarHeight).observe(stickyWrap);
 syncToolbarHeight();
 
+// "Skip to program" moves the focus past the header and toolbar to the main area (the
+// address keeps its view: a #main hash would be read as a view).
+document.getElementById('skipLink').addEventListener('click', e => {
+  e.preventDefault();
+  scrollToProgramTop();
+  document.getElementById('main').focus({ preventScroll: true });
+});
+
 function start(){
   const r = readHash();
   // During the congress a plain visit opens on today.
@@ -5851,6 +6043,9 @@ def prepare_payload(payload):
             elif is_congress_event(slot['title']):
                 slot['cat'], slot['grp'] = 'events', ''
                 add_event_details(day['date'], slot)
+                # Indico lists the dinner in the congress building; it is a harbour cruise
+                if 'congress dinner' in slot['title'].lower():
+                    slot['room'] = 'Sydney Harbour (dinner cruise)'
             elif slot['cat'] not in CATS:
                 slot['cat'] = classify(slot['title'], '')[0]
     return payload
