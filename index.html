@@ -110,16 +110,15 @@ details.about summary{cursor:pointer;color:var(--accent);font-weight:600;font-si
 details.about .desc{padding:8px 0 0}
 
 .talks{list-style:none;margin:10px 0 0;padding:0;border-top:1px solid var(--line)}
-.talk{border-bottom:1px solid var(--line)}
+.talk{display:grid;grid-template-columns:minmax(0,1fr) auto;border-bottom:1px solid var(--line)}
 .talk:last-child{border-bottom:0}
 .talk.hidden{display:none}
-details.talk-d{padding:0 6px 0 0}
-details.talk-d summary{list-style:none;display:flex;gap:10px;align-items:baseline;padding:9px 12px 9px 17px;cursor:pointer;border-radius:10px}
+details.talk-d summary{list-style:none;display:flex;gap:8px;align-items:baseline;padding:9px 5px 9px 17px;cursor:pointer;border-radius:10px}
 details.talk-d summary::-webkit-details-marker{display:none}
 details.talk-d summary:hover{background:#f8fafc}
 .t-time{flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:38px}
 .t-main{flex:1;min-width:0}
-.t-title{display:block;font-size:13.8px;font-weight:600;line-height:1.4}
+.t-title{display:block;font-size:13.8px;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
 .t-sp{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .t-caret{flex:0 0 auto;color:#b6c0cf;font-size:10px;transition:transform .15s}
 details.talk-d[open] .t-caret{transform:rotate(90deg)}
@@ -127,8 +126,9 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body .abstract{white-space:pre-wrap;margin:0 0 8px}
 .t-body .aff{font-style:italic}
 .t-body .tools{display:flex;gap:12px;align-items:center;font-size:12.5px}
-.more-star{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--muted)}
-.more-star.on{background:#fff7eb;border-color:#fcd34d;color:#92400e}
+.talk-star{align-self:start;width:38px;height:38px;margin:3px 5px 0 0;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--muted);font-size:21px;line-height:1}
+.talk-star:hover{border-color:var(--line);background:#f8fafc}
+.talk-star.on{background:#fff7eb;border-color:#fcd34d;color:#92400e}
 mark.hlm{background:#fde68a;color:#1f2937;border-radius:3px;padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 
 .empty-note{display:none;text-align:center;color:var(--muted);font-size:14.5px;padding:40px 10px}
@@ -165,6 +165,26 @@ footer p{margin:4px 0}
 .ag-ok{color:#15803d;font-weight:700}
 .builder-actions{display:flex;flex-wrap:wrap;gap:8px}
 .builder-actions button:disabled{opacity:.55;cursor:default}
+.agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:#eef1f6}
+.agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--muted);font-size:14px;font-weight:650}
+.agenda-views button[aria-pressed="true"]{background:#fff;border-color:var(--line);color:var(--ink)}
+.cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
+.cal-days button{flex:none;padding:6px 10px}
+.cal-day-title{font-size:16px;margin:12px 0 8px}
+.cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+.cal-grid{--minute:4.5px;--time-gutter:3.5rem;position:relative;min-width:calc(var(--time-gutter) + var(--lanes) * 6.25rem);height:calc(var(--duration) * var(--minute));margin:12px 8px}
+.cal-hour{position:absolute;top:calc(var(--offset) * var(--minute));inset-inline:0;display:flex;align-items:start;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.cal-hour span{flex:0 0 var(--time-gutter);padding-left:4px;transform:translateY(-50%);line-height:1}
+.cal-hour::after{content:"";flex:1;border-top:1px solid var(--line)}
+.cal-hour.half-hour::after{border-top-style:dashed}
+.cal-events{position:absolute;inset:0 0 0 var(--time-gutter)}
+.cal-event{position:absolute;top:calc(var(--offset) * var(--minute) + 1px);height:calc(var(--span) * var(--minute) - 2px);left:calc(var(--left) + 2px);width:calc(var(--width) - 4px);overflow:hidden;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--ink);padding:2px 6px;display:flex;flex-direction:column;justify-content:flex-start;font-size:12px;line-height:1.2}
+.cal-event:hover,.cal-event:focus-visible{outline:2px solid var(--c);outline-offset:1px;z-index:1}
+.cal-event.has-clash{border-top:2px solid #b45309}
+.cal-event span,.cal-event strong{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.cal-event.multiline strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow-wrap:anywhere}
+.cal-event .cal-time,.cal-event .cal-context{font-size:11px}
+.cal-event .cal-context{color:#374151}
 .export-status{font-size:14px;color:var(--muted)}
 .export-status:empty{display:none}
 .ag-day{margin-top:22px}
@@ -206,9 +226,12 @@ footer p{margin:4px 0}
   .ag-main{width:100%}
   .ag-actions{flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:4px}
   .ag-btn{min-height:36px}
+  .talk-star{width:44px;height:44px;margin-right:2px}
 }
 @media print{
-  .sticky-wrap,.star,.more-star,.hero .links,.chips,.controls,.builder-actions,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.builder-actions,.agenda-views,#builderCalendar,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  #builderList[hidden]{display:block!important}
+  .talk{grid-template-columns:minmax(0,1fr)}
   body{background:#fff}
   .card,.ag-row{box-shadow:none;break-inside:avoid}
   header.hero{background:#0f2b6b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -282,6 +305,10 @@ footer p{margin:4px 0}
       <button class="toggle" id="icsAgenda">Download .ics</button>
     </div>
   </div>
+  <div class="agenda-views" id="agendaViews" role="group" aria-label="Agenda view">
+    <button type="button" data-layout="list" aria-pressed="true" aria-controls="builderList">List</button>
+    <button type="button" data-layout="calendar" aria-pressed="false" aria-controls="builderCalendar">Calendar</button>
+  </div>
   <p class="export-status" id="exportStatus" role="status"></p>
   <div class="ics-note" id="copyNote" hidden>
     <label for="copyBox">Select and copy your agenda text below.</label>
@@ -291,7 +318,13 @@ footer p{margin:4px 0}
     <p><b>Tip:</b> if the download didn&#8217;t start, copy the text below and save it as <b>my-agenda.ics</b> (or paste it into any calendar app that accepts imports).</p>
     <textarea id="icsBox" readonly rows="6" aria-label="Calendar file text"></textarea>
   </div>
-  <div id="builderBody"></div>
+  <div id="builderBody">
+    <div id="builderList"></div>
+    <div id="builderCalendar" hidden>
+      <div class="cal-days" id="calendarDays" role="group" aria-label="Calendar day"></div>
+      <div id="calendarDay"></div>
+    </div>
+  </div>
 </section>
 
 <footer>
@@ -308,7 +341,7 @@ footer p{margin:4px 0}
     </div>
     <div>
       <h4>Tips</h4>
-      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b> (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a stream badge (e.g. QST, NUPP) to filter to that group. Star sessions and talks, then open <b>My agenda</b> for a personal schedule with clash warnings and export to calendar/print/text.</p>
+      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b> (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a stream badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar.</p>
     </div>
   </div>
 </footer>
@@ -325,6 +358,7 @@ const CAT_COLORS = {
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, view: 'program',
+  agendaLayout: 'list', calendarDay: null,
   starred: new Set(),
 };
 try {
@@ -513,11 +547,11 @@ function cardHtml(s){
           <div class="t-body">
             ${t.d ? `<p class="abstract">${hl(t.d)}</p>` : '<p class="abstract" style="color:#94a3b8">No abstract provided.</p>'}
             <div class="tools">
-              <button class="more-star ${tStar}" data-tstar="${t.id}" aria-pressed="${Boolean(tStar)}">&#9733; ${tStar?'Saved':'Save this talk'}</button>
               <a href="${t.u}" target="_blank" rel="noopener">View on Indico &#8599;</a>
             </div>
           </div>
         </details>
+        <button type="button" class="talk-star ${tStar}" data-tstar="${t.id}" aria-label="Favourite talk: ${esc(t.t)}" title="Favourite talk" aria-pressed="${Boolean(tStar)}">${tStar?'&#9733;':'&#9734;'}</button>
       </li>`;
     }).join('') + '</ul>';
   } else if (s.desc){
@@ -706,7 +740,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
     t.classList.toggle('on', state.starred.has(id));
     t.setAttribute('aria-pressed', state.starred.has(id));
-    t.innerHTML = '&#9733; ' + (state.starred.has(id) ? 'Saved' : 'Save this talk');
+    t.textContent = state.starred.has(id) ? '★' : '☆';
     afterStarChange();
     return;
   }
@@ -783,6 +817,11 @@ function plannedHours(items){
 
 function itemTitle(it){ return it.kind === 'session' ? it.s.title : it.t.t; }
 
+function programJumpAttrs(it){
+  const talk = it.t ? ` data-jumptalk="${it.t.id}"` : '';
+  return `data-goprogram="${it.di}" data-jump="${it.s.id}"${talk}`;
+}
+
 function agRow(it){
   const [c,bg] = CAT_COLORS[it.s.cat];
   const who = it.kind === 'talk'
@@ -796,7 +835,6 @@ function agRow(it){
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
     : '';
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
-  const jumpTalk = it.t ? ` data-jumptalk="${it.t.id}"` : '';
   return `<li class="ag-row ${clashNames.length?'has-clash':''}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}</span>
     <div class="ag-main">
@@ -805,10 +843,97 @@ function agRow(it){
       ${clash}
     </div>
     <div class="ag-actions">
-      <button class="ag-btn" data-goprogram="${it.di}" data-jump="${it.s.id}"${jumpTalk}>View in program</button>
+      <button class="ag-btn" ${programJumpAttrs(it)}>View in program</button>
       <button class="ag-btn rm"${tid} aria-label="Remove ${esc(itemTitle(it))}">&#10005; Remove</button>
     </div>
   </li>`;
+}
+
+function calendarGroups(items){
+  // Each set of overlapping events shares a group. A free lane can be reused
+  // as soon as its preceding event ends, and isolated events use the full width.
+  const groups = [];
+  let group = null;
+  for (const item of items){
+    const start = toMin(item.start), end = toMin(item.end);
+    if (!group || group.laneEnds.every(lastEnd => lastEnd <= start)){
+      group = { laneEnds: [], events: [] };
+      groups.push(group);
+    }
+    const freeLane = group.laneEnds.findIndex(lastEnd => lastEnd <= start);
+    const lane = freeLane === -1 ? group.laneEnds.length : freeLane;
+    group.laneEnds[lane] = end;
+    group.events.push({ item, lane, start, end });
+  }
+  return groups;
+}
+
+function calendarEvent(event, lanes, firstMinute){
+  const { item: it, lane, start, end } = event;
+  const [c,bg] = CAT_COLORS[it.s.cat];
+  const context = [it.t ? it.s.title : 'Session', it.s.room].filter(Boolean).join(' · ');
+  const time = `${it.start}–${it.end}`;
+  const clashes = it.clashes.length > 0;
+  const clashText = clashes ? ' · Overlap' : '';
+  const label = esc([time, itemTitle(it), context].join(' · ') + clashText);
+  return `<button type="button" class="cal-event ${clashes?'has-clash':''} ${end-start>=15?'multiline':''}" ${programJumpAttrs(it)}
+    aria-label="${label}" title="${label}"
+    style="--c:${c};--cbg:${bg};--offset:${start-firstMinute};--span:${end-start};--left:${100*lane/lanes}%;--width:${100/lanes}%">
+    <span class="cal-time">${clashes?'&#9888; ':''}${time}</span>
+    <strong>${esc(itemTitle(it))}</strong>
+    <span class="cal-context">${esc(context)}</span>
+  </button>`;
+}
+
+function renderCalendar(items){
+  const preferred = items.find(it => it.di === state.day) || items[0];
+  const dayIndex = state.calendarDay ?? preferred?.di ?? 0;
+  const day = DATA.days[dayIndex];
+  const dayItems = items.filter(it => it.di === dayIndex);
+  document.getElementById('calendarDays').innerHTML = DATA.days.map((d, i) => {
+    const count = items.filter(it => it.di === i).length;
+    const selected = i === dayIndex;
+    return `<button type="button" class="daytab ${selected?'on':''}" data-cal-day="${i}" aria-pressed="${selected}" aria-controls="calendarDay">${esc(d.label)}<span class="dt-count">${count}</span></button>`;
+  }).join('');
+
+  const pane = document.getElementById('calendarDay');
+  if (!dayItems.length){
+    pane.innerHTML = `<div class="ag-empty">
+      <h3>No favourites on ${esc(day.label)}</h3>
+      <button class="toggle" data-goprogram="${dayIndex}">Browse this day &#8594;</button>
+    </div>`;
+    return;
+  }
+
+  const tick = 30;
+  const firstMinute = Math.floor(toMin(dayItems[0].start) / tick) * tick;
+  const lastMinute = Math.ceil(Math.max(...dayItems.map(it => toMin(it.end))) / tick) * tick;
+  let hours = '';
+  for (let minute = firstMinute; minute <= lastMinute; minute += tick){
+    const halfHour = minute % 60 !== 0;
+    const label = String(Math.floor(minute / 60)).padStart(2, '0') + (halfHour ? ':30' : ':00');
+    hours += `<div class="cal-hour ${halfHour?'half-hour':''}" style="--offset:${minute-firstMinute}"><span>${label}</span></div>`;
+  }
+  const groups = calendarGroups(dayItems);
+  const maxLanes = Math.max(...groups.map(group => group.laneEnds.length));
+  const events = groups.flatMap(group => group.events.map(event => calendarEvent(event, group.laneEnds.length, firstMinute)));
+  pane.innerHTML = `<h3 class="cal-day-title" id="calendarDayTitle">${esc(day.label)} 2026</h3>
+    <div class="cal-scroll" tabindex="0" role="region" aria-labelledby="calendarDayTitle">
+      <div class="cal-grid" style="--duration:${lastMinute-firstMinute};--lanes:${maxLanes}">
+        <div aria-hidden="true">${hours}</div>
+        <div class="cal-events">${events.join('')}</div>
+      </div>
+    </div>`;
+}
+
+function renderAgendaLayout(items){
+  const calendar = state.agendaLayout === 'calendar';
+  document.getElementById('builderList').hidden = calendar;
+  document.getElementById('builderCalendar').hidden = !calendar;
+  document.querySelectorAll('#agendaViews [data-layout]').forEach(button => {
+    button.setAttribute('aria-pressed', button.dataset.layout === state.agendaLayout);
+  });
+  if (calendar) renderCalendar(items);
 }
 
 function renderBuilder(){
@@ -818,19 +943,20 @@ function renderBuilder(){
   const nTalk = items.length - nSess;
   const clashItems = items.filter(x => x.clashes.length).length;
   const stats = document.getElementById('builderStats');
-  const body = document.getElementById('builderBody');
+  const body = document.getElementById('builderList');
   for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda']) {
     document.getElementById(id).disabled = items.length === 0;
   }
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
+  renderAgendaLayout(items);
   if (!items.length){
     stats.textContent = 'Nothing saved yet.';
     body.innerHTML = `<div class="ag-empty">
       <div class="ag-empty-icon">&#9733;</div>
       <h3>Your agenda is empty</h3>
-      <p>Star &#9733; sessions and talks while browsing the program &mdash; they land here as a personal timetable, with clash warnings and export options.</p>
+      <p>Use the star beside any talk or session to add it to your agenda.</p>
       <button class="toggle" data-goprogram="all">Browse the program &#8594;</button>
     </div>`;
     return;
@@ -986,6 +1112,17 @@ document.getElementById('copyAgenda').addEventListener('click', () => copyToClip
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
 
 document.getElementById('builder').addEventListener('click', e => {
+  const layout = e.target.closest('[data-layout]');
+  const day = e.target.closest('[data-cal-day]');
+  if (layout || day){
+    if (layout) state.agendaLayout = layout.dataset.layout;
+    if (day) state.calendarDay = +day.dataset.calDay;
+    const items = agendaItems();
+    markClashes(items);
+    renderAgendaLayout(items);
+    if (day) document.querySelector('#calendarDays [aria-pressed="true"]').focus();
+    return;
+  }
   const rm = e.target.closest('[data-sstar],[data-tstar]');
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
