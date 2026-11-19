@@ -386,6 +386,8 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .daytab:hover{border-color:var(--hover-line)}
 .daytab.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .daytab.on .dt-count{color:#fff}
+/* relative: its hidden words stay inside the sideways-scrolling tabs */
+.dt-of{position:relative;font-weight:400;opacity:.85}
 .daytab.zero:not(.on){color:var(--muted);background:var(--surface-2)}
 .daytab.today::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;margin-right:6px;vertical-align:1px}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 0 10px}
@@ -654,6 +656,18 @@ footer p{margin:4px 0}
 @media (max-width:1439px){.favourites-calendar .ag-sx{display:none}}
 @media (min-width:721px) and (max-width:1023px){.ag-opt-show,.ag-about{display:none}.ag-opt-f{display:inline}}
 @media (min-width:721px) and (max-width:819px){.ag-build-long{display:none}}
+/* The counts keep their words: when the title, counts and clash indicator do not fit on
+   one line, the indicator moves to a second line (and only a count wider than the whole
+   line ends in an ellipsis) */
+@media (min-width:721px){
+  .ag-bar-main{flex-wrap:wrap;row-gap:4px}
+  .builder-stats{flex:0 0 auto;max-width:100%}
+}
+/* At 320px the Full sessions option takes its own line, so Build and Export fit */
+@media (max-width:359px){
+  #builder .builder-actions{flex-wrap:wrap}
+  #builder .builder-actions .ag-opt{flex:1 1 100%}
+}
 .favourites-calendar #builder{max-width:none}
 .ag-clash-ind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:999px;padding:3px 11px;font-size:.8125rem;font-weight:700;white-space:nowrap}
 .ag-clash-ind:hover{border-color:var(--clash-row-line)}
@@ -680,6 +694,9 @@ footer p{margin:4px 0}
 /* Undo after a removal: a bar at the foot of the screen, wherever the list is scrolled */
 .undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 28px rgba(0,0,0,.28);font-size:0.875rem}
 .undo-bar[hidden]{display:none}
+/* An open dialog (details, Build, Display, Move) would sit under the bar: the Undo offer
+   steps aside while it is open and comes back, its time paused, when it closes. */
+html:has(dialog[open]) .undo-bar{display:none}
 .undo-bar #undoMsg{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .undo-actions{display:flex;gap:6px;flex:none}
 .undo-bar .toggle{min-height:36px;padding:5px 14px;background:transparent;border-color:var(--toast-ink);color:var(--toast-ink)}
@@ -1358,8 +1375,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .ag-btn{min-height:36px}
   /* Remove (labelled) sits at the card's top right, by the time, so the other two
      keep the row to themselves at 320px */
-  .ag-time{min-height:2.25rem;padding:0 6.5rem 0 0;display:flex;align-items:center;flex-wrap:wrap}
-  .ag-btn.rm{position:absolute;top:8px;right:10px;min-height:2.25rem;min-width:2.75rem}
+  .ag-time{min-height:2.75rem;padding:0 6.5rem 0 0;display:flex;align-items:center;flex-wrap:wrap}
+  .ag-btn.rm{position:absolute;top:8px;right:10px;min-height:2.75rem;min-width:2.75rem}
   .builder{padding-top:8px}
   .ag-bar{gap:6px}
   .ag-bar h2{font-size:1.125rem}
@@ -1373,7 +1390,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .ag-opt{flex:0 1 auto;min-height:42px;font-size:.8125rem;line-height:1.2;white-space:nowrap}
   .ag-opt-long,.ag-opt-show{display:none}
   .ag-opt-f{display:inline}
-  .ag-clash-ind{min-height:32px}
+  .ag-clash-ind{min-height:32px;white-space:normal;text-align:left;max-width:100%}
   .cp-items li{gap:2px 8px}
   .cp-keep{order:1}
   .cp-open{order:2}
@@ -1976,15 +1993,18 @@ function personStr(sp){
 // ---------- header tabs & chips ----------
 const NO_STREAMS_HTML = '<b>No streams selected</b> &mdash; <button type="button" class="linkish empty-action" data-select-all-streams>Select all</button>';
 function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).length); }
-function renderTabs(counts = programCounts()){
+// totals (My agenda while its search or streams are on): the whole agenda's count a day,
+// so a tab reads "4/7", 4 of the day's 7 items matching, beside the badge's 7.
+function renderTabs(counts = programCounts(), totals = null){
   const el = document.getElementById('daytabs');
-  const total = counts.reduce((a,b)=>a+b,0);
+  const sum = a => a.reduce((x,y)=>x+y,0), total = sum(counts);
   const allOn = state.day === 'all';
   const ti = todayIdx();
-  const tab = (key, label, n, on, today) =>
-    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}</span></button>`;
-  el.innerHTML = tab('all', 'All week', total, allOn, false) +
-    DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti)).join('');
+  const of = (n, t) => totals && t !== n ? `<span class="dt-of"><span aria-hidden="true">/</span><span class="visually-hidden"> of </span>${t}<span class="visually-hidden"> matching</span></span>` : '';
+  const tab = (key, label, n, on, today, t) =>
+    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
+  el.innerHTML = tab('all', 'All week', total, allOn, false, totals && sum(totals)) +
+    DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti, totals && totals[i])).join('');
   document.getElementById('q').placeholder = state.scope === 'agenda' ? (allOn ? 'Search my agenda…' : `Search my agenda, ${DATA.days[state.day].label}…`)
     : allOn ? 'Search talks, speakers, abstracts…'
     : `Search ${DATA.days[state.day].label}…`;
@@ -2789,7 +2809,8 @@ function clashTally(list){
       up.set(root(a), root(b));
     }
   }
-  return { groups: new Set([...up.keys()].map(root)).size, items: up.size };
+  return { groups: new Set([...up.keys()].map(root)).size, items: up.size,
+    shown: list.filter(x => (x.clash || x.clashes || []).length).length };
 }
 // The same for what My agenda's calendar shows on day di (or all week), counted on its
 // items as the bar counts them, not on the blocks that Show full sessions groups.
@@ -2797,10 +2818,13 @@ function agendaClashWords(di){
   const all = agendaItems();
   markClashes(all);
   const items = agendaFilter(all), t = clashTally(di === undefined ? items : items.filter(it => it.di === di));
-  return clashWords(t.groups, t.items);
+  return clashWords(t.groups, t.items, agendaFiltered() ? t.shown : undefined);
 }
-function clashWords(groups, items){
-  return groups + (groups === 1 ? ' clash' : ' clashes') + (items ? ` (${items} items)` : '');
+// shown: how many of the items are on screen, while a search or streams hide some
+// ("1 clash (1 of 2 items shown)").
+function clashWords(groups, items, shown){
+  const of = !items ? '' : shown !== undefined && shown < items ? `${shown} of ${items} items shown` : `${items} items`;
+  return groups + (groups === 1 ? ' clash' : ' clashes') + (of ? ` (${of})` : '');
 }
 
 function markClashes(items){
@@ -3371,6 +3395,8 @@ function renderClashes(items){
   const shown = scoped.length ? scoped : dayGroups.length ? dayGroups : groups;
   const caret = ' <span class="caret" aria-hidden="true">&#9662;</span>';
   const nItems = g => g.reduce((n, x) => n + x.length, 0);
+  // the items left shown, while My agenda's search or streams are on
+  const nShown = g => agendaFiltered() ? g.reduce((n, x) => n + x.filter(y => !y.off).length, 0) : undefined;
   if (!groups.length){
     slot.innerHTML = items.length ? '<span class="ag-ok">&#10003; No clashes</span>' : '';
     box.hidden = true; box.innerHTML = '';
@@ -3378,14 +3404,15 @@ function renderClashes(items){
   }
   const where = day === null ? 'Week' : DATA.days[day].label.split(' ')[0];
   const n = scoped.length, all = groups.length, cxWk = t => `<span class="cx-wk"> &middot; ${t}</span>`;
-  const label = state.hideClashes ? `${clashWords(all)} hidden`
-    : !n ? (day === null ? 'No clashes shown' + cxWk(all + ' in all') : `No clashes on ${where}` + cxWk('week ' + all))
-    : `&#9888;&#65039; ${where}: ` + (day === null && n < all ? `${n} of ${clashWords(all, nItems(scoped))}` : clashWords(n, nItems(scoped)) + (n < all ? cxWk('week ' + all) : ''));
-  slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !scoped.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox">${label}${caret}</button>`;
+  const allWords = clashWords(all, nItems(groups));
+  const label = state.hideClashes ? `${allWords} hidden`
+    : !n ? (day === null ? 'No clashes shown' + cxWk(allWords + ' in all') : `No clashes on ${where}` + cxWk('week: ' + allWords))
+    : `&#9888;&#65039; ${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
+  slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !scoped.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox"><span>${label}</span>${caret}</button>`;
   box.hidden = !clashPanelOpen;
   const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button></span>`;
   const onWhat = shown === groups && day !== null && !dayGroups.length ? ' on other days' : day === null ? ' this week' : ' on ' + esc(DATA.days[day].label);
-  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : `&middot; ${clashWords(shown.length, nItems(shown))}`}</span></h3>${tools}</div>` +
+  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : `&middot; ${clashWords(shown.length, nItems(shown), nShown(shown))}`}</span></h3>${tools}</div>` +
     (state.hideClashes ? '<p class="clash-box-note">Clash warnings are hidden in the list, the calendar and the exports.</p>'
       : '<p class="clash-box-note">Items that overlap in time. <b>Keep this</b> removes the items that overlap it; you can undo.</p>' + clashPanelHtml(shown, numbers));
   box.setAttribute('aria-labelledby', 'clashBoxTitle');
@@ -3426,7 +3453,7 @@ function renderBuilder(){
   paintExportNote(items, whole);
 
   const personalList = state.layout === 'list' && state.scope === 'agenda';
-  if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
+  if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length), filtered ? DATA.days.map((d,di) => whole.filter(it => it.di === di).length) : null);
   if (!whole.length){
     stats.textContent = 'Nothing saved yet';
     body.innerHTML = agendaEmptyHtml();
@@ -5030,7 +5057,8 @@ function renderCalendar(){
   // My agenda draws its saved items with the program's own day views and week overview
   const items = favourites ? agendaCalendarItems() : programCalendarItems();
   const counted = favourites ? items.merged : items;
-  renderTabs(DATA.days.map((d,i) => counted.filter(it => it.di === i).length));
+  const wholeAg = favourites && agendaFiltered() ? agendaItems() : null;
+  renderTabs(DATA.days.map((d,i) => counted.filter(it => it.di === i).length), wholeAg && DATA.days.map((d,i) => wholeAg.filter(it => it.di === i).length));
   const main = document.getElementById('agenda');
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
   const fallback = !favourites && !selected.length && items.length > 0;
@@ -6680,7 +6708,8 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
-// A dialog that opens clears the toast first: it would sit over the dialog.
+// A dialog that opens clears the toast first: it would sit over the dialog. (The Undo
+// bar is kept, hidden by CSS while a dialog is open, so the offer survives the dialog.)
 function hideToast(){
   clearTimeout(toastTimer);
   document.getElementById('toast').classList.remove('show');
@@ -6758,16 +6787,19 @@ function previewMerged(items){
   return mergeSaved(items.map(it => ({ ...it, kind: it.t ? 'talk' : 'session' })));
 }
 // What a list of ids comes to in My agenda's own count (a saved session with the talks
-// saved in it is one item): its merged items, those already all in mine, and how many
-// items adding the rest would bring.
+// saved in it is one item): its merged items, how many of them are already in mine, and
+// how many are new, so that new + already = the total. An item is already in mine when
+// adding it would not add an item: a session I saved or hold a saved talk of (my talk
+// moves into it), or a talk I saved or whose session I saved. `fresh` is the same count
+// the Add button names and, but for my own items that the shared ones would merge, the
+// number the agenda grows by (the toast after Add counts what really happened).
 function agendaTally(items){
   const merged = previewMerged(items);
-  const have = merged.filter(it => [it.id, ...(it.inner || []).map(t => t.id)].every(id => state.starred.has(id))).length;
-  const now = agendaItems().length;
-  const gain = mergeSaved(agendaSaved(new Set([...state.starred, ...items.map(it => it.id)]))).length - now;
-  return { merged, n: merged.length, have, gain, words: agendaCountText(merged, false, ', ') };
+  const mineSess = new Set([...state.starred].map(id => { const h = talkById(id); return h ? h.s.id : id; }));
+  const have = merged.filter(it => it.t ? state.starred.has(it.t.id) || state.starred.has(it.s.id) : mineSess.has(it.s.id)).length;
+  return { merged, n: merged.length, have, fresh: merged.length - have, words: agendaCountText(merged, false, ', ') };
 }
-const addLabel = (gain, nIds) => 'Add ' + (gain > 0 ? countWord(gain, 'item') : nIds === 1 ? 'it' : 'them');
+const addLabel = (fresh, nIds) => 'Add ' + (fresh > 0 ? countWord(fresh, 'item') : nIds === 1 ? 'it' : 'them');
 function addedMessage(before){
   const added = agendaItems().length - before;
   return added > 0 ? `Added ${countWord(added, 'item')} to My agenda` : 'Added to My agenda';
@@ -6799,7 +6831,7 @@ function showSharedAgenda(ids){
   const differs = state.starred.size > 0 && (fresh.length > 0 || state.starred.size !== items.length);
   const t = agendaTally(items);
   el.innerHTML = `<div class="sb-row"><div><b>Shared agenda:</b> ${countWord(t.n, 'item')} (${t.words})${t.have ? `, ${t.have} already in yours` : ''}.</div>
-    <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>${addLabel(t.gain, fresh.length)} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}${differs ? `<button type="button" data-sb-replace>Replace mine with it</button>` : ''}<button type="button" data-sb-close>Dismiss</button></div></div>
+    <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>${addLabel(t.fresh, fresh.length)} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}${differs ? `<button type="button" data-sb-replace>Replace mine with it</button>` : ''}<button type="button" data-sb-close>Dismiss</button></div></div>
     <details><summary>See what’s in it</summary>${agendaPreviewList(items)}</details>`;
   el.hidden = false;
 }
@@ -7102,10 +7134,10 @@ function previewImport(text){
   const t = agendaTally(r.items);
   const have = agendaItems().length;
   const same = !fresh.length && state.starred.size === ids.length;
-  showImportResult(`<p><b>Found ${countWord(t.n, 'item')}</b> (${t.words}): ${t.n - t.have} new${t.have ? `, ${t.have} already in your agenda` : ''}.${r.unknown ? ` ${r.unknown} unknown code${r.unknown === 1 ? ' was' : 's were'} skipped.` : ''}</p>
+  showImportResult(`<p><b>Found ${countWord(t.n, 'item')}</b> (${t.words}): ${t.fresh} new${t.have ? `, ${t.have} already in your agenda` : ''}.${r.unknown ? ` ${r.unknown} unknown code${r.unknown === 1 ? ' was' : 's were'} skipped.` : ''}</p>
     ${same ? '<p>Your agenda already matches it exactly.</p>'
       : have ? `<p>Add keeps your ${have} saved item${have === 1 ? '' : 's'}; Replace swaps ${have === 1 ? 'it' : 'them'} for this list (you can undo).</p>` : ''}
-    <div class="md-row">${fresh.length ? `<button type="button" class="toggle primary" data-import="merge">${addLabel(t.gain, fresh.length)} to my agenda</button>` : ''}${have && !same ? `<button type="button" class="toggle" data-import="replace">Replace my agenda</button>` : ''}</div>
+    <div class="md-row">${fresh.length ? `<button type="button" class="toggle primary" data-import="merge">${addLabel(t.fresh, fresh.length)} to my agenda</button>` : ''}${have && !same ? `<button type="button" class="toggle" data-import="replace">Replace my agenda</button>` : ''}</div>
     <details><summary>See what’s in it</summary>${agendaPreviewList(r.items)}</details>`);
   document.querySelector('#importResult [data-import]')?.focus();
 }
