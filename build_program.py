@@ -576,6 +576,16 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .tb-mini .tb-q{max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:var(--muted)}
 .tb-mini .tb-q:empty{display:none}
 @media (max-width:720px){.sticky-wrap.tb-compact .toolbar{gap:6px;padding-top:4px;padding-bottom:4px}.tb-mini .tb-q{max-width:4.5rem}}
+/* Phones, while the search box has the focus (the keyboard is up): the view switches
+   step aside and the result line keeps to one line, so results show above the keyboard */
+@media (max-width:720px){
+  .sticky-wrap.tb-typing:not(.tb-compact) .toolbar>.schedule-nav,.sticky-wrap.tb-typing:not(.tb-compact) #expandAll{display:none}
+  .sticky-wrap.tb-typing:not(.tb-compact) .toolbar{padding-top:6px}
+  .sticky-wrap.tb-typing:not(.tb-compact) .daytabs{padding-bottom:6px}
+  .sticky-wrap.tb-typing:not(.tb-compact) .controls{padding-bottom:6px}
+  .sticky-wrap.tb-typing:not(.tb-compact) .result-row{padding-bottom:6px}
+  .sticky-wrap.tb-typing:not(.tb-compact) .result-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
 .daytabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
 .daytab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 15px;border-radius:999px;font-size:.875rem;font-weight:600;white-space:nowrap}
 .daytab .dt-count{font-weight:500;color:var(--muted);font-size:.75rem;margin-left:5px}
@@ -617,6 +627,7 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .fp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.875rem}
 .fp-all{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.7812rem;font-weight:600;color:var(--link)}
 .fp-tip{margin:10px 0 0;font-size:.75rem;color:var(--muted)}
+.fp-agenda .fp-grp{display:none}
 .fp-head{flex-wrap:wrap;gap:8px}
 .fp-actions{display:flex;flex-wrap:wrap;gap:6px}
 .fp-none{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:var(--clash-bg);border:1px solid var(--clash-line);color:var(--clash-ink);font-size:0.8125rem;font-weight:600}
@@ -1145,6 +1156,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
 .vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
 .vt-tk.mine{background:var(--starOn-bg)}
+.vt-tk.hit,.hz-talk.hit{background:var(--active-bg);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
 .vt-tk.dim{background:var(--surface-2);color:var(--muted)}
 .vt-tk.dim .vt-ttime{color:var(--muted)}
 .vt-card.is-talk .vt-conv{font-style:italic}
@@ -1236,6 +1248,16 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ics-note{margin-top:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:.8125rem;color:var(--muted)}
 .ics-note textarea{width:100%;margin-top:8px;font:.7188rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .ag-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+/* My agenda's search and streams: a starred talk that carries the match, the talks of a
+   saved session it matched, a clash with a hidden item, the Export menu's note */
+.ag-inner li.ag-ihit{background:var(--active-bg);border-radius:8px;margin:0 -6px;padding:3px 6px}
+.ag-hits{margin:7px 0 0;font-size:.7812rem;color:var(--muted);line-height:1.45}
+.ag-hits .linkish{font-size:.7812rem;text-align:left}
+.ag-hits-k{font-weight:700;color:var(--ink-2)}
+.ag-cx-off{font-style:italic;opacity:.85}
+.ag-nomatch .ag-empty-icon{color:var(--muted);font-size:1.75rem}
+.ag-menu-note{margin:0 0 4px;padding:7px 12px 9px;border-bottom:1px solid var(--line);font-size:.75rem;line-height:1.4;color:var(--muted);max-width:16rem}
+.ag-menu-note[hidden]{display:none}
 .toggle.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .toggle.primary:hover{border-color:var(--accent);filter:brightness(1.08)}
 
@@ -1742,7 +1764,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
           <div class="fp-head"><b>Show streams</b><div class="fp-actions"><button type="button" class="fp-all" id="filterAll">Select all</button><button type="button" class="fp-all" id="filterNone">Deselect all</button><button type="button" class="fp-all" id="filterReset" title="Show every stream and clear the group filter and search">Reset filters</button></div></div>
           <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
           <p class="fp-none" id="filterEmpty" hidden>No streams selected &mdash; <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
-          <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream. Click a group badge on a session (e.g. QST) to show only that group.</span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream. Tap a group badge on a session (e.g. QST) to show only that group.</span></p>
+          <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream.<span class="fp-grp"> Click a group badge on a session (e.g. QST) to show only that group.</span></span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream.<span class="fp-grp"> Tap a group badge on a session (e.g. QST) to show only that group.</span></span></p>
         </div>
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
@@ -1774,6 +1796,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <div class="ag-menu" id="exportWrap">
         <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <span class="caret" aria-hidden="true">&#9662;</span></button>
         <div class="ag-menu-list" id="exportMenu" role="menu" aria-labelledby="exportBtn" hidden>
+          <p class="ag-menu-note" id="exportNote" role="none" hidden></p>
           <button type="button" role="menuitem" tabindex="-1" id="printAgenda">Print or save as PDF</button>
           <button type="button" role="menuitem" tabindex="-1" id="copyAgenda">Copy as text</button>
           <button type="button" role="menuitem" tabindex="-1" id="icsAgenda">Download .ics</button>
@@ -1979,6 +2002,9 @@ const state = {
   scope: 'program', programTalks:false, orient:'h',
   starred: new Set(), hideClashes: false,
   pq: '', // the Participants view's own search
+  // My agenda's own search and streams: the toolbar's search box and Streams menu serve
+  // the view shown (viewQ, viewCats), so a search in one never hides items in the other
+  aq: '', acats: new Set(Object.keys(DATA.cats)),
   psort: 'aff', pcat: '', // the Participants view's sort (aff | first | last) and category
 };
 // Every session and talk id in the program: the only ids a star can hold.
@@ -2041,25 +2067,25 @@ function renderTabs(counts = programCounts()){
     `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}</span></button>`;
   el.innerHTML = tab('all', 'All week', total, allOn, false) +
     DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti)).join('');
-  document.getElementById('q').placeholder = allOn
-    ? 'Search talks, speakers, abstracts…'
+  document.getElementById('q').placeholder = state.scope === 'agenda' ? (allOn ? 'Search my agenda…' : `Search my agenda, ${DATA.days[state.day].label}…`)
+    : allOn ? 'Search talks, speakers, abstracts…'
     : `Search ${DATA.days[state.day].label}…`;
 }
 // The chips are built once and then only restyled, so a chip keeps focus
 // after a click and a double-click lands on the same element.
 function renderChips(){
-  const el = document.getElementById('chips');
+  const el = document.getElementById('chips'), cats = viewCats();
   if (!el.firstElementChild){
     el.innerHTML = Object.entries(DATA.cats).map(([k,label]) =>
       `<span class="chip-wrap" data-wrap="${k}" style="--chip-c:${CAT_COLORS[k][0]};--chip-fill:var(--${k}-fill)"><button type="button" class="chip" data-cat="${k}" aria-pressed="false"><span class="dot" aria-hidden="true"></span>${esc(label)}</button><button type="button" class="chip-only" data-only="${k}" aria-label="Show only ${esc(label)}" title="Show only ${esc(label)}">only</button></span>`).join('');
   }
   for (const w of el.querySelectorAll('.chip-wrap')){
-    const on = state.cats.has(w.dataset.wrap);
+    const on = cats.has(w.dataset.wrap);
     w.classList.toggle('on', on);
     w.querySelector('.chip').setAttribute('aria-pressed', on);
   }
-  const n = state.cats.size, total = Object.keys(DATA.cats).length;
-  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 0 ? 'None' : n === 1 ? DATA.cats[[...state.cats][0]] : `${n} of ${total}`;
+  const n = cats.size, total = Object.keys(DATA.cats).length;
+  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 0 ? 'None' : n === 1 ? DATA.cats[[...cats][0]] : `${n} of ${total}`;
   document.getElementById('filterMenu').classList.toggle('active', n !== total);
   document.getElementById('filterEmpty').hidden = n !== 0;
   const pill = document.getElementById('grpill');
@@ -2118,7 +2144,11 @@ function termsOf(q){
   }
   return terms;
 }
-function curTerms(){ return termsOf(state.q); }
+// The search and streams of the view shown: My agenda's own, else the Full program's.
+function viewQ(){ return state.scope === 'agenda' ? state.aq : state.q; }
+function viewCats(){ return state.scope === 'agenda' ? state.acats : state.cats; }
+function setViewCats(cats){ if (state.scope === 'agenda') state.acats = cats; else state.cats = cats; }
+function curTerms(){ return termsOf(viewQ()); }
 function norm(s){ return fold(s).replace(/\s+/g, ' '); }
 
 // Institution short forms ("unsw", "anu", "uq" …) from the build's affiliation groups.
@@ -2153,10 +2183,10 @@ function talkHas(t, term){
   return t.sp.some(p => gs.has(AFF.map[p.a])) || wordRe(term).test(plainTalk(t));
 }
 // The institutions the search's short forms stand for: {term, groups} for each.
-function aliasTerms(q = state.q){
+function aliasTerms(q = viewQ()){
   return termsOf(q).filter(t => ALIAS.has(t)).map(t => ({ term: t, groups: ALIAS.get(t) }));
 }
-function speakerInAlias(p, q = state.q){
+function speakerInAlias(p, q = viewQ()){
   const g = p.a && AFF.map[p.a];
   return Boolean(g) && aliasTerms(q).some(a => a.groups.has(g));
 }
@@ -2200,7 +2230,7 @@ function openMatchingTalk(t, slot){
 
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 let _hlRe = { q: null, re: null };
-function hl(s){ return hlWith(s, state.q); }
+function hl(s){ return hlWith(s, viewQ()); }
 function hlWith(s, q){
   if (!s) return '';
   const terms = termsOf(q);
@@ -2474,7 +2504,7 @@ function searchWeekHtml(shown){
 }
 // "Matched UNSW → University of New South Wales": a short form whose institution's
 // name doesn't spell it out.
-function aliasChipsHtml(q = state.q){
+function aliasChipsHtml(q = viewQ()){
   return aliasTerms(q).map(({ term, groups }) => {
     const names = [...groups].map(g => { const l = AFF.groups[g][0], m = /\(([^)]+)\)\s*$/.exec(l); return m ? m[1] : l; });
     if (names.every(n => wordRe(term).test(norm(n)))) return '';
@@ -2491,7 +2521,8 @@ document.addEventListener('click', e => {
 
 // everything is rendered up front; filtering just toggles visibility
 function refresh(){
-  if (state.layout === 'calendar') renderCalendar(); else applyFilters();
+  if (state.scope === 'agenda') renderBuilder();
+  if (state.layout === 'calendar') renderCalendar(); else if (state.scope !== 'agenda') applyFilters();
   paintNow(); writeHash();
 }
 
@@ -2503,7 +2534,7 @@ function rerender(){
     return;
   }
   const personal = state.scope === 'agenda';
-  if (!personal) renderChips();
+  renderChips();
   if (personal) renderBuilder();
   if (state.layout === 'calendar') renderCalendar();
   else if (!personal){ renderTabs(); renderAgenda(); }
@@ -2543,20 +2574,20 @@ document.getElementById('daytabs').addEventListener('click', e => {
 
 // A click toggles one stream; "only" or a double-click shows just that stream.
 // An empty selection stays empty (the page says so and offers Select all).
-function soloStream(k){ state.cats = new Set([k]); renderChips(); refresh(); }
+function soloStream(k){ setViewCats(new Set([k])); renderChips(); refresh(); }
 document.getElementById('chips').addEventListener('click', e => {
   const only = e.target.closest('[data-only]');
   if (only){ soloStream(only.dataset.only); return; }
   const b = e.target.closest('.chip'); if (!b) return;
-  const k = b.dataset.cat;
-  if (state.cats.has(k)) state.cats.delete(k); else state.cats.add(k);
+  const k = b.dataset.cat, cats = viewCats();
+  if (cats.has(k)) cats.delete(k); else cats.add(k);
   renderChips(); refresh();
 });
 document.getElementById('chips').addEventListener('dblclick', e => {
   const b = e.target.closest('.chip');
   if (b) soloStream(b.dataset.cat);
 });
-function selectAllStreams(){ state.cats = new Set(Object.keys(DATA.cats)); renderChips(); refresh(); }
+function selectAllStreams(){ setViewCats(new Set(Object.keys(DATA.cats))); renderChips(); refresh(); }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-select-all-streams]')) selectAllStreams();
 });
@@ -2629,9 +2660,9 @@ document.getElementById('grpclr').addEventListener('click', () => {
 
 const qEl = document.getElementById('q');
 let qTimer = null;
-// The search box serves the program (state.q) and, in the Participants view,
-// the people search (state.pq). `which` names the one to clear.
-function searchKey(){ return state.scope === 'participants' ? 'pq' : 'q'; }
+// The search box serves the program (state.q), My agenda (state.aq) and, in the
+// Participants view, the people search (state.pq). `which` names the one to clear.
+function searchKey(){ return state.scope === 'participants' ? 'pq' : state.scope === 'agenda' ? 'aq' : 'q'; }
 function clearSearch(which = searchKey()){
   clearTimeout(qTimer);
   state[which] = '';
@@ -2644,7 +2675,7 @@ function syncSearchBox(){
   const people = state.scope === 'participants';
   qEl.value = state[searchKey()];
   document.getElementById('clr').style.display = qEl.value ? 'block' : 'none';
-  qEl.setAttribute('aria-label', people ? 'Search participants by name or affiliation' : 'Search the program');
+  qEl.setAttribute('aria-label', people ? 'Search participants by name or affiliation' : state.scope === 'agenda' ? 'Search my agenda' : 'Search the program');
   if (people) qEl.placeholder = 'Search people or affiliations…';
 }
 qEl.addEventListener('input', () => {
@@ -2692,7 +2723,64 @@ function mergeSaved(raw){
   return out;
 }
 function agendaItems(){ return mergeSaved(agendaSaved()); }
-// "3 sessions, 1 with a starred talk · 2 talks": a session with starred talks counts
+
+// ---------- My agenda's search and streams ----------
+// The program's search (every word, any order, quoted phrases, accents, short forms such
+// as "unsw") over saved items: a talk on its own text, speakers, affiliations and its
+// session's title; a session on its own text or any talk in it (it.hits: the talks that
+// carry the match when the session's text alone does not). Streams go by the session's
+// stream. Hidden items get it.off, so a clash with one can say so; clashes, counts in
+// the bar, exports, sharing and moving still cover the whole agenda.
+function agendaFiltered(){ return termsOf(state.aq).length > 0 || state.acats.size !== Object.keys(DATA.cats).length; }
+const titleHas = (s, term) => shortAlias(term) ? wordRe(term).test(norm(s.title)) : norm(s.title).includes(term);
+function agendaMatch(it){
+  it.hits = [];
+  if (!state.acats.has(it.s.cat)) return false;
+  const terms = termsOf(state.aq);
+  if (!terms.length) return true;
+  if (it.t) return terms.every(term => titleHas(it.s, term) || talkHas(it.t, term));
+  const left = terms.filter(term => !slotHas(it.s, term));
+  if (!left.length) return true;
+  it.hits = it.s.talks.filter(t => left.every(term => talkHas(t, term)));
+  return it.hits.length > 0;
+}
+// The items the filters leave shown (all of them when none is set).
+function agendaFilter(items){
+  const on = agendaFiltered();
+  for (const it of items){ it.off = on && !agendaMatch(it); if (!on) it.hits = []; }
+  return on ? items.filter(it => !it.off) : items;
+}
+const clashName = x => itemTitle(x) + (x.off ? ' (hidden by your search or streams)' : '');
+function clearAgendaFilters(){
+  state.acats = new Set(Object.keys(DATA.cats));
+  clearSearch('aq');
+  syncSearchBox();
+  rerender();
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('[data-clear-agenda-filters]')) return;
+  clearAgendaFilters();
+  document.getElementById('builderTitle').focus({ preventScroll: true });
+});
+// "Showing 4 of 7 agenda items · Clear filters" in the result line, and on one day the
+// matches on other days.
+function agendaFilterLine(shown, total, otherDays){
+  const day = state.day === 'all' ? '' : ` on ${esc(DATA.days[state.day].label)}`;
+  const more = otherDays ? ` · <button type="button" class="linkish rl-act" data-search-week>All week <span class="rl-n">(${otherDays} more)</span></button>` : '';
+  return `Showing <b>${shown}</b> of ${countWord(total, 'agenda item')}${day}${more} · <button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>` + aliasChipsHtml();
+}
+// When the filters hide everything: say so, offer Clear (and the matches on other days).
+function agendaNoMatchHtml(otherDays){
+  const q = state.aq, nCats = state.acats.size;
+  const what = q && nCats < Object.keys(DATA.cats).length ? `“${esc(q)}” in the streams you picked` : q ? `“${esc(q)}”` : nCats ? 'the streams you picked' : '';
+  const where = state.day === 'all' ? 'in your agenda' : `on ${esc(DATA.days[state.day].label)}`;
+  return `<div class="ag-empty ag-nomatch">
+      <div class="ag-empty-icon" aria-hidden="true">&#128269;</div>
+      <h3>${nCats ? `Nothing ${where} matches ${what}` : 'No streams selected'}</h3>
+      <p>${nCats ? 'Your saved items are all still there; the search and stream filters hide them.' : 'Pick streams in the Streams menu, or clear the filters.'}</p>
+      <div class="ag-empty-actions"><button type="button" class="toggle primary" data-clear-agenda-filters>Clear filters</button>${otherDays ? `<button type="button" class="toggle" data-search-week>Show ${otherDays} match${otherDays === 1 ? '' : 'es'} on other days</button>` : ''}</div>
+    </div>`;
+}// "3 sessions, 1 with a starred talk · 2 talks": a session with starred talks counts
 // once; a part with nothing in it is left out. sep joins the parts (" · " by default).
 function countWord(n, word, html){ return (html ? `<b>${n}</b>` : n) + ' ' + word + (n === 1 ? '' : 's'); }
 function agendaCountText(items, html, sep = ' · '){
@@ -2791,29 +2879,36 @@ function programJumpAttrs(it){
 
 function agRow(it){
   const [c,bg] = CAT_COLORS[it.s.cat];
+  // highlighted for My agenda's search (hl is plain esc without one)
   const who = it.kind === 'talk'
-    ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA')
-    : (it.s.room || 'Belinda Hutchinson Building');
+    ? (it.t.sp.length ? personStr(it.t.sp) : 'Speaker TBA')
+    : hl(it.s.room || 'Belinda Hutchinson Building');
   const word = it.s.cat === 'poster' ? 'poster' : 'talk', nIn = it.inner ? it.inner.length : 0;
   const sub2 = it.kind === 'talk'
-    ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
+    ? ['part of ' + hl(it.s.title), esc(it.s.room)].filter(Boolean).join(' · ')
     : (it.s.talks.length ? it.s.talks.length + ' ' + word + (it.s.talks.length === 1 ? '' : 's') + (nIn ? ` · ${nIn} starred` : '') : '');
-  const clashNames = state.hideClashes ? [] : [...new Set(it.clashes.map(itemTitle))];
-  const clash = clashNames.length
-    ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
+  const clashes = state.hideClashes ? [] : [...new Map(it.clashes.map(x => [itemTitle(x), x])).values()];
+  const nOff = clashes.filter(x => x.off).length;
+  const clash = clashes.length
+    ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}>&#9888;&#65039; Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
     : '';
+  // the search matched talks in this session that are not starred: name them
+  const hits = (it.hits || []).filter(t => !(it.inner || []).includes(t));
+  const hitsHtml = hits.length ? `<p class="ag-hits"><span class="ag-hits-k">Matches in this session:</span> ${hits.slice(0, 3).map(t =>
+    `<button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>`).join(', ')}${hits.length > 3 ? ` and ${hits.length - 3} more` : ''}</p>` : '';
+  const hit = new Set(it.hits || []);
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
   // a saved session lists the talks starred in it: one item, not a clash
   const inner = nIn ? `<ul class="ag-inner" aria-label="Starred ${word}s in this session">${it.inner.map(t => {
     const sp = t.sp.map(p => p.n).join(', ');
-    return `<li><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${sp ? `<span class="ag-isp">${esc(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
+    return `<li${hit.has(t) ? ' class="ag-ihit"' : ''}><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>${sp ? `<span class="ag-isp">${hl(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
   }).join('')}</ul>` : '';
-  return `<li class="ag-row ${clashNames.length?'has-clash':''}${nIn ? ' has-inner' : ''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
+  return `<li class="ag-row ${clashes.length?'has-clash':''}${nIn ? ' has-inner' : ''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}<span class="ag-ended">Ended</span></span>
     <div class="ag-main">
-      <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':it.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>${esc(itemTitle(it))}</span>
-      <span class="ag-sub">${esc(who)}${sub2 ? ' &middot; ' + esc(sub2) : ''}</span>
-      ${inner}${clash}
+      <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':it.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>${hl(itemTitle(it))}</span>
+      <span class="ag-sub">${who}${sub2 ? ' &middot; ' + sub2 : ''}</span>
+      ${inner}${hitsHtml}${clash}
     </div>
     <div class="ag-actions">
       <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
@@ -2827,14 +2922,16 @@ function calendarDetailAttrs(it){
   return `data-session-detail="${it.s.id}" data-talk-detail="${it.t?.id || ''}"`;
 }
 
-// The agenda calendar's items: merged as everywhere (agendaItems), clashes marked, and
-// with "Show full sessions for favourite talks", each saved talk whose session is not
-// saved shown inside that session (ctx: the session itself is not in My agenda).
-function agendaCalendarItems(){
+// The agenda calendar's items: merged as everywhere (agendaItems), clashes marked over
+// the whole agenda, then My agenda's search and streams applied (all = true skips them),
+// and with "Show full sessions for favourite talks", each saved talk whose session is
+// not saved shown inside that session (ctx: the session itself is not in My agenda).
+function agendaCalendarItems(all = false){
   const items = agendaItems();
   markClashes(items);
+  const shown = all ? items : agendaFilter(items);
   if (state.hideClashes) items.forEach(it => it.clashes = []);
-  return groupFavourites(items);
+  return groupFavourites(shown);
 }
 function groupFavourites(items){
   if (!document.getElementById('includeParents').checked) return items;
@@ -2898,7 +2995,8 @@ function weekLabel(s){
 function weekOverview(){
   const agenda = dvAgenda();
   const days = agenda ? DATA.days.map(d => dayEntries(d)) : DATA.days.map(d => d.slots);
-  const [t0, t1] = agenda ? weekBounds(days.flat()) : weekBounds(), dur = t1 - t0;
+  // My agenda keeps its whole week's span while its search or streams hide items
+  const [t0, t1] = agenda ? weekBounds(agendaFiltered() && days.flat().length ? agendaCalendarItems(true) : days.flat()) : weekBounds(), dur = t1 - t0;
   const pct = m => +((m - t0) / dur * 100).toFixed(3);
   const today = aedtNow().date;
   const order = Object.keys(DATA.cats);
@@ -3146,7 +3244,7 @@ function weekShowTip(b){
   const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(' · ');
   // My agenda: the starred talks in a saved session, and what an item clashes with
   const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
-  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(itemTitle(x))).join('; ')}` : '') : '';
+  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
   tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)} · ${t.s}–${t.e}<br>in ${esc(s.title)}${extra}`
     : `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
   tip.hidden = false;
@@ -3252,34 +3350,50 @@ function renderClashes(items){
   box.setAttribute('role', 'region');
 }
 function renderBuilder(){
-  const items = agendaItems();
-  markClashes(items);
+  const whole = agendaItems();
+  markClashes(whole);
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
   for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda', 'clearAgenda']) {
-    document.getElementById(id).disabled = items.length === 0;
+    document.getElementById(id).disabled = whole.length === 0;
   }
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
-  renderClashes(items);
+  renderClashes(whole);
+  // the list shows what My agenda's search and streams leave; the bar, the clash panel
+  // and the exports keep to the whole agenda
+  const items = agendaFilter(whole), filtered = agendaFiltered();
+  paintExportNote(items, whole);
 
   const personalList = state.layout === 'list' && state.scope === 'agenda';
   if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
-  if (!items.length){
+  if (!whole.length){
     stats.textContent = 'Nothing saved yet';
     body.innerHTML = agendaEmptyHtml();
+    if (personalList) document.querySelector('.result-row').hidden = true;
     return;
   }
-  stats.innerHTML = `${agendaCountText(items, true)} &middot; about <b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span>`;
+  stats.innerHTML = `${agendaCountText(whole, true)} &middot; about <b>${plannedHours(whole).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span>`;
+  const onDay = state.day === 'all' ? items : items.filter(x => x.di === state.day);
+  if (personalList){
+    const total = state.day === 'all' ? whole.length : whole.filter(x => x.di === state.day).length;
+    document.querySelector('.result-row').hidden = !filtered;
+    if (filtered) document.getElementById('resultLine').innerHTML = agendaFilterLine(onDay.length, total, onDay.length && onDay.length < 10 ? items.length - onDay.length : 0);
+  }
+  if (filtered && !onDay.length){
+    body.innerHTML = agendaNoMatchHtml(items.length);
+    return;
+  }
   let html = '';
   DATA.days.forEach((d, di) => {
     if (personalList && state.day !== 'all' && state.day !== di) return;
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
-    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${countWord(dayItems.length, 'item')} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
+    const of = filtered ? `${dayItems.length} of ${countWord(whole.filter(x => x.di === di).length, 'item')}` : countWord(dayItems.length, 'item');
+    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${of} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
-  body.innerHTML = upNextHtml(items) + (html || `<div class="ag-empty"><h3>Nothing saved on ${esc(DATA.days[state.day].label)}</h3>
+  body.innerHTML = (filtered ? '' : upNextHtml(items)) + (html || `<div class="ag-empty"><h3>Nothing saved on ${esc(DATA.days[state.day].label)}</h3>
     <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
 
@@ -3365,17 +3479,17 @@ function showView(layout, scope){
   document.getElementById('emptyNote').hidden = personal || calendar || people;
   document.getElementById('builder').hidden = !personal;
   document.getElementById('builderList').hidden = !agendaList;
+  // the agenda list shows the result line only while its search or streams hide items
   document.querySelector('.result-row').hidden = agendaList;
-  document.querySelector('.toolbar .controls').hidden = agendaList;
   document.getElementById('expandAll').hidden = calendar || personal || people;
   document.getElementById('programLevel').hidden = !calendar || personal;
   document.getElementById('programOrient').hidden = !calendar;
   document.getElementById('parentOption').hidden = !calendar || !personal;
   document.getElementById('scheduleLayout').hidden = people;
   document.getElementById('daytabs').hidden = people;
-  document.querySelector('.searchbox').hidden = personal;
-  document.getElementById('filterMenu').hidden = personal || people;
-  if (personal || people) setFilterOpen(false);
+  document.getElementById('filterMenu').hidden = people;
+  setFilterOpen(false);
+  filterPanel.classList.toggle('fp-agenda', personal);
   document.getElementById('grpill').hidden = personal || people;
   syncSearchBox();
   rerender();
@@ -3584,7 +3698,8 @@ function hzBounds(slots){
 // An entry is { s, t (the talk of a saved talk item, else null), start, end, title,
 // cat, star (in My agenda), and for My agenda: inner (ids of the talks starred inside
 // a saved session), ctx (a session shown only for its starred talks), clash (what the
-// item overlaps, empty when clash warnings are hidden) }.
+// item overlaps, empty when clash warnings are hidden), hits (ids of the talks that carry
+// a search match in a saved session; the day views open the session on its talks) }.
 const dvAgenda = () => state.scope === 'agenda';
 function dayEntries(day){
   if (!dvAgenda()) return programDaySlots(day).map(s => ({ s, t:null, start:s.start, end:s.end, title:s.title, cat:s.cat, star:state.starred.has(s.id) }));
@@ -3592,10 +3707,11 @@ function dayEntries(day){
   return agendaCalendarItems().filter(it => it.di === di).map(it => ({
     s: it.s, t: it.t, start: it.start, end: it.end, title: itemTitle(it), cat: it.s.cat, star: !it.ctx, ctx: !!it.ctx,
     inner: new Set((it.inner || []).map(t => t.id)), clash: it.clashes,
+    hits: new Set((it.hits || []).map(t => t.id)), // talks My agenda's search matched in a saved session
   }));
 }
 const dvTid = e => e.t ? e.t.id : '';
-const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
+const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})${x.off ? ', hidden by your search or streams' : ''}`).join('; ') : '';
 // Where saved items overlap: merged [start, end] minute ranges, for the time axis.
 function dvClashSpans(ents){
   const iv = [];
@@ -3710,7 +3826,7 @@ function hzDraw(root, left){
   const tmode = ppm >= 5.2 ? 'full' : ppm >= 2.4 ? 'mid' : 'tick';
   Object.assign(h.dataset, { ppm, tw: trackW, w: W, span });
   // My agenda splits a saved session into its talks when some are starred
-  const talksOf = e => e.t || e.s.cat === 'poster' ? [] : agenda ? (e.inner.size ? e.s.talks : [])
+  const talksOf = e => e.t || e.s.cat === 'poster' ? [] : agenda ? (e.inner.size || e.hits.size ? e.s.talks : [])
     : talksMode ? e.s.talks.filter(t => talkMatches(t, e.s)) : [];
   const splits = agenda ? ents.some(e => talksOf(e).length) : talksMode;
   h.classList.toggle('hz-mid', splits && tmode === 'mid');
@@ -3806,7 +3922,7 @@ function hzDraw(root, left){
             const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
             const sp = t.sp.map(p => p.n).join(', ');
             const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
-            const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
+            const mine = agenda ? (e.inner.has(t.id) ? ' mine' : e.hits.has(t.id) ? ' hit' : ' dim') : '';
             segs += `<button type="button" class="hz-talk${mine}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
               <span class="hz-tt">${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
@@ -4123,7 +4239,8 @@ function vtDayView(day){
   const talksOf = e => agenda ? (e.t ? [] : e.s.cat === 'poster' ? e.s.talks.filter(t => e.inner.has(t.id)) : e.s.talks)
     : e.s.cat === 'poster' ? [] : e.s.talks.filter(t => talkMatches(t, e.s));
   const merged = e => agenda && e.inner && e.inner.size > 0;
-  const isOpen = e => (merged(e) || (!agenda && state.programTalks) || vtOpen.has(e.s.id)) && talksOf(e).length > 0;
+  const hitOpen = e => agenda && !e.t && e.hits && e.hits.size > 0;
+  const isOpen = e => (merged(e) || hitOpen(e) || (!agenda && state.programTalks) || vtOpen.has(e.s.id)) && talksOf(e).length > 0;
   const listOnly = e => e.s.cat === 'poster';
   const star = id => state.starred.has(id) ? '<span class="vt-star" aria-label="In my agenda">★</span> ' : '';
   const isBandCat = e => !agenda && VT_BAND_CATS.includes(e.cat);
@@ -4157,10 +4274,11 @@ function vtDayView(day){
       : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv">${hl(s.room)}</span>` : '<span></span>';
     const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
     const tog = merged(e) ? `<span class="vt-count">${count} · ★ ${e.inner.size}</span>`
+      : hitOpen(e) ? `<span class="vt-count">${count} · ${e.hits.size} matching</span>`
       : tk.length && (agenda || !state.programTalks) ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
       : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
     const talkBtn = (t, style) => {
-      const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
+      const mine = agenda ? (e.inner.has(t.id) ? ' mine' : e.hits.has(t.id) ? ' hit' : ' dim') : '';
       return `<button type="button" class="vt-tk${mine}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${vtWbr(hl(t.t))}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
     };
     let talks = '';
@@ -4521,9 +4639,9 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
 // A day of My agenda with nothing saved. In Vertical it keeps the day's heading between
 // the previous/next day buttons (the markup of vtDayView's), so buttons, arrow keys and
 // swipes go on from it.
-function agendaEmptyDay(day){
+function agendaEmptyDay(day, msg){
   const di = DATA.days.indexOf(day);
-  const msg = `<div class="ag-empty ag-empty-day"><h3>Nothing saved on ${esc(day.label)}</h3>
+  msg = msg || `<div class="ag-empty ag-empty-day"><h3>Nothing saved on ${esc(day.label)}</h3>
     <p>Pick sessions or talks for this day in <b>Build my agenda</b>, or browse the day in the program.</p>
     <div class="ag-empty-actions"><button class="toggle primary" data-build>Build my agenda</button><button class="toggle" data-goprogram="${di}">Browse this day &#8594;</button></div></div>`;
   if (state.orient !== 'v') return msg;
@@ -4534,6 +4652,11 @@ function agendaEmptyDay(day){
     return `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(wd)}<span class="vt-god"> ${esc(rest.join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`;
   };
   return `<div class="vt-day vt-agenda vt-none" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1)}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1)}</div>${msg}</div>`;
+}
+// The same when My agenda's search or streams hide everything on the day (or all week).
+function agendaNoMatchDay(others){
+  const msg = agendaNoMatchHtml(others);
+  return state.day === 'all' ? msg : agendaEmptyDay(DATA.days[state.day], msg);
 }
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
@@ -4551,8 +4674,15 @@ function renderCalendar(){
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekOverview();
     result.textContent = message;
   } else {
+    // My agenda with its search or streams on: counted against the whole agenda
+    const filtered = favourites && agendaFiltered();
+    const whole = filtered ? agendaCalendarItems(true) : items;
+    const wholeSel = state.day === 'all' ? whole : whole.filter(it => it.di === state.day);
+    const others = filtered && state.day !== 'all' ? items.length - selected.length : 0;
     const empty = favourites
-      ? (!items.length || state.day === 'all' ? agendaEmptyHtml() : agendaEmptyDay(DATA.days[state.day]))
+      ? (!whole.length ? agendaEmptyHtml()
+        : filtered ? agendaNoMatchDay(others)
+        : state.day === 'all' ? agendaEmptyHtml() : agendaEmptyDay(DATA.days[state.day]))
       : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
@@ -4562,7 +4692,8 @@ function renderCalendar(){
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     vtPopHide();
     main.classList.toggle('wide', true);
-    result.innerHTML = (favourites ? countWord(selected.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
+    result.innerHTML = filtered ? agendaFilterLine(selected.length, wholeSel.length, selected.length && selected.length < 10 ? others : 0)
+      : (favourites ? countWord(selected.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
   weekFit(main);
@@ -4923,6 +5054,14 @@ document.addEventListener('keydown', e => {
 // ---------- the Export menu ----------
 const exportBtn = document.getElementById('exportBtn'), exportMenu = document.getElementById('exportMenu');
 const exportItems = () => [...exportMenu.querySelectorAll('[role="menuitem"]:not(:disabled)')];
+// While My agenda's search or streams hide items, the menu says that its exports, link
+// and move still carry the whole agenda.
+function paintExportNote(shown, whole){
+  const note = document.getElementById('exportNote'), on = agendaFiltered() && shown.length < whole.length;
+  note.hidden = !on;
+  note.textContent = on ? `All ${countWord(whole.length, 'item')}, not just the ${shown.length} shown` : '';
+  for (const b of exportMenu.querySelectorAll('[role="menuitem"]')) if (on) b.setAttribute('aria-describedby', 'exportNote'); else b.removeAttribute('aria-describedby');
+}
 function openExportMenu(focusLast){
   exportMenu.hidden = false;
   exportBtn.setAttribute('aria-expanded', 'true');
@@ -5452,7 +5591,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (e.key === 'Escape' && !filterPanel.hidden){ setFilterOpen(false); filterBtn.focus(); return; }
-  if (e.key === '/' && state.scope !== 'agenda' && !e.target.closest('input, textarea, [contenteditable]') &&
+  if (e.key === '/' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); tbCompact(false); qEl.focus({ preventScroll:true }); }
   // Escape leaves the search box and keeps the search; the ✕ button clears it.
   if (e.key === 'Escape' && document.activeElement === qEl){ e.preventDefault(); qEl.blur(); }
@@ -5479,13 +5618,13 @@ document.addEventListener('click', e => {
 });
 document.getElementById('filterAll').addEventListener('click', selectAllStreams);
 document.getElementById('filterNone').addEventListener('click', () => {
-  state.cats = new Set();
+  setViewCats(new Set());
   renderChips(); refresh();
 });
 document.getElementById('filterReset').addEventListener('click', () => {
-  state.group = null;
-  state.cats = new Set(Object.keys(DATA.cats));
-  clearSearch('q');
+  if (state.scope !== 'agenda') state.group = null;
+  setViewCats(new Set(Object.keys(DATA.cats)));
+  clearSearch();
   rerender();
   toast('Filters reset');
 });
@@ -5994,7 +6133,8 @@ function paintNow(){
     r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
   if (state.scope === 'agenda' && state.layout === 'list'){
     const old = document.getElementById('upNext');
-    const html = upNextHtml(agendaItems());
+    // Up next stands aside while My agenda's search or streams are on
+    const html = agendaFiltered() ? '' : upNextHtml(agendaItems());
     if (old) old.outerHTML = html;
     else if (html) document.getElementById('builderList').insertAdjacentHTML('afterbegin', html);
   }
@@ -6016,7 +6156,7 @@ document.getElementById('nowBtn').addEventListener('click', () => {
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
   if (hzOn && target) return hzReveal(target);
   if (target) target.scrollIntoView({ block: target.matches('.vt-nowl') ? 'center' : 'start' });
-  else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
+  else toast(viewQ() || (state.scope !== 'agenda' && state.group) || viewCats().size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });
 
@@ -6034,9 +6174,11 @@ function stateHash(){
   }
   if (state.layout !== 'list') p.set('layout', state.layout);
   if (state.day !== 'all') p.set('day', DATA.days[state.day].date);
-  if (state.q) p.set('q', state.q);
-  if (state.cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...state.cats].join(',') || 'none');
-  if (state.group) p.set('group', state.group);
+  // q and streams are the view's own: My agenda's (view=agenda) or the Full program's
+  const q = viewQ(), cats = viewCats();
+  if (q) p.set('q', q);
+  if (cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...cats].join(',') || 'none');
+  if (state.group && state.scope !== 'agenda') p.set('group', state.group);
   if (state.programTalks) p.set('talks', '1');
   if (state.orient === 'v' && state.layout === 'calendar') p.set('orient', 'v');
   return p.toString();
@@ -6064,12 +6206,14 @@ function readHash(){
   state.layout = p.get('layout') === 'calendar' || (!p.get('layout') && p.get('orient') === 'v') ? 'calendar' : 'list';
   const di = DATA.days.findIndex(d => d.date === p.get('day'));
   state.day = di >= 0 ? di : 'all';
-  state.q = (p.get('q') || '').trim().slice(0, 200);
-  qEl.value = state.q;
-  document.getElementById('clr').style.display = state.q ? 'block' : 'none';
+  // q and streams belong to the view in the address (My agenda has its own); the other
+  // view's are left as they are (showView puts the right one in the search box)
+  const q = (p.get('q') || '').trim().slice(0, 200);
   // 'public' was the stream of the public lectures before Congress events took them
   const cats = (p.get('streams') || '').split(',').map(c => c === 'public' ? 'events' : c).filter(c => DATA.cats[c]);
-  state.cats = new Set(cats.length || p.get('streams') === 'none' ? cats : Object.keys(DATA.cats));
+  const catSet = new Set(cats.length || p.get('streams') === 'none' ? cats : Object.keys(DATA.cats));
+  if (state.scope === 'agenda'){ state.aq = q; state.acats = catSet; }
+  else { state.q = q; state.cats = catSet; }
   const g = p.get('group');
   state.group = g && DATA.days.some(d => d.slots.some(s => s.grp === g)) ? g : null;
   state.programTalks = p.get('talks') === '1';
@@ -6536,7 +6680,7 @@ const searchMini = document.getElementById('searchMini');
 function tbPaintMini(){
   const q = state[searchKey()] || '';
   document.getElementById('searchMiniQ').textContent = q;
-  searchMini.setAttribute('aria-label', q ? `Search: ${q}` : (state.scope === 'participants' ? 'Search participants' : 'Search the program'));
+  searchMini.setAttribute('aria-label', q ? `Search: ${q}` : (state.scope === 'participants' ? 'Search participants' : state.scope === 'agenda' ? 'Search my agenda' : 'Search the program'));
 }
 function tbCompact(on){
   if (on === TB.on) return;
@@ -6613,6 +6757,23 @@ window.addEventListener('scroll', () => {
 stickyWrap.addEventListener('focusin', e => {
   if (e.target === qEl || stickyWrap.querySelector(':focus-visible')) tbCompact(false);
 });
+// Phones: typing in the search box keeps the toolbar short (tb-typing). Leaving the box
+// scrolled down into the results folds it to the slim bar, the same space kept so nothing
+// under a finger moves; at the top of the page it unfolds a moment later.
+let tbTypingTimer = 0;
+qEl.addEventListener('focus', () => {
+  clearTimeout(tbTypingTimer);
+  if (PHONE_MQ.matches) stickyWrap.classList.add('tb-typing');
+});
+qEl.addEventListener('blur', e => {
+  if (!stickyWrap.classList.contains('tb-typing')) return;
+  const past = window.scrollY > programTop() + 2, inBar = e.relatedTarget && stickyWrap.contains(e.relatedTarget);
+  if (past && !inBar && tbMayFold()){ tbCompact(true); stickyWrap.classList.remove('tb-typing'); return; }
+  tbTypingTimer = setTimeout(() => {
+    if (document.activeElement !== qEl) stickyWrap.classList.remove('tb-typing');
+  }, 250);
+});
+PHONE_MQ.addEventListener('change', () => { if (!PHONE_MQ.matches) stickyWrap.classList.remove('tb-typing'); });
 searchMini.addEventListener('click', () => {
   tbCompact(false);
   qEl.focus({ preventScroll:true });
