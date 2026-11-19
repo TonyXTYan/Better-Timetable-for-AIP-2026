@@ -9,7 +9,11 @@ import argparse
 import json
 from pathlib import Path
 import re
+import sys
 import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from normalize import normalize_payload  # noqa: E402
 
 RETRIEVED = "19 November 2026"
 
@@ -191,6 +195,13 @@ HTML = r'''<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AIP Congress 2026 — Program Explorer</title>
+<meta name="description" content="Search the AIP Congress 2026 program (Sydney, 7–11 Dec), plan your own agenda, export it to your calendar and see what is on now.">
+<meta property="og:title" content="AIP Congress 2026 — Program Explorer">
+<meta property="og:description" content="Search the program, plan your agenda and see what is on now. Sydney, 7–11 December 2026.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%232563eb'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2' transform='rotate(60 16 16)'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2' transform='rotate(120 16 16)'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -1804,13 +1815,14 @@ function upNextHtml(items){
   const n = aedtNow();
   const today = items.filter(it => it.d.date === n.date);
   const current = today.filter(it => toMin(it.start) <= n.min && n.min < toMin(it.end));
-  const next = today.find(it => toMin(it.start) > n.min);
-  if (!current.length && !next) return '';
+  const nextStart = today.find(it => toMin(it.start) > n.min)?.start;
+  const next = today.filter(it => it.start === nextStart);
+  if (!current.length && !next.length) return '';
   const row = (label, it, when) =>
     `<div><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span></div>`;
   return `<div class="up-next" id="upNext">` +
     current.map(it => row('Now', it, `until ${it.end}`)).join('') +
-    (next ? row('Next', next, `${next.start} · in ${fmtMins(toMin(next.start) - n.min)}`) : '') + `</div>`;
+    next.map(it => row('Next', it, `${it.start} · in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
 }
 
 function paintCountdown(){
@@ -2018,7 +2030,7 @@ window.addEventListener('hashchange', () => {
 });
 setInterval(paintNow, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) paintNow(); });
-if ('serviceWorker' in navigator && location.protocol === 'https:'){
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 start();
@@ -2047,11 +2059,14 @@ def main():
     data_path = root / 'aip2026-data.json'
     if args.indico_json:
         payload = build_payload(json.loads(args.indico_json.read_text(encoding='utf-8')))
-        data_path.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding='utf-8')
     else:
         payload = json.loads(data_path.read_text(encoding='utf-8'))
+    payload = normalize_payload(prepare_payload(payload))
+    stored = json.dumps(payload, ensure_ascii=False, indent=1)
+    if not data_path.exists() or data_path.read_text(encoding='utf-8') != stored:
+        data_path.write_text(stored, encoding='utf-8')
+        print(f'wrote {data_path.name}')
 
-    payload = prepare_payload(payload)
     embedded = json.dumps(payload, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = HTML.replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):

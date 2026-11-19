@@ -21,10 +21,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Build the page from build_program.py
+        run: python3 build_program.py
       - name: Stage static site
         run: |
           mkdir site
           cp index.html aip-2026-program.html aip2026-data.json site/
+          cp sw.js manifest.webmanifest icon-192.png icon-512.png apple-touch-icon.png site/
           cp -R shots site/
       - uses: actions/upload-pages-artifact@v3
         with:
