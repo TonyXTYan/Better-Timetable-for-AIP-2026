@@ -212,6 +212,9 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
+.week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:3px;background:var(--cbg);color:var(--c);font-size:.625rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.week-blab-over{box-shadow:0 1px 3px var(--pop-shadow)}
+.week-blab.week-past{opacity:.68}
 .week-blk.week-past{filter:saturate(.5);opacity:.68}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
@@ -339,6 +342,13 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 /* ---------- toolbar ---------- */
 .sticky-wrap{position:sticky;top:0;z-index:50;background:var(--sticky-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:18px}
 .toolbar{max-width:1180px;margin:0 auto;padding:10px 20px 0}
+/* Phones, scrolling down a calendar: the toolbar slides its view switches up out of
+   sight and drops the result line, keeping the day tabs and search (tbCompact) */
+@media (max-width:720px){
+  .sticky-wrap{transition:transform .18s ease,clip-path .18s ease}
+  .sticky-wrap.tb-compact{transform:translateY(calc(-1 * var(--tb-hide,0px)));clip-path:inset(var(--tb-hide,0px) 0 var(--tb-cut,0px) 0)}
+  .sticky-wrap.tb-compact .schedule-nav{visibility:hidden;transition:visibility 0s .18s}
+}
 .daytabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
 .daytab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 15px;border-radius:999px;font-size:.875rem;font-weight:600;white-space:nowrap}
 .daytab .dt-count{font-weight:500;color:var(--muted);font-size:.75rem;margin-left:5px}
@@ -763,9 +773,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
 .vt-open:hover,.vt-open:focus-visible,.vt-tk:hover,.vt-tk:focus-visible{outline:2px solid var(--c);outline-offset:-2px}
-.vt-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
-.vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:0}
-.vt-badge{font-size:.5938rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* the time stays on one line; the stream badge keeps its full short code and moves
+   under the time when the card is too narrow for both */
+.vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
+.vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vt-badge{flex:0 0 auto;max-width:100%;font-size:.5938rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-grid .vt-card:not([data-col="phys"]):not(.band) .vt-badge{display:none}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .vt-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 7px 4px;color:var(--muted);font-size:.6875rem;line-height:1.3;min-height:1.1rem}
@@ -2371,10 +2383,7 @@ function weekFit(root = document.getElementById('agenda')){
     b.classList.remove('week-vl');
     if (b.classList.contains('week-off') || !shown){ span.hidden = true; continue; }
     const w = b.clientWidth, h = b.clientHeight;
-    if (b.classList.contains('week-band')){
-      span.hidden = ov.classList.contains('week-h') ? w < 26 : h < 13 || w < 30;
-      continue;
-    }
+    if (b.classList.contains('week-band')){ span.hidden = true; continue; }
     const across = [Math.floor((h - 2) / lh), Math.floor((w - 6) / cw)];
     const side = [Math.floor((w - 3) / lh), Math.floor((h - 6) / cw)];
     // characters shown, counting a line of under six characters as nearly useless
@@ -2385,10 +2394,54 @@ function weekFit(root = document.getElementById('agenda')){
     b.classList.toggle('week-vl', vl);
     span.style.setProperty('--lines', lines);
   }
+  for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
   const blocks = weekBlocks(ov);
   if (!blocks.some(b => b.tabIndex === 0) && blocks[0]) blocks[0].tabIndex = 0;
   weekSync(ov);
   weekPaintNow();
+}
+// Band labels (Plenary, Lunch break) sit above the blocks, at the first place inside
+// the band that no session block, later band or other label covers; failing that, at
+// the band's top right on their own background.
+function weekBandLabels(col, shown, lh){
+  for (const x of col.querySelectorAll('.week-blab')) x.remove();
+  if (!shown) return;
+  const cr = col.getBoundingClientRect();
+  const rel = el => { const r = el.getBoundingClientRect(); return { x0: r.left - cr.left, x1: r.right - cr.left, y0: r.top - cr.top, y1: r.bottom - cr.top }; };
+  const items = [...col.querySelectorAll('.week-blk')];
+  const placed = [];
+  const lH = Math.ceil(lh) + 2;
+  items.forEach((b, i) => {
+    if (!b.classList.contains('week-band') || b.classList.contains('week-off')) return;
+    const r = rel(b);
+    if (r.x1 - r.x0 < 26 || r.y1 - r.y0 < lH - 1) return;
+    const lab = document.createElement('span');
+    lab.className = 'week-blab' + (b.classList.contains('week-past') ? ' week-past' : '');
+    lab.setAttribute('aria-hidden', 'true');
+    for (const k of ['--c', '--cbg']) lab.style.setProperty(k, b.style.getPropertyValue(k));
+    lab.textContent = b.firstElementChild.textContent;
+    col.appendChild(lab);
+    const want = Math.ceil(lab.getBoundingClientRect().width) + 1;
+    // what covers this band: session blocks, bands painted over it, labels so far
+    const obst = items.filter((o, j) => o !== b && !o.classList.contains('week-off') && (!o.classList.contains('week-band') || j > i)).map(rel).concat(placed);
+    let spot = null;
+    for (let y = r.y0; y + lH <= r.y1 + 1 && !spot; y += 3){
+      const cut = obst.filter(o => o.y0 < y + lH && o.y1 > y && o.x1 > r.x0 && o.x0 < r.x1).sort((a, c) => a.x0 - c.x0);
+      let x = r.x0 + 3;
+      for (const o of cut.concat([{ x0: r.x1, x1: r.x1 }])){
+        if (o.x0 - x >= Math.min(want, 44)){ spot = { x, y, w: Math.min(want, o.x0 - x) }; break; }
+        x = Math.max(x, o.x1 + 2);
+      }
+    }
+    if (!spot){
+      // nowhere free: over the blocks at the band's top right, clear of their left-aligned labels
+      const w = Math.min(want, r.x1 - r.x0 - 4);
+      spot = { x: r.x1 - w - 2, y: r.y0, w };
+      lab.classList.add('week-blab-over');
+    }
+    Object.assign(lab.style, { left: spot.x + 'px', top: spot.y + 'px', width: spot.w + 'px' });
+    placed.push({ x0: spot.x, x1: spot.x + spot.w, y0: spot.y, y1: spot.y + lH });
+  });
 }
 // The sticky ruler (horizontal) or day heads (vertical) follow the sideways scroller.
 function weekSync(ov){
@@ -2971,7 +3024,7 @@ function hzDraw(root, left){
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
   const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
   const trackW = Math.max(120, vp.clientWidth - lw);
-  const span = hzSpan(date, trackW, d0, d1), ppm = trackW / span, W = Math.round(full * ppm);
+  const span = hzSpan(date, trackW, d0, d1), ppm = trackW / span, W = Math.floor(full * ppm + 1e-6); // floor: Fit day fits exactly
   const X = m => ((m - d0) * ppm).toFixed(1);
   const slots = programDaySlots(day);
   const talksMode = state.programTalks;
@@ -2988,7 +3041,8 @@ function hzDraw(root, left){
   let tk = '<span class="hz-nowpill" hidden>Now</span>', gl = '';
   for (let m = Math.ceil(d0 / mstep) * mstep; m <= d1; m += mstep){
     const major = m % lstep === 0;
-    gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px"></i>`;
+    // the closing line sits just inside the canvas, so Fit day leaves no sideways overflow
+    gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px${m === d1 ? ';margin-left:-1px' : ''}"></i>`;
     if (m < d1 && (major || px60 >= 96)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
   }
   const ticksEl = h.querySelector('.hz-ticks');
@@ -3696,6 +3750,8 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   showView(state.layout, button.dataset.scope);
   const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
   next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
+  // the page's own scroll belonged to the other calendar: start this one at its top
+  if (window.scrollY > programTop()) scrollToProgramTop();
   });
 });
 function paintLevel(){
@@ -4356,6 +4412,7 @@ window.addEventListener('beforeprint', () => {
 const filterBtn = document.getElementById('filterBtn');
 const filterPanel = document.getElementById('filterPanel');
 function setFilterOpen(open){
+  if (open) tbCompact(false);
   filterPanel.hidden = !open;
   filterBtn.setAttribute('aria-expanded', open);
   // Opened from the top of the page on a phone, the menu would hang below the screen.
@@ -5406,7 +5463,49 @@ document.getElementById('importFile').addEventListener('change', async e => {
 
 // ---------- start ----------
 const stickyWrap = document.querySelector('.sticky-wrap');
-function syncToolbarHeight(){ document.documentElement.style.setProperty('--toolbar-h', Math.round(stickyWrap.getBoundingClientRect().height) + 'px'); }
+// --toolbar-h is what the toolbar covers: sticky rulers and heads sit right under it.
+const TB = { on: false, hide: 0, cut: 0, last: 0, raf: 0 };
+function syncToolbarHeight(){
+  const h = stickyWrap.getBoundingClientRect().height - (TB.on ? TB.hide + TB.cut : 0);
+  document.documentElement.style.setProperty('--toolbar-h', Math.round(h) + 'px');
+}
+// Phones: scrolling down a calendar slides the view switches (scope, layout, level,
+// direction) out of sight and drops the result line; scrolling up brings them back.
+function tbEligible(){
+  return PHONE_MQ.matches && state.layout === 'calendar' && state.scope !== 'participants' && filterPanel.hidden
+    && document.getElementById('toolbarAnchor').getBoundingClientRect().top <= 1
+    && !stickyWrap.querySelector(':focus-visible');
+}
+function tbCompact(on){
+  if (on === TB.on) return;
+  if (on){
+    const w = stickyWrap.getBoundingClientRect(), z = w.height / (stickyWrap.offsetHeight || w.height) || 1;
+    const tabs = document.getElementById('daytabs').getBoundingClientRect();
+    const rr = document.querySelector('.result-row'), grp = document.getElementById('grpill');
+    const keep = [document.querySelector('.toolbar .controls'), grp].filter(el => el && !el.hidden && el.getClientRects().length && getComputedStyle(el).display !== 'none');
+    const bottom = Math.max(tabs.bottom, ...keep.map(el => el.getBoundingClientRect().bottom));
+    TB.hide = Math.max(0, tabs.top - w.top - 6);
+    TB.cut = rr && !rr.hidden ? Math.max(0, w.bottom - bottom - 2) : 0;
+    stickyWrap.style.setProperty('--tb-hide', (TB.hide / z) + 'px');
+    stickyWrap.style.setProperty('--tb-cut', (TB.cut / z) + 'px');
+  }
+  TB.on = on;
+  stickyWrap.classList.toggle('tb-compact', on);
+  syncToolbarHeight();
+}
+window.addEventListener('scroll', () => {
+  if (TB.raf) return;
+  TB.raf = requestAnimationFrame(() => {
+    TB.raf = 0;
+    const y = window.scrollY, dy = y - TB.last;
+    if (!tbEligible()){ tbCompact(false); TB.last = y; return; }
+    if (Math.abs(dy) < 8) return;
+    tbCompact(dy > 0);
+    TB.last = y;
+  });
+}, { passive:true });
+stickyWrap.addEventListener('focusin', () => { if (stickyWrap.querySelector(':focus-visible')) tbCompact(false); });
+PHONE_MQ.addEventListener('change', () => tbCompact(false));
 if (window.ResizeObserver) new ResizeObserver(syncToolbarHeight).observe(stickyWrap);
 syncToolbarHeight();
 
