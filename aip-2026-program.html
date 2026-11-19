@@ -283,6 +283,10 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .md-sec h3{margin:0 0 8px;font-size:16px}
 .md-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 .md-note{font-size:0.8125rem;color:var(--muted);margin:6px 0}
+.md-lead{font-size:0.875rem;color:var(--ink-2);margin:0 0 4px}
+.md-qr{margin:6px 0 4px;border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.md-qr summary{cursor:pointer;padding:10px 0;font-weight:650;font-size:.875rem;color:var(--link);min-height:40px;box-sizing:border-box}
+.md-qr[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
 .md-warn{font-size:0.8125rem;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:8px;padding:6px 10px;margin:8px 0}
 .qr-box{width:var(--qr-size,280px);max-width:100%;margin:4px auto 6px;background:var(--qr-light);border-radius:10px;border:1px solid var(--line);overflow:hidden}
 .qr-box svg{display:block;width:100%;height:auto}
@@ -448,6 +452,15 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 #nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:999px;font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+/* Share without a clipboard: the link in a selected field to copy, never a blocking prompt */
+.share-box{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:210;width:min(560px,calc(100vw - 24px));padding:10px 12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 32px var(--pop-shadow);font-size:.875rem}
+.share-box[hidden]{display:none}
+.share-box label{display:block;font-weight:650;margin:0 0 6px}
+.share-box-row{display:flex;gap:6px}
+.share-box input{flex:1 1 auto;min-width:0;font:inherit;font-size:max(.8125rem,16px);padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)}
+.share-box .toggle{min-height:38px}
+.share-box-note{margin:6px 0 0;font-size:.8125rem;color:var(--ink-2)}
+.share-box-note:empty{display:none}
 .shared-banner{width:min(1140px,calc(100% - 40px));margin:14px auto 0;background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:var(--radius);padding:12px 16px;font-size:.875rem;color:var(--ok-strong)}
 .shared-banner .sb-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .shared-banner .fb-actions button{border-color:var(--ok-line);color:var(--ok-btn)}
@@ -462,7 +475,6 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .talk.is-now{background:var(--now-bg)}
 .talk.is-now .t-time{color:var(--live-ink)}
 .talk.is-now .t-time::after{content:"NOW";display:block;font-size:.5938rem;letter-spacing:.06em}
-.ag-row.past{opacity:.6}
 .up-next{margin:14px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid #dc2626;border-radius:12px;padding:10px 14px;font-size:.875rem}
 .up-next b{font-weight:700}
 .up-next>div+div{margin-top:4px}
@@ -556,30 +568,57 @@ footer p{margin:4px 0}
 [hidden]{display:none!important}
 
 /* ---------- agenda builder ---------- */
-.builder{max-width:1180px;margin:0 auto;padding:20px 20px 70px}
-.builder-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px;margin:6px 0 4px}
-.builder-head h2{margin:0;font-size:1.5rem;letter-spacing:-.02em}
-.builder-stats{margin:4px 0 0;color:var(--muted);font-size:.875rem}
+.builder{max-width:1180px;margin:0 auto;padding:12px 20px 70px}
+/* My agenda's one compact bar: title and counts, a clash indicator, Build and one Export menu,
+   so the list or the calendar starts right under it */
+.ag-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;margin:2px 0 0}
+.ag-bar-main{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;min-width:0;flex:1 1 22rem}
+.ag-bar h2{margin:0;font-size:1.25rem;letter-spacing:-.02em;white-space:nowrap}
+.builder-stats{margin:0;color:var(--muted);font-size:.8438rem}
 .builder-stats b{color:var(--ink)}
-.ag-warn{color:var(--warn-ink);font-weight:700}
+.ag-clash-slot:empty{display:none}
+.favourites-calendar .ag-tz{display:none}
+@media (max-width:1279px){.ag-opt-long{display:none}}
+.ag-clash-ind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:999px;padding:3px 11px;font-size:.8125rem;font-weight:700;white-space:nowrap}
+.ag-clash-ind:hover{border-color:var(--clash-row-line)}
+.ag-clash-ind.quiet{border-color:var(--line);background:var(--surface);color:var(--ink-2);font-weight:600}
+.ag-clash-ind .caret{font-size:.7em;transition:transform .15s}
+.ag-clash-ind[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .ag-ok{color:var(--ok-ink);font-weight:700}
-.builder-actions{display:flex;flex-wrap:wrap;gap:8px}
-.builder-actions button:disabled{opacity:.55;cursor:default}
+.ag-warn{color:var(--warn-ink);font-weight:700}
+.builder-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.builder-actions .toggle{min-height:36px}
+.ag-opt{display:inline-flex;align-items:center;gap:6px;font-size:.8125rem;color:var(--ink-2);min-height:36px;cursor:pointer}
+.ag-opt input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.ag-menu{position:relative}
+.ag-menu .caret{font-size:.75em;margin-left:2px}
+.ag-menu-list{position:absolute;right:0;top:calc(100% + 6px);z-index:60;min-width:15rem;display:flex;flex-direction:column;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px var(--pop-shadow)}
+.ag-menu-list[hidden]{display:none}
+.ag-menu-list button{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:9px 12px;font-size:.875rem;font-weight:600;color:var(--ink);min-height:40px}
+.ag-menu-list button:hover,.ag-menu-list button:focus-visible{background:var(--surface-3)}
+.ag-menu-list button:disabled{color:var(--muted);cursor:default;background:transparent}
+.ag-menu-list .danger:not(:disabled){color:var(--now-text)}
+.ag-menu-list .danger:not(:disabled):hover,.ag-menu-list .danger:focus-visible{background:var(--danger-bg)}
+.ag-menu-sep{height:1px;margin:5px 6px;background:var(--line)}
 .toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
-.undo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0 0;padding:8px 10px 8px 14px;background:var(--info-bg);border:1px solid var(--info-line);border-radius:12px;color:var(--info-ink);font-size:0.875rem}
+/* Undo after a removal: a bar at the foot of the screen, wherever the list is scrolled */
+.undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 28px rgba(0,0,0,.28);font-size:0.875rem}
 .undo-bar[hidden]{display:none}
-.undo-bar #undoMsg{font-weight:600}
-.undo-actions{display:flex;gap:8px;margin-left:auto}
-.undo-actions .toggle{min-height:34px;padding:5px 13px}
-.clash-tools{margin:10px 0 0}
-.clash-tools .toggle{min-height:34px;padding:5px 12px;font-size:0.8125rem}
+.undo-bar #undoMsg{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.undo-actions{display:flex;gap:6px;flex:none}
+.undo-bar .toggle{min-height:36px;padding:5px 14px;background:transparent;border-color:var(--toast-ink);color:var(--toast-ink)}
+.undo-bar #undoBtn{background:var(--toast-ink);color:var(--toast-bg);font-weight:700}
+.undo-bar .toggle:hover{filter:brightness(1.15)}
+#undoDismiss{padding:5px 10px;border-color:transparent}
+.clash-box{margin:10px 0 0;background:var(--clash-row-bg);border:1px solid var(--clash-row-line);border-radius:12px;padding:4px 14px 6px}
+.clash-box-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:6px 0}
+.clash-box-head h3{margin:0;font-size:.9375rem;color:var(--clash-ink)}
+.clash-box-note{margin:0 0 8px;font-size:.8125rem;color:var(--ink-2)}
+.clash-tools .toggle{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:5px 12px;font-size:0.8125rem}
 .clash-tools .toggle::before{content:"";width:14px;height:14px;border:2px solid var(--muted);border-radius:4px;box-sizing:border-box}
 .clash-tools .toggle[aria-pressed="true"]{background:var(--active-bg);border-color:var(--accent);color:var(--active-ink)}
 .clash-tools .toggle[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--surface)}
-.clash-panel{margin:16px 0 0;background:var(--clash-row-bg);border:1px solid var(--clash-row-line);border-radius:12px;padding:0 14px}
-.clash-panel>summary{cursor:pointer;padding:10px 0;font-weight:700;color:var(--clash-ink)}
-.clash-panel .cp-count{font-weight:500;color:var(--ink-2);margin-left:6px;font-size:0.8438rem}
-.cp-groups{list-style:none;margin:0;padding:0 0 10px}
+.cp-groups{list-style:none;margin:0;padding:0 0 4px}
 .cp-group{border-top:1px solid var(--clash-line);padding:8px 0}
 .cp-head{font-size:0.8438rem;color:var(--ink-2);margin-bottom:4px}
 .cp-head b{color:var(--clash-ink)}
@@ -589,6 +628,9 @@ footer p{margin:4px 0}
 .cp-items .ag-kind{margin-right:0}
 .cp-open{text-align:left;font-size:0.8438rem;overflow-wrap:anywhere;min-width:0;flex:1 1 12rem}
 .cp-in{flex-basis:100%;padding-left:92px;font-size:0.75rem;color:var(--muted)}
+.cp-keep{flex:none;margin-left:auto;border:1px solid var(--clash-line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:3px 11px;font-size:.75rem;font-weight:650;white-space:nowrap}
+.cp-keep:hover{border-color:var(--clash-row-line);color:var(--ink)}
+.cp-in+.cp-keep,.cp-items li>.cp-keep{align-self:center}
 .print-doc{display:none}
 .agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--sunken)}
 .agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--ink-2);font-size:.875rem;font-weight:650}
@@ -876,6 +918,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .ag-row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;position:relative;overflow:hidden}
 .ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
 .ag-row.has-clash{border-color:var(--clash-row-line);background:var(--clash-row-bg)}
+/* An item that has ended keeps readable text and working buttons: only its stream stripe
+   turns grey and an "Ended" label shows by the time */
+.ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
+.ag-ended{display:none;margin-top:3px;width:max-content;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);background:var(--sunken);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+.ag-row.past .ag-ended{display:block}
 .ag-time{flex:0 0 92px;font-size:.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;line-height:1.5}
 .ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
 .ag-title{display:block;font-size:.9062rem;font-weight:650;line-height:1.4}
@@ -904,7 +951,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 html:has(#buildDialog[open]){overflow:hidden}
 #buildDialog::backdrop{background:var(--backdrop)}
 .bd-top{flex:none;padding:12px 20px 6px;border-bottom:1px solid var(--line);background:var(--surface-2)}
-.bd-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.bd-titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 16px}
+.bd-titles{flex:1 1 20rem;min-width:0}
 .bd-titlebar h2{margin:0;font-size:1.125rem;letter-spacing:-.01em}
 .bd-intro{margin:2px 0 0;color:var(--muted);font-size:0.7812rem;max-width:70ch}
 .bd-scale{margin:6px 0 0;user-select:none;-webkit-user-select:none}
@@ -931,7 +979,7 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-day.cur{color:var(--link)}
 .bd-times{height:17px}
 .bd-time{position:absolute;top:0;font-size:0.6562rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.5}
-.bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 16px;font-size:0.7812rem;color:var(--muted);margin-top:2px}
+.bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:2px 16px;font-size:0.7812rem;color:var(--muted);align-self:center}
 .bd-opts label{display:inline-flex;align-items:center;gap:6px;min-height:32px;color:var(--ink-2);cursor:pointer}
 .bd-opts input,.bd-check input{accent-color:var(--accent)}
 .bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:12px 20px 18px}
@@ -957,12 +1005,15 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-meta,.bd-hint{display:block;font-size:0.75rem;color:var(--muted)}
 .bd-hint{color:var(--ink-2);font-weight:600}
 .bd-check.on .bd-hint{color:var(--starOn-ink)}
-.bd-talks{margin-top:4px;border-top:1px solid var(--line)}
-.bd-talks summary{cursor:pointer;padding:6px 0;font-size:0.7812rem;font-weight:650;color:var(--link)}
-.bd-talks[open] .bd-show,.bd-talks:not([open]) .bd-hide{display:none}
+.bd-tog{display:flex;align-items:center;gap:0;width:100%;margin-top:4px;border:0;border-top:1px solid var(--line);background:none;border-radius:0;padding:6px 0;font-size:0.7812rem;font-weight:650;color:var(--link);text-align:left}
+.bd-tog .caret{margin-left:6px;font-size:.7em;transition:transform .15s}
+.bd-tog[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.bd-tog[aria-expanded="true"] .bd-show,.bd-tog[aria-expanded="false"] .bd-hide{display:none}
 .bd-tcount{color:var(--starOn-ink)}
-.bd-talks ul{list-style:none;margin:0 0 4px;padding:0}
-.bd-talks li{display:flex;align-items:flex-start;gap:2px}
+.bd-tcount:not(:empty){margin-left:.3em}
+.bd-tc-s{display:none}
+.bd-tlist{list-style:none;margin:0 0 4px;padding:0}
+.bd-tlist li{display:flex;align-items:flex-start;gap:2px}
 .bd-talk{flex:1;min-width:0;margin-top:0;font-size:0.8125rem}
 .bd-ttime{flex:none;min-width:34px;padding-top:1px;font-size:0.7188rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
 .bd-tmain{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -970,6 +1021,11 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-sp{display:block;font-size:0.7188rem;color:var(--muted)}
 .bd-abs{flex:none;border:0;background:none;padding:5px 2px 5px 6px;color:var(--link);font-size:0.7188rem;font-weight:600}
 .bd-abs:hover,.bd-info:hover{text-decoration:underline}
+.bd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.bd-chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:3px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:.75rem;font-weight:650;white-space:nowrap}
+.bd-chip i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.bd-chip:hover{border-color:var(--hover-line);color:var(--ink)}
+.bd-chip[aria-pressed="true"]{background:var(--active-bg);border-color:var(--accent);color:var(--active-ink)}
 .bd-done{max-width:52ch;margin:0 auto;padding:36px 10px;text-align:center}
 .bd-done .ag-empty-icon{font-size:2.125rem;color:var(--star)}
 .bd-done h3{margin:6px 0;font-size:1.25rem}
@@ -982,7 +1038,10 @@ html:has(#buildDialog[open]){overflow:hidden}
   .bd-top{padding:8px 14px 2px}
   .bd-titlebar{align-items:center}
   .bd-titlebar h2{font-size:1.0625rem}
+  .bd-titles{flex:1 1 0}
   .bd-intro{display:none}
+  .bd-opts{order:3;flex:1 1 100%;justify-content:space-between;flex-wrap:nowrap;gap:8px}
+  #bdClose{min-height:38px;padding:4px 14px}
   .bd-scale{margin-top:2px}
   .bd-range{height:40px}
   .bd-range::-webkit-slider-runnable-track{height:8px}
@@ -990,20 +1049,62 @@ html:has(#buildDialog[open]){overflow:hidden}
   .bd-ticks{margin-top:-4px}
   .bd-days{height:26px}
   .bd-day{top:-7px;min-height:40px;padding:0 4px;font-size:0.7812rem}
-  .bd-opts{margin-top:4px}
   .bd-opts label{min-height:40px}
   .bd-opts input{width:20px;height:20px}
-  .bd-body{padding:10px 14px 16px}
-  .bd-cards{grid-template-columns:minmax(0,1fr)}
-  .bd-check{min-height:44px;padding:7px 6px}
-  .bd-check input{width:20px;height:20px}
-  .bd-check input{margin-top:0}
-  .bd-ttime{padding-top:2px}
-  .bd-info,.bd-abs{min-height:40px}
-  .bd-talks summary{padding:10px 0;min-height:40px}
   .bd-foot{display:grid;grid-template-columns:1fr 1fr 1.4fr;padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
   .bd-foot .toggle{justify-content:center;padding:8px 6px}
-  .builder-actions #buildAgenda{grid-column:1 / -1}
+}
+/* Compact Build my agenda, on phones and short (landscape) screens: the header and footer
+   stay small so the slot gets most of the height, and each session is one row (stream,
+   time, a title of up to two lines, its tick box; its talks fold out). */
+@media (max-width:720px), (max-height:520px){
+  .bd-bubble-row,.bd-times{display:none}
+  .bd-chips{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;margin:2px -14px 6px;padding:0 14px}
+  .bd-chips::-webkit-scrollbar{display:none}
+  .bd-chip{min-height:34px}
+  .bd-body{padding:0 12px 14px}
+  .bd-slot-head{position:sticky;top:0;z-index:1;margin:0 -12px 6px;padding:7px 12px 6px;background:var(--card);border-bottom:1px solid var(--line);gap:0 10px}
+  .bd-slot-head h3{font-size:.9375rem}
+  .bd-cards{grid-template-columns:minmax(0,1fr);gap:6px}
+  /* one row: tick box | stream, time, Details over a two-line title | talks toggle */
+  .bd-card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;column-gap:6px;padding:5px 6px 5px 12px;border-radius:10px}
+  .bd-card.on{background:var(--starOn-bg)}
+  .bd-card-top{grid-column:2;grid-row:1;gap:6px;min-height:24px}
+  .bd-card-top .badge{font-size:.5938rem;padding:1px 7px;margin:0}
+  .bd-info{margin-left:2px;padding:0 4px;min-height:24px}
+  .bd-sess{display:contents}
+  .bd-sess input{grid-column:1;grid-row:1 / 3;align-self:center;justify-self:center;width:22px;height:22px;margin:0}
+  .bd-sess-main{grid-column:2;grid-row:2;cursor:pointer;padding:0 0 2px}
+  .bd-title{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.8438rem;line-height:1.3}
+  .bd-meta,.bd-sess .bd-hint{display:none}
+  .bd-tog{grid-column:3;grid-row:1 / 3;align-self:stretch;width:auto;min-height:44px;margin:0;padding:4px 4px 4px 8px;border:0;border-left:1px solid var(--line);font-size:.75rem;white-space:nowrap}
+  .bd-pg-l{display:none}
+  .bd-sw,.bd-tc-l{display:none}
+  .bd-tc-s{display:inline}
+  .bd-tlist{grid-column:1 / -1;border-top:1px solid var(--line);margin:2px 0 2px}
+  .bd-talk{min-height:44px;padding:5px 4px}
+  .bd-abs{min-height:40px}
+  .bd-ttime{padding-top:2px}
+}
+@media (max-height:520px){
+  #buildDialog{--thumb:24px;width:100vw;height:100vh;height:100dvh;max-height:none;margin:0;border:0;border-radius:0}
+  .bd-top{padding:4px 14px 0}
+  .bd-titlebar{flex-wrap:nowrap;align-items:center}
+  .bd-titlebar h2{font-size:1rem;white-space:nowrap}
+  .bd-titles{flex:0 1 auto}
+  .bd-intro,#bdProgress{display:none}
+  .bd-opts{order:0;flex:1 1 auto;margin-left:auto}
+  .bd-opts label{min-height:36px}
+  #bdClose{min-height:36px;padding:4px 14px}
+  .bd-scale{margin:0}
+  .bd-range{height:28px}
+  .bd-ticks{margin-top:-3px;height:7px}
+  .bd-days{height:22px}
+  .bd-day{top:-6px;min-height:34px}
+  .bd-chips{margin-bottom:4px}
+  .bd-chip{min-height:32px}
+  .bd-foot{padding:4px 14px calc(4px + env(safe-area-inset-bottom))}
+  .bd-foot .toggle{min-height:38px;padding:4px 12px}
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash 1.4s ease-out}
@@ -1026,10 +1127,29 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .ag-actions{display:grid;grid-template-columns:1fr 1fr 44px;width:100%;margin-top:4px}
   .ag-btn{min-height:36px}
   .ag-btn .rm-word{display:none}
-  .builder-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .builder-actions .toggle{width:100%;justify-content:center;text-align:center}
-  .undo-actions{margin-left:0;width:100%}
-  .undo-actions .toggle,.clash-tools .toggle{min-height:40px;flex:1;justify-content:center}
+  .builder{padding-top:8px}
+  .ag-bar{gap:6px}
+  .ag-bar h2{font-size:1.125rem}
+  .ag-bar-main{flex-basis:100%;align-items:center;gap:2px 10px}
+  .ag-clash-slot{order:1;margin-left:auto}
+  .builder-stats{order:2;flex:1 1 100%;font-size:.8125rem}
+  .ag-tz{display:none}
+  .builder-actions{width:100%;flex-wrap:nowrap;gap:6px}
+  .builder-actions .toggle{min-height:42px;justify-content:center;white-space:nowrap;padding-left:12px;padding-right:12px}
+  .builder-actions #buildAgenda{flex:1 1 auto}
+  .ag-opt{flex:0 1 auto;min-height:42px;font-size:.8125rem;line-height:1.2}
+  .ag-opt-long{display:none}
+  .ag-clash-ind{min-height:32px}
+  .cp-items li{gap:2px 8px}
+  .cp-keep{order:1}
+  .cp-open{order:2}
+  .cp-in{order:3}
+  .ag-row.past .ag-ended{display:inline-block;margin:0 0 0 8px;vertical-align:1px}
+  .undo-bar{width:calc(100vw - 24px);flex-wrap:wrap;padding:8px 8px 8px 14px}
+  .undo-bar #undoMsg{flex:1 1 10rem}
+  .undo-bar .toggle{min-height:42px}
+  .clash-tools .toggle{min-height:40px}
+  .cp-keep{min-height:36px}
   .cp-open{min-height:40px;flex-basis:100%}
   .cp-in{padding-left:0;margin-top:-6px}
   .cp-items li{padding:4px 0}
@@ -1095,7 +1215,6 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   #starCount{font-size:.75em}
 }
 @media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 5px;font-size:.75rem}}
-#parentOption{font-size:.875rem}
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
@@ -1254,38 +1373,50 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
         </div>
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
-      <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter">&#10005;</button></div>
     <div class="result-row"><div class="result-line" id="resultLine"></div><button class="linkish" id="expandAll" type="button">Expand all abstracts</button></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="share-box" id="shareBox" role="group" aria-labelledby="shareBoxLabel" hidden>
+  <label id="shareBoxLabel" for="shareBoxInput">Copying is blocked here. Copy this link:</label>
+  <div class="share-box-row"><input id="shareBoxInput" readonly spellcheck="false"><button type="button" class="toggle primary" id="shareBoxCopy">Copy</button><button type="button" class="toggle" id="shareBoxClose" aria-label="Close">&#10005;</button></div>
+  <p class="share-box-note" id="shareBoxNote" role="status"></p>
+</div>
 
 
 
 <main id="main">
 <section id="builder" class="builder" hidden>
-  <div class="builder-head">
-    <div>
+  <div class="ag-bar">
+    <div class="ag-bar-main">
       <h2 id="builderTitle" tabindex="-1">My agenda</h2>
       <p class="builder-stats" id="builderStats" aria-live="polite"></p>
+      <span class="ag-clash-slot" id="clashSlot"></span>
     </div>
     <div class="builder-actions">
+      <label class="ag-opt" id="parentOption" hidden><input type="checkbox" id="includeParents"> <span>Show full sessions<span class="ag-opt-long"> for starred talks</span></span></label>
       <button class="toggle primary" id="buildAgenda" data-build>Build my agenda</button>
-      <button class="toggle" id="printAgenda">Print or save as PDF</button>
-      <button class="toggle" id="copyAgenda">Copy as text</button>
-      <button class="toggle" id="icsAgenda">Download .ics</button>
-      <button class="toggle" id="shareAgenda">Share link</button>
-      <button class="toggle" id="moveAgenda" aria-haspopup="dialog">Move to another device</button>
-      <button class="toggle danger" id="clearAgenda">Clear all</button>
+      <div class="ag-menu" id="exportWrap">
+        <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <span class="caret" aria-hidden="true">&#9662;</span></button>
+        <div class="ag-menu-list" id="exportMenu" role="menu" aria-labelledby="exportBtn" hidden>
+          <button type="button" role="menuitem" tabindex="-1" id="printAgenda">Print or save as PDF</button>
+          <button type="button" role="menuitem" tabindex="-1" id="copyAgenda">Copy as text</button>
+          <button type="button" role="menuitem" tabindex="-1" id="icsAgenda">Download .ics</button>
+          <button type="button" role="menuitem" tabindex="-1" id="shareAgenda">Share link</button>
+          <button type="button" role="menuitem" tabindex="-1" id="moveAgenda" aria-haspopup="dialog">Move to another device&#8230;</button>
+          <div class="ag-menu-sep" role="separator"></div>
+          <button type="button" role="menuitem" tabindex="-1" class="danger" id="clearAgenda">Clear all</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="undo-bar" id="undoBar" hidden>
-    <span id="undoMsg">Agenda cleared</span>
-    <span class="undo-actions"><button type="button" class="toggle" id="undoBtn" aria-describedby="undoMsg">Undo</button><button type="button" class="toggle" id="undoDismiss">Dismiss</button></span>
+    <span id="undoMsg" role="status"></span>
+    <span class="undo-actions"><button type="button" class="toggle" id="undoBtn" aria-describedby="undoMsg" title="Undo (Ctrl+Z)">Undo</button><button type="button" class="toggle" id="undoDismiss" aria-label="Dismiss">&#10005;</button></span>
   </div>
-  <div class="clash-tools" id="clashTools" hidden><button type="button" class="toggle" id="hideClashes" aria-pressed="false">Hide clash warnings</button></div>
+  <div class="clash-box" id="clashBox" hidden></div>
   <p class="export-status" id="exportStatus" role="status"></p>
   <div class="ics-note" id="copyNote" hidden>
     <label for="copyBox">Select and copy your agenda text below.</label>
@@ -1388,9 +1519,13 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 <dialog id="buildDialog" aria-labelledby="bdTitle">
   <div class="bd-top">
     <div class="bd-titlebar">
-      <div>
+      <div class="bd-titles">
         <h2 id="bdTitle">Build my agenda</h2>
         <p class="bd-intro">Go through the congress one time slot at a time and tick the sessions or talks you want to attend. Drag the slider to jump around the week.</p>
+      </div>
+      <div class="bd-opts">
+        <span id="bdProgress"></span>
+        <label><input type="checkbox" id="bdAdmin"> Include breaks and meetings</label>
       </div>
       <button type="button" class="toggle" id="bdClose">Close</button>
     </div>
@@ -1401,10 +1536,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <div class="bd-days" id="bdDays"></div>
       <div class="bd-times" id="bdTimes" aria-hidden="true"></div>
     </div>
-    <div class="bd-opts">
-      <span id="bdProgress"></span>
-      <label><input type="checkbox" id="bdAdmin"> Include breaks and meetings</label>
-    </div>
+    <div class="bd-chips" id="bdChips" role="group" aria-label="Streams to show"></div>
   </div>
   <div class="bd-body" id="bdBody"></div>
   <div class="bd-foot">
@@ -1476,16 +1608,39 @@ const state = {
   pq: '', // the Participants view's own search
   psort: 'aff', pcat: '', // the Participants view's sort (aff | first | last) and category
 };
-try {
-  const saved = JSON.parse(localStorage.getItem('aip2026-stars') || '[]');
-  saved.forEach(x => state.starred.add(x));
-} catch (e) {}
+// Every session and talk id in the program: the only ids a star can hold.
+const KNOWN_IDS = new Set(DATA.days.flatMap(d => d.slots.flatMap(s => [s.id, ...s.talks.map(t => t.id)])));
+// Stars from storage: only string ids of this program's sessions and talks, once each
+// (anything else, from an old version, another tab or a hand edit, is dropped and the
+// cleaned list saved back). At most as many as the program has ids.
+function loadStars(){
+  let raw = null, saved = [];
+  try { raw = localStorage.getItem('aip2026-stars'); saved = JSON.parse(raw || '[]'); } catch (e) { saved = []; }
+  if (!Array.isArray(saved)) saved = [];
+  const ids = new Set();
+  for (const x of saved.slice(0, 4 * KNOWN_IDS.size + 100)){
+    if (typeof x === 'string' && KNOWN_IDS.has(x)) ids.add(x);
+    if (ids.size >= KNOWN_IDS.size) break;
+  }
+  state.starred = ids;
+  if (raw !== null && JSON.stringify([...ids]) !== raw){
+    try { localStorage.setItem('aip2026-stars', JSON.stringify([...ids])); } catch (e) {}
+  }
+}
+loadStars();
 try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; } catch (e) {}
 
 function persistStars(){
   try { localStorage.setItem('aip2026-stars', JSON.stringify([...state.starred])); } catch(e){}
 }
-// Any ordinary star change also drops a pending "Undo" of Clear all or Replace.
+// The My agenda badge counts what My agenda lists: a saved session with starred talks
+// in it is one item, as in the day tabs.
+function paintStarCount(){
+  const n = agendaItems().length, el = document.getElementById('starCount');
+  el.textContent = n;
+  el.title = n === 1 ? '1 item in My agenda' : n + ' items in My agenda';
+}
+// Any ordinary star change also drops a pending "Undo".
 function saveStars(){
   persistStars();
   dropUndo();
@@ -1889,7 +2044,7 @@ function applyFilters(){
     const of = n => filtered ? ` of ${n}` : '';
     rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`;
   }
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   if (state.scope === 'program') renderTabs(programCounts());
 }
 
@@ -1902,7 +2057,7 @@ function refresh(){
 function rerender(){
   if (state.scope === 'participants'){
     renderPeople();
-    document.getElementById('starCount').textContent = state.starred.size;
+    paintStarCount();
     paintNow(); writeHash();
     return;
   }
@@ -1911,7 +2066,7 @@ function rerender(){
   if (personal) renderBuilder();
   if (state.layout === 'calendar') renderCalendar();
   else if (!personal){ renderTabs(); renderAgenda(); }
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   paintNow(); writeHash();
 }
 
@@ -2070,12 +2225,12 @@ document.getElementById('clr').addEventListener('click', () => {
 function toMin(t){ return parseInt(t.slice(0,2),10)*60 + parseInt(t.slice(3,5),10); }
 
 // Every star as an item, in time order: what sharing and moving the agenda carry.
-function agendaSaved(){
+function agendaSaved(ids = state.starred){
   const items = [];
   DATA.days.forEach((d, di) => d.slots.forEach(s => {
-    if (state.starred.has(s.id)) items.push({ kind:'session', di, d, s, t:null, start:s.start, end:s.end });
+    if (ids.has(s.id)) items.push({ kind:'session', di, d, s, t:null, start:s.start, end:s.end });
     s.talks.forEach(t => {
-      if (state.starred.has(t.id)) items.push({ kind:'talk', di, d, s, t, start:t.s, end:t.e });
+      if (ids.has(t.id)) items.push({ kind:'talk', di, d, s, t, start:t.s, end:t.e });
     });
   }));
   items.sort((a,b) => (a.d.date < b.d.date ? -1 : a.d.date > b.d.date ? 1 : (toMin(a.start) - toMin(b.start) || toMin(a.end) - toMin(b.end))));
@@ -2096,12 +2251,25 @@ function mergeSaved(raw){
   return out;
 }
 function agendaItems(){ return mergeSaved(agendaSaved()); }
-// "3 sessions (2 talks starred) · 1 talk": a session with starred talks counts once.
-function agendaCountText(items, html){
-  const nSess = items.filter(x => x.kind === 'session').length, nTalk = items.length - nSess;
-  const nInner = items.reduce((n, x) => n + (x.inner ? x.inner.length : 0), 0);
-  const pl = (n, w) => (html ? `<b>${n}</b>` : n) + ' ' + w + (n === 1 ? '' : 's');
-  return pl(nSess, 'session') + (nInner ? ` (${nInner} talk${nInner === 1 ? '' : 's'} starred)` : '') + ' · ' + pl(nTalk, 'talk');
+// "3 sessions, 1 with a starred talk · 2 talks": a session with starred talks counts
+// once; a part with nothing in it is left out. sep joins the parts (" · " by default).
+function countWord(n, word, html){ return (html ? `<b>${n}</b>` : n) + ' ' + word + (n === 1 ? '' : 's'); }
+function agendaCountText(items, html, sep = ' · '){
+  const sess = items.filter(x => x.kind === 'session'), nTalk = items.length - sess.length;
+  const hosts = sess.filter(x => x.inner && x.inner.length), nInner = hosts.reduce((n, x) => n + x.inner.length, 0);
+  const parts = [];
+  if (sess.length){
+    let t = countWord(sess.length, 'session', html);
+    if (hosts.length){
+      const what = nInner === 1 ? 'a starred talk' : hosts.length === 1 ? nInner + ' starred talks' : 'starred talks';
+      t += sess.length === 1 ? ' with ' + what : hosts.length === sess.length ? ', all with ' + what : `, ${hosts.length} with ${what}`;
+    }
+    parts.push(t);
+  }
+  const nPoster = items.filter(x => x.kind === 'talk' && x.s.cat === 'poster').length;
+  if (nTalk - nPoster) parts.push(countWord(nTalk - nPoster, 'talk', html));
+  if (nPoster) parts.push(countWord(nPoster, 'poster', html));
+  return parts.length ? parts.join(sep) : 'nothing saved';
 }
 
 function markClashes(items){
@@ -2143,19 +2311,21 @@ function groupSpan(g){
 }
 function kindLabel(it){ return it.kind === 'session' ? 'Session' : it.s.cat === 'poster' ? 'Poster' : 'Talk'; }
 
+// The ids an agenda item stands for: the item, and for a saved session the talks starred in it.
+function itemIds(it){ return [it.t ? it.t.id : it.s.id, ...(it.inner || []).map(t => t.id)]; }
+// The clash panel: each group of overlapping items, and for each item "Keep this", which
+// removes the items that overlap it (with Undo).
 function clashPanelHtml(groups, numbers){
-  const nItems = groups.reduce((n, g) => n + g.length, 0);
-  return `<details class="clash-panel" id="clashPanel"${clashPanelOpen ? ' open' : ''}>
-    <summary>&#9888;&#65039; Clashes <span class="cp-count">${groups.length} group${groups.length === 1 ? '' : 's'} &middot; ${nItems} items</span></summary>
-    <ol class="cp-groups">${groups.map(g => `<li class="cp-group">
+  return `<ol class="cp-groups">${groups.map(g => `<li class="cp-group">
       <div class="cp-head"><b>Clash ${numbers.get(g)}</b> &middot; ${esc(g[0].d.label)} &middot; ${groupSpan(g)}</div>
       <ul class="cp-items">${g.map(it => {
         const [c, bg] = CAT_COLORS[it.s.cat];
-        return `<li style="--c:${c};--cbg:${bg}"><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="ag-kind">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
-      }).join('')}</ul></li>`).join('')}</ol>
-  </details>`;
+        const drop = it.clashes.flatMap(itemIds), n = it.clashes.length;
+        const keep = `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
+        return `<li style="--c:${c};--cbg:${bg}"><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="ag-kind">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${keep}${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
+      }).join('')}</ul></li>`).join('')}</ol>`;
 }
-let clashPanelOpen = true;
+let clashPanelOpen = false;
 
 function plannedHours(items){
   let mins = 0;
@@ -2198,7 +2368,7 @@ function agRow(it){
     return `<li><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${sp ? `<span class="ag-isp">${esc(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
   }).join('')}</ul>` : '';
   return `<li class="ag-row ${clashNames.length?'has-clash':''}${nIn ? ' has-inner' : ''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
-    <span class="ag-time">${it.start}&#8211;${it.end}</span>
+    <span class="ag-time">${it.start}&#8211;${it.end}<span class="ag-ended">Ended</span></span>
     <div class="ag-main">
       <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':it.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>${esc(itemTitle(it))}</span>
       <span class="ag-sub">${esc(who)}${sub2 ? ' &middot; ' + esc(sub2) : ''}</span>
@@ -2587,12 +2757,37 @@ function agendaEmptyHtml(){
       </div>
     </div>`;
 }
+// The clash indicator in the bar and the panel it opens, for the day shown (or the
+// whole week), in the list and the calendar alike.
+function renderClashes(items){
+  const slot = document.getElementById('clashSlot'), box = document.getElementById('clashBox');
+  const groups = clashGroups(items), numbers = new Map(groups.map((g, i) => [g, i + 1]));
+  const day = state.day === 'all' ? null : state.day;
+  const dayGroups = day === null ? groups : groups.filter(g => g[0].di === day);
+  const shown = dayGroups.length ? dayGroups : groups;
+  const caret = ' <span class="caret" aria-hidden="true">&#9662;</span>';
+  const nItems = shown.reduce((n, g) => n + g.length, 0);
+  if (!groups.length){
+    slot.innerHTML = items.length ? '<span class="ag-ok">&#10003; No clashes</span>' : '';
+    box.hidden = true; box.innerHTML = '';
+    return;
+  }
+  const clashWord = n => n + (n === 1 ? ' clash' : ' clashes');
+  const label = state.hideClashes ? `${clashWord(groups.length)} hidden`
+    : !dayGroups.length ? `${clashWord(groups.length)} on other days`
+    : `&#9888;&#65039; ${clashWord(dayGroups.length)}`;
+  slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !dayGroups.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox">${label}${caret}</button>`;
+  box.hidden = !clashPanelOpen;
+  const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button></span>`;
+  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes <span class="cp-count">${state.hideClashes ? '' : `&middot; ${countWord(shown.length, 'group')}, ${countWord(nItems, 'item')}${day !== null && !dayGroups.length ? ' on other days' : ''}`}</span></h3>${tools}</div>` +
+    (state.hideClashes ? '<p class="clash-box-note">Clash warnings are hidden in the list, the calendar and the exports.</p>'
+      : '<p class="clash-box-note">Items that overlap in time. <b>Keep this</b> removes the items that overlap it; you can undo.</p>' + clashPanelHtml(shown, numbers));
+  box.setAttribute('aria-labelledby', 'clashBoxTitle');
+  box.setAttribute('role', 'region');
+}
 function renderBuilder(){
   const items = agendaItems();
   markClashes(items);
-  const clashItems = items.filter(x => x.clashes.length).length;
-  const personalDay = state.scope === 'agenda' && state.day !== 'all';
-  const dayClashItems = personalDay ? items.filter(x => x.di === state.day && x.clashes.length).length : clashItems;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
   for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda', 'clearAgenda']) {
@@ -2601,34 +2796,24 @@ function renderBuilder(){
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
-  document.getElementById('clashTools').hidden = !(dayClashItems || (clashItems && state.hideClashes));
-  document.getElementById('hideClashes').setAttribute('aria-pressed', state.hideClashes);
+  renderClashes(items);
 
   const personalList = state.layout === 'list' && state.scope === 'agenda';
   if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
   if (!items.length){
-    stats.textContent = 'Nothing saved yet.';
+    stats.textContent = 'Nothing saved yet';
     body.innerHTML = agendaEmptyHtml();
     return;
   }
-  stats.innerHTML = `Full agenda &middot; ${agendaCountText(items, true).replace(' · ', ' &middot; ')} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
-    (!clashItems ? `<span class="ag-ok">&#10003; no clashes</span>`
-      : state.hideClashes ? `${clashItems} overlapping item${clashItems!==1?'s':''} (warnings hidden)`
-      : !dayClashItems ? `<span class="ag-ok">&#10003; no clashes on this day</span> (${clashItems} item${clashItems!==1?'s':''} with overlaps on other days)`
-      : `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>${dayClashItems < clashItems ? ` (${dayClashItems} on this day)` : ''}`) +
-    ' &middot; All times AEDT';
-  const groups = clashGroups(items);
-  const numbers = new Map(groups.map((g, i) => [g, i + 1]));
-  const shownGroups = groups.filter(g => !personalList || state.day === 'all' || g[0].di === state.day);
-  const panel = personalList && shownGroups.length && !state.hideClashes ? clashPanelHtml(shownGroups, numbers) : '';
+  stats.innerHTML = `${agendaCountText(items, true)} &middot; about <b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span>`;
   let html = '';
   DATA.days.forEach((d, di) => {
     if (personalList && state.day !== 'all' && state.day !== di) return;
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
-    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${dayItems.length} item${dayItems.length!==1?'s':''} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
+    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${countWord(dayItems.length, 'item')} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
-  body.innerHTML = upNextHtml(items) + panel + (html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
+  body.innerHTML = upNextHtml(items) + (html || `<div class="ag-empty"><h3>Nothing saved on ${esc(DATA.days[state.day].label)}</h3>
     <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
 
@@ -2729,7 +2914,7 @@ function showView(layout, scope){
 
 function afterStarChange(){
   saveStars();
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   if (state.scope === 'agenda') rerender();
 }
 
@@ -2827,7 +3012,8 @@ async function copyToClipboard(txt){
   try {
     await navigator.clipboard.writeText(txt);
     note.hidden = true;
-    status.textContent = 'Agenda copied to clipboard.';
+    status.textContent = '';
+    toast('Agenda copied as text');
   } catch {
     const box = document.getElementById('copyBox');
     status.textContent = '';
@@ -3624,8 +3810,8 @@ document.getElementById('agenda').addEventListener('click', e => {
 // it turns the day only when the gesture starts with the grid at its edge.
 function vtDayStep(dir){
   if (state.day === 'all') return -1;
-  const has = dvAgenda() ? (() => { const n = new Set(agendaSaved().map(it => it.di)); return i => n.has(i); })()
-    : i => DATA.days[i].slots.some(slotMatches);
+  // My agenda steps through every day, empty ones too (they say so), as its day tabs do
+  const has = dvAgenda() ? () => true : i => DATA.days[i].slots.some(slotMatches);
   for (let i = state.day + dir; i >= 0 && i < DATA.days.length; i += dir)
     if (has(i)) return i;
   return -1;
@@ -3757,6 +3943,23 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   }, { passive: false });
 }
 
+// A day of My agenda with nothing saved. In Vertical it keeps the day's heading between
+// the previous/next day buttons (the markup of vtDayView's), so buttons, arrow keys and
+// swipes go on from it.
+function agendaEmptyDay(day){
+  const di = DATA.days.indexOf(day);
+  const msg = `<div class="ag-empty ag-empty-day"><h3>Nothing saved on ${esc(day.label)}</h3>
+    <p>Pick sessions or talks for this day in <b>Build my agenda</b>, or browse the day in the program.</p>
+    <div class="ag-empty-actions"><button class="toggle primary" data-build>Build my agenda</button><button class="toggle" data-goprogram="${di}">Browse this day &#8594;</button></div></div>`;
+  if (state.orient !== 'v') return msg;
+  const go = d => {
+    const to = DATA.days[di + d];
+    if (!to) return '<span class="vt-go none"></span>';
+    const [wd, ...rest] = to.label.split(' ');
+    return `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(wd)}<span class="vt-god"> ${esc(rest.join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`;
+  };
+  return `<div class="vt-day vt-agenda vt-none" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1)}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1)}</div>${msg}</div>`;
+}
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
   // My agenda draws its saved items with the program's own day views and week overview
@@ -3774,7 +3977,7 @@ function renderCalendar(){
     result.textContent = message;
   } else {
     const empty = favourites
-      ? (!items.length || state.day === 'all' ? agendaEmptyHtml() : `<div class="ag-empty"><h3>Nothing saved on ${esc(DATA.days[state.day].label)}</h3><button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`)
+      ? (!items.length || state.day === 'all' ? agendaEmptyHtml() : agendaEmptyDay(DATA.days[state.day]))
       : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
@@ -3783,7 +3986,7 @@ function renderCalendar(){
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     main.classList.toggle('wide', true);
-    result.textContent = selected.length + (favourites ? ' agenda items' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
+    result.textContent = (favourites ? countWord(selected.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
   weekFit(main);
@@ -3865,7 +4068,7 @@ window.addEventListener('resize', () => {
 document.getElementById('includeParents').addEventListener('change', renderCalendar);
 
 const eventDialog = document.getElementById('eventDialog');
-let dialogTrigger;
+let dialogTrigger, dialogBefore = null;
 function favouriteButton(id, kind){
   const saved = state.starred.has(id);
   return `<button class="ag-btn detail-save" data-detail-save="${id}" aria-pressed="${saved}">${saved?'★':'☆'} Favourite ${kind}</button>`;
@@ -3891,7 +4094,7 @@ function fillEventDialog(sid, tid){
     const saved = state.starred.has(talk.id);
     const open = t || (personal && saved) || (!personal && openMatchingTalk(talk,s));
     const who = talk.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
-    if (t) return `<p>${esc(who)}</p><h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', esc)}</div>${favouriteButton(t.id,'talk')}`;
+    if (t) return `<p>${esc(who)}</p><h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', esc)}</div>`;
     return `<details ${open?'open':''}><summary><span class="saved-marker">${saved?'★ ':''}</span>${talk.s}–${talk.e} · ${esc(talk.t)}</summary>
       <p>${esc(who)}</p><div class="detail-text">${paras(talk.d || 'No abstract provided.', esc)}</div>
       ${favouriteButton(talk.id,'talk')}</details>`;
@@ -3903,6 +4106,7 @@ function fillEventDialog(sid, tid){
     ${replaceButton(s, t)}
     ${eventInfoHtml(s, esc)}
     ${!t && s.desc ? '<div class="detail-text">' + paras(s.desc, esc) + '</div>' : ''}
+    ${t ? favouriteButton(t.id, 'talk') : ''}
     <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
     <button class="ag-btn" data-share="${t ? 't=' + t.id : 's=' + s.id}" data-share-title="${esc(t ? t.t : s.title)}">Share link</button>
     ${details || (!s.desc && !s.info ? '<p>No abstract provided.</p>' : '')}`;
@@ -3912,6 +4116,7 @@ document.addEventListener('click', e => {
   if (!button) return;
   fillEventDialog(button.dataset.sessionDetail, button.dataset.talkDetail);
   dialogTrigger = button;
+  dialogBefore = new Set(state.starred);
   eventDialog.showModal();
   eventDialog.scrollTop = 0;
 });
@@ -3931,7 +4136,7 @@ eventDialog.addEventListener('click', e => {
     s.talks.forEach(x => { if (state.starred.delete(x.id)) n++; });
     state.starred.add(s.id);
     saveStars();
-    document.getElementById('starCount').textContent = state.starred.size;
+    paintStarCount();
     eventDialog.dataset.changed = 'true';
     fillEventDialog(eventDialog.dataset.sid, eventDialog.dataset.tid);
     document.getElementById('eventTitle').focus();
@@ -3948,7 +4153,7 @@ eventDialog.addEventListener('click', e => {
   const marker = btn.closest('details')?.querySelector('.saved-marker');
   if (marker) marker.textContent = wasSaved ? '' : '★ ';
   saveStars();
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   eventDialog.dataset.changed = 'true';
 });
 eventDialog.addEventListener('close', () => {
@@ -3963,6 +4168,8 @@ eventDialog.addEventListener('close', () => {
   const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
   const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
   rerender();
+  // unstarred here while in My agenda: offer Undo, as Remove does
+  if (state.scope === 'agenda' && dialogBefore && goneItems(dialogBefore).length) offerUndo(dialogBefore, removedMessage(dialogBefore));
   const scope = state.scope === 'participants' ? document.querySelector('#people')
     : state.scope === 'agenda' && state.layout === 'list' ? document.querySelector('#builder') : document.querySelector('#agenda');
   const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]` +
@@ -3999,7 +4206,7 @@ function buildPrintDoc(){
     return `<tr><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${inner}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
   };
   let html = `<h1>AIP Congress 2026 — My agenda</h1>
-    <p class="pd-meta">Generated ${esc(generated)} &middot; ${esc(agendaCountText(items, false)).replace(' · ', ' &middot; ')} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? groups.length + (groups.length === 1 ? ' clash' : ' clashes') : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
+    <p class="pd-meta">Generated ${esc(generated)} &middot; ${esc(agendaCountText(items, false, ' · '))} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? groups.length + (groups.length === 1 ? ' clash' : ' clashes') : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
@@ -4041,78 +4248,191 @@ document.getElementById('printAgenda').addEventListener('click', () => {
   window.print();
 });
 
-// ---------- clear all, with undo ----------
-let undoSnapshot = null;
+// ---------- undo: removals, Clear all, Replace ----------
+// Any removal from My agenda (Remove, unstarring in the list or the details, Keep this,
+// Clear all, Replace) offers Undo in a bar at the foot of the screen, until the next
+// ordinary star change, Dismiss, or a while without attention. Ctrl/Cmd+Z undoes too.
+let undoSnapshot = null, undoTimer = 0;
+const undoBar = document.getElementById('undoBar');
 function dropUndo(){
-  if (!undoSnapshot) return;
+  clearInterval(undoTimer);
+  if (!undoSnapshot && undoBar.hidden) return;
   undoSnapshot = null;
-  document.getElementById('undoBar').hidden = true;
+  undoBar.hidden = true;
 }
-// Replaces the whole agenda and offers Undo until the next ordinary star change.
+// The bar goes after 12 s on screen (not counting time under the pointer or focus, or
+// in another view, e.g. after Replace from the shared-agenda banner).
+function undoArm(){
+  clearInterval(undoTimer);
+  let shown = 0;
+  undoTimer = setInterval(() => {
+    if (!undoBar.getClientRects().length || undoBar.matches(':hover, :focus-within')) return;
+    if (++shown >= 12) dropUndo();
+  }, 1000);
+}
+// before: the stars to go back to; message: what happened, e.g. Removed “Title”.
+function offerUndo(before, message){
+  undoSnapshot = { ids: [...before], message };
+  const msg = document.getElementById('undoMsg');
+  undoBar.hidden = false;
+  msg.textContent = '';
+  // set after the bar shows, so screen readers announce it
+  requestAnimationFrame(() => { if (undoSnapshot && undoSnapshot.message === message) msg.textContent = message; });
+  undoArm();
+}
+const quoteTitle = t => '“' + (t.length > 60 ? t.slice(0, 57).trimEnd() + '…' : t) + '”';
+// What a change from `before` removed, in words: Removed “Title” or Removed 3 items.
+// (a talk now inside a saved session is not gone)
+function goneItems(before){
+  return mergeSaved(agendaSaved(before)).filter(it => !state.starred.has(itemIds(it)[0]) && !(it.t && state.starred.has(it.s.id)));
+}
+function removedMessage(before){
+  const gone = goneItems(before);
+  return gone.length === 1 ? 'Removed ' + quoteTitle(itemTitle(gone[0])) : 'Removed ' + countWord(gone.length, 'item');
+}
+// Replaces the whole agenda and offers Undo.
 function replaceStars(ids, message){
   const before = [...state.starred];
   state.starred.clear();
   ids.forEach(id => state.starred.add(id));
   persistStars();
-  undoSnapshot = before;
-  document.getElementById('undoMsg').textContent = message;
-  document.getElementById('undoBar').hidden = false;
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   rerender();
+  offerUndo(before, message);
+}
+// Removes ids from the agenda and offers Undo.
+function removeStars(ids, message){
+  const before = new Set(state.starred);
+  ids.forEach(id => state.starred.delete(id));
+  afterStarChange();
+  offerUndo(before, message || removedMessage(before));
 }
 document.getElementById('clearAgenda').addEventListener('click', () => {
+  closeExportMenu();
   if (!state.starred.size) return;
-  replaceStars([], 'Agenda cleared');
+  const n = agendaItems().length;
+  replaceStars([], `Agenda cleared (${countWord(n, 'item')})`);
   document.getElementById('undoBtn').focus();
 });
-document.getElementById('undoBtn').addEventListener('click', () => {
-  if (!undoSnapshot) return;
-  const restore = undoSnapshot;
+function undoNow(){
+  if (!undoSnapshot) return false;
+  const restore = undoSnapshot.ids, removed = restore.filter(id => !state.starred.has(id));
   undoSnapshot = null;
-  state.starred.clear();
-  restore.forEach(id => state.starred.add(id));
+  dropUndo();
+  state.starred = new Set(restore);
   persistStars();
-  document.getElementById('undoBar').hidden = true;
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   rerender();
   toast('Agenda restored');
-  document.getElementById(state.starred.size ? 'clearAgenda' : 'builderTitle').focus();
-});
+  // back to what came back, or the top of My agenda
+  const back = removed.flatMap(id => [...document.querySelectorAll(`#builder [data-sstar="${id}"], #builder [data-tstar="${id}"], #agenda [data-talk-detail="${id}"], #agenda [data-session-detail="${id}"][data-talk-detail=""]`)])
+    .find(el => el.getClientRects().length);
+  (back || document.getElementById('builderTitle')).focus({ preventScroll: !back });
+  return true;
+}
+document.getElementById('undoBtn').addEventListener('click', undoNow);
 document.getElementById('undoDismiss').addEventListener('click', () => {
   dropUndo();
-  document.getElementById('builderTitle').focus();
+  document.getElementById('builderTitle').focus({ preventScroll: true });
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'z' && e.key !== 'Z') return;
+  if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || !undoSnapshot || undoBar.hidden) return;
+  if (document.querySelector('dialog[open]') || e.target.closest('input, textarea, select, [contenteditable]')) return;
+  e.preventDefault();
+  undoNow();
 });
 
-// ---------- clash warnings ----------
-document.getElementById('hideClashes').addEventListener('click', e => {
-  state.hideClashes = !state.hideClashes;
-  try { localStorage.setItem('aip2026-hide-clashes', state.hideClashes ? '1' : '0'); } catch (err) {}
-  e.currentTarget.setAttribute('aria-pressed', state.hideClashes);
-  rerender();
+// ---------- the Export menu ----------
+const exportBtn = document.getElementById('exportBtn'), exportMenu = document.getElementById('exportMenu');
+const exportItems = () => [...exportMenu.querySelectorAll('[role="menuitem"]:not(:disabled)')];
+function openExportMenu(focusLast){
+  exportMenu.hidden = false;
+  exportBtn.setAttribute('aria-expanded', 'true');
+  const list = exportItems();
+  (focusLast ? list[list.length - 1] : list[0])?.focus();
+}
+function closeExportMenu(focusButton){
+  if (exportMenu.hidden) return;
+  exportMenu.hidden = true;
+  exportBtn.setAttribute('aria-expanded', 'false');
+  if (focusButton) exportBtn.focus();
+}
+exportBtn.addEventListener('click', () => exportMenu.hidden ? openExportMenu() : closeExportMenu());
+exportBtn.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); openExportMenu(e.key === 'ArrowUp'); }
 });
-document.getElementById('builderList').addEventListener('toggle', e => {
-  if (e.target.id === 'clashPanel') clashPanelOpen = e.target.open;
-}, true);
+exportMenu.addEventListener('keydown', e => {
+  const list = exportItems(), i = list.indexOf(document.activeElement);
+  const to = { ArrowDown: (i + 1) % list.length, ArrowUp: (i - 1 + list.length) % list.length, Home: 0, End: list.length - 1 }[e.key];
+  if (to !== undefined){ e.preventDefault(); list[to].focus(); return; }
+  if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); closeExportMenu(true); return; }
+  if (e.key === 'Tab') closeExportMenu();
+  if (e.key.length === 1 && /\S/.test(e.key)){
+    const k = e.key.toLowerCase(), hit = [...list.slice(i + 1), ...list.slice(0, i + 1)].find(b => b.textContent.trim().toLowerCase().startsWith(k));
+    if (hit) hit.focus();
+  }
+});
+// a pick closes the menu; focus goes back to Export unless the action moves it
+exportMenu.addEventListener('click', e => {
+  if (!e.target.closest('[role="menuitem"]')) return;
+  closeExportMenu();
+  if (!document.activeElement || document.activeElement === document.body || exportMenu.contains(document.activeElement)) exportBtn.focus();
+});
+document.addEventListener('pointerdown', e => {
+  if (!exportMenu.hidden && !e.target.closest('#exportWrap')) closeExportMenu();
+});
+document.getElementById('exportWrap').addEventListener('focusout', e => {
+  if (!exportMenu.hidden && e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) closeExportMenu();
+});
+
+// ---------- clash indicator and panel ----------
+document.getElementById('builder').addEventListener('click', e => {
+  if (e.target.closest('#clashToggle')){
+    clashPanelOpen = !clashPanelOpen;
+    renderClashes((() => { const items = agendaItems(); markClashes(items); return items; })());
+    document.getElementById('clashToggle').focus();
+    return;
+  }
+  if (e.target.closest('#hideClashes')){
+    state.hideClashes = !state.hideClashes;
+    try { localStorage.setItem('aip2026-hide-clashes', state.hideClashes ? '1' : '0'); } catch (err) {}
+    rerender();
+    document.getElementById('hideClashes')?.focus();
+    return;
+  }
+  const keep = e.target.closest('[data-keep]');
+  if (keep){
+    const drop = keep.dataset.drop.split(',').filter(Boolean);
+    const kept = agendaItems().find(it => itemIds(it)[0] === keep.dataset.keep);
+    const before = new Set(state.starred);
+    drop.forEach(id => state.starred.delete(id));
+    const n = goneItems(before).length;
+    afterStarChange();
+    offerUndo(before, `Kept ${quoteTitle(kept ? itemTitle(kept) : '')}, removed ${countWord(n, 'item')}`);
+    const next = document.querySelector('#clashBox [data-keep]') || document.getElementById('clashToggle') || document.getElementById('builderTitle');
+    next.focus({ preventScroll: true });
+  }
+});
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
 document.getElementById('shareAgenda').addEventListener('click', () => {
-  const ids = agendaSaved().map(it => it.t ? it.t.id : it.s.id);
-  shareUrl(linkTo('agenda=' + ids.join(',')), 'My AIP Congress 2026 agenda');
+  shareUrl(linkTo('agenda=' + agendaIds().join(',')), 'My AIP Congress 2026 agenda');
 });
 
 document.getElementById('builder').addEventListener('click', e => {
-  const rm = e.target.closest('[data-sstar],[data-tstar]');
+  const rm = e.target.closest('#builderList [data-sstar], #builderList [data-tstar]');
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
-    state.starred.delete(id);
-    afterStarChange();
+    const title = talkById(id)?.t.t || slotById(id)?.title || '';
+    removeStars([id], (rm.dataset.inSession ? 'Unstarred ' : 'Removed ') + quoteTitle(title));
     // a talk unstarred inside its saved session: stay on that session
     const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
-    if (host){ host.focus(); toast('Talk unstarred · the session stays in My agenda'); return; }
+    if (host){ host.focus(); return; }
     const remaining = document.querySelectorAll('#builder .rm');
     const next = remaining[Math.min(removedIndex, remaining.length - 1)];
-    (next || document.querySelector('#builderBody [data-goprogram]')).focus();
+    (next || document.querySelector('#builderBody [data-goprogram]') || document.getElementById('builderTitle')).focus();
     return;
   }
   const build = e.target.closest('[data-build]');
@@ -4130,8 +4450,12 @@ const buildDialog = document.getElementById('buildDialog');
 const ADMIN_CATS = new Set(['social', 'business']);
 const isAdminSession = s => ADMIN_CATS.has(s.cat);
 const bdEl = id => document.getElementById(id);
-const bd = { slots: [], i: 0, done: false, admin: false, before: null, changed: false, nav: false, trigger: null, lastKey: null };
+const bd = { slots: [], i: 0, done: false, admin: false, cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null };
 try { bd.admin = sessionStorage.getItem('aip2026-build-admin') === '1'; } catch (e) {}
+try { (sessionStorage.getItem('aip2026-build-cats') || '').split(',').filter(k => k in DATA.cats).forEach(k => bd.cats.add(k)); } catch (e) {}
+// Phones and short (landscape) screens: one compact row per session, talks folded away.
+const BD_COMPACT = matchMedia('(max-width:720px), (max-height:520px)');
+const BD_AB = { plenary:'Plenary', aip:'AIP', anzcop:'ANZCOP', commad:'COMMAD', focus:'Focus', poster:'Posters', edu:'Education', events:'Events', special:'Forums', business:'Meetings', social:'Breaks' };
 try { bd.lastKey = sessionStorage.getItem('aip2026-build-pos'); } catch (e) {}
 
 function hhmmOf(m){ return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
@@ -4169,21 +4493,35 @@ function congressSlots(){
   });
   return congressSlots.list = out;
 }
-function bdSessions(slot){ return bd.admin ? slot.sessions : slot.sessions.filter(s => !isAdminSession(s)); }
+// A slot's sessions as shown: breaks and meetings only when asked for, and only the
+// streams picked in the chip row (none picked: all).
+function bdSessions(slot){
+  return slot.sessions.filter(s => (bd.admin || !isAdminSession(s)) && (!bd.cats.size || bd.cats.has(s.cat)));
+}
 function bdSpan(slot){
   const ss = bdSessions(slot);
   return [hhmmOf(Math.min(...ss.map(s => toMin(s.start)))), hhmmOf(Math.max(...ss.map(s => toMin(s.end))))];
 }
-function bdVisibleSlots(){ return congressSlots().filter(sl => bd.admin || !sl.admin); }
+function bdVisibleSlots(){
+  const list = congressSlots().filter(sl => bdSessions(sl).length);
+  return list.length ? list : congressSlots().filter(sl => bd.admin || !sl.admin);
+}
 function bdIndexFor(key){
   if (!key) return 0;
   const i = bd.slots.findIndex(sl => sl.key >= key);
   return i < 0 ? bd.slots.length - 1 : i;
 }
 function bdStartIndex(){
-  // During the congress, start at the first slot that is not over yet.
+  // During the congress, at the first slot that is not over yet, unless another day is
+  // picked: then (and before or after the congress) at the start of the day picked.
   const n = aedtNow(), days = DATA.days;
-  if (n.date < days[0].date || n.date > days[days.length - 1].date) return 0;
+  const live = n.date >= days[0].date && n.date <= days[days.length - 1].date;
+  const day = state.day === 'all' ? null : days[state.day];
+  if (day && !(live && day.date === n.date)){
+    const i = bd.slots.findIndex(sl => sl.d.date >= day.date);
+    return i < 0 ? bd.slots.length - 1 : i;
+  }
+  if (!live) return 0;
   const i = bd.slots.findIndex(sl => sl.d.date > n.date || (sl.d.date === n.date && toMin(bdSpan(sl)[1]) > n.min));
   return i < 0 ? 0 : i;
 }
@@ -4206,20 +4544,30 @@ function bdCard(s, parallel){
   const [c, bg] = CAT_COLORS[s.cat];
   const poster = s.cat === 'poster';
   const talks = poster ? [] : s.talks;
-  const open = talks.length <= 3 || parallel <= 2 || talks.some(t => state.starred.has(t.id));
+  const saved = talks.some(t => state.starred.has(t.id));
+  const open = saved || (!BD_COMPACT.matches && (talks.length <= 3 || parallel <= 2));
   const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
     s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
     poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join(' · ');
   const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session, all its talks included' : 'Save this session';
-  return `<article class="bd-card" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
+  const n = talks.length, word = n > 1 ? ' talks' : ' talk';
+  return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
       <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
-      <span><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
-    ${talks.length ? `<details class="bd-talks"${open ? ' open' : ''}><summary><span class="bd-show">Show ${talks.length} talk${talks.length > 1 ? 's' : ''}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span></summary>
-      <ul>${talks.map(t => bdTalk(s, t)).join('')}</ul></details>` : ''}
+      <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
+    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}" aria-label="${open ? 'Hide' : 'Show'} the ${n}${word} of ${esc(s.title)}"><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true">&#9662;</span></button>
+      <ul class="bd-tlist" id="bdt-${esc(s.id)}"${open ? '' : ' hidden'}>${talks.map(t => bdTalk(s, t)).join('')}</ul>` : ''}
   </article>`;
+}
+// The stream chips: All, then each stream with sessions in the slots shown.
+function bdPaintChips(){
+  const present = new Set(congressSlots().flatMap(sl => sl.sessions.filter(s => bd.admin || !isAdminSession(s)).map(s => s.cat)));
+  for (const k of [...bd.cats]) if (!present.has(k)) bd.cats.delete(k);
+  bdEl('bdChips').innerHTML = `<button type="button" class="bd-chip bd-all" data-bd-cat="" aria-pressed="${!bd.cats.size}">All streams</button>` +
+    Object.keys(DATA.cats).filter(k => present.has(k)).map(k =>
+      `<button type="button" class="bd-chip" data-bd-cat="${k}" aria-pressed="${bd.cats.has(k)}" title="${esc(DATA.cats[k])}" style="--c:${CAT_COLORS[k][0]}"><i aria-hidden="true"></i>${esc(BD_AB[k] || DATA.cats[k])}</button>`).join('');
 }
 
 function bdRenderSlot(){
@@ -4234,8 +4582,8 @@ function bdRenderSlot(){
     body.innerHTML = `<div class="bd-done">
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
-      <p>My agenda has ${agendaCountText(items, false).replace(' · ', ' and ')}${items.length ? `, about ${plannedHours(items).toFixed(1)} h` : ''}.${run}
-      ${clashes ? `<br><span class="ag-warn">&#9888;&#65039; ${clashes} item${clashes !== 1 ? 's' : ''} overlap</span>; My agenda shows where.` : ''}</p>
+      <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
+      ${clashes ? `<br><span class="ag-warn">&#9888;&#65039; ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -4245,14 +4593,14 @@ function bdRenderSlot(){
   const sessions = bdSessions(slot);
   const [a, b] = bdSpan(slot);
   body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)} · ${a}–${b}</h3>
-    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'} · <span id="bdSlotSaved"></span></p></div>
+    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''} · <span id="bdSlotSaved"></span></p></div>
     <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
   body.scrollTop = 0;
 }
 
 // Ticks follow the saved stars, so a change made anywhere (the details dialog too) shows here.
 function bdPaintChecks(){
-  bdEl('starCount').textContent = state.starred.size;
+  paintStarCount();
   [...bdEl('bdTicks').children].forEach((tick, i) => tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0));
   if (bd.done) return;
   const body = bdEl('bdBody');
@@ -4271,13 +4619,14 @@ function bdPaintChecks(){
     card.classList.toggle('on', state.starred.has(s.id));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
-    if (count) count.textContent = state.starred.has(s.id) ? ' · all included' : n ? ` · ${n} saved` : '';
+    if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">· all included</span><span class="bd-tc-s">&#9733; all</span>'
+      : n ? `<span class="bd-tc-l">· ${n} saved</span><span class="bd-tc-s">&#9733;${n}</span>` : '';
   });
   const items = mergeSaved(bdSlotItems(bd.slots[bd.i]));
   markClashes(items);
   const clashing = items.filter(x => x.clashes.length).length;
   bdEl('bdSlotSaved').innerHTML = (items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet') +
-    (clashing ? ` · <span class="ag-warn">&#9888;&#65039; ${clashing} overlap</span>` : '');
+    (clashing ? ` · <span class="ag-warn">&#9888;&#65039; ${clashing} ${clashing === 1 ? 'overlaps' : 'overlap'}</span>` : '');
 }
 
 // The slider: one step per slot, a day label at each day's first slot, and the
@@ -4329,8 +4678,7 @@ function bdPaintScale(){
   const row = bubble.parentElement, W = row.clientWidth, pad = parseFloat(getComputedStyle(row).marginLeft) || 0, w = bubble.offsetWidth;
   bubble.style.left = Math.min(Math.max(bdFrac(bd.i) * W - w / 2, -pad), W + pad - w) + 'px';
   bdEl('bdDays').querySelectorAll('[data-bd-go]').forEach(btn => btn.classList.toggle('cur', bd.slots[+btn.dataset.bdGo].di === slot.di));
-  bdEl('bdProgress').textContent = bd.done ? 'All slots done · ticks are saved as you go'
-    : `Slot ${bd.i + 1} of ${n} · ticks are saved as you go`;
+  bdEl('bdProgress').innerHTML = (bd.done ? 'All slots done' : `Slot ${bd.i + 1} of ${n}`) + '<span class="bd-pg-l"> · ticks are saved as you go</span>';
   bdEl('bdBack').disabled = !bd.done && bd.i === 0;
   bdEl('bdSkipDay').hidden = bdEl('bdNext').hidden = bd.done;
   bdEl('bdNext').innerHTML = bd.i === n - 1 ? 'Finish &#10003;' : 'Next slot &#8594;';
@@ -4359,10 +4707,13 @@ function openBuild(trigger){
   bd.nav = false;
   bd.done = false;
   bdEl('bdAdmin').checked = bd.admin;
+  bdPaintChips();
   bd.slots = bdVisibleSlots();
   buildDialog.showModal();
   bdLayoutScale();
-  bdGo(bd.lastKey ? bdIndexFor(bd.lastKey) : bdStartIndex());
+  // back where the last walk stopped, if that is on the day picked (or no day is)
+  const resume = bd.lastKey && (state.day === 'all' || bd.lastKey.startsWith(DATA.days[state.day].date + ' '));
+  bdGo(resume ? bdIndexFor(bd.lastKey) : bdStartIndex());
   bdEl('bdRange').focus();
 }
 function bdKeepFocus(){
@@ -4384,14 +4735,33 @@ bdEl('bdDays').addEventListener('click', e => {
   const b = e.target.closest('[data-bd-go]');
   if (b){ bdGo(+b.dataset.bdGo); bdEl('bdRange').focus(); }
 });
-bdEl('bdAdmin').addEventListener('change', e => {
+// After the slots shown change (breaks, streams): stay at the same time of the week.
+function bdReslot(){
   const key = bd.slots[bd.i].key;
-  bd.admin = e.target.checked;
-  try { sessionStorage.setItem('aip2026-build-admin', bd.admin ? '1' : '0'); } catch (err) {}
   bd.slots = bdVisibleSlots();
   bdLayoutScale();
   if (bd.done){ bd.i = bdIndexFor(key); bdPaintScale(); bdPaintChecks(); }
   else bdGo(bdIndexFor(key));
+}
+bdEl('bdAdmin').addEventListener('change', e => {
+  bd.admin = e.target.checked;
+  try { sessionStorage.setItem('aip2026-build-admin', bd.admin ? '1' : '0'); } catch (err) {}
+  bdPaintChips();
+  bdReslot();
+});
+// Stream chips: the first pick narrows to that stream, later picks add or remove streams;
+// All (or removing the last) shows every stream again.
+bdEl('bdChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-bd-cat]');
+  if (!b) return;
+  const k = b.dataset.bdCat;
+  if (!k) bd.cats.clear();
+  else if (bd.cats.has(k)) bd.cats.delete(k);
+  else bd.cats.add(k);
+  try { sessionStorage.setItem('aip2026-build-cats', [...bd.cats].join(',')); } catch (err) {}
+  bdPaintChips();
+  bdReslot();
+  bdEl('bdChips').querySelector(`[data-bd-cat="${k}"]`)?.focus();
 });
 bdEl('bdBody').addEventListener('change', e => {
   const cb = e.target.closest('[data-bd-id]');
@@ -4402,6 +4772,15 @@ bdEl('bdBody').addEventListener('change', e => {
   bdPaintChecks();
 });
 bdEl('bdBody').addEventListener('click', e => {
+  const tog = e.target.closest('.bd-tog');
+  if (tog){
+    const open = tog.getAttribute('aria-expanded') !== 'true', card = tog.closest('.bd-card');
+    tog.setAttribute('aria-expanded', open);
+    tog.setAttribute('aria-label', tog.getAttribute('aria-label').replace(/^(Show|Hide)/, open ? 'Hide' : 'Show'));
+    document.getElementById(tog.getAttribute('aria-controls')).hidden = !open;
+    card.classList.toggle('open', open);
+    return;
+  }
   if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
   if (!e.target.closest('[data-bd-view]')) return;
   bd.nav = true;
@@ -5128,8 +5507,46 @@ async function shareUrl(url, title){
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(url); toast('Link copied'); }
-  catch (e) { window.prompt('Copy this link:', url); }
+  catch (e) { showShareBox(url); }
 }
+// No clipboard (blocked, or an old browser): the link in a read-only, selected field with a
+// Copy button, at the foot of the screen (or of the open dialog). Nothing blocks the page.
+const shareBox = document.getElementById('shareBox');
+let shareBoxBack = null;
+function showShareBox(url){
+  shareBoxBack = document.activeElement;
+  (document.querySelector('dialog[open]') || document.body).appendChild(shareBox);
+  const input = document.getElementById('shareBoxInput');
+  input.value = url;
+  document.getElementById('shareBoxNote').textContent = '';
+  shareBox.hidden = false;
+  input.focus();
+  input.select();
+}
+function hideShareBox(){
+  if (shareBox.hidden) return;
+  const back = shareBoxBack;
+  shareBox.hidden = true;
+  shareBoxBack = null;
+  if (shareBox.contains(document.activeElement) && back && back.isConnected && back.getClientRects().length) back.focus({ preventScroll: true });
+}
+document.getElementById('shareBoxCopy').addEventListener('click', async () => {
+  const input = document.getElementById('shareBoxInput');
+  let ok = false;
+  try { await navigator.clipboard.writeText(input.value); ok = true; }
+  catch (e) {
+    input.focus(); input.select();
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+  }
+  if (ok){ hideShareBox(); toast('Link copied'); return; }
+  input.focus(); input.select();
+  document.getElementById('shareBoxNote').textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? 'The link is selected: press ⌘C to copy it.' : 'The link is selected: press Ctrl+C to copy it.';
+});
+document.getElementById('shareBoxClose').addEventListener('click', hideShareBox);
+shareBox.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); hideShareBox(); }
+});
+for (const d of document.querySelectorAll('dialog')) d.addEventListener('close', () => { if (d.contains(shareBox)) { shareBox.hidden = true; document.body.appendChild(shareBox); } });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-share]');
   if (!b) return;
@@ -5157,7 +5574,7 @@ function agendaPreviewList(items){
 function mergeIntoAgenda(ids){
   ids.forEach(id => state.starred.add(id));
   saveStars();
-  document.getElementById('starCount').textContent = state.starred.size;
+  paintStarCount();
   rerender();
 }
 
@@ -5325,18 +5742,26 @@ function renderMoveSend(){
   const link = linkTo('agenda=' + ids.join(','));
   const qr = qrSvg(link);
   const local = !/^https?:$/.test(location.protocol);
-  const n = ids.length + (ids.length === 1 ? ' item' : ' items');
-  box.innerHTML = (qr
-      ? `<div class="qr-box" style="--qr-size:${Math.max(260, Math.min(360, qr.modules * 4))}px">${qr.svg}</div>
-         <p class="qr-cap">Scan with your phone’s camera to open your agenda (${n}) there, then tap <b>Add</b>.</p>`
-      : `<p class="md-warn">Your agenda (${n}) is too long for a QR code that phones can read reliably. Use Copy link, the agenda code or the file instead.</p>`) +
-    (local ? '<p class="md-warn">This page is open from a file on this computer, so the QR code and link only work here. The agenda code and the file work on any device.</p>' : '') +
-    `<div class="md-row">
+  const n = countWord(agendaItems().length, 'item');
+  // On a phone (touch or a narrow screen) the QR code would be scanned by... the same
+  // phone: lead with Share, Copy and the file, and keep the QR code for another phone.
+  const phone = matchMedia('(pointer: coarse)').matches || PHONE_MQ.matches;
+  const canShare = typeof navigator.share === 'function';
+  const qrHtml = cap => qr
+    ? `<div class="qr-box" style="--qr-size:${Math.max(260, Math.min(360, qr.modules * 4))}px">${qr.svg}</div><p class="qr-cap">${cap}</p>`
+    : `<p class="md-warn">Your agenda (${n}) is too long for a QR code that phones can read reliably. Use Copy link, the agenda code or the file instead.</p>`;
+  const buttons = `<div class="md-row">
+      ${phone && canShare ? '<button type="button" class="toggle primary" data-move-share>Share link&#8230;</button>' : ''}
       <button type="button" class="toggle" data-move-copy="link">Copy link</button>
       <button type="button" class="toggle" data-move-copy="code">Copy agenda code</button>
       <button type="button" class="toggle" id="moveDownload">Download file</button>
-    </div>
-    <p class="md-note">On the other device, open the link; or open this page there, go to <b>My agenda → Move to another device</b>, and paste the code or import the file.</p>`;
+    </div>`;
+  const warn = local ? `<p class="md-warn">This page is open from a file on this computer, so the ${phone ? 'link and QR code only work' : 'QR code and link only work'} here. The agenda code and the file work on any device.</p>` : '';
+  const note = `<p class="md-note">On the other device, open the link; or open this page there, go to <b>My agenda → Export → Move to another device</b>, and paste the code or import the file.</p>`;
+  box.innerHTML = phone
+    ? `<p class="md-lead">Send your agenda (${n}) to your other device: share or copy the link, or save the file.</p>` + buttons + warn + note +
+      (qr ? `<details class="md-qr"><summary>Show QR code (to scan with another phone)</summary>${qrHtml('Scan this with the other phone’s camera to open your agenda there, then tap <b>Add</b>.')}</details>` : qrHtml(''))
+    : qrHtml(`Scan with your phone’s camera to open your agenda (${n}) there, then tap <b>Add</b>.`) + warn + buttons + note;
 }
 function openMoveDialog(trigger){
   moveTrigger = trigger;
@@ -5353,7 +5778,7 @@ moveDialog.addEventListener('close', () => {
     .find(el => el && el.isConnected && el.getClientRects().length);
   back?.focus({ preventScroll: true });
 });
-document.getElementById('moveAgenda').addEventListener('click', e => openMoveDialog(e.currentTarget));
+document.getElementById('moveAgenda').addEventListener('click', () => openMoveDialog(exportBtn));
 document.getElementById('builder').addEventListener('click', e => {
   const b = e.target.closest('[data-open-move]');
   if (b) openMoveDialog(b);
@@ -5372,7 +5797,13 @@ async function copyFromDialog(text, what){
     input.select();
   }
 }
-moveDialog.addEventListener('click', e => {
+moveDialog.addEventListener('click', async e => {
+  if (e.target.closest('[data-move-share]')){
+    const url = linkTo('agenda=' + agendaIds().join(','));
+    try { await navigator.share({ title: 'My AIP Congress 2026 agenda', url }); }
+    catch (err) { if (!err || err.name !== 'AbortError') copyFromDialog(url, 'Link'); }
+    return;
+  }
   const copy = e.target.closest('[data-move-copy]');
   if (copy){
     const ids = agendaIds().join(',');
