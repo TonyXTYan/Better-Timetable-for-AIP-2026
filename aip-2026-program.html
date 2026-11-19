@@ -811,17 +811,23 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
    (hzFitText) never lays out the whole page again */
 .hz-bar,.hz-talk{contain:size layout}
 .hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
-.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem}
+.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem;white-space:nowrap}
 .hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.7188rem}
 .hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
-.hz-talk.hz-nar .hz-ts,.hz-talk.hz-thin .hz-tl{display:none}
+.hz-talk.hz-nar .hz-ts{display:none}
+.hz-talk.hz-notl .hz-tl{display:none!important}
 /* a talk too narrow for whole words: its title on one line, ending in an ellipsis */
 .hz-day:not(.hz-tick) .hz-talk.hz-nar:not(.hz-thin) .hz-tl{display:block;overflow:hidden;flex:none}
 .hz-talk.hz-nar .hz-tl:not(.hz-fit){white-space:nowrap;text-overflow:ellipsis}
 .hz-tl.hz-fit>.hz-ln{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hz-talk.hz-thin{padding-left:2px;padding-right:1px}
-.hz-talk.hz-thin .hz-tt{font-size:.5625rem;letter-spacing:-.02em}
-.hz-talk.hz-thin .k-ic,.hz-talk.hz-sliver>*{display:none!important}
+/* a talk too thin for its time at the usual size: the time smaller (on one line, never
+   split at the colon) and the start of its title on one line under it */
+.hz-talk.hz-thin .hz-tt{font-size:.5rem;letter-spacing:-.03em;overflow:hidden;text-overflow:clip}
+.hz-day:not(.hz-tick) .hz-talk.hz-thin .hz-tl,.hz-agenda.hz-tick .hz-talk.hz-thin>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.5625rem;letter-spacing:-.01em;flex:none}
+.hz-talk.hz-thin .hz-star,.hz-talk.hz-mm .hz-hh{display:none}
+.hz-talk.hz-mm .hz-tt{font-size:.5625rem;letter-spacing:0}
+.hz-talk.hz-thin .k-ic,.hz-talk.hz-noic .k-ic,.hz-talk.hz-sliver>*{display:none!important}
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
 .hz-mid .hz-ts{display:none}
@@ -880,8 +886,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* the now line runs under the cards (never through their text); its dot (vt-nowd) sits
    over the time gutter */
 .vt-grid .vt-nowl{z-index:1}
-.vt-nowd{position:absolute;left:calc(var(--vtw) - 7px);width:11px;height:11px;margin-top:-6px;border-radius:50%;background:var(--live-ink);box-shadow:0 0 0 2px var(--bg);z-index:4;pointer-events:none}
+.vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:999px;background:var(--live-ink);color:var(--card);font-size:.6875rem;font-weight:800;line-height:1.35;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg);z-index:4;pointer-events:none}
+/* inside a saved session the line shows in the session's margins and between its talks
+   (drawn on the session's own background, so under every card and its text) */
+.vt-grid .vt-card.sub.now-in{background-image:linear-gradient(var(--live-ink),var(--live-ink));background-size:100% 2px;background-repeat:no-repeat;background-position:0 calc(var(--nowy) - 2px)}
+.vt-agenda .vt-card.now-in .vt-tk.dim{background:var(--body)}
 .vt-nowd[hidden]{display:none}
+.vt-t.now-hid{visibility:hidden}
 .vt-tcol{display:none}
 .vt-wrap{margin:0 0 14px}
 .vt-grp{display:contents}
@@ -996,6 +1007,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .dv-keyb:hover,.dv-keyb:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
 .dv-keypop{position:fixed;inset:auto;margin:0;box-sizing:border-box;max-width:min(22rem,calc(100vw - 16px));padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);box-shadow:0 8px 24px var(--pop-shadow)}
 .dv-keypop .ag-key{flex-direction:column;align-items:flex-start;gap:7px;margin:0}
+/* (a browser without popovers shows the key in line instead) */
+.no-popover .dv-keypop{display:none}
 @media (max-width:720px),(max-height:500px){
   .dv-keyb{display:inline-flex}
   .ag-key.ak-inline{display:none}
@@ -1022,7 +1035,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 @media (max-height:500px){
   .hz-day{--hzd:28px}
   .hz-map{height:34px}
-  .hz-zb,.hz-read{display:none}
+}
+/* a phone on its side: no zoom steps (the presets stay); the readout is still announced */
+@media (max-height:500px) and (max-width:960px){
+  .hz-zb{display:none}
+  .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
 .kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
@@ -3944,19 +3961,31 @@ function dvKey(ents, inline = true){
 }
 // On a phone (or a short landscape screen) the key folds into a small Key button in the
 // calendar's top-left corner, which opens it as a popover (dvKeyPlace puts it under the button).
-const DV_KEY_BTN = '<button type="button" class="dv-keyb" popovertarget="dvKeyPop" title="What the shapes mean">Key</button>';
+const DV_KEY_BTN = '<button type="button" class="dv-keyb" popovertarget="dvKeyPop" aria-controls="dvKeyPop" aria-expanded="false" title="What the shapes mean">Key</button>';
 const dvKeyPop = ents => `<div class="dv-keypop" id="dvKeyPop" popover>${dvKey(ents, false)}</div>`;
-if (!('popover' in HTMLElement.prototype)) document.documentElement.classList.add('no-popover');
-document.addEventListener('toggle', e => {
-  const pop = e.target;
-  if (pop.id !== 'dvKeyPop' || e.newState !== 'open') return;
-  const btn = document.querySelector('#agenda .dv-keyb');
-  if (!btn) return;
+const DV_POPOVER = 'popover' in HTMLElement.prototype;
+if (!DV_POPOVER) document.documentElement.classList.add('no-popover');
+function dvKeyPlace(pop, btn){
   const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
   pop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left)) + 'px';
   pop.style.top = (r.bottom + 6 + h > innerHeight - 8 && r.top - 6 - h > 8 ? r.top - 6 - h : r.bottom + 6) + 'px';
+}
+document.addEventListener('toggle', e => {
+  const pop = e.target;
+  if (pop.id !== 'dvKeyPop') return;
+  const btn = document.querySelector('#agenda .dv-keyb');
+  if (!btn) return;
+  btn.setAttribute('aria-expanded', e.newState === 'open');
+  if (e.newState === 'open') dvKeyPlace(pop, btn);
 }, true);
-window.addEventListener('resize', () => { const pop = document.getElementById('dvKeyPop'); if (pop && pop.matches(':popover-open')) pop.hidePopover(); });
+// A resize (a phone's toolbar folding away as the page scrolls, or turning the phone) keeps
+// the key open under its button; it closes only when the button itself is gone (a wide screen).
+window.addEventListener('resize', () => {
+  const pop = DV_POPOVER && document.getElementById('dvKeyPop');
+  if (!pop || !pop.matches(':popover-open')) return;
+  const btn = document.querySelector('#agenda .dv-keyb');
+  if (btn && btn.offsetWidth) dvKeyPlace(pop, btn); else pop.hidePopover();
+});
 const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})${x.off ? ', hidden by your search or streams' : ''}`).join('; ') : '';
 // Where saved items overlap: merged [start, end] minute ranges, for the time axis.
 function dvClashSpans(ents){
@@ -4196,7 +4225,7 @@ function hzDraw(root, left){
             const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
             const mine = agenda ? (e.inner.has(t.id) ? ' mine' : e.hits.has(t.id) ? ' hit' : ' dim') : '';
             segs += `<button type="button" class="hz-talk${mine}" data-tid="${t.id}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" title="" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-              <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s.replace(':', ':<wbr>')}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+              <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}<span class="hz-hh">${t.s.slice(0, 2)}</span>${t.s.slice(2)}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
           bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} ${ids} title="${tip}">
             <button type="button" class="hz-head" style="height:${m.head}px" title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
@@ -4319,7 +4348,11 @@ function hzFitText(h){
   // all rather than once per bar or talk. A talk too narrow for whole words shows its
   // title on one line with an ellipsis (hz-nar); one too thin for that shows its time only
   // (hz-thin). My agenda leaves out a kind pill (SESSION, TALK) wider than its bar.
-  const tfit = talks.map(t => [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), t.clientWidth < 30, t.clientWidth < 18]);
+  // (thin: narrower than 30px, or than its time at the usual size; hz-noic: no room for
+  // the time and its kind icon both; hz-mm: thinner than its time even when small, so it
+  // shows the minutes alone, ":30", under the hour on the ruler)
+  const ttw = talks.length ? hzMeasure(getComputedStyle(talks[0].querySelector('.hz-tt')).font, '00:00') : 0;
+  const tfit = talks.map(t => { const w = t.clientWidth; return [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), w < 30 || w - 8 < ttw, w < 18, w - 8 < ttw + 10, w - 3 < ttw * .8]; });
   // (it needs room beside it for the start of the time)
   const nokind = bars.filter(b => { const k = b.querySelector('.hz-meta .kind'), m = k && k.parentElement; return k && k.offsetLeft + k.offsetWidth + 28 > m.offsetLeft + m.clientWidth; });
   for (const b of nar){
@@ -4329,7 +4362,7 @@ function hzFitText(h){
     if (bdg.dataset.ab) bdg.textContent = bdg.dataset.ab;
     b._code = bdg.textContent;
   }
-  talks.forEach((t, i) => { if (tfit[i][0]) t.classList.add('hz-nar'); if (tfit[i][1]) t.classList.add('hz-thin'); if (tfit[i][2]) t.classList.add('hz-sliver'); });
+  talks.forEach((t, i) => { if (tfit[i][0]) t.classList.add('hz-nar'); if (tfit[i][1]) t.classList.add('hz-thin'); if (tfit[i][2]) t.classList.add('hz-sliver'); if (tfit[i][3]) t.classList.add('hz-noic'); if (tfit[i][1] && tfit[i][4]) t.classList.add('hz-mm'); });
   for (const b of nokind) b.classList.add('hz-nokind');
   const nar0 = nar.filter(b => over(b.querySelector('.hz-in')));
   for (const b of nar0) b.classList.add('hz-nar0');
@@ -4373,11 +4406,13 @@ function hzFitText(h){
   // A talk too narrow for whole words (hz-nar) gets its title set here (hzWords): whole
   // words on as many lines as fit, a word too long for a line cut with an ellipsis, so it
   // reads "Spectral / amplifica… / for / simulation…" rather than one cut line.
-  const fits = [];
+  const fits = [], notl = [];
   const clamp = talks.map(t => {
     const tl = t.querySelector('.hz-tl'), ts = t.querySelector('.hz-ts'), tt = t.querySelector('.hz-tt');
     if (!tl || getComputedStyle(tl).display === 'none') return null;
     const cs = getComputedStyle(t), room = t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (tt ? tt.offsetHeight + 1 : 0);
+    // a thin talk's one title line, where there is room for it under the time
+    if (t.classList.contains('hz-thin')){ if (room < lh(tl) - 1) notl.push(t); return null; }
     if (t.classList.contains('hz-nar')){
       const ls = getComputedStyle(tl);
       fits.push([tl, t.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth) - 1,
@@ -4389,6 +4424,7 @@ function hzFitText(h){
     return showsSp && th <= room - lh(ts) - 1 ? [ts, Math.floor((room - th - 1) / lh(ts))]
       : [tl, Math.max(1, Math.floor(room / lh(tl))), showsSp ? ts : null];
   }).filter(Boolean);
+  for (const t of notl) t.classList.add('hz-notl');
   for (const [el, n, hide] of clamp){
     if (hide) hide.hidden = true;
     el.classList.add('hz-clamp');
@@ -4397,7 +4433,8 @@ function hzFitText(h){
   for (const [tl, w, n, font] of fits){
     const star = tl.querySelector('.hz-star');
     const words = [...tl.childNodes].filter(x => x !== star).map(x => x.textContent).join('').trim().split(/\s+/);
-    tl.innerHTML = hzWords(words, w, n, font, star ? '★ ' : '').map(l => `<span class="hz-ln">${esc(l)}</span>`).join(' ');
+    // (each line marked again for My agenda's search)
+    tl.innerHTML = hzWords(words, w, n, font, star ? '★ ' : '').map(l => `<span class="hz-ln">${hl(l)}</span>`).join(' ');
     if (star) tl.firstChild.prepend(star, ' ');
     tl.classList.add('hz-fit');
   }
@@ -4791,7 +4828,7 @@ function vtDayView(day){
   const more = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← More' : 'More →'}</button>`;
   let html = head + (scroll ? `<div class="vt-sx sx-box"><div class="vt-hbar"><div class="vt-hsc"><div class="vt-hgrid" style="${colsCss}" aria-hidden="true">${heads}</div></div>${agenda ? DV_KEY_BTN : ''}${more(-1)}${more(1)}</div>` : '')
     + `<div class="vt-wrap${scroll ? ' scroll sx-sc' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
-  html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div><div class="vt-nowd" hidden></div>`;
+  html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div><div class="vt-nowd" aria-hidden="true" hidden></div>`;
   // Each time has a solid line and label on its first row; a talk row under a
   // heading row of the same time gets a dashed line and a lighter label.
   for (const r of rows){
@@ -6594,8 +6631,19 @@ function paintNow(){
     }
     line.hidden = y === null;
     if (y !== null){ line.style.top = y + 'px'; line.style.width = (g.scrollWidth - line.offsetLeft) + 'px'; }
+    // the time itself in the gutter, and the line through any saved session it crosses
     const dot = g.querySelector('.vt-nowd');
-    if (dot){ dot.hidden = y === null; if (y !== null) dot.style.top = y + 'px'; }
+    if (dot){ dot.hidden = y === null; if (y !== null){ dot.style.top = y + 'px'; const hm = hzHM(Math.floor(n.min)); if (dot.textContent !== hm) dot.textContent = hm; } }
+    // (a gutter time the pill would half cover steps aside)
+    const ph = dot && y !== null ? dot.offsetHeight / 2 + 1 : 0;
+    const under = [...g.querySelectorAll('.vt-t:not(.tk)')].map(t => [t, ph > 0 && t.offsetTop < y + ph && t.offsetTop + t.offsetHeight > y - ph]);
+    for (const [t, on] of under) if (on !== t.classList.contains('now-hid')) t.classList.toggle('now-hid', on);
+    const subs = [...g.querySelectorAll('.vt-card.sub')].map(c => [c, c.offsetTop, c.offsetHeight]);
+    for (const [c, top, h] of subs){
+      const on = y !== null && y > top + 2 && y < top + h - 2;
+      if (on) c.style.setProperty('--nowy', (y - top) + 'px');
+      if (on !== c.classList.contains('now-in')) c.classList.toggle('now-in', on);
+    }
   });
   document.querySelectorAll('#builder .ag-row[data-date]').forEach(r =>
     r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
