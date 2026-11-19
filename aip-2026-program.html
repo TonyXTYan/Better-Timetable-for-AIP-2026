@@ -426,7 +426,7 @@ footer p{margin:4px 0}
   .cp-in{padding-left:0;margin-top:-6px}
   .cp-items li{padding:4px 0}
   .md-row .toggle{flex:1 1 140px;justify-content:center}
-  .qr-box{width:max(var(--qr-size,280px),280px)}
+  .qr-box{width:100%;max-width:360px}
   #importText{font-size:16px}
   .md-copy-fallback input{font-size:16px}
   #eventDialog>form .toggle,#moveDialog>form .toggle{min-height:40px;padding:6px 16px}
@@ -1435,6 +1435,8 @@ function renderBuilder(){
   const nSess = items.filter(x => x.kind === 'session').length;
   const nTalk = items.length - nSess;
   const clashItems = items.filter(x => x.clashes.length).length;
+  const personalDay = state.layout === 'list' && state.scope === 'agenda' && state.day !== 'all';
+  const dayClashItems = personalDay ? items.filter(x => x.di === state.day && x.clashes.length).length : clashItems;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
   for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda', 'clearAgenda']) {
@@ -1443,7 +1445,7 @@ function renderBuilder(){
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
-  document.getElementById('clashTools').hidden = !clashItems;
+  document.getElementById('clashTools').hidden = !(dayClashItems || (clashItems && state.hideClashes));
   document.getElementById('hideClashes').setAttribute('aria-pressed', state.hideClashes);
 
   const personalList = state.layout === 'list' && state.scope === 'agenda';
@@ -1462,7 +1464,8 @@ function renderBuilder(){
   stats.innerHTML = `Full agenda &middot; <b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
     (!clashItems ? `<span class="ag-ok">&#10003; no clashes</span>`
       : state.hideClashes ? `${clashItems} overlapping item${clashItems!==1?'s':''} (warnings hidden)`
-      : `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>`) +
+      : !dayClashItems ? `<span class="ag-ok">&#10003; no clashes on this day</span> (${clashItems} item${clashItems!==1?'s':''} with overlaps on other days)`
+      : `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>${dayClashItems < clashItems ? ` (${dayClashItems} on this day)` : ''}`) +
     ' &middot; All times AEDT';
   const groups = clashGroups(items);
   const numbers = new Map(groups.map((g, i) => [g, i + 1]));
@@ -2478,13 +2481,17 @@ function parseAgendaInput(text){
     let obj;
     try { obj = JSON.parse(raw); }
     catch (e) { return { error: 'This looks like an agenda file, but it isn’t complete or valid. Download the file again, or copy the agenda code instead.' }; }
+    const ours = obj && !Array.isArray(obj) && obj.app === APP_ID;
     const list = Array.isArray(obj) ? obj : obj && Array.isArray(obj.items) ? obj.items : null;
+    if (ours && !list) return { error: 'This agenda file has no list of items. It may be damaged: download it again, or copy the agenda code instead.' };
     if (!list || (obj && obj.app && obj.app !== APP_ID)) return { error: 'This file isn’t an AIP Congress 2026 agenda. Use the file from “Download file”.' };
     ids = list.filter(x => typeof x === 'string').map(x => x.trim());
   } else {
     const m = /[#?&]agenda=([^&#\s]*)/.exec(raw);
-    if (!m && /^[a-z][a-z0-9+.-]*:/i.test(raw)) return { error: 'This link doesn’t carry an agenda. Use the link from “Copy link” or “Share link”.' };
-    let code = m ? m[1] : raw;
+    // A real URL (scheme://… or a known non-hierarchical scheme) without agenda= is a link without an agenda;
+    // anything else with a "Label:" prefix (e.g. "Agenda: c1,c2") is read as a code after the label.
+    if (!m && /^(?:[a-z][a-z0-9+.-]*:\/\/|(?:file|mailto|data|blob|about|javascript):)|^www\./i.test(raw)) return { error: 'This link doesn’t carry an agenda. Use the link from “Copy link” or “Share link”.' };
+    let code = m ? m[1] : raw.replace(/^[^:,;\n]{1,60}:\s*/, '');
     try { code = decodeURIComponent(code); } catch (e) {}
     ids = code.split(/[\s,;]+/).filter(Boolean);
   }
