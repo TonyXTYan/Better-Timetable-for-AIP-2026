@@ -4071,7 +4071,7 @@ function renderBuilder(){
     const total = state.day === 'all' ? whole.length : whole.filter(x => x.di === state.day).length;
     document.querySelector('.result-row').hidden = !filtered;
     // always for this view, shown or not: never a line left over from another view
-    document.getElementById('resultLine').innerHTML = filtered ? agendaFilterLine(onDay.length, total, !total || onDay.length && onDay.length < 10 ? items.length - onDay.length : 0)
+    document.getElementById('resultLine').innerHTML = filtered ? agendaFilterLine(onDay.length, total, !total || onDay.length < 10 ? items.length - onDay.length : 0)
       : `${state.day === 'all' ? 'All week' : '<b>' + esc(DATA.days[state.day].label) + '</b>'} · ${countWord(onDay.length, 'agenda item', true)}`;
   }
   // the calendar hides the list: it is built when the list is shown (showView rerenders)
@@ -5923,7 +5923,8 @@ function revealCalendar(){
   const el = document.querySelector('#agenda .week-sx, #agenda .hz-day, #agenda .vt-day');
   if (!el) return;
   const top = el.getBoundingClientRect().top;
-  if (top < innerHeight - 160) return;
+  // phones: bring it up when only its top edge shows; desktops: only when it is off screen
+  if (top < innerHeight - (PHONE_MQ.matches ? 160 : 24)) return;
   window.scrollTo({ top: Math.round(window.scrollY + top - stickyWrap.getBoundingClientRect().height - 12), behavior: 'instant' });
 }
 // A day of the Full program or of My agenda in Horizontal or Vertical.
@@ -7685,7 +7686,7 @@ function readHash(){
   paintLevel();
   state.orient = ['h', 'v'].includes(p.get('orient')) ? p.get('orient') : savedOrient();
   paintOrient();
-  if (state.scope === 'agenda') document.getElementById('includeParents').checked = p.get('full') === '1' || savedFull();
+  if (state.scope === 'agenda') document.getElementById('includeParents').checked = p.get('full') === '1' || (p.get('layout') !== 'calendar' && savedFull());
   return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
 }
 function followHashTargets(r){
