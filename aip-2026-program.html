@@ -523,7 +523,7 @@ button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
 button.hz-bar{padding:4px 7px 4px 6px;display:flex;align-items:flex-start;justify-content:flex-start}
 button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
 .hz-in{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:100%;box-sizing:border-box}
-.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .hz-meta{color:var(--muted);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .hz-star{color:var(--star)}
 .hz-split{display:flex;flex-direction:column}
@@ -532,8 +532,8 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-segs{position:relative;flex:1 1 auto;min-height:0}
 .hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
 .hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem}
-.hz-tl{font-weight:600;overflow-wrap:anywhere;hyphens:auto;font-size:.7188rem}
-.hz-ts{color:var(--muted);font-size:.65rem;overflow-wrap:anywhere}
+.hz-tl{font-weight:600;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto;font-size:.7188rem}
+.hz-ts{color:var(--muted);font-size:.65rem;overflow-wrap:break-word}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
 .hz-mid .hz-ts{display:none}
 .hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
@@ -542,6 +542,8 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-mark.first{border-left-color:transparent}
 .hz-mark.is-now{border-left:2.5px solid var(--live-ink);height:17px;background:linear-gradient(var(--live-ink),var(--live-ink)) left bottom/100% 3px no-repeat}
 .hz-mark.first.is-now{border-left-color:transparent}
+.hz-bar.marked{padding-bottom:15px}
+.hz-bar.marked .hz-in{max-height:100%;overflow:hidden}
 .hz-bar.past{opacity:.55}
 .hz-bar.is-now{border-color:var(--live-ink);border-left-color:var(--c);box-shadow:inset 0 0 0 1px var(--live-ink)}
 .hz-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
@@ -567,13 +569,23 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-head small{font-weight:700;color:var(--muted);font-size:.6875rem;white-space:nowrap}
 .vt-corner{grid-row:1;grid-column:1;position:sticky;top:var(--toolbar-h,150px);z-index:5;background:var(--bg);margin-bottom:4px}
 .vt-line{grid-column:1 / -1;border-top:1px solid var(--line);pointer-events:none;z-index:0}
-.vt-line.h{border-top-style:dashed;opacity:.7}
+.vt-line.tk{border-top-style:dashed;opacity:.7}
 .vt-t{grid-column:1;z-index:1;font-size:.75rem;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;padding:3px 0 0;align-self:start;white-space:nowrap}
 .vt-t.end{color:var(--muted);font-weight:600}
 .vt-t{scroll-margin-top:calc(var(--toolbar-h,150px) + 2.75rem)}
 .hz-bar{scroll-margin-top:calc(var(--toolbar-h,150px) + 4rem)}
-.vt-t.is-now{color:var(--live-ink)}
-.vt-t.is-now::after{content:"";display:inline-block;width:7px;height:7px;margin-left:4px;border-radius:50%;background:var(--live-ink);vertical-align:1px}
+.vt-t.tk{color:var(--muted);font-weight:700;font-size:.6875rem}
+.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:0;border-top:2px solid var(--live-ink);z-index:4;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0}
+.vt-nowl::before{content:"";position:absolute;left:-6px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--live-ink)}
+.vt-tcol{display:none}
+.vt-wrap{margin:0 0 14px}
+.vt-wrap .vt-grid{margin:0}
+.vt-wrap.scroll{overflow:auto;max-height:calc(100vh - var(--toolbar-h,150px) - 16px);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+.vt-wrap.scroll .vt-head,.vt-wrap.scroll .vt-corner{top:0}
+.vt-wrap.scroll .vt-corner{left:0;z-index:7}
+.vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
+.vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
+.vt-wrap.scroll .vt-nowl{z-index:4}
 .vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--ink);font-size:.75rem;line-height:1.3;overflow-wrap:anywhere;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
@@ -598,7 +610,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-tsp{display:block;color:var(--muted);font-size:.625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-star{color:var(--star)}
 .vt-stack{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:0 5px;align-content:start;z-index:1}
-.vt-split{display:grid;grid-template-rows:subgrid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:4px;z-index:1}
 .vt-card.band{flex-direction:row;flex-wrap:wrap;align-items:center}
 .vt-card.band.sub{display:grid}
 .vt-card.band .vt-hd{flex-direction:row;flex-wrap:wrap;align-items:center}
@@ -635,6 +646,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-lb .vt-card.band .vt-title{-webkit-line-clamp:3}
 .vt-lb .vt-card.band .vt-top{justify-content:space-between}
 .vt-lb .vt-card.band .vt-foot{padding:0 9px 5px}
+.vt-lb .vt-card.band .vt-open,.vt-lb .vt-card.band .vt-foot{flex:none}
 .vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
 .cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
@@ -2295,7 +2307,7 @@ function programDayGrid(day){
 // anywhere down the page. Stream groups collapse; lanes with nothing in the
 // range are left out. In Sessions mode thin marks in each bar show where its
 // talks start (the talk on now in red); Talks mode splits bars into talks.
-const HZ = { range: {}, collapsed: new Set() };
+const HZ = { range: {}, preset: {}, collapsed: new Set() };
 const HZ_GROUPS = [
   { k:'plenary', name:'Plenary', ab:'PLN', cats:['plenary'] },
   { k:'aip', name:'AIP groups', ab:'AIP', cats:['aip'], split:'grp' },
@@ -2335,8 +2347,24 @@ function hzPresets(d0, d1, date){
 }
 function hzDefaultRange(d0, d1, date){
   const p = hzPresets(d0, d1, date);
-  if (p.now) return p.now;
-  return PHONE_MQ.matches ? [Math.max(d0, 9 * 60), Math.max(d0, 9 * 60) + 120] : p.morning;
+  if (p.now){ HZ.preset[date] = 'now'; return p.now; }
+  HZ.preset[date] = PHONE_MQ.matches ? null : 'morning';
+  return PHONE_MQ.matches ? [Math.max(d0, 9 * 60), Math.min(d1, Math.max(d0, 9 * 60) + 120)] : p.morning;
+}
+// The window for a day after the bounds may have changed (search, filters): a
+// preset is recomputed for the new bounds; a range the user set is kept (moved
+// inside the bounds) if it still shows something, else the default is used.
+function hzFitRange(date, d0, d1, slots){
+  const cur = HZ.range[date], key = HZ.preset[date];
+  if (cur && key){
+    const q = hzPresets(d0, d1, date)[key];
+    if (q){ HZ.range[date] = q; return; }
+  }
+  if (cur){
+    const w = Math.min(cur[1] - cur[0], d1 - d0), a = Math.max(d0, Math.min(cur[0], d1 - w));
+    if (slots.some(s => toMin(s.start) < a + w && toMin(s.end) > a)){ HZ.range[date] = [a, a + w]; return; }
+  }
+  HZ.range[date] = hzDefaultRange(d0, d1, date);
 }
 function hzPack(items, ppm, r0, r1){
   const subs = [];
@@ -2353,8 +2381,7 @@ function hzPack(items, ppm, r0, r1){
 function hzDayView(day){
   const slots = programDaySlots(day);
   const [d0, d1] = hzBounds(slots);
-  const cur = HZ.range[day.date];
-  if (!cur || cur[0] < d0 || cur[1] > d1) HZ.range[day.date] = hzDefaultRange(d0, d1, day.date);
+  hzFitRange(day.date, d0, d1, slots);
   // overview: every session as a thin tick, packed per stream group
   let y = 3, ov = '';
   for (const g of HZ_GROUPS){
@@ -2438,7 +2465,8 @@ function hzDraw(root){
   const barModel = s => {
     const a = Math.max(toMin(s.start), r0), b = Math.min(toMin(s.end), r1), w = (b - a) * ppm;
     const tks = talksOf(s);
-    if (!tks.length) return { s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(s.title.length, w - 16, 6.7)) * lineH + 14 * rs + 8) };
+    const markRoom = !talksMode && s.cat !== 'poster' && s.talks.length ? 14 : 0;
+    if (!tks.length) return { s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(s.title.length, w - 16, 6.7)) * lineH + 14 * rs) + markRoom };
     const hl2 = Math.min(2, estLines(s.title.length, Math.min(w, 520) - 16, 7.1));
     const head = 9 + hl2 * 15.5 * rs + 14 * rs;
     let segs;
@@ -2500,7 +2528,9 @@ function hzDraw(root){
           const pos = `left:${pct(m.a)}%;width:${(m.b - m.a) / span * 100}%;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
           const attrs = `data-date="${day.date}" data-start="${full0}" data-end="${full1}"`;
           const tiny = m.w < 30;
-          const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${star(s.id)}${hl(s.title)}</span><span class="hz-meta">${meta}</span></span>`;
+          // a lane already named after the group (QST, ANZCOP …) needs no "AIP QST:" in each title
+          const shown = multi && g.split === 'grp' ? s.title.replace(/^AIP(\s+[A-Z]{2,6})?\s*:\s*/, '') : !multi ? s.title.replace(/^(ANZCOP|COMMAD)\s*:\s*/, '') : s.title;
+          const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${star(s.id)}${hl(shown || s.title)}</span><span class="hz-meta">${meta}</span></span>`;
           if (!m.tks.length){
             let marks = '';
             if (!talksMode && s.cat !== 'poster' && !tiny){
@@ -2555,7 +2585,7 @@ function hzDraw(root){
   const pr = hzPresets(d0, d1, date);
   ovEl.querySelectorAll('[data-hzpre]').forEach(b => {
     const q = pr[b.dataset.hzpre];
-    b.setAttribute('aria-pressed', !!q && Math.abs(q[0] - r0) < 8 && Math.abs(q[1] - r1) < 8);
+    b.setAttribute('aria-pressed', !!q && q[0] === r0 && q[1] === r1);
   });
   ovEl.querySelector('.hz-read').innerHTML = `${hzHM(r0)}–${hzHM(r1)} · ${hzDur(span)}<small>${shown} of ${slotsAll.length} ${talksMode ? 'sessions' : 'sessions'} in this window</small>`;
   paintNow();
@@ -2588,13 +2618,14 @@ function hzInit(root){
     if (b > d1){ b = d1; a = Math.min(a, b - 30); }
     if (a < d0){ a = d0; b = Math.max(b, a + 30); }
     HZ.range[date] = [Math.max(d0, a), Math.min(d1, b)];
+    HZ.preset[date] = null;
     redraw();
   };
   ov.addEventListener('click', e => {
     const b = e.target.closest('[data-hzpre]');
     if (!b) return;
     const q = hzPresets(d0, d1, date)[b.dataset.hzpre];
-    if (q){ HZ.range[date] = q.slice(); redraw(); }
+    if (q){ HZ.range[date] = q.slice(); HZ.preset[date] = b.dataset.hzpre; redraw(); }
   });
   root.querySelectorAll('.hz-map').forEach(map => map.addEventListener('pointerdown', e => {
     const rect = map.getBoundingClientRect();
@@ -2627,7 +2658,8 @@ function hzInit(root){
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const [a, b] = HZ.range[date], dir = e.key === 'ArrowLeft' ? -15 : 15;
-    if (e.shiftKey) set(a, b + dir); else set(a + dir, b + dir);
+    if (e.shiftKey) set(a, b + dir);
+    else { const na = Math.max(d0, Math.min(d1 - (b - a), a + dir)); set(na, na + (b - a)); }
     brush.focus({ preventScroll: true });
   }));
   cv.addEventListener('click', e => {
@@ -2684,6 +2716,7 @@ const VT_COLS = [
   { key:'event',  label:'Forums & meetings', short:'Forums · Meetings', col:'var(--special)', of:() => true },
 ];
 const VT_BAND_CATS = ['plenary','special','business','social'];
+const VT_TRACK_REM = 7.5, VT_AIM_REM = 10;   // narrowest sub-column; preferred width
 
 function vtDayView(day){
   const slots = programDaySlots(day);
@@ -2768,17 +2801,26 @@ function vtDayView(day){
     c.demand = Math.max(1, ...cells.filter(x => x.col === c).map(x => x.lanes.length));
   }
   // Share the width: each stream starts with one sub-column; the stream with
-  // the most unmet parallelism per sub-column gets the next one. Talks mode
-  // allows narrower sub-columns so parallel sessions sit side by side.
-  const rs = remPx() / 16;
+  // the most unmet parallelism per sub-column gets the next one, while
+  // sub-columns stay at least VT_TRACK_REM wide (aiming for VT_AIM_REM). Collapsed
+  // sessions beyond a stream's sub-columns stack in its cell. A cluster that
+  // shows talks gets one sub-column per parallel session, so every talk keeps
+  // its row; if that needs more width than the page has, the grid scrolls
+  // sideways inside its own box (time column and heads stay put).
+  const R = remPx(), GAP = 6;
   vtWidth = document.getElementById('agenda').clientWidth || 1200;
-  const budget = Math.max(cols.length, Math.floor((vtWidth - 56 * rs) / ((state.programTalks ? 96 : 150) * rs)));
+  const avail = vtWidth - 3.1 * R - GAP;
+  const budget = Math.max(cols.length, Math.floor((avail + GAP) / (VT_AIM_REM * R + GAP)));
+  cells.forEach(c => c.aligned = c.slots.some(isOpen));
   cols.forEach(c => c.k = 1);
   for (let used = cols.length; used < budget; used++){
     const pick = cols.filter(c => c.k < c.demand).sort((a,b) => b.demand / b.k - a.demand / a.k)[0];
     if (!pick) break;
     pick.k++;
   }
+  cols.forEach(c => { c.k = Math.max(c.k, ...cells.filter(x => x.col === c && x.aligned).map(x => x.lanes.length)); });
+  const tracks = cols.reduce((n, c) => n + c.k, 0) || 1;
+  const scroll = tracks * (VT_TRACK_REM * R + GAP) > avail + GAP + 1;
   let track = 2;
   cols.forEach(c => { c.t0 = track; track += c.k; });
   bands.forEach(s => cells.push({ band:true, slots:[s], start:toMin(s.start), end:toMin(s.end) }));
@@ -2794,21 +2836,24 @@ function vtDayView(day){
   let line = 2;
   for (const m of [...marks.keys()].sort((a,b) => a - b)){
     const k = marks.get(m);
-    if (k.h){ lineH.set(m, line); rows.push({ m, line, k:'h', label:!k.r }); line++; }
-    if (k.r){ lineR.set(m, line); rows.push({ m, line, k:'r', label:true }); line++; }
+    if (k.h){ lineH.set(m, line); rows.push({ m, line, k:'h' }); line++; }
+    if (k.r){ lineR.set(m, line); rows.push({ m, line, k:'r', also: !!k.h }); line++; }
   }
   const endLine = line, lastEnd = Math.max(...slots.map(s => toMin(s.end)));
   const lineAt = m => (rows.find(r => r.m >= m) || { line:endLine }).line;
   const span = s => { const a = lineH.get(toMin(s.start)); return { a, b: Math.max(a + 1, lineAt(toMin(s.end))) }; };
 
   const talksCls = state.programTalks ? ' talks' : '';
-  let html = head + `<section class="vt-grid${talksCls}" data-date="${day.date}" style="--vtcols:${cols.map(c => `repeat(${c.k},minmax(0,1fr))`).join(' ') || 'minmax(0,1fr)'}" aria-label="Timetable by stream">`;
-  html += '<div class="vt-corner"></div>';
+  const tr = scroll ? `${VT_TRACK_REM}rem` : 'minmax(0,1fr)';
+  let html = head + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}" aria-label="Timetable by stream">`;
+  html += `<div class="vt-corner"></div><div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
   cols.forEach(c => { html += `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span><small>${colSlots[c.key].length}</small></div>`; });
+  // Each time has a solid line and label on its first row; a talk row under a
+  // heading row of the same time gets a dashed line and a lighter label.
   for (const r of rows){
-    const first = r.k === 'h' || !lineH.has(r.m);
-    if (first || r.label) html += `<div class="vt-line${r.label ? '' : ' h'}" style="grid-row:${r.line}"></div>`;
-    if (r.label) html += `<div class="vt-t" data-date="${day.date}" data-m="${r.m}" style="grid-row:${r.line}">${hhmm(r.m)}</div>`;
+    html += r.also ? `<div class="vt-line tk" style="grid-row:${r.line}"></div>`
+      : `<div class="vt-line f" data-m="${r.m}" style="grid-row:${r.line}"></div>`;
+    html += `<div class="vt-t${r.also ? ' tk' : ''}" data-date="${day.date}" data-m="${r.m}" data-row="${r.k}" style="grid-row:${r.line}">${hhmm(r.m)}</div>`;
   }
   html += `<div class="vt-t end" data-date="${day.date}" data-m="${lastEnd}" style="grid-row:${endLine}">${hhmm(lastEnd)}</div>`;
   const placed = (s, cols0, base, band) => {
@@ -2826,15 +2871,9 @@ function vtDayView(day){
       continue;
     }
     const a = lineH.get(c.start), b = Math.max(a + 1, lineAt(c.end));
-    if (c.slots.some(isOpen)){
-      // More parallel sessions than sub-columns, and some show talks: split
-      // the cell into one narrow column per lane so the talks keep their rows.
-      html += `<div class="vt-split" style="--n:${L};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => placed(s, String(c.lane.get(s) + 1), a)).join('')}</div>`;
-    } else {
-      html += `<div class="vt-stack" style="--n:${K};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => card(s, {})).join('')}</div>`;
-    }
+    html += `<div class="vt-stack" style="--n:${K};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => card(s, {})).join('')}</div>`;
   }
-  return html + '</section>';
+  return html + '</section></div>';
 }
 
 document.getElementById('agenda').addEventListener('click', e => {
@@ -2844,7 +2883,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     vtOpen.has(id) ? vtOpen.delete(id) : vtOpen.add(id);
     renderCalendar();
     const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
-    if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
+    if (nt){ (nt.closest('.vt-wrap.scroll') || window).scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
     return;
   }
   const b = e.target.closest('[data-vtpick]');
@@ -2866,6 +2905,7 @@ function renderCalendar(){
   const main = document.getElementById('agenda');
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
   const fallback = !favourites && !selected.length && items.length > 0;
+  const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
   main.classList.add('wide');
   if (fallback){
@@ -2881,6 +2921,8 @@ function renderCalendar(){
       : state.day === 'all' ? weekCalendar(selected)
       : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
     if (main.querySelector('.hz-canvas')) hzInit(main);
+    const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
+    if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     main.classList.toggle('wide', true);
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
@@ -3808,9 +3850,18 @@ function paintNow(){
   document.querySelectorAll('#agenda .hz-talk, #agenda .hz-mark, #agenda .vt-tk').forEach(x =>
     x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
   document.querySelectorAll('#agenda .hz-canvas').forEach(hzPaintNow);
-  const vtLabels = [...document.querySelectorAll('#agenda .vt-t[data-m]')];
-  const vtLast = vtLabels.at(-1), vtNow = vtLabels.filter(l => l.dataset.date === n.date && +l.dataset.m <= n.min && vtLast && n.min < +vtLast.dataset.m).at(-1);
-  vtLabels.forEach(l => l.classList.toggle('is-now', l === vtNow));
+  // Vertical view: a now line at the exact time, between the rows around it.
+  document.querySelectorAll('#agenda .vt-grid').forEach(g => {
+    const line = g.querySelector('.vt-nowl'), end = g.querySelector('.vt-t.end');
+    const marks = [...g.querySelectorAll('.vt-line.f'), end].map(e => [+e.dataset.m, e.offsetTop]);
+    let y = null;
+    if (g.dataset.date === n.date) for (let i = 0; i + 1 < marks.length; i++){
+      const [m0, y0] = marks[i], [m1, y1] = marks[i + 1];
+      if (m0 <= n.min && n.min < m1){ y = y0 + (n.min - m0) / (m1 - m0) * (y1 - y0); break; }
+    }
+    line.hidden = y === null;
+    if (y !== null){ line.style.top = y + 'px'; line.style.width = (g.scrollWidth - line.offsetLeft) + 'px'; }
+  });
   document.querySelectorAll('.cal-now').forEach(line => {
     const first = +line.dataset.first, last = +line.dataset.last;
     line.hidden = !(line.dataset.date === n.date && n.min >= first && n.min <= last);
@@ -3836,14 +3887,14 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   const cv = state.layout === 'calendar' && document.querySelector('#agenda .hz-canvas');
   if (cv){
     const p = hzPresets(+cv.dataset.d0, +cv.dataset.d1, cv.dataset.date);
-    if (p.now){ HZ.range[cv.dataset.date] = p.now; hzDraw(document.getElementById('agenda')); }
+    if (p.now){ HZ.range[cv.dataset.date] = p.now; HZ.preset[cv.dataset.date] = 'now'; hzDraw(document.getElementById('agenda')); }
   }
   const topmost = sel => [...document.querySelectorAll(sel)].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
   const target = state.layout === 'calendar'
-    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .vt-t.is-now')
+    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .vt-nowl:not([hidden])')
       || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
-  if (target) target.scrollIntoView({ block: target.classList.contains('cal-now') ? 'center' : 'start' });
+  if (target) target.scrollIntoView({ block: target.matches('.cal-now, .vt-nowl') ? 'center' : 'start' });
   else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });

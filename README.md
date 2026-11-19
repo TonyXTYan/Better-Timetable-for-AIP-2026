@@ -24,14 +24,19 @@ user site's `404.html` that keeps `?query` and `#hash`).
     window and ‹ › buttons ride in the sticky hour ruler, so the range can change anywhere down
     the page. Streams are grouped (AIP groups get a lane each) and collapse; lanes with nothing
     in the range are left out. In Sessions mode small marks along each bar's foot show where its
-    talks start, the talk on now in red; Talks mode splits each bar into its talks.
+    talks start, the talk on now in red; Talks mode splits each bar into its talks. Inside an AIP group's
+    lane the repeated "AIP QST:" prefix is left out of titles.
   - **Vertical** puts time down the page in stream columns (AIP groups, ANZCOP, COMMAD, Focus,
     Posters and education, Forums), which split into sub-columns where sessions run side by side;
     plenaries and breaks are full-width bands and the column heads stay in view. Each session
     card opens its talks with **N talks ▸**. Wherever talks are shown (Talks mode, or an opened
     card) every talk sits on the row of its start time, so reading across from a time on the
-    left finds every talk starting then. On phones it is one list grouped by start time, with
-    stream chips.
+    left finds every talk starting then (session tops line up with their start time the same
+    way). Sub-columns never get narrower than 7.5 rem: collapsed sessions beyond a stream's
+    sub-columns stack in its cell, and when the talks need more width than the page has, the
+    grid scrolls sideways in its own box with the times and column heads kept in view. A red
+    line marks the current time. On phones it is one list grouped by start time, with stream
+    chips.
 - Search every word in any order, ignoring case and accents; `"quotes"` for an exact phrase.
   If the selected day has no match, matches from the rest of the week appear. Short forms of
   institutions find their speakers' talks too (`unsw`, `anu`, `usyd`, `uts`, `uq`, `csiro` …).
