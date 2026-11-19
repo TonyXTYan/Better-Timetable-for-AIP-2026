@@ -437,11 +437,14 @@ footer p{margin:4px 0}
   .toolbar .chip{flex:none}
   .talk-star{width:44px;height:44px;margin-right:2px}
 }
-#calendarScope{margin:0 0 8px}
+.schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.schedule-nav .agenda-views{margin:0}
+#starCount{font-size:.82em;font-variant-numeric:tabular-nums}
+@media(max-width:420px){.schedule-nav{gap:4px}.schedule-nav button{font-size:13px;padding:6px 8px}}
 #parentOption{font-size:14px}
 .favourites-calendar #builder{padding-bottom:0}
 @media print{
-  .favourites-calendar #agenda,#agendaCalendarBtn{display:none!important}
+  .favourites-calendar #agenda{display:none!important}
   .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
@@ -486,9 +489,15 @@ footer p{margin:4px 0}
 
 <div class="sticky-wrap">
   <div class="toolbar">
-    <div id="calendarScope" class="agenda-views" role="group" aria-label="Calendar schedule" hidden>
-      <button data-scope="program" aria-pressed="true">Full program</button>
-      <button data-scope="agenda" aria-pressed="false">My agenda</button>
+    <div class="schedule-nav">
+      <div id="scheduleScope" class="agenda-views" role="group" aria-label="Schedule">
+        <button data-scope="program" aria-pressed="true">Full program</button>
+        <button data-scope="agenda" aria-pressed="false">My agenda <span id="starCount">0</span></button>
+      </div>
+      <div id="scheduleLayout" class="agenda-views" role="group" aria-label="Layout">
+        <button data-layout="list" aria-pressed="true">List</button>
+        <button data-layout="calendar" aria-pressed="false">Calendar</button>
+      </div>
     </div>
     <div class="daytabs" id="daytabs" role="tablist" aria-label="Congress days"></div>
     <div class="controls">
@@ -497,8 +506,6 @@ footer p{margin:4px 0}
         <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program">
         <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
       </div>
-      <button class="toggle" id="agendaBtn"><span>&#9733;</span> My agenda <span class="cnt" id="starCount">0</span></button>
-      <button class="toggle" id="programCalendarBtn">Calendar</button>
       <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
       <label id="programLevel" hidden><select aria-label="Program calendar events"><option value="sessions">Sessions</option><option value="talks">Individual talks</option></select></label>
       <button class="toggle" id="expandAll">Expand all abstracts</button>
@@ -518,13 +525,11 @@ footer p{margin:4px 0}
       <p class="builder-stats" id="builderStats" aria-live="polite"></p>
     </div>
     <div class="builder-actions">
-      <button class="toggle" id="backToProgram">&#8592; Back to program</button>
       <button class="toggle" id="printAgenda">Print</button>
       <button class="toggle" id="copyAgenda">Copy as text</button>
       <button class="toggle" id="icsAgenda">Download .ics</button>
     </div>
   </div>
-  <button class="toggle" id="agendaCalendarBtn">Calendar</button>
   <p class="export-status" id="exportStatus" role="status"></p>
   <div class="ics-note" id="copyNote" hidden>
     <label for="copyBox">Select and copy your agenda text below.</label>
@@ -576,8 +581,8 @@ const CAT_COLORS = {
 };
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
-  group: null, view: 'program',
-  calendarScope: 'program', programTalks:false,
+  group: null, layout: 'list',
+  scope: 'program', programTalks:false,
   starred: new Set(),
 };
 try {
@@ -718,7 +723,7 @@ function blocksHtml(slots){
 }
 
 function renderAgenda(){
-  if (state.view === 'calendar'){ renderCalendar(); return; }
+  if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
@@ -893,11 +898,14 @@ function applyFilters(){
 }
 
 // everything is rendered up front; filtering just toggles visibility
-function refresh(){ if (state.view === 'calendar') renderCalendar(); else applyFilters(); }
+function refresh(){ if (state.layout === 'calendar') renderCalendar(); else applyFilters(); }
 
 function rerender(){
-  if (state.view !== 'calendar') renderTabs();
-  renderChips(); renderAgenda();
+  const personal = state.scope === 'agenda';
+  if (personal) renderBuilder();
+  if (state.layout === 'calendar'){ renderCalendar(); return; }
+  if (personal) return;
+  renderTabs(); renderChips(); renderAgenda();
 }
 
 // ---------- events ----------
@@ -999,7 +1007,7 @@ qEl.addEventListener('input', () => {
   qTimer = setTimeout(() => {
     state.q = qEl.value.trim();
     document.getElementById('clr').style.display = state.q ? 'block' : 'none';
-    renderAgenda(); // re-render so highlights update
+    rerender(); // re-render so highlights update
   }, 160);
 });
 document.getElementById('clr').addEventListener('click', () => {
@@ -1210,67 +1218,64 @@ function renderBuilder(){
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
 
+  const personalList = state.layout === 'list' && state.scope === 'agenda';
+  if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
   if (!items.length){
     stats.textContent = 'Nothing saved yet.';
     body.innerHTML = `<div class="ag-empty">
       <div class="ag-empty-icon">&#9733;</div>
       <h3>Your agenda is empty</h3>
       <p>Use the star beside any talk or session to add it to your agenda.</p>
-      <button class="toggle" data-goprogram="all">Browse the program &#8594;</button>
+      <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
     </div>`;
     return;
   }
-  stats.innerHTML = `<b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
+  stats.innerHTML = `Full agenda &middot; <b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
     (clashItems ? `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>` : `<span class="ag-ok">&#10003; no clashes</span>`) +
     ' &middot; All times AEDT';
   let html = '';
   DATA.days.forEach((d, di) => {
+    if (personalList && state.day !== 'all' && state.day !== di) return;
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
     html += `<div class="ag-day"><div class="day-head"><div><span class="dh-label">${esc(d.label)} 2026</span><span class="dh-sub">${dayItems.length} item${dayItems.length!==1?'s':''} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
-  body.innerHTML = html;
+  body.innerHTML = html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
+    <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`;
 }
 
-function showView(view, scope = state.calendarScope){
-  state.view = view;
-  state.calendarScope = scope;
-  const calendar = view === 'calendar';
-  const agendaList = view === 'agenda';
-  const favourites = calendar && scope === 'agenda';
-  document.body.classList.toggle('favourites-calendar', favourites);
-  document.getElementById('calendarScope').hidden = !calendar;
+function showView(layout, scope){
+  state.layout = layout;
+  state.scope = scope;
+  const calendar = layout === 'calendar';
+  const personal = scope === 'agenda';
+  const agendaList = personal && !calendar;
+  document.body.classList.toggle('favourites-calendar', personal && calendar);
   for (const button of document.querySelectorAll('[data-scope]')){
     button.setAttribute('aria-pressed', button.dataset.scope === scope);
   }
-  document.querySelector('.sticky-wrap').hidden = agendaList;
-  document.querySelector('.highlight-wrap').hidden = view !== 'program';
-  document.getElementById('agenda').hidden = agendaList;
-  document.getElementById('emptyNote').hidden = view !== 'program';
-  document.getElementById('builder').hidden = !(agendaList || favourites);
-  document.getElementById('builderList').hidden = !agendaList;
-  document.getElementById('agendaCalendarBtn').hidden = !agendaList;
-  document.getElementById('backToProgram').hidden = !agendaList;
-  document.getElementById('expandAll').hidden = calendar;
-  document.getElementById('programLevel').hidden = !calendar || favourites;
-  document.getElementById('parentOption').hidden = !favourites;
-  document.querySelector('.searchbox').hidden = favourites;
-  document.getElementById('chips').hidden = favourites;
-  document.getElementById('grpill').hidden = favourites;
-  document.getElementById('programCalendarBtn').textContent = calendar ? 'List view' : 'Calendar';
-  document.getElementById('agendaBtn').hidden = calendar;
-  if (agendaList || favourites) renderBuilder();
-  if (!agendaList) rerender();
-  if (agendaList){
-    document.getElementById('builderTitle').focus({preventScroll:true});
-    document.getElementById('builderTitle').scrollIntoView({block:'start',behavior:'instant'});
+  for (const button of document.querySelectorAll('[data-layout]')){
+    button.setAttribute('aria-pressed', button.dataset.layout === layout);
   }
+  document.getElementById('agenda').hidden = agendaList;
+  document.getElementById('emptyNote').hidden = personal || calendar;
+  document.getElementById('builder').hidden = !personal;
+  document.getElementById('builderList').hidden = !agendaList;
+  document.getElementById('resultLine').hidden = agendaList;
+  document.querySelector('.toolbar .controls').hidden = agendaList;
+  document.getElementById('expandAll').hidden = calendar || personal;
+  document.getElementById('programLevel').hidden = !calendar || personal;
+  document.getElementById('parentOption').hidden = !calendar || !personal;
+  document.querySelector('.searchbox').hidden = personal;
+  document.getElementById('chips').hidden = personal;
+  document.getElementById('grpill').hidden = personal;
+  rerender();
 }
 
 function afterStarChange(){
   saveStars();
   document.getElementById('starCount').textContent = state.starred.size;
-  if (state.view === 'agenda') renderBuilder();
+  if (state.scope === 'agenda') rerender();
 }
 
 // ---------- export helpers ----------
@@ -1399,7 +1404,7 @@ function programCalendarItems(){
 }
 
 function renderCalendar(){
-  const favourites = state.calendarScope === 'agenda';
+  const favourites = state.scope === 'agenda';
   let items;
   if (favourites){
     const saved = agendaItems();
@@ -1428,29 +1433,24 @@ function renderCalendar(){
   document.getElementById('emptyNote').classList.remove('show');
 }
 
-document.getElementById('programCalendarBtn').addEventListener('click', () => {
-  if (state.view === 'calendar'){
-    showView(state.calendarScope);
-    if (state.view === 'program') document.getElementById('programCalendarBtn').focus();
-  } else {
-    showView('calendar','program');
-    document.querySelector('[data-scope="program"]').focus();
-  }
-});
-document.getElementById('agendaCalendarBtn').addEventListener('click', () => {
-  showView('calendar', 'agenda');
-  document.querySelector('[data-scope="agenda"]').focus();
+document.getElementById('scheduleLayout').addEventListener('click', e => {
+  const button = e.target.closest('[data-layout]');
+  if (button && button.dataset.layout !== state.layout) showView(button.dataset.layout, state.scope);
 });
 const calendarPositions = new Map();
-document.getElementById('calendarScope').addEventListener('click', e => {
+document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
-  if (!button || button.dataset.scope === state.calendarScope) return;
+  if (!button || button.dataset.scope === state.scope) return;
+  if (state.layout === 'list'){
+    showView('list', button.dataset.scope);
+    return;
+  }
   const previous = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
   const left = previous?.scrollLeft || 0;
-  if (previous) calendarPositions.set(state.calendarScope + ':' + state.day, previous.scrollTop);
-  showView('calendar', button.dataset.scope);
+  if (previous) calendarPositions.set(state.scope + ':' + state.day, previous.scrollTop);
+  showView(state.layout, button.dataset.scope);
   const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
-  next?.scrollTo({left, top:calendarPositions.get(state.calendarScope + ':' + state.day) || 0, behavior:'instant'});
+  next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
 });
 document.querySelector('#programLevel select').addEventListener('change', e => {
   state.programTalks = e.target.value === 'talks';
@@ -1471,7 +1471,7 @@ document.addEventListener('click', e => {
   const t = s.talks.find(talk => talk.id === button.dataset.talkDetail);
   const day = DATA.days.find(d => d.slots.includes(s));
   const talks = t ? [t] : [...s.talks];
-  const personal = state.view === 'agenda' || (state.view === 'calendar' && state.calendarScope === 'agenda');
+  const personal = state.scope === 'agenda';
   if (personal) talks.sort((a,b) => Number(state.starred.has(b.id)) - Number(state.starred.has(a.id)));
   const details = talks.map(talk => {
     const saved = state.starred.has(talk.id);
@@ -1518,21 +1518,15 @@ eventDialog.addEventListener('close', () => {
   delete eventDialog.dataset.changed;
   const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
   const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
-  if (state.view !== 'agenda') renderAgenda();
-  if (state.view === 'agenda' || (state.view === 'calendar' && state.calendarScope === 'agenda')) renderBuilder();
-  const scope = state.view === 'agenda' ? document.querySelector('#builder') : document.querySelector('#agenda');
+  rerender();
+  const scope = state.scope === 'agenda' && state.layout === 'list' ? document.querySelector('#builder') : document.querySelector('#agenda');
   const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]`;
   const replacement = [...scope.querySelectorAll(selector)].find(b => b.offsetWidth);
   const scroller = replacement?.closest('.week-scroll,.cal-scroll');
   if (scroller) scroller.scrollTo({left,top,behavior:'instant'});
-  (replacement || document.getElementById(state.view === 'agenda' ? 'builderTitle' : 'programCalendarBtn')).focus({preventScroll:true});
+  (replacement || document.querySelector('#scheduleScope [aria-pressed="true"]')).focus({preventScroll:true});
 });
 
-document.getElementById('agendaBtn').addEventListener('click', () => showView('agenda'));
-document.getElementById('backToProgram').addEventListener('click', () => {
-  showView('program');
-  document.getElementById('agendaBtn').focus();
-});
 document.getElementById('printAgenda').addEventListener('click', () => window.print());
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
@@ -1543,7 +1537,6 @@ document.getElementById('builder').addEventListener('click', e => {
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
     state.starred.delete(id);
-    renderAgenda();
     afterStarChange();
     const remaining = document.querySelectorAll('#builder .rm');
     const next = remaining[Math.min(removedIndex, remaining.length - 1)];
@@ -1563,7 +1556,7 @@ function openInProgram(go){
     state.group = null;
     state.cats = new Set(Object.keys(DATA.cats));
   }
-  showView('program');
+  showView('list','program');
   if (jump){
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
@@ -1573,6 +1566,12 @@ function openInProgram(go){
       const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
       target.focus({ preventScroll: true });
       window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - toolbarHeight - 16, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        if (document.activeElement !== target) return;
+        const toolbarBottom = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
+        const clearance = target.getBoundingClientRect().top - toolbarBottom - 12;
+        if (clearance < 0) window.scrollBy({top: clearance, behavior:'instant'});
+      });
       card.classList.add('flash');
       setTimeout(() => card.classList.remove('flash'), 1500);
       return;
@@ -1590,12 +1589,12 @@ document.getElementById('expandAll').addEventListener('click', e => {
 
 document.addEventListener('keydown', e => {
   if (eventDialog.open) return;
-  if (e.key === '/' && (state.view === 'program' || (state.view === 'calendar' && state.calendarScope === 'program')) && !e.target.closest('input, textarea, [contenteditable]') &&
+  if (e.key === '/' && state.scope === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
   if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); renderAgenda(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
-  if (state.view === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
+  if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
 });
 
 // countdown to 7 Dec 2026
