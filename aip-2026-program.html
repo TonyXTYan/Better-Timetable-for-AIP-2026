@@ -275,8 +275,8 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    the toolbar swaps at once and stays above it. Only set while a transition runs. The
    old and new main areas get different names, so each stays where it was on screen
    when the change also scrolls the page. */
-html[data-view-tx]:not([data-view-tx="mx"]):not([data-view-tx="dlg"]):not([data-view-tx-new]) #main{view-transition-name:main-old}
-html[data-view-tx-new]:not([data-view-tx="mx"]):not([data-view-tx="dlg"]) #main{view-transition-name:main}
+/* The slide/fade runs on the page's root snapshot (viewport-sized), never on a named
+   #main, which on a long program would be a page-tall snapshot. */
 html[data-view-tx]:not([data-view-tx="dlg"]) .sticky-wrap{view-transition-name:toolbar}
 ::view-transition{pointer-events:none}
 ::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar){animation:none}
@@ -293,11 +293,11 @@ html[data-view-tx]:not([data-view-tx="dlg"]) .sticky-wrap{view-transition-name:t
 ::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:120ms}
 ::view-transition-group(mx-pop){z-index:5}
 html[data-view-tx="dlg"]::view-transition-new(root){animation:240ms ease both week-tx-fade}
-::view-transition-old(main-old){animation:120ms ease-in both week-tx-out}
-::view-transition-new(main){animation:210ms cubic-bezier(.2,.7,.3,1) both week-tx-in}
-html[data-view-tx="fwd"]::view-transition-new(main){animation-name:week-tx-in-r}
-html[data-view-tx="back"]::view-transition-new(main){animation-name:week-tx-in-l}
-html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom;animation-duration:300ms}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:120ms ease-in both week-tx-out}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:210ms cubic-bezier(.2,.7,.3,1) both week-tx-in}
+html[data-view-tx="fwd"]::view-transition-new(root){animation-name:week-tx-in-r}
+html[data-view-tx="back"]::view-transition-new(root){animation-name:week-tx-in-l}
+html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom;animation-duration:300ms}
 #main.view-enter{animation:week-tx-fade 180ms ease-out}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
@@ -3398,7 +3398,13 @@ document.addEventListener('click', e => {
 // above the moving items, as they do on the page. Names are set only while a
 // transition runs, only on elements near the viewport, never twice in one state, at
 // most MX_CAP of them, and are cleared afterwards.
-const MX_CAP = 120, MX_MS = 300, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
+// Budget, so morphs never make the page feel stuck: fewer names on phones; no morph on
+// pages with too many items to measure cheaply; and none at all (a plain change, or the
+// usual fade) when changes come in quick succession or recent redraws were slow.
+const mxCap = () => PHONE_MQ.matches ? 36 : 72, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
+const MX_NOOP = { after(){}, animate(){} };
+let txLast = -1e9, txSlow = 0;
+const MX_MS = 300, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
 const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off)';
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
@@ -3449,6 +3455,7 @@ function mxScan(aux, far){
 // Starts a morph: names the old state's elements. Returns { after(target), animate() }.
 function mxBegin(kind, from, opts){
   mxClear();
+  if (opts.plain || document.getElementById('main').querySelectorAll(MX_ITEM).length > mxScanMax()) return MX_NOOP;
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
   if (from){
@@ -3458,7 +3465,7 @@ function mxBegin(kind, from, opts){
   if (!pop){
     const seen = [...mxScan(kind === 'mx' || opts.aux).values()].sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
     for (const it of seen){
-      if (old.size >= MX_CAP * .75) break;
+      if (old.size >= mxCap() * .75) break;
       if (!old.has(it.key) && it.el !== from) old.set(it.key, it);
     }
   }
@@ -3466,7 +3473,7 @@ function mxBegin(kind, from, opts){
   const plan = { pairs: [], grow: [], fold: [], fade: [], added: [] };
   return {
     after(target){
-      const now = pop ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
+      const now = pop || document.getElementById('main').querySelectorAll(MX_ITEM).length > mxScanMax() ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const near = it => it.d <= Math.max(240, innerHeight * .5);
@@ -3479,7 +3486,7 @@ function mxBegin(kind, from, opts){
         else plan.fade.push({ key, o });
       }
       for (const [key, n] of now){
-        if (old.has(key) || named.has(n.el) || !near(n) || count >= MX_CAP) continue;
+        if (old.has(key) || named.has(n.el) || !near(n) || count >= mxCap()) continue;
         if (n.kind === 'item' && n.p && old.has(n.p) && now.has(n.p) && plan.pairs.some(x => x.key === n.p)){
           mxName(n.el, key, 'mx'); named.add(n.el); count++;
           plan.grow.push({ key, n, po: old.get(n.p), pn: now.get(n.p) });
@@ -3541,6 +3548,14 @@ function withTransition(kind, fn, from, opts = {}){
   settleTransition();
   const root = document.documentElement;
   if (motionReduced()){ fn(); return; }
+  // quick succession (another change under 450ms ago) or slow redraws: no morph; and
+  // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
+  const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
+  txLast = t;
+  if (busy){
+    if (kind === 'mx' || kind === 'dlg' || txSlow >= 3){ const t0 = performance.now(); fn(); txNote(performance.now() - t0); return; }
+    opts = { ...opts, plain: true };
+  }
   if (!document.startViewTransition){
     fn();
     if (kind === 'mx' || kind === 'dlg') return;
@@ -3560,7 +3575,9 @@ function withTransition(kind, fn, from, opts = {}){
     ran = true;
     mxClear();
     const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
+    const t0 = performance.now();
     const out = fn();
+    txNote(performance.now() - t0);
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
     return done;
   };
@@ -3576,6 +3593,9 @@ function withTransition(kind, fn, from, opts = {}){
     if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; }
   });
 }
+// A redraw over 250ms counts as slow (after two in a row, changes stop animating); a
+// quick one earns back trust.
+function txNote(ms){ txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow; }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
 let shownScope = null; // the scope showView last drew (readHash may already have moved state.scope)
