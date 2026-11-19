@@ -945,7 +945,11 @@ footer p{margin:4px 0}
 @media (min-width:721px) and (max-width:1279px){.ag-sx{display:none}}
 @media (max-width:1439px){.favourites-calendar .ag-sx{display:none}}
 @media (min-width:721px) and (max-width:1023px){.ag-opt-show,.ag-about{display:none}.ag-opt-f{display:inline}}
-@media (min-width:721px) and (max-width:819px){.ag-build-long{display:none}}
+/* Build my agenda reads "Build" where its full name does not fit (beside the Full sessions
+   option at 360-374px; below that the option takes its own line); the full name stays
+   its accessible name */
+@media (min-width:721px) and (max-width:819px){.ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
+@media (min-width:360px) and (max-width:374px){.builder-actions:has(#parentOption:not([hidden])) .ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 /* The counts keep their words: when the title, counts and clash indicator do not fit on
    one line, the indicator moves to a second line (and only a count wider than the whole
    line ends in an ellipsis) */
@@ -1051,8 +1055,10 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
-/* a label near the right edge moves in so it is never cut (its left is capped in hzDayView) */
-.hz-mlab{position:absolute;z-index:1;bottom:3px;padding-left:4px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+/* a label near the right edge moves in so it is never cut (its left is capped in hzDayView);
+   one under an edge of the window takes a background (hzSync) so the outline never runs through it */
+.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:2px;padding:1px 2px;border-radius:3px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+.hz-mlab.on-edge{background:color-mix(in srgb,var(--card) 60%,var(--surface-2))}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
 .hz-sl{left:0}.hz-sr{right:0}
@@ -1449,6 +1455,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-h .week-tk::before{top:0;height:calc(100% - 1px)}
 .week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
 .week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+/* a clash's stripe keeps clear of the label (weekFit counts the extra 2px) */
+.week-blk.has-clash span,.week-blk.has-clash.week-ab::before{padding-top:4px}
+.week-blk.has-clash.week-up::before{padding-top:6px}
 .week-legend i{position:relative;overflow:hidden}
 .week-legend .week-lcx i{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--warn-ink)}
 .week-legend .wk-k i{background:var(--ink-2)}
@@ -1856,10 +1865,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 }
 @media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 4px;font-size:.7188rem}
   .nav-main{gap:3px}.schedule-nav .agenda-views{gap:1px}
-  /* My agenda's actions: Build keeps its full name for screen readers only, and a row that
-     still does not fit wraps instead of widening the page */
+  /* My agenda's actions: a row that still does not fit wraps instead of widening the page */
   .builder-actions{flex-wrap:wrap}
-  .builder-actions:has(#parentOption:not([hidden])) .ag-build-long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .ag-actions .ag-btn{min-width:0;padding-left:6px;padding-right:6px;overflow:hidden;text-overflow:ellipsis}
   /* room for the search box's own word: Streams drops "All" (it says so when filtered)
      and the buttons and the magnifier sit a little tighter */
@@ -3650,7 +3657,7 @@ function weekFit(root = document.getElementById('agenda')){
     if (b.classList.contains('week-off') || b.classList.contains('week-hid') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
     // (horizontal: a session's starred-talk marks take a strip along its bottom)
     const tk = !vert && b.classList.contains('has-tk');
-    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (tk ? 13 : 0)) / lh);
+    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - (b.classList.contains('has-clash') ? 4 : 2) - (tk ? 13 : 0)) / lh);
     if (lines < 1 || w < 10){
       if (b.classList.contains('w-talk') && w >= 10 && h >= 10) b.classList.add('week-mic'); else span.hidden = true;
       continue;
@@ -3668,12 +3675,12 @@ function weekFit(root = document.getElementById('agenda')){
     // upright letters (below a 4px top pad): the whole code, or at least three letters
     // of it and an ellipsis
     // (horizontal: a tall, narrow block too, above its starred-talk strip)
-    const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - 5 - (!vert && b.classList.contains('has-tk') ? 13 : 0)) / adv) : 0;
+    const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - (b.classList.contains('has-clash') ? 7 : 5) - (!vert && b.classList.contains('has-tk') ? 13 : 0)) / adv) : 0;
     const up = () => { b.classList.remove('week-bdg'); b.classList.add('week-up'); };
     // a short code across, its first four or three letters, reads better than the whole
     // code set upright: shown where it fits
     const ab = [4, 3].filter(k => k < n).map(k => b.dataset.code.slice(0, k).trim()).find(t => t.length >= 3 && hzMeasure(abFont, t) <= w - 4);
-    if (ab && h >= lh + 2){ b.dataset.ab = ab; b.classList.remove('week-bdg'); b.classList.add('week-ab'); continue; }
+    if (ab && h >= lh + (b.classList.contains('has-clash') ? 4 : 2)){ b.dataset.ab = ab; b.classList.remove('week-bdg'); b.classList.add('week-ab'); continue; }
     if (slots >= Math.min(n, 4)){ up(); continue; }
     // the code cut to an ellipsis still shows three letters of it (a talk's without its
     // mic, if need be); failing that, two upright letters and an ellipsis, a talk's
@@ -3961,10 +3968,10 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
       }
     } else return;
     e.preventDefault();
+    // (the keys are known now, even at an edge where focus stays: the hint is not read again)
+    b.removeAttribute('aria-describedby'); ov._keyed = true;
     if (!next) return;
     b.tabIndex = -1; next.tabIndex = 0;
-    // (the keys are known now: the hint is not read again)
-    b.removeAttribute('aria-describedby'); ov._keyed = true;
     next.focus();
   });
   let weekResize = 0;
@@ -4740,10 +4747,11 @@ function hzDayView(day){
     mt += `<i class="hz-mtk" style="--c:${col};left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%;top:${((i + off) / R * 100).toFixed(2)}%;height:${(0.8 / R * 100).toFixed(2)}%"></i>`;
   } });
   let mh = '';
-  const lstep = full > 600 ? 120 : 60;
-  for (let m = Math.ceil(d0 / 60) * 60; m <= d1; m += 60){
+  // a label on every hour; hzMapLabels shows as many as fit apart at the drawn width
+  const h0 = Math.ceil(d0 / 60) * 60, lstep = full > 600 ? 120 : 60;
+  for (let m = h0; m <= d1; m += 60){
     mh += `<i class="hz-mh" style="left:${pc(m)}%"></i>`;
-    if ((m - d0) % lstep === 0 && m < d1) mh += `<span class="hz-mlab" style="left:min(${pc(m)}%, calc(100% - 3.3em))">${hzHM(m)}</span>`;
+    if (m < d1) mh += `<span class="hz-mlab" style="left:min(${pc(m)}%, calc(100% - 3.7em))"${(m - h0) % lstep ? ' hidden' : ''}>${hzHM(m)}</span>`;
   }
   const t = hzTargets(d0, d1, day.date);
   const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
@@ -4966,6 +4974,7 @@ function hzDraw(root, left){
   hzFitText(h);
   hlUnclip(h);
   h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
+  hzMapLabels(h);
   // bars that can start off to the left: hzSync pads their text into view
   // (My agenda's bars pad their header strip, which carries the padding there)
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
@@ -4990,6 +4999,27 @@ function hzDraw(root, left){
   vp.scrollLeft = Math.max(0, (left - d0) * ppm);
   hzSync(h);
   paintNow();
+}
+
+// Minimap hour labels: every 1, 2, 3, 4 or 6 hours (a long day at least every 2), the closest
+// that keeps them apart at the minimap's width; one moved in from the right edge goes if it
+// would meet the one before.
+function hzMapLabels(h){
+  const map = h.querySelector('.hz-map'), labs = [...map.querySelectorAll('.hz-mlab')], mw = map.clientWidth;
+  if (!labs.length || !mw || +map.dataset.mw === mw) return;
+  map.dataset.mw = mw;
+  for (const l of labs) l.hidden = false;
+  const pos = labs.map(l => [l.offsetLeft, l.offsetWidth]), gap = 6;
+  const full = +h.dataset.d1 - +h.dataset.d0, lw = Math.max(...pos.map(p => p[1])) + gap, ph = mw * 60 / full;
+  const step = [1, 2, 3, 4, 6].find(k => k * 60 >= (full > 600 ? 120 : 60) && k * ph >= lw) || 12;
+  let end = -Infinity;
+  map._labs = [];
+  labs.forEach((l, i) => {
+    const [x, w] = pos[i], show = i % step === 0 && x >= end + gap;
+    l.hidden = !show;
+    l.classList.remove('on-edge');
+    if (show){ end = x + w; map._labs.push({ el: l, x, w, on: false }); }
+  });
 }
 
 // Whole words in lines `w` px wide, at most n lines (the first starts after `lead`, the
@@ -5187,6 +5217,15 @@ function hzSync(h){
   brush.setAttribute('aria-valuetext', hzHM(a) + ' to ' + hzHM(b));
   h.querySelector('.hz-sl').style.width = f(a) + '%';
   h.querySelector('.hz-sr').style.left = f(b) + '%';
+  // a minimap label under either edge of the window is lifted clear of its outline
+  const map = h.querySelector('.hz-map'), mw = +map.dataset.mw;
+  if (map._labs && mw){
+    const ex = [f(a) / 100 * mw, f(b) / 100 * mw - 2];
+    for (const l of map._labs){
+      const on = ex.some(e => l.x < e + 2 && l.x + l.w > e);
+      if (on !== l.on){ l.on = on; l.el.classList.toggle('on-edge', on); }
+    }
+  }
   const r = h.querySelector('.hz-read'), txt = `${hzHM(Math.round(a / 5) * 5)}–${hzHM(Math.round(b / 5) * 5)}`;
   if (r.textContent !== txt) r.textContent = txt;
 }
