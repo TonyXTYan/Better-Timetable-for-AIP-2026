@@ -444,28 +444,198 @@ footer p{margin:4px 0}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
 .agenda.wide{max-width:none}
-.pg-scroll{overflow-x:auto;margin:0 0 14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
-.pg-cluster{display:grid;grid-template-columns:3.6rem repeat(var(--cols),minmax(0,1fr));gap:4px;padding:6px;align-items:stretch;scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
-.pg-time{grid-column:1;position:sticky;left:0;z-index:1;background:var(--card);font-size:.7188rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding:6px 4px 0 2px}
-.pg-range{color:var(--ink);font-size:.7812rem}
-.pg-range span{display:block;font-weight:600;color:var(--muted);font-size:.7188rem}
-.pg-cell{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--surface);color:var(--ink);padding:6px 8px;font-size:.7812rem;line-height:1.35;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
-.pg-session{background:var(--cbg)}
-.pg-cell:hover,.pg-cell:focus-visible{outline:2px solid var(--c);outline-offset:1px}
-.pg-kind{font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c)}
-.pg-title{font-weight:650;font-size:.8125rem}
-.pg-meta,.pg-who,.pg-ttime,.pg-in{color:var(--muted);font-size:.7188rem}
-.pg-who{color:var(--ink-2)}
-.pg-ttime{font-weight:700;font-variant-numeric:tabular-nums}
-.pg-star{color:var(--star)}
-.pg-cluster.dense{gap:3px}
-.pg-cluster.dense .pg-cell{padding:5px 6px;font-size:.7188rem;border-left-width:3px}
-.pg-cluster.dense .pg-title{font-size:.75rem}
-.pg-cluster.dense .pg-meta,.pg-cluster.dense .pg-who,.pg-cluster.dense .pg-ttime,.pg-cluster.dense .pg-in{font-size:.6562rem}
-.pg-cluster.past .pg-title{color:var(--muted)}
-.pg-cluster.is-now{box-shadow:inset 3px 0 0 var(--live-ink)}
-.pg-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
-.pg-talk.is-now .pg-ttime{color:var(--live-ink)}
+/* Full program day view: Horizontal (hz-, timeline) or Vertical (vt-, stream columns) */
+.hz-ov{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:8px 10px 6px;margin:0 0 10px}
+.hz-ovtop{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:8px}
+.hz-pre{display:flex;gap:4px;flex-wrap:wrap}
+.hz-pre button{min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.78rem;font-weight:650}
+.hz-pre button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.hz-pre button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hz-read{margin-left:auto;font-size:.78rem;color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:650;text-align:right}
+.hz-read small{display:block;font-weight:500;color:var(--muted);font-size:.7rem}
+.hz-ovmap{position:relative;min-height:28px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.hz-ovt{position:absolute;height:3px;border-radius:1px;background:var(--c);min-width:2px;opacity:.9}
+.hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 62%,transparent);pointer-events:none}
+.hz-brush{position:absolute;top:0;bottom:0;border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);cursor:grab;box-sizing:border-box;border-radius:4px}
+.hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.hz-brush:active{cursor:grabbing}
+.hz-hl,.hz-hr{position:absolute;top:0;bottom:0;width:16px;cursor:ew-resize;display:flex;align-items:center;justify-content:center}
+.hz-hl{left:-9px}.hz-hr{right:-9px}
+.hz-hl::after,.hz-hr::after{content:"";width:5px;height:22px;max-height:60%;border-radius:3px;background:var(--accent);box-shadow:0 0 0 1px var(--card)}
+@media (pointer:coarse){.hz-hl,.hz-hr{width:32px}.hz-hl{left:-17px}.hz-hr{right:-17px}.hz-ovmap{min-height:48px}.hz-hl::after,.hz-hr::after{width:7px;height:28px}
+  .hz-mini{height:2.25rem}.hz-pan button{height:1.75rem;width:1.375rem;font-size:1rem}.hz-mmap{margin:4px 16px}}
+.hz-ovnow{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--live-ink);pointer-events:none;left:calc(var(--onp,0) * 1%)}
+.hz-ovnow[hidden]{display:none}
+.hz-ovax{position:relative;height:16px;margin-top:2px;font-size:.6875rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.hz-ovax span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.hz-ovax span:first-child{transform:none}.hz-ovax span:last-child{transform:translateX(-100%)}
+.hz-canvas{--lw:9.25rem;position:relative;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);margin:0 0 14px}
+.hz-stick{position:sticky;top:var(--toolbar-h,150px);z-index:20;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow)}
+.hz-ruler{display:flex;height:1.875rem}
+.hz-mini{display:flex;height:1.5rem;border-bottom:1px solid var(--line)}
+.hz-pan{gap:3px;padding:0 4px!important}
+.hz-pan button{width:1.75rem;height:1.125rem;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
+.hz-pan button:disabled{opacity:.35}
+.hz-pan button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hz-mmap{position:relative;flex:1 1 auto;min-width:0;margin:3px 12px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:var(--surface-2);border:1px solid var(--line);border-radius:4px}
+.hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.hz-mmap .hz-brush{border-radius:3px}
+.hz-mmap .hz-hl::after,.hz-mmap .hz-hr::after{height:100%;max-height:none;width:4px}
+.hz-mmap .hz-shade{border-radius:3px}
+.hz-corner{flex:0 0 var(--lw);box-sizing:border-box;border-right:1px solid var(--line);font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em;display:flex;align-items:center;padding-left:10px}
+.hz-ticks{position:relative;flex:1 1 auto;min-width:0;overflow:hidden}
+.hz-ticks span.t{position:absolute;top:0;height:100%;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hz-ticks span.t.m{border-left-color:transparent;font-weight:500;color:var(--muted)}
+.hz-nowpill{position:absolute;top:5px;left:calc(var(--np,0) * 1%);transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
+.hz-nowpill[hidden],.hz-nowl[hidden]{display:none}
+.hz-body{position:relative}
+.hz-lines,.hz-nowl{position:absolute;left:var(--lw);right:0;top:0;bottom:0;pointer-events:none}
+.hz-lines{z-index:1}
+.hz-lines i{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.hz-lines i.m{border-left-color:color-mix(in srgb,var(--line) 45%,transparent)}
+.hz-nowl{z-index:4;left:calc(var(--lw) + (100% - var(--lw)) * var(--np,0) / 100)}
+.hz-nowl{right:auto;width:0;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
+.hz-lane,.hz-grp{display:flex;border-bottom:1px solid var(--line)}
+.hz-lane:last-child{border-bottom:0}
+.hz-grp{background:var(--surface-3);height:30px;border-top:0}
+.hz-label{flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.78rem;line-height:1.25;overflow:hidden;position:relative;z-index:3}
+.hz-label b{font-weight:750;color:var(--ink)}
+.hz-label small{color:var(--muted);font-size:.6562rem;line-height:1.25}
+.hz-grp .hz-label{background:var(--surface-3);flex-direction:row;align-items:center;padding:0}
+button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 6px 0 7px;font-size:.7188rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--c);white-space:nowrap;overflow:hidden}
+button.hz-gl:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.hz-car{display:inline-block;width:.7em;transition:transform .15s;font-size:.8em}
+button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
+.hz-cnt{margin-left:auto;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--card);border-radius:999px;padding:0 6px;font-size:.6562rem}
+.hz-lane.sole .hz-label{padding:0}
+.hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 7px;text-transform:none;letter-spacing:0;font-size:.78rem;color:var(--ink)}
+.hz-lane.sole button.hz-gl .hz-cnt{display:none}
+.hz-lane.sole.col{height:30px}
+.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0}
+.hz-lane.sole.col button.hz-gl{text-transform:uppercase;letter-spacing:.04em;font-size:.7188rem;color:var(--c)}
+.hz-ab{display:none}
+.hz-track{position:relative;flex:1 1 auto;min-width:0}
+.hz-colt{position:absolute;top:10px;height:10px;border-radius:2px;background:var(--c);opacity:.85;min-width:2px;z-index:2}
+.hz-empty{padding:26px 16px;color:var(--muted);font-size:.9rem;text-align:center}
+.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px}
+.hz-bar.cl{border-left-style:dotted;border-top-left-radius:0;border-bottom-left-radius:0}
+.hz-bar.cr{border-right-style:dotted;border-top-right-radius:0;border-bottom-right-radius:0}
+button.hz-bar{padding:4px 7px 4px 6px;display:flex;align-items:flex-start;justify-content:flex-start}
+button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
+.hz-in{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:100%;box-sizing:border-box}
+.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.hz-meta{color:var(--muted);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hz-star{color:var(--star)}
+.hz-split{display:flex;flex-direction:column}
+.hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
+.hz-head .hz-title{-webkit-line-clamp:2;font-size:.78rem}
+.hz-segs{position:relative;flex:1 1 auto;min-height:0}
+.hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
+.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.625rem}
+.hz-tl{font-weight:600;overflow-wrap:anywhere;hyphens:auto;font-size:.7188rem}
+.hz-ts{color:var(--muted);font-size:.65rem;overflow-wrap:anywhere}
+.hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
+.hz-mid .hz-ts{display:none}
+.hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
+.hz-tick .hz-talk>*{display:none}
+.hz-mark{position:absolute;bottom:0;height:12px;box-sizing:border-box;border-left:1.5px solid color-mix(in srgb,var(--c) 75%,transparent);pointer-events:none}
+.hz-mark.first{border-left-color:transparent}
+.hz-mark.is-now{border-left:2.5px solid var(--live-ink);height:17px;background:linear-gradient(var(--live-ink),var(--live-ink)) left bottom/100% 3px no-repeat}
+.hz-mark.first.is-now{border-left-color:transparent}
+.hz-bar.past{opacity:.55}
+.hz-bar.is-now{border-color:var(--live-ink);border-left-color:var(--c);box-shadow:inset 0 0 0 1px var(--live-ink)}
+.hz-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
+.hz-tick .hz-talk.is-now{background:var(--live-ink)}
+.hz-talk.is-now .hz-tt{color:var(--live-ink)}
+#hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:8px;font-size:.75rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px var(--pop-shadow)}
+#hzTip[hidden]{display:none}
+@media (max-width:720px){
+.hz-canvas{--lw:3.1rem}
+.hz-full{display:none}.hz-ab{display:inline}
+.hz-label{padding:6px 3px 6px 4px;font-size:.66rem;align-items:flex-start}
+.hz-label small{display:none}
+.hz-cnt{display:none}
+button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
+.hz-lane.sole button.hz-gl{font-size:.625rem;padding:8px 2px 0 3px;font-weight:800}
+.hz-lane.sole.col button.hz-gl{font-size:.625rem}
+.hz-pre button{padding:4px 10px}
+.hz-read{margin-left:0;width:100%;text-align:left}
+}
+.vt-grid{--vtw:3.1rem;display:grid;grid-template-columns:var(--vtw) var(--vtcols);grid-auto-rows:minmax(1.75rem,auto);column-gap:6px;margin:0 0 14px;position:relative}
+.vt-head{grid-row:1;align-self:stretch;position:sticky;top:var(--toolbar-h,150px);z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:6px;white-space:nowrap;overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:8px 8px 0 0;padding:5px 8px;margin-bottom:4px;font-weight:800;font-size:.75rem;line-height:1.2;color:var(--ink);box-shadow:0 4px 6px -4px var(--pop-shadow)}
+.vt-head span{overflow:hidden;text-overflow:ellipsis}
+.vt-head small{font-weight:700;color:var(--muted);font-size:.6875rem;white-space:nowrap}
+.vt-corner{grid-row:1;grid-column:1;position:sticky;top:var(--toolbar-h,150px);z-index:5;background:var(--bg);margin-bottom:4px}
+.vt-line{grid-column:1 / -1;border-top:1px solid var(--line);pointer-events:none;z-index:0}
+.vt-line.h{border-top-style:dashed;opacity:.7}
+.vt-t{grid-column:1;z-index:1;font-size:.75rem;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;padding:3px 0 0;align-self:start;white-space:nowrap}
+.vt-t.end{color:var(--muted);font-weight:600}
+.vt-t{scroll-margin-top:calc(var(--toolbar-h,150px) + 2.75rem)}
+.hz-bar{scroll-margin-top:calc(var(--toolbar-h,150px) + 4rem)}
+.vt-t.is-now{color:var(--live-ink)}
+.vt-t.is-now::after{content:"";display:inline-block;width:7px;height:7px;margin-left:4px;border-radius:50%;background:var(--live-ink);vertical-align:1px}
+.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--ink);font-size:.75rem;line-height:1.3;overflow-wrap:anywhere;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
+.vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
+.vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
+.vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
+.vt-open:hover,.vt-open:focus-visible,.vt-tk:hover,.vt-tk:focus-visible{outline:2px solid var(--c);outline-offset:-2px}
+.vt-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.vt-time{font-size:.7188rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:0}
+.vt-badge{font-size:.5938rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.vt-grid .vt-card:not([data-col="phys"]):not(.band) .vt-badge{display:none}
+.vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.vt-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 7px 4px;color:var(--muted);font-size:.6875rem;line-height:1.3;min-height:1.1rem}
+.vt-conv{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-count{flex:0 0 auto;white-space:nowrap}
+.vt-tog{flex:0 0 auto;margin-left:auto;background:none;border:0;padding:1px 2px;font:inherit;font-weight:700;color:var(--ink-2);cursor:pointer;border-radius:4px;white-space:nowrap}
+.vt-tog:hover,.vt-tog:focus-visible{background:var(--card);outline:1px solid var(--c)}
+.vt-tog::after{content:" \25B8"}
+.vt-tog[aria-expanded="true"]::after{content:" \25BE"}
+.vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.6875rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
+.vt-card .vt-tk:last-child{border-radius:0 0 6px 4px}
+.vt-ttl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.vt-ttime{font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);font-size:.6562rem}
+.vt-tsp{display:block;color:var(--muted);font-size:.625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-star{color:var(--star)}
+.vt-stack{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:0 5px;align-content:start;z-index:1}
+.vt-split{display:grid;grid-template-rows:subgrid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:4px;z-index:1}
+.vt-card.band{flex-direction:row;flex-wrap:wrap;align-items:center}
+.vt-card.band.sub{display:grid}
+.vt-card.band .vt-hd{flex-direction:row;flex-wrap:wrap;align-items:center}
+.vt-card.band .vt-open{flex-direction:row;align-items:center;gap:4px 12px;flex:1 1 20rem;width:auto;padding:4px 8px}
+.vt-card.band .vt-top{justify-content:flex-start;gap:10px}
+.vt-card.band .vt-title{-webkit-line-clamp:1;flex:1 1 auto}
+.vt-card.band .vt-foot{padding:0 8px 0 0;flex:0 0 auto}
+.vt-card.band .vt-tk{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;padding:3px 8px}
+.vt-card.band .vt-ttl{-webkit-line-clamp:2}
+.vt-grid.talks .vt-open{padding:4px 6px 2px}
+.vt-grid.talks .vt-foot{padding:0 6px 3px}
+.vt-grid.talks .vt-title{font-size:.75rem}
+.vt-grid.talks .vt-card:not(.band) .vt-badge{display:none}
+.vt-card.past .vt-title{color:var(--muted)}
+.vt-card.is-now{box-shadow:0 0 0 1px var(--live-ink),var(--shadow)}
+.vt-tk.is-now{background:var(--now-bg)}
+.vt-tk.is-now .vt-ttime{color:var(--live-ink)}
+.vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.vt-talks .vt-tk:first-child{border-top:0}
+.vt-picker{display:flex;gap:6px;overflow-x:auto;position:sticky;top:var(--toolbar-h,150px);z-index:6;background:var(--bg);padding:6px 0 8px;margin:0 0 2px;scrollbar-width:none}
+.vt-picker::-webkit-scrollbar{display:none}
+.vt-picker button{flex:0 0 auto;border:1px solid var(--line);border-left:4px solid var(--c,var(--line));background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.75rem;font-weight:700;min-height:36px}
+.vt-picker button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.vt-picker button small{font-weight:600;opacity:.75;margin-left:4px}
+.vt-lh{position:sticky;top:calc(var(--toolbar-h,150px) + 50px);z-index:4;display:flex;align-items:baseline;gap:8px;background:var(--bg);border-top:1px solid var(--line);padding:5px 0 3px;font-weight:800;font-size:.8125rem;font-variant-numeric:tabular-nums}
+.vt-lh small{color:var(--muted);font-weight:600;font-size:.6875rem}
+.vt-lb{display:flex;flex-direction:column;gap:5px;padding:0 0 8px}
+.vt-lb .vt-card{margin:0;scroll-margin-top:calc(var(--toolbar-h,150px) + 5.5rem)}
+.vt-lb .vt-title{font-size:.875rem}
+.vt-lb .vt-open{padding:6px 9px 3px}
+.vt-lb .vt-foot{padding:0 9px 5px;font-size:.7188rem}
+.vt-lb .vt-tk{padding:5px 9px;font-size:.75rem}
+.vt-lb .vt-card.band,.vt-lb .vt-card.band .vt-hd,.vt-lb .vt-card.band .vt-open{flex-direction:column;align-items:stretch}
+.vt-lb .vt-card.band .vt-title{-webkit-line-clamp:3}
+.vt-lb .vt-card.band .vt-top{justify-content:space-between}
+.vt-lb .vt-card.band .vt-foot{padding:0 9px 5px}
+.vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
 .cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
 .cal-grid{--minute:.28125rem;--time-gutter:3.5rem;position:relative;min-width:calc(var(--time-gutter) + var(--lanes) * 6.25rem);height:calc(var(--duration) * var(--minute));margin:12px 8px}
@@ -653,7 +823,6 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   #eventDialog>form .toggle,#moveDialog>form .toggle{min-height:40px;padding:6px 16px}
   #eventDialog .ag-btn{min-height:40px}
   .t-body{padding-left:17px}
-  .pg-cluster{grid-template-columns:3rem repeat(var(--cols),minmax(9.5rem,1fr))}
   .controls{position:relative}
   .filter-menu{position:static}
   .filter-panel{left:0;right:0;width:auto}
@@ -687,13 +856,16 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .schedule-nav .agenda-views{margin:0}
+.nav-main{display:contents}
 @media (max-width:720px){.schedule-nav{margin-bottom:4px}}
 #starCount{font-size:.82em;font-variant-numeric:tabular-nums}
 .nav-short{display:none}
 @media(max-width:480px){.schedule-nav{gap:4px}.schedule-nav button{font-size:.8125rem;padding:6px 8px}
-  /* both switches stay on one row, whatever the agenda count */
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
-  .schedule-nav{flex-wrap:nowrap}
+  /* both switches stay on one row, whatever the agenda count; the calendar's own switches
+     (Sessions|Talks, Horizontal|Vertical) take a second row */
+  .schedule-nav{flex-wrap:wrap;row-gap:4px}
+  .nav-main{display:flex;gap:4px;flex:1 0 100%;min-width:0}
   .schedule-nav .agenda-views{padding:2px;gap:2px;min-width:0}
   .schedule-nav .agenda-views button{padding:6px 7px;white-space:nowrap}
   #starCount{font-size:.75em}
@@ -760,6 +932,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media print{
   .favourites-calendar #agenda{display:none!important}
   .sticky-wrap,.star,.talk-star,.hero .links,.display-btn,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  .hz-ov,.hz-mini,.vt-picker,#hzTip{display:none!important}
+  .hz-stick,.vt-head,.vt-corner,.vt-lh{position:static;box-shadow:none}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:#fff}
@@ -829,6 +1003,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 <div class="sticky-wrap">
   <div class="toolbar">
     <div class="schedule-nav">
+      <div class="nav-main">
       <div id="scheduleScope" class="agenda-views" role="group" aria-label="Schedule">
         <button data-scope="program" aria-pressed="true"><span class="nav-long">Full program</span><span class="nav-short">Program</span></button>
         <button data-scope="agenda" aria-pressed="false"><span class="nav-long">My agenda</span><span class="nav-short">Agenda</span> <span id="starCount">0</span></button>
@@ -838,9 +1013,14 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
         <button data-layout="list" aria-pressed="true">List</button>
         <button data-layout="calendar" aria-pressed="false">Calendar</button>
       </div>
+      </div>
       <div id="programLevel" class="agenda-views" role="group" aria-label="Calendar shows" hidden>
         <button data-level="sessions" aria-pressed="true">Sessions</button>
         <button data-level="talks" aria-pressed="false">Talks</button>
+      </div>
+      <div id="programOrient" class="agenda-views" role="group" aria-label="Day calendar direction" hidden>
+        <button data-orient="h" aria-pressed="true">Horizontal</button>
+        <button data-orient="v" aria-pressed="false">Vertical</button>
       </div>
     </div>
     <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
@@ -1057,7 +1237,7 @@ const AFF = DATA.affs || { map: {}, groups: {} };
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, layout: 'list',
-  scope: 'program', programTalks:false,
+  scope: 'program', programTalks:false, orient:'h',
   starred: new Set(), hideClashes: false,
   pq: '', // the Participants view's own search
 };
@@ -1932,6 +2112,7 @@ function showView(layout, scope){
   document.querySelector('.toolbar .controls').hidden = agendaList;
   document.getElementById('expandAll').hidden = calendar || personal || people;
   document.getElementById('programLevel').hidden = !calendar || personal;
+  document.getElementById('programOrient').hidden = !calendar || personal;
   document.getElementById('parentOption').hidden = !calendar || !personal;
   document.getElementById('scheduleLayout').hidden = people;
   document.getElementById('daytabs').hidden = people;
@@ -2095,51 +2276,580 @@ function programCalendarItems(){
   return items.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
 }
 
-// Program day view: each group of overlapping sessions is a grid with one
-// column per session, so Sessions and Individual talks keep the same columns.
-// Rows follow the talks' start times and grow with their text, so nothing is
-// cut short and no empty time is drawn.
-function programDayGrid(day){
-  const slots = day.slots.filter(slotMatches)
+// Program day view: the Horizontal | Vertical switch picks the timeline
+// (hzDayView) or the stream columns (vtDayView). All week keeps the week table.
+const PHONE_MQ = matchMedia('(max-width:720px)');
+const remPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+function programDaySlots(day){
+  return day.slots.filter(slotMatches)
     .sort((a,b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
-  const clusters = [];
-  let cur = null;
-  for (const s of slots){
-    if (!cur || toMin(s.start) >= cur.end){ cur = { slots: [], start: toMin(s.start), end: toMin(s.end) }; clusters.push(cur); }
-    cur.slots.push(s);
-    cur.end = Math.max(cur.end, toMin(s.end));
-  }
-  const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
-  const who = t => t.sp.map(p => hl(p.n)).join(', ');
-  const talksOf = s => state.programTalks && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s)) : [];
-  const star = id => state.starred.has(id) ? '<span class="pg-star" aria-label="In my agenda">★</span> ' : '';
-  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>` + clusters.map(c => {
-    const times = [...new Set(c.slots.flatMap(s => talksOf(s).map(t => t.s)))].sort();
-    const last = times.length + 2;
-    let cells = `<div class="pg-time pg-range" style="grid-row:1">${hhmm(c.start)}<span>–${hhmm(c.end)}</span></div>`;
-    times.forEach((t, i) => { cells += `<div class="pg-time" style="grid-row:${i + 2}">${t}</div>`; });
-    c.slots.forEach((s, ci) => {
-      const [col, bg] = CAT_COLORS[s.cat];
-      const style = `--c:${col};--cbg:${bg};grid-column:${ci + 2}`;
-      const tk = talksOf(s);
-      const label = s.grp ? s.grp : DATA.cats[s.cat];
-      const meta = [toMin(s.start) !== c.start || toMin(s.end) !== c.end ? `${s.start}–${s.end}` : '',
-        s.conv.length ? 'Convened by ' + s.conv.map(hl).join(', ') : '',
-        s.talks.length ? `${s.talks.length} ${s.cat === 'poster' ? 'poster' : 'talk'}${s.talks.length > 1 ? 's' : ''}` : '',
-        s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : ''].filter(Boolean).join(' · ');
-      cells += `<button type="button" class="pg-cell pg-session" style="${style};grid-row:1${tk.length ? '' : ' / ' + last}" data-session-detail="${s.id}" data-talk-detail="">
-        <span class="pg-kind">${esc(label)}</span><span class="pg-title">${star(s.id)}${hl(s.title)}</span>${meta ? `<span class="pg-meta">${meta}</span>` : ''}</button>`;
-      for (const t of tk){
-        const r0 = times.indexOf(t.s) + 2;
-        const endRow = times.findIndex(x => x >= t.e);
-        const r1 = Math.max(endRow === -1 ? last : endRow + 2, r0 + 1);
-        cells += `<button type="button" class="pg-cell pg-talk" style="${style};grid-row:${r0} / ${r1}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-          <span class="pg-ttime">${t.s}–${t.e}</span><span class="pg-title">${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="pg-who">${who(t)}</span>` : ''}<span class="pg-in">${hl(s.title)}</span></button>`;
-      }
-    });
-    return `<div class="pg-scroll" tabindex="-1"><section class="pg-cluster${c.slots.length >= 7 ? ' dense' : ''}" data-date="${day.date}" data-start="${c.start}" data-end="${c.end}" style="--cols:${c.slots.length}" aria-label="${hhmm(c.start)} to ${hhmm(c.end)}">${cells}</section></div>`;
-  }).join('');
 }
+function programDayGrid(day){
+  return state.orient === 'v' ? vtDayView(day) : hzDayView(day);
+}
+
+// Horizontal day view: a zoomable timeline. An overview strip shows the whole
+// day (one tick per session, by stream) with a brush; the brush range is what
+// the main timeline shows, scaled to the page width (no sideways scrolling).
+// A slim copy of the brush rides in the sticky ruler, so the range can change
+// anywhere down the page. Stream groups collapse; lanes with nothing in the
+// range are left out. In Sessions mode thin marks in each bar show where its
+// talks start (the talk on now in red); Talks mode splits bars into talks.
+const HZ = { range: {}, collapsed: new Set() };
+const HZ_GROUPS = [
+  { k:'plenary', name:'Plenary', ab:'PLN', cats:['plenary'] },
+  { k:'aip', name:'AIP groups', ab:'AIP', cats:['aip'], split:'grp' },
+  { k:'anzcop', name:'ANZCOP', ab:'ANZ', cats:['anzcop'] },
+  { k:'commad', name:'COMMAD', ab:'CMD', cats:['commad'] },
+  { k:'focus', name:'Focus', ab:'FOC', cats:['focus'] },
+  { k:'poster', name:'Posters', ab:'POS', cats:['poster'] },
+  { k:'edupub', name:'Education & Public', ab:'EDU', cats:['edu','public'], split:'cat' },
+  { k:'misc', name:'Forums, meetings, breaks', ab:'MTG', cats:['special','business','social'], split:'cat' },
+];
+const HZ_CAT_AB = { edu:'EDU', public:'PUB', special:'FOR', business:'MTG', social:'BRK' };
+const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
+const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
+function hzBounds(slots){
+  return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
+          Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
+}
+function hzPresets(d0, d1, date){
+  const narrow = PHONE_MQ.matches;
+  const clampW = (a, b) => {   // keep width, shift into the day
+    const w = Math.min(b - a, d1 - d0);
+    a = Math.max(d0, Math.min(a, d1 - w));
+    return [a, a + w];
+  };
+  const p = {
+    morning: [d0, Math.max(d0 + 120, Math.min(d1, 12 * 60 + 30))],
+    afternoon: clampW(Math.max(d0, 12 * 60), Math.max(d0, 12 * 60) + 330),
+    evening: clampW(Math.max(d0, 17 * 60), Math.max(d0, 17 * 60) + 240),
+    whole: [d0, d1],
+  };
+  if (d1 <= 12 * 60 + 30) p.afternoon = p.evening = p.whole;
+  const n = aedtNow();
+  if (n.date === date && n.min >= d0 - 30 && n.min <= d1 + 30){
+    p.now = narrow ? clampW(n.min - 30, n.min + 90) : clampW(n.min - 75, n.min + 135);
+  }
+  return p;
+}
+function hzDefaultRange(d0, d1, date){
+  const p = hzPresets(d0, d1, date);
+  if (p.now) return p.now;
+  return PHONE_MQ.matches ? [Math.max(d0, 9 * 60), Math.max(d0, 9 * 60) + 120] : p.morning;
+}
+function hzPack(items, ppm, r0, r1){
+  const subs = [];
+  for (const it of items){
+    const a = Math.max(it.a, r0);
+    const b = Math.max(Math.min(it.b, r1), a + 8 / ppm);
+    let sub = subs.find(x => x.end <= a + 1e-6);
+    if (!sub){ sub = { end: 0, items: [] }; subs.push(sub); }
+    sub.end = b; sub.items.push(it);
+  }
+  return subs;
+}
+
+function hzDayView(day){
+  const slots = programDaySlots(day);
+  const [d0, d1] = hzBounds(slots);
+  const cur = HZ.range[day.date];
+  if (!cur || cur[0] < d0 || cur[1] > d1) HZ.range[day.date] = hzDefaultRange(d0, d1, day.date);
+  // overview: every session as a thin tick, packed per stream group
+  let y = 3, ov = '';
+  for (const g of HZ_GROUPS){
+    const gs = slots.filter(s => g.cats.includes(s.cat));
+    if (!gs.length) continue;
+    const subs = hzPack(gs.map(s => ({ s, a: toMin(s.start), b: toMin(s.end) })), 1, d0, d1);
+    for (const sub of subs){
+      for (const it of sub.items){
+        const [col] = CAT_COLORS[it.s.cat];
+        ov += `<i class="hz-ovt" style="--c:${col};left:${(it.a - d0) / (d1 - d0) * 100}%;width:${(it.b - it.a) / (d1 - d0) * 100}%;top:${y}px"></i>`;
+      }
+      y += 4;
+    }
+    y += 3;
+  }
+  const ovH = y;
+  let ax = '';
+  const step = (d1 - d0) / 60 > 10 ? 120 : 60;
+  for (let m = Math.ceil(d0 / step) * step; m <= d1; m += step) ax += `<span style="left:${(m - d0) / (d1 - d0) * 100}%">${hzHM(m)}</span>`;
+  let mh = '';
+  for (let m = Math.ceil(d0 / 60) * 60; m <= d1; m += 60) mh += `<i class="hz-mh" style="left:${(m - d0) / (d1 - d0) * 100}%"></i>`;
+  const p = hzPresets(d0, d1, day.date);
+  const btn = (k, label) => p[k] ? `<button type="button" data-hzpre="${k}" aria-pressed="false">${label}</button>` : '';
+  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>
+    <div class="hz-ov" data-date="${day.date}">
+      <div class="hz-ovtop">
+        <div class="hz-pre" role="group" aria-label="Time window">${btn('now','Now')}${btn('morning','Morning')}${btn('afternoon','Afternoon')}${btn('evening','Evening')}${btn('whole','Whole day')}</div>
+        <div class="hz-read" aria-live="polite"></div>
+      </div>
+      <div class="hz-ovmap hz-map" style="height:${ovH}px" aria-label="Whole-day overview. Drag the window to choose the time range shown below.">
+        ${ov}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div>
+        <div class="hz-ovnow" hidden></div>
+        <div class="hz-brush" tabindex="0" role="group" aria-label="Visible time window. Arrow keys move it, Shift plus arrows resize it."><span class="hz-hl"></span><span class="hz-hr"></span></div>
+      </div>
+      <div class="hz-ovax">${ax}</div>
+    </div>
+    <div class="hz-canvas" data-date="${day.date}" data-d0="${d0}" data-d1="${d1}">
+      <div class="hz-stick">
+        <div class="hz-mini"><div class="hz-corner hz-pan"><button type="button" data-hzpan="-1" aria-label="Show earlier">&#8249;</button><button type="button" data-hzpan="1" aria-label="Show later">&#8250;</button></div>
+          <div class="hz-mmap hz-map" aria-label="Whole day. Drag the window to change the time range.">${mh}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div><div class="hz-brush" tabindex="0" role="group" aria-label="Visible time window. Arrow keys move it, Shift plus arrows resize it."><span class="hz-hl"></span><span class="hz-hr"></span></div></div></div>
+        <div class="hz-ruler"><div class="hz-corner">AEDT</div><div class="hz-ticks"><span class="hz-nowpill" hidden>Now</span></div></div>
+      </div>
+      <div class="hz-body"><div class="hz-lines"></div><div class="hz-nowl" hidden></div><div class="hz-rows"></div></div>
+    </div>`;
+}
+
+function hzDraw(root){
+  const cv = root.querySelector('.hz-canvas'), date = cv.dataset.date;
+  const day = DATA.days.find(d => d.date === date);
+  const d0 = +cv.dataset.d0, d1 = +cv.dataset.d1;
+  const [r0, r1] = HZ.range[date], span = r1 - r0;
+  const slotsAll = programDaySlots(day);
+  const talksMode = state.programTalks;
+  const ticksEl = cv.querySelector('.hz-ticks');
+  const W = Math.max(120, ticksEl.clientWidth || 300), ppm = W / span;
+  const pct = m => (m - r0) / span * 100;
+  const tmode = ppm >= 5.2 ? 'full' : ppm >= 2.4 ? 'mid' : 'tick';
+  cv.dataset.r0 = r0; cv.dataset.r1 = r1;
+  cv.classList.toggle('hz-mid', talksMode && tmode === 'mid');
+  cv.classList.toggle('hz-tick', talksMode && tmode === 'tick');
+  const vis = slotsAll.filter(s => toMin(s.start) < r1 && toMin(s.end) > r0);
+  const talksOf = s => talksMode && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s) && toMin(t.s) < r1 && toMin(t.e) > r0) : [];
+  const star = id => state.starred.has(id) ? '<span class="hz-star" aria-label="In my agenda">★</span> ' : '';
+  // ruler + grid
+  const px60 = ppm * 60;
+  const lstep = px60 >= 50 ? 60 : px60 >= 26 ? 120 : 180;
+  const mstep = px60 >= 200 ? 15 : px60 >= 96 ? 30 : lstep;
+  let tk = '<span class="hz-nowpill" hidden>Now</span>', gl = '';
+  for (let m = Math.ceil(r0 / mstep) * mstep; m <= r1; m += mstep){
+    const major = m % lstep === 0;
+    const x = pct(m);
+    gl += `<i class="${major ? '' : 'm'}" style="left:${x}%"></i>`;
+    if (x > 100 - 3600 / W) continue;
+    if (major || px60 >= 96) tk += `<span class="t${major ? '' : ' m'}" style="left:${x}%">${hzHM(m)}</span>`;
+  }
+  ticksEl.innerHTML = tk;
+  cv.querySelector('.hz-lines').innerHTML = gl;
+  // lane heights: talks mode lets the bar grow with the text it must show
+  const rs = remPx() / 16, lineH = 16.5 * rs;
+  const estLines = (len, w, cw) => Math.max(1, Math.ceil(len * cw * rs / Math.max(24, w)));
+  const barModel = s => {
+    const a = Math.max(toMin(s.start), r0), b = Math.min(toMin(s.end), r1), w = (b - a) * ppm;
+    const tks = talksOf(s);
+    if (!tks.length) return { s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(s.title.length, w - 16, 6.7)) * lineH + 14 * rs + 8) };
+    const hl2 = Math.min(2, estLines(s.title.length, Math.min(w, 520) - 16, 7.1));
+    const head = 9 + hl2 * 15.5 * rs + 14 * rs;
+    let segs;
+    if (tmode === 'full'){
+      segs = 0;
+      for (const t of tks){
+        const tw = (Math.min(toMin(t.e), r1) - Math.max(toMin(t.s), r0)) * ppm - 10;
+        const sp = t.sp.map(p => p.n).join(', ');
+        const h = 18 * rs + Math.min(8, estLines(t.t.length, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, estLines(sp.length, tw, 6.1)) * 13 * rs : 0) + 4;
+        segs = Math.max(segs, h);
+      }
+    } else segs = tmode === 'mid' ? 64 * rs : 24;
+    return { s, a, b, w, tks, h: head + segs, head };
+  };
+  // groups -> lanes
+  let rows = '', shown = 0;
+  for (const g of HZ_GROUPS){
+    const gs = vis.filter(s => g.cats.includes(s.cat));
+    if (!gs.length) continue;
+    shown += gs.length;
+    const lanes = new Map();
+    for (const s of gs){
+      const k = g.split === 'grp' ? (s.grp || 'other') : g.split === 'cat' ? s.cat : g.k;
+      if (!lanes.has(k)) lanes.set(k, []);
+      lanes.get(k).push(s);
+    }
+    const laneKeys = [...lanes.keys()].sort((a,b) => g.split === 'grp' ? Object.keys(DATA.groups).indexOf(a) - Object.keys(DATA.groups).indexOf(b)
+      : g.cats.indexOf(a) - g.cats.indexOf(b));
+    const col = CAT_COLORS[g.cats[0]], multi = laneKeys.length > 1, collapsed = HZ.collapsed.has(g.k);
+    const ticks = () => gs.map(s => {
+      const a = Math.max(toMin(s.start), r0), b = Math.min(toMin(s.end), r1), [c] = CAT_COLORS[s.cat];
+      return `<i class="hz-colt" style="--c:${c};left:${pct(a)}%;width:${(b - a) / span * 100}%" title="${esc(s.title + ' (' + s.start + '–' + s.end + ')')}"></i>`;
+    }).join('');
+    const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car">▾</span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
+    if (collapsed || !multi){
+      if (collapsed){
+        rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track">${ticks()}</div></div>`;
+        continue;
+      }
+    } else {
+      rows += `<div class="hz-grp" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track"></div></div>`;
+    }
+    for (const k of laneKeys){
+      const ls = lanes.get(k);
+      const cat = ls[0].cat, [lc, lbg] = CAT_COLORS[cat];
+      const models = ls.map(barModel);
+      const subs = hzPack(models.map(m => ({ m, a: toMin(m.s.start), b: toMin(m.s.end) })), ppm, r0, r1);
+      let yy = 5, bars = '';
+      for (const sub of subs){
+        const hh = Math.max(...sub.items.map(x => x.m.h));
+        for (const { m } of sub.items){
+          const s = m.s, full0 = toMin(s.start), full1 = toMin(s.end);
+          const n = s.talks.length;
+          const meta = [`${s.start}–${s.end}`, n ? `${n} ${s.cat === 'poster' ? 'poster' : 'talk'}${n > 1 ? 's' : ''}` : '',
+            s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : ''].filter(Boolean).join(' · ');
+          const conv = s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
+          const tip = esc(`${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})`);
+          const cls = 'hz-bar' + (full0 < r0 ? ' cl' : '') + (full1 > r1 ? ' cr' : '');
+          const pos = `left:${pct(m.a)}%;width:${(m.b - m.a) / span * 100}%;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
+          const attrs = `data-date="${day.date}" data-start="${full0}" data-end="${full1}"`;
+          const tiny = m.w < 30;
+          const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${star(s.id)}${hl(s.title)}</span><span class="hz-meta">${meta}</span></span>`;
+          if (!m.tks.length){
+            let marks = '';
+            if (!talksMode && s.cat !== 'poster' && !tiny){
+              for (const t of s.talks){
+                const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
+                if (tb <= ta) continue;
+                const fa = (ta - m.a) / (m.b - m.a), fw = (tb - ta) / (m.b - m.a);
+                // left/width are of the bar's padding box (4px left border, 1px right)
+                marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
+              }
+            }
+            bars += `<button type="button" class="${cls}${marks ? ' marked' : ''}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}${marks}</button>`;
+          } else {
+            let segs = '';
+            const bw = m.b - m.a;
+            for (const t of m.tks){
+              const ta = Math.max(toMin(t.s), r0), tb = Math.min(toMin(t.e), r1);
+              const sp = t.sp.map(p => p.n).join(', ');
+              const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
+              segs += `<button type="button" class="hz-talk" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.t + ', ' + t.s + (sp ? ', ' + sp : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+                <span class="hz-tt">${t.s}</span><span class="hz-tl">${star(t.id)}${hl(t.t)}</span>${sp ? `<span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+            }
+            bars += `<div class="${cls} hz-split" style="${pos}" ${attrs} title="${tip}">
+              <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
+          }
+        }
+        yy += hh + 4;
+      }
+      const total = yy + 1;
+      let label;
+      if (!multi) label = `<div class="hz-label" style="--c:${lc}">${gbtn}</div>`;
+      else {
+        const isGrp = g.split === 'grp';
+        const main = isGrp ? k : DATA.cats[cat], ab = isGrp ? k : (HZ_CAT_AB[cat] || k.toUpperCase());
+        const sub = isGrp ? (DATA.groups[k] || '') : '';
+        label = `<div class="hz-label" style="--c:${lc}" title="${esc(sub || main)}"><b><span class="hz-full">${esc(main)}</span><span class="hz-ab">${esc(ab)}</span></b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
+      }
+      rows += `<div class="hz-lane${multi ? '' : ' sole'}" style="--c:${lc};--cbg:${lbg}">${label}<div class="hz-track" style="height:${total}px">${bars}</div></div>`;
+    }
+  }
+  cv.querySelector('.hz-rows').innerHTML = rows || '<div class="hz-empty">No sessions in this time window. Drag the window above or pick a preset.</div>';
+  // overview: brush, shades, presets, readout
+  const ovEl = root.querySelector('.hz-ov');
+  const f = m => (m - d0) / (d1 - d0) * 100;
+  root.querySelectorAll('.hz-map').forEach(map => {
+    const brush = map.querySelector('.hz-brush');
+    brush.style.left = f(r0) + '%'; brush.style.width = (r1 - r0) / (d1 - d0) * 100 + '%';
+    map.querySelector('.hz-sl').style.cssText = `left:0;width:${f(r0)}%`;
+    map.querySelector('.hz-sr').style.cssText = `left:${f(r1)}%;right:0`;
+  });
+  root.querySelectorAll('[data-hzpan]').forEach(b => { b.disabled = +b.dataset.hzpan < 0 ? r0 <= d0 : r1 >= d1; });
+  const pr = hzPresets(d0, d1, date);
+  ovEl.querySelectorAll('[data-hzpre]').forEach(b => {
+    const q = pr[b.dataset.hzpre];
+    b.setAttribute('aria-pressed', !!q && Math.abs(q[0] - r0) < 8 && Math.abs(q[1] - r1) < 8);
+  });
+  ovEl.querySelector('.hz-read').innerHTML = `${hzHM(r0)}–${hzHM(r1)} · ${hzDur(span)}<small>${shown} of ${slotsAll.length} ${talksMode ? 'sessions' : 'sessions'} in this window</small>`;
+  paintNow();
+}
+
+function hzPaintNow(c){
+  const n = aedtNow(), r0 = +c.dataset.r0, r1 = +c.dataset.r1, d0 = +c.dataset.d0, d1 = +c.dataset.d1;
+  if (!r1) return;
+  const today = c.dataset.date === n.date;
+  const show = today && n.min >= r0 && n.min <= r1;
+  c.style.setProperty('--np', (n.min - r0) / (r1 - r0) * 100);
+  c.querySelector('.hz-nowl').hidden = !show;
+  const pill = c.querySelector('.hz-nowpill'); if (pill) pill.hidden = !show;
+  const Wp = c.querySelector('.hz-ticks').clientWidth, nx = (n.min - r0) / (r1 - r0) * Wp;
+  c.querySelectorAll('.hz-ticks .t').forEach(t => { const x = parseFloat(t.style.left) / 100 * Wp; t.style.visibility = show && x > nx - 34 && x < nx + 44 ? 'hidden' : ''; });
+  document.querySelectorAll('#agenda .hz-ovnow').forEach(ov => {
+    ov.hidden = !(today && n.min >= d0 && n.min <= d1);
+    ov.style.setProperty('--onp', (n.min - d0) / (d1 - d0) * 100);
+  });
+}
+
+function hzInit(root){
+  const cv = root.querySelector('.hz-canvas'), date = cv.dataset.date;
+  const d0 = +cv.dataset.d0, d1 = +cv.dataset.d1, ov = root.querySelector('.hz-ov');
+  const redraw = () => hzDraw(root);
+  const set = (a, b) => {
+    const snap = x => Math.round(x / 15) * 15;
+    a = snap(a); b = snap(b);
+    if (b - a < 30){ b = a + 30; }
+    if (b > d1){ b = d1; a = Math.min(a, b - 30); }
+    if (a < d0){ a = d0; b = Math.max(b, a + 30); }
+    HZ.range[date] = [Math.max(d0, a), Math.min(d1, b)];
+    redraw();
+  };
+  ov.addEventListener('click', e => {
+    const b = e.target.closest('[data-hzpre]');
+    if (!b) return;
+    const q = hzPresets(d0, d1, date)[b.dataset.hzpre];
+    if (q){ HZ.range[date] = q.slice(); redraw(); }
+  });
+  root.querySelectorAll('.hz-map').forEach(map => map.addEventListener('pointerdown', e => {
+    const rect = map.getBoundingClientRect();
+    const toM = x => d0 + (x - rect.left) / rect.width * (d1 - d0);
+    const t = e.target, start = toM(e.clientX), x0 = e.clientX;
+    const orig = HZ.range[date].slice();
+    const mode = t.closest('.hz-hl') ? 'l' : t.closest('.hz-hr') ? 'r' : t.closest('.hz-brush') ? 'm' : 'n';
+    try { map.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+    let moved = false;
+    const mv = ev => {
+      if (Math.abs(ev.clientX - x0) > 3) moved = true;
+      const m = toM(ev.clientX), dm = m - start, w = orig[1] - orig[0];
+      if (mode === 'l') set(Math.min(m, orig[1] - 30), orig[1]);
+      else if (mode === 'r') set(orig[0], Math.max(m, orig[0] + 30));
+      else if (mode === 'm'){ const a = Math.max(d0, Math.min(d1 - w, orig[0] + dm)); set(a, a + w); }
+      else if (moved) set(Math.min(start, m), Math.max(start, m));
+    };
+    const up = () => {
+      map.removeEventListener('pointermove', mv);
+      map.removeEventListener('pointerup', up);
+      map.removeEventListener('pointercancel', up);
+      if (mode === 'n' && !moved){ const w = orig[1] - orig[0], a = Math.max(d0, Math.min(d1 - w, start - w / 2)); set(a, a + w); }
+    };
+    map.addEventListener('pointermove', mv);
+    map.addEventListener('pointerup', up);
+    map.addEventListener('pointercancel', up);
+  }));
+  root.querySelectorAll('.hz-brush').forEach(brush => brush.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const [a, b] = HZ.range[date], dir = e.key === 'ArrowLeft' ? -15 : 15;
+    if (e.shiftKey) set(a, b + dir); else set(a + dir, b + dir);
+    brush.focus({ preventScroll: true });
+  }));
+  cv.addEventListener('click', e => {
+    const pan = e.target.closest('[data-hzpan]');
+    if (pan){
+      const [a, b] = HZ.range[date], w = b - a, d = Math.max(15, Math.round(w / 2 / 15) * 15) * +pan.dataset.hzpan;
+      const na = Math.max(d0, Math.min(d1 - w, a + d));
+      set(na, na + w);
+      return;
+    }
+    const g = e.target.closest('[data-hzgrp]');
+    if (!g) return;
+    const k = g.dataset.hzgrp;
+    HZ.collapsed.has(k) ? HZ.collapsed.delete(k) : HZ.collapsed.add(k);
+    redraw();
+    cv.querySelector(`[data-hzgrp="${k}"]`)?.focus({ preventScroll: true });
+  });
+  // hover/focus text for talks too small to print
+  let tip = document.getElementById('hzTip');
+  if (!tip){ tip = document.createElement('div'); tip.id = 'hzTip'; tip.hidden = true; document.body.appendChild(tip); }
+  const showTip = e => {
+    const t = e.target.closest && e.target.closest('.hz-talk');
+    if (!t || !(cv.classList.contains('hz-tick') || cv.classList.contains('hz-mid'))){ tip.hidden = true; return; }
+    tip.textContent = t.dataset.tip; tip.hidden = false;
+    const r = t.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+    tip.style.top = (r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8) + 'px';
+  };
+  cv.addEventListener('pointerover', showTip);
+  cv.addEventListener('focusin', showTip);
+  cv.addEventListener('pointerleave', () => { tip.hidden = true; });
+  cv.addEventListener('focusout', () => { tip.hidden = true; });
+  redraw();
+}
+
+// Vertical day view: time runs down the page, one column per stream family
+// (adaptive sub-columns share the width by how many sessions run side by side),
+// with plenaries and breaks as full-width bands and sticky column heads.
+// Grid rows are the day's start times: a heading row for each time a session
+// starts and, where talks are shown (Talks mode, or a card opened with
+// "N talks"), a row for each time a talk starts. A card that shows talks spans
+// its rows with a subgrid and puts each talk on the row of its start time, so
+// reading across from a time label meets every talk that starts then. Phones
+// get a single list grouped by start time instead of the grid.
+let vtPick = 'all';
+const vtOpen = new Set();
+let vtWidth = 0;
+const VT_COLS = [
+  { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
+  { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
+  { key:'commad', label:'COMMAD', short:'COMMAD', col:'var(--commad)', of:s => s.cat === 'commad' },
+  { key:'focus',  label:'Focus sessions', short:'Focus', col:'var(--focus)', of:s => s.cat === 'focus' },
+  { key:'misc',   label:'Posters · Edu', short:'Posters · Edu · Public', col:'var(--poster)', of:s => ['poster','edu','public'].includes(s.cat) },
+  { key:'event',  label:'Forums & meetings', short:'Forums · Meetings', col:'var(--special)', of:() => true },
+];
+const VT_BAND_CATS = ['plenary','special','business','social'];
+
+function vtDayView(day){
+  const slots = programDaySlots(day);
+  const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const who = t => t.sp.map(p => p.n).join(', ');
+  const talksOf = s => s.cat === 'poster' ? [] : s.talks.filter(t => talkMatches(t, s));
+  const isOpen = s => (state.programTalks || vtOpen.has(s.id)) && talksOf(s).length > 0;
+  const star = id => state.starred.has(id) ? '<span class="vt-star" aria-label="In my agenda">★</span> ' : '';
+  const isBandCat = s => VT_BAND_CATS.includes(s.cat);
+  const regular = slots.filter(s => !isBandCat(s));
+  const overlaps = (s, o) => toMin(s.start) < toMin(o.end) && toMin(o.start) < toMin(s.end);
+  const colOf = s => VT_COLS.find(c => c.of(s));
+  const bands = [], colSlots = {};
+  VT_COLS.forEach(c => colSlots[c.key] = []);
+  for (const s of slots){
+    if (isBandCat(s) && !regular.some(o => overlaps(s, o))) bands.push(s);
+    else colSlots[colOf(s).key].push(s);
+  }
+  const cols = VT_COLS.filter(c => colSlots[c.key].length).map(c => ({ ...c }));
+  const head = `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>`;
+
+  // One card. With `rows` the card shows its talks on the grid rows given
+  // (subgrid); without, talks (if open) are a plain list under the heading.
+  const card = (s, o) => {
+    const [col, bg] = CAT_COLORS[s.cat];
+    const tk = talksOf(s), open = isOpen(s), nTalk = s.talks.length;
+    const label = s.grp ? s.grp : DATA.cats[s.cat];
+    const conv = s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
+      : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv">${hl(s.room)}</span>` : '<span></span>';
+    const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
+    const tog = tk.length && !state.programTalks ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
+      : nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
+    const talkBtn = (t, style) => `<button type="button" class="vt-tk" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${hl(t.t)}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
+    let talks = '';
+    if (open && o.rows){
+      const { a, b, lineR, lineAt } = o.rows;
+      tk.forEach((t, i) => {
+        const r0 = Math.min(b - 1, Math.max(a + 1, lineR.get(Math.max(toMin(t.s), toMin(s.start)))));
+        // a talk runs to the next talk's row (or the card's end) when they are back to back
+        const next = tk[i + 1];
+        let r1 = Math.min(b, toMin(t.e) >= toMin(s.end) ? b : lineAt(toMin(t.e)));
+        if (next) r1 = toMin(t.e) >= toMin(next.s) ? lineR.get(toMin(next.s)) : Math.min(r1, lineR.get(toMin(next.s)));
+        talks += talkBtn(t, `grid-row:${r0 - a + 1} / ${Math.max(r0 + 1, r1) - a + 1}`);
+      });
+    } else if (open){
+      talks = `<div class="vt-talks">${tk.map(t => talkBtn(t, '')).join('')}</div>`;
+    }
+    const cls = 'vt-card' + (o.band ? ' band' : '') + (open && o.rows ? ' sub' : '') + (open ? ' open' : '');
+    return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" data-col="${colOf(s).key}" data-date="${day.date}" data-start="${toMin(s.start)}" data-end="${toMin(s.end)}">
+      <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="">
+        <span class="vt-top"><span class="vt-time">${s.start}–${s.end}</span><span class="vt-badge">${esc(label)}</span></span>
+        <span class="vt-title" title="${esc(s.title)}">${star(s.id)}${hl(s.title)}</span></button>
+      <span class="vt-foot">${conv}${tog}</span></div>${talks}</div>`;
+  };
+
+  if (PHONE_MQ.matches){
+    // Phone: one list grouped by start time, filtered by the stream chips.
+    const pickKey = vtPick !== 'all' && cols.some(c => c.key === vtPick) ? vtPick : 'all';
+    let html = head + `<div class="vt-picker" role="group" aria-label="Show stream"><button type="button" data-vtpick="all" aria-pressed="${pickKey === 'all'}">All<small>${slots.length}</small></button>${cols.map(c => `<button type="button" style="--c:${c.col}" data-vtpick="${c.key}" aria-pressed="${pickKey === c.key}">${esc(c.short)}<small>${colSlots[c.key].length}</small></button>`).join('')}</div>`;
+    const shown = s => pickKey === 'all' || colOf(s).key === pickKey || (pickKey === 'event' && bands.includes(s));
+    const groups = new Map();
+    slots.filter(shown).forEach(s => { const k = toMin(s.start); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); });
+    html += `<section class="vt-list" aria-label="Timetable by time">`;
+    for (const [m, g] of groups){
+      html += `<div class="vt-lh">${hhmm(m)}<small>${g.length} session${g.length > 1 ? 's' : ''} starting</small></div><div class="vt-lb">${g.map(s => card(s, { band: bands.includes(s) })).join('')}</div>`;
+    }
+    if (!groups.size) html += '<p class="vt-none">Nothing in this stream today.</p>';
+    return html + '</section>';
+  }
+
+  // Clusters of overlapping sessions per column, with greedy lanes.
+  const cells = [];
+  for (const c of cols){
+    let cur = null;
+    for (const s of colSlots[c.key]){
+      if (!cur || toMin(s.start) >= cur.end){ cur = { col:c, slots:[], start:toMin(s.start), end:toMin(s.end), lanes:[], lane:new Map() }; cells.push(cur); }
+      let lane = cur.lanes.findIndex(e => e <= toMin(s.start));
+      if (lane < 0){ lane = cur.lanes.length; cur.lanes.push(0); }
+      cur.lanes[lane] = toMin(s.end); cur.lane.set(s, lane);
+      cur.slots.push(s); cur.end = Math.max(cur.end, toMin(s.end));
+    }
+    c.demand = Math.max(1, ...cells.filter(x => x.col === c).map(x => x.lanes.length));
+  }
+  // Share the width: each stream starts with one sub-column; the stream with
+  // the most unmet parallelism per sub-column gets the next one. Talks mode
+  // allows narrower sub-columns so parallel sessions sit side by side.
+  const rs = remPx() / 16;
+  vtWidth = document.getElementById('agenda').clientWidth || 1200;
+  const budget = Math.max(cols.length, Math.floor((vtWidth - 56 * rs) / ((state.programTalks ? 96 : 150) * rs)));
+  cols.forEach(c => c.k = 1);
+  for (let used = cols.length; used < budget; used++){
+    const pick = cols.filter(c => c.k < c.demand).sort((a,b) => b.demand / b.k - a.demand / a.k)[0];
+    if (!pick) break;
+    pick.k++;
+  }
+  let track = 2;
+  cols.forEach(c => { c.t0 = track; track += c.k; });
+  bands.forEach(s => cells.push({ band:true, slots:[s], start:toMin(s.start), end:toMin(s.end) }));
+
+  // Rows: a heading row per session start, then a talk row per talk start.
+  const marks = new Map();
+  const mark = (m, k) => { if (!marks.has(m)) marks.set(m, {}); marks.get(m)[k] = true; };
+  for (const s of slots){
+    mark(toMin(s.start), 'h');
+    if (isOpen(s)) talksOf(s).forEach(t => mark(Math.max(toMin(t.s), toMin(s.start)), 'r'));
+  }
+  const rows = [], lineH = new Map(), lineR = new Map();
+  let line = 2;
+  for (const m of [...marks.keys()].sort((a,b) => a - b)){
+    const k = marks.get(m);
+    if (k.h){ lineH.set(m, line); rows.push({ m, line, k:'h', label:!k.r }); line++; }
+    if (k.r){ lineR.set(m, line); rows.push({ m, line, k:'r', label:true }); line++; }
+  }
+  const endLine = line, lastEnd = Math.max(...slots.map(s => toMin(s.end)));
+  const lineAt = m => (rows.find(r => r.m >= m) || { line:endLine }).line;
+  const span = s => { const a = lineH.get(toMin(s.start)); return { a, b: Math.max(a + 1, lineAt(toMin(s.end))) }; };
+
+  const talksCls = state.programTalks ? ' talks' : '';
+  let html = head + `<section class="vt-grid${talksCls}" data-date="${day.date}" style="--vtcols:${cols.map(c => `repeat(${c.k},minmax(0,1fr))`).join(' ') || 'minmax(0,1fr)'}" aria-label="Timetable by stream">`;
+  html += '<div class="vt-corner"></div>';
+  cols.forEach(c => { html += `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span><small>${colSlots[c.key].length}</small></div>`; });
+  for (const r of rows){
+    const first = r.k === 'h' || !lineH.has(r.m);
+    if (first || r.label) html += `<div class="vt-line${r.label ? '' : ' h'}" style="grid-row:${r.line}"></div>`;
+    if (r.label) html += `<div class="vt-t" data-date="${day.date}" data-m="${r.m}" style="grid-row:${r.line}">${hhmm(r.m)}</div>`;
+  }
+  html += `<div class="vt-t end" data-date="${day.date}" data-m="${lastEnd}" style="grid-row:${endLine}">${hhmm(lastEnd)}</div>`;
+  const placed = (s, cols0, base, band) => {
+    const { a, b } = span(s);
+    return card(s, { band, place: `grid-column:${cols0};grid-row:${a - base + 1} / ${b - base + 1}`, rows: { a, b, lineR, lineAt } });
+  };
+  for (const c of cells){
+    if (c.band){ html += placed(c.slots[0], '2 / -1', 1, true); continue; }
+    const L = c.lanes.length, K = c.col.k;
+    if (L <= K){
+      for (const s of c.slots){
+        const l = c.lane.get(s), a = Math.floor(l * K / L), b = Math.floor((l + 1) * K / L);
+        html += placed(s, `${c.col.t0 + a} / ${c.col.t0 + b}`, 1);
+      }
+      continue;
+    }
+    const a = lineH.get(c.start), b = Math.max(a + 1, lineAt(c.end));
+    if (c.slots.some(isOpen)){
+      // More parallel sessions than sub-columns, and some show talks: split
+      // the cell into one narrow column per lane so the talks keep their rows.
+      html += `<div class="vt-split" style="--n:${L};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => placed(s, String(c.lane.get(s) + 1), a)).join('')}</div>`;
+    } else {
+      html += `<div class="vt-stack" style="--n:${K};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => card(s, {})).join('')}</div>`;
+    }
+  }
+  return html + '</section>';
+}
+
+document.getElementById('agenda').addEventListener('click', e => {
+  const t = e.target.closest('[data-vttog]');
+  if (t){
+    const id = t.dataset.vttog, top = t.getBoundingClientRect().top;
+    vtOpen.has(id) ? vtOpen.delete(id) : vtOpen.add(id);
+    renderCalendar();
+    const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
+    if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
+    return;
+  }
+  const b = e.target.closest('[data-vtpick]');
+  if (b){ vtPick = b.dataset.vtpick; renderCalendar(); }
+});
 
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
@@ -2170,6 +2880,7 @@ function renderCalendar(){
     main.innerHTML = !selected.length ? empty
       : state.day === 'all' ? weekCalendar(selected)
       : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
+    if (main.querySelector('.hz-canvas')) hzInit(main);
     main.classList.toggle('wide', true);
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
@@ -2211,6 +2922,33 @@ document.getElementById('programLevel').addEventListener('click', e => {
   state.programTalks = b.dataset.level === 'talks';
   paintLevel();
   renderCalendar();
+});
+function savedOrient(){
+  try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
+}
+function paintOrient(){
+  for (const b of document.querySelectorAll('[data-orient]')) b.setAttribute('aria-pressed', b.dataset.orient === state.orient);
+}
+document.getElementById('programOrient').addEventListener('click', e => {
+  const b = e.target.closest('[data-orient]');
+  if (!b || b.dataset.orient === state.orient) return;
+  state.orient = b.dataset.orient;
+  try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
+  paintOrient();
+  renderCalendar();
+});
+const programDayShown = () => state.layout === 'calendar' && state.scope === 'program' && state.day !== 'all';
+PHONE_MQ.addEventListener('change', () => {
+  if (programDayShown()) renderCalendar();
+});
+let dayViewResize = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(dayViewResize);
+  dayViewResize = setTimeout(() => {
+    const main = document.getElementById('agenda');
+    if (main.querySelector('.hz-canvas')) hzDraw(main);
+    else if (main.querySelector('.vt-grid') && Math.abs(main.clientWidth - vtWidth) > 40) renderCalendar();
+  }, 120);
 });
 document.getElementById('includeParents').addEventListener('change', renderCalendar);
 
@@ -3057,17 +3795,22 @@ function paintNow(){
       }
     }
   }
-  let nextCluster = null;
-  document.querySelectorAll('#agenda .pg-cluster').forEach(c => {
-    const today = c.dataset.date === n.date, st = +c.dataset.start, en = +c.dataset.end;
-    c.classList.toggle('past', today && en <= n.min);
-    c.classList.toggle('is-now', today && st <= n.min && n.min < en);
-    c.classList.remove('is-next');
-    if (!nextCluster && today && st > n.min) nextCluster = c;
-  });
-  if (nextCluster) nextCluster.classList.add('is-next');
-  document.querySelectorAll('#agenda .pg-talk').forEach(x =>
+  // Full program day views: sessions and talks on now, and the next start.
+  const dayItems = [...document.querySelectorAll('#agenda .hz-bar, #agenda .vt-card')];
+  let nextMin = Infinity;
+  for (const x of dayItems){
+    const today = x.dataset.date === n.date, st = +x.dataset.start, en = +x.dataset.end;
+    x.classList.toggle('past', today && en <= n.min);
+    x.classList.toggle('is-now', today && st <= n.min && n.min < en);
+    if (today && st > n.min) nextMin = Math.min(nextMin, st);
+  }
+  for (const x of dayItems) x.classList.toggle('is-next', x.dataset.date === n.date && +x.dataset.start === nextMin);
+  document.querySelectorAll('#agenda .hz-talk, #agenda .hz-mark, #agenda .vt-tk').forEach(x =>
     x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
+  document.querySelectorAll('#agenda .hz-canvas').forEach(hzPaintNow);
+  const vtLabels = [...document.querySelectorAll('#agenda .vt-t[data-m]')];
+  const vtLast = vtLabels.at(-1), vtNow = vtLabels.filter(l => l.dataset.date === n.date && +l.dataset.m <= n.min && vtLast && n.min < +vtLast.dataset.m).at(-1);
+  vtLabels.forEach(l => l.classList.toggle('is-now', l === vtNow));
   document.querySelectorAll('.cal-now').forEach(line => {
     const first = +line.dataset.first, last = +line.dataset.last;
     line.hidden = !(line.dataset.date === n.date && n.min >= first && n.min <= last);
@@ -3089,8 +3832,16 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   if (ti < 0) return;
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
   paintNow();
+  // The timeline moves its window to now; then go to the topmost item on now (or next).
+  const cv = state.layout === 'calendar' && document.querySelector('#agenda .hz-canvas');
+  if (cv){
+    const p = hzPresets(+cv.dataset.d0, +cv.dataset.d1, cv.dataset.date);
+    if (p.now){ HZ.range[cv.dataset.date] = p.now; hzDraw(document.getElementById('agenda')); }
+  }
+  const topmost = sel => [...document.querySelectorAll(sel)].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
   const target = state.layout === 'calendar'
-    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .pg-cluster.is-now, #agenda .pg-cluster.is-next')
+    ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .vt-t.is-now')
+      || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
   if (target) target.scrollIntoView({ block: target.classList.contains('cal-now') ? 'center' : 'start' });
   else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
@@ -3113,6 +3864,7 @@ function stateHash(){
   if (state.cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...state.cats].join(',') || 'none');
   if (state.group) p.set('group', state.group);
   if (state.programTalks) p.set('talks', '1');
+  if (state.orient === 'v' && state.layout === 'calendar') p.set('orient', 'v');
   return p.toString();
 }
 let hashReady = false;
@@ -3143,6 +3895,8 @@ function readHash(){
   state.group = g && DATA.days.some(d => d.slots.some(s => s.grp === g)) ? g : null;
   state.programTalks = p.get('talks') === '1';
   paintLevel();
+  state.orient = ['h', 'v'].includes(p.get('orient')) ? p.get('orient') : savedOrient();
+  paintOrient();
   return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
 }
 function followHashTargets(r){
