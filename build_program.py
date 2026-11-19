@@ -1205,7 +1205,7 @@ function applyFilters(){
   } else {
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
-    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} sessions · <b>${shownTalks}</b>${of(totalTalks)} talks`;
+    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`;
   }
   document.getElementById('starCount').textContent = state.starred.size;
   if (state.scope === 'program') renderTabs(programCounts());
@@ -2125,13 +2125,18 @@ function peopleIndex(){
   return (_people = { people, groups: order });
 }
 
-// A query that is exactly an institution's name or alias ("unsw", "sydney uni")
-// lists that institution; anything else matches every word in names and affiliations.
+// A query that is exactly an institution's alias ("unsw", "sydney uni") or its
+// full name of two or more words ("monash university") lists that institution;
+// anything else, a single plain word included, matches every word in names and
+// affiliations. A one-word name is never taken as an alias, so a common word
+// that happens to be a group label cannot narrow the search.
 function aliasGroupFor(q){
   const nq = norm(q.replace(/"/g, '')).trim();
   if (!nq) return null;
   for (const g of Object.keys(AFF.groups)){
-    if (norm(AFF.groups[g][0]) === nq || groupAliases(g).includes(nq)) return g;
+    if (groupAliases(g).includes(nq)) return g;
+    const label = norm(AFF.groups[g][0]).trim();
+    if (label === nq && /\s/.test(label)) return g;
   }
   return null;
 }
@@ -2159,11 +2164,12 @@ function renderPeople(){
   const terms = termsOf(q);
   const shown = alias ? p => p.groups.has(alias)
     : terms.length ? p => terms.every(t => p.hay.includes(t)) : () => true;
-  let html = '', nPeople = 0, nGroups = 0, jump = '';
+  let html = '', nPeople = 0, nGroups = 0, nNone = 0, jump = '';
   groups.forEach((grp, gi) => {
     const list = grp.people.filter(shown);
     if (!list.length) return;
-    nPeople += list.length; nGroups++;
+    nPeople += list.length;
+    if (grp.g) nGroups++; else nNone = list.length;
     const n = list.length === grp.people.length ? `${list.length}` : `${list.length} of ${grp.people.length}`;
     jump += `<option value="ppg${gi}">${esc(grp.label)} (${list.length})</option>`;
     html += `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}"><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${grp.people.length === 1 ? 'person' : 'people'}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label)).join('')}</ul></section>`;
@@ -2173,11 +2179,14 @@ function renderPeople(){
   const sel = document.getElementById('peopleJump');
   sel.innerHTML = `<option value="">an affiliation…</option>` + jump;
   sel.disabled = nGroups < 2;
-  const total = people.length, totalGroups = groups.filter(g => g.g).length + (groups.some(g => !g.g) ? 1 : 0);
+  // Affiliations count institutions only; people with none listed are counted apart.
+  const total = people.length, totalGroups = groups.filter(g => g.g).length;
   const filtered = nPeople !== total;
+  const plural = (n, one, many) => n === 1 ? one : many;
+  const none = nNone ? ` · <b>${nNone}</b> with no institution listed` : '';
   document.getElementById('resultLine').innerHTML = filtered
-    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '')
-    : `<b>${total}</b> people · <b>${totalGroups}</b> affiliations · speakers and conveners`;
+    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + none + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '')
+    : `<b>${total}</b> people · <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none + ` · speakers and conveners`;
 }
 document.getElementById('peopleJump').addEventListener('change', e => {
   const h = document.getElementById(e.target.value);
@@ -2304,7 +2313,12 @@ document.getElementById('nowBtn').addEventListener('click', () => {
 function stateHash(){
   const p = new URLSearchParams();
   if (state.scope !== 'program') p.set('view', state.scope);
-  if (state.scope === 'participants' && state.pq) p.set('pq', state.pq);
+  // The people list ignores the program's day, search, streams and layout, so
+  // its address carries only its own search.
+  if (state.scope === 'participants'){
+    if (state.pq) p.set('pq', state.pq);
+    return p.toString();
+  }
   if (state.layout !== 'list') p.set('layout', state.layout);
   if (state.day !== 'all') p.set('day', DATA.days[state.day].date);
   if (state.q) p.set('q', state.q);

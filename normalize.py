@@ -608,7 +608,24 @@ AFF_INSTITUTIONS = (
     ('ntu', 'Nanyang Technological University', r'Nanyang Technological', 'ntu'),
     ('mit', 'Massachusetts Institute of Technology',
      r'Massachusetts Institute of Technology|\bMIT\b', 'mit'),
+    ('caltech', 'Caltech (California Institute of Technology)',
+     r'\bCaltech\b|California Institute of Technology', 'caltech'),
 )
+# The University of California campuses are separate institutions: "University
+# of California, Berkeley" must not fall back to its first comma part.
+_UC_CAMPUSES = (
+    ('berkeley', 'Berkeley', 'UCB'), ('los angeles', 'Los Angeles', 'UCLA'),
+    ('san diego', 'San Diego', 'UCSD'), ('santa barbara', 'Santa Barbara', 'UCSB'),
+    ('davis', 'Davis', None), ('irvine', 'Irvine', 'UCI'), ('santa cruz', 'Santa Cruz', 'UCSC'),
+    ('riverside', 'Riverside', 'UCR'), ('merced', 'Merced', None),
+    ('san francisco', 'San Francisco', 'UCSF'),
+)
+AFF_INSTITUTIONS += tuple(
+    ('uc-' + slug.replace(' ', '-'), 'University of California, ' + name,
+     r'University of California,?\s+(?:at\s+)?' + name + r'\b|\bUC[\s-]+' + name + r'\b'
+     + (r'|\b' + short + r'\b' if short and short != 'UCB' else ''),
+     'uc ' + slug + (', ' + short.lower() if short else ''))
+    for slug, name, short in _UC_CAMPUSES)
 _AFF_RES = tuple((key, label, re.compile(pat)) for key, label, pat, _ in AFF_INSTITUTIONS)
 _AFF_SECOND = re.compile(r';|\s\d(?=[A-Z])|\s+/\s+|\s+(?:&|and)\s+(?=(?:[Tt]he\s+)?Universit)')
 _AFF_PARTS = re.compile(r'\s*[,|/]\s*|\s+-\s+')
@@ -618,6 +635,17 @@ _AFF_PREFS = (re.compile(r'univ|uniwersytet', re.I),
 _AFF_CODE = re.compile(r'\s*\([A-Z]{2}\)\s*$')
 _AFF_THE = re.compile(r'^the\s+', re.I)
 _AFF_AT = re.compile(r'^.*?\bat\s+(?=(?:the\s+)?univ)', re.I)
+# Strings that name no institution: a role, a bare city or country, or a
+# "University of <subject>". They count as not listed; the text itself still
+# shows on the person.
+_AFF_VAGUE = re.compile(
+    r'(?:(?:phd|honours|undergraduate|postgraduate|graduate|masters?|research)\s+)?students?'
+    r'|n\s?a|none|unknown|retired|tbc|tba|university|universities'
+    r'|university of (?:physics|science|sciences|engineering|technology|mathematics)'
+    r'|sydney|melbourne|brisbane|canberra|perth|adelaide|hobart|darwin|wollongong|newcastle'
+    r'|geelong|auckland|wellington|christchurch|nsw|vic|qld|act|wa|sa|tas'
+    r'|australia|new zealand|singapore|china|japan|india|usa|united states|united kingdom|uk'
+    r'|germany|france|canada')
 
 
 def _aff_key(text):
@@ -630,7 +658,8 @@ def _aff_key(text):
 
 def canonical_affiliation(aff):
     """Return (key, label) of the institution an affiliation string belongs
-    to, or None when it is empty. Depends on that string alone;
+    to, or None when it is empty or names no institution ("Student", a bare
+    city). Depends on that string alone;
     affiliation_table() picks the shared label of a group not listed above."""
     s = collapse_ws(clean_chars(aff or ''))
     for wrong, right in _AFF_TYPOS:
@@ -653,7 +682,10 @@ def canonical_affiliation(aff):
     pick = _AFF_CODE.sub('', _AFF_AT.sub('', pick)).strip()
     label = _AFF_THE.sub('', pick)
     label = label[:1].upper() + label[1:]
-    return 'x:' + (_aff_key(label) or _aff_key(s)), label
+    key = _aff_key(label) or _aff_key(s)
+    if not key or _AFF_VAGUE.fullmatch(key):
+        return None
+    return 'x:' + key, label
 
 
 def affiliation_table(payload):

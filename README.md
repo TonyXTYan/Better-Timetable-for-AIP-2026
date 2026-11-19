@@ -22,8 +22,12 @@ user site's `404.html` that keeps `?query` and `#hash`).
   institution, short forms included; `#view=participants&pq=anu` links to a search.
   Affiliations are grouped by `canonical_affiliation()` in `normalize.py`: department prefixes,
   a leading "The", case, country codes and typos are ignored, and Adelaide University and the
-  University of Adelaide (merged in 2026) are one group. The affiliation text itself is never
-  changed; talk details show each speaker as "Name (Affiliation)".
+  University of Adelaide (merged in 2026) are one group, as are each University of California
+  campus and Caltech under their usual names. Text that names no institution ("Student", a bare
+  city) counts as not listed, though it still shows on the person. A single plain word searches
+  every name and affiliation; only a short form or a full institution name narrows to one group.
+  The affiliation text itself is never changed; talk details show each speaker as
+  "Name (Affiliation)".
 - Star talks or whole sessions to build **My agenda**: clash warnings, list or calendar,
   print, copy as text, download `.ics`, or share it as a link the receiver can merge into theirs.
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
