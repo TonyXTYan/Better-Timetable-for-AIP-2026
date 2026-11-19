@@ -434,12 +434,28 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-n::after{content:attr(data-n)}
 .week-blk em{font-style:normal}
 .week-blk.week-bdg em{display:none}
-.week-blk.week-brk span{word-break:break-all}
+.week-blk.week-bdg span{display:block;white-space:nowrap;text-overflow:ellipsis}
+/* a talk: a mic and its title; as a badge, the mic and its session's stream code; at
+   its smallest, the mic alone */
+.week-blk .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
+.week-blk .wk-tc,.week-blk.week-mic em{display:none}
+.week-blk.week-bdg .wk-tc{display:inline}
+.week-blk.week-nomic .k-ic{display:none}
+.week-blk.week-mic{justify-content:center}
+.week-blk.week-mic span{padding:3px 0 0}
+.week-blk.week-mic .k-ic{margin:0}
+.week-blk.week-hid{display:none}
+.week-h .week-blk.has-tk.week-up::before{max-height:calc(100% - 10px)}
+.week-blk.week-tiny span{padding:2px 1px 0;font-size:.82em;letter-spacing:-.02em}
+/* parallel items beyond what a vertical column has room for, folded into one chip */
+.week-blk.week-nmore{justify-content:center;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink-2);border-radius:5px;font-weight:800;letter-spacing:-.02em}
+.week-blk.week-nmore span{display:block;padding:3px 0 0;white-space:nowrap}
 /* a tall block too narrow for any label across shows its stream code, letters upright
    one under another (never sideways text); the full name is in its tooltip and name */
 .week-blk.week-up{justify-content:center}
 .week-blk.week-up span{display:none}
-.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:.625rem;font-weight:800;line-height:1.05;letter-spacing:-.06em;pointer-events:none}
+.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:var(--upf,.625rem);font-weight:800;line-height:1.05;letter-spacing:-.22em;pointer-events:none;box-sizing:border-box;max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.week-upm{position:absolute;left:0;top:0;visibility:hidden;writing-mode:vertical-lr;text-orientation:upright;font-size:var(--upf,.625rem);font-style:normal;font-weight:800;line-height:1.05;letter-spacing:-.22em;white-space:nowrap;pointer-events:none}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
@@ -451,6 +467,9 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-blk.week-past:not(.week-band){background:var(--cbg);color:var(--past-ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent)}
 .week-blk.week-band.week-past{border-left-color:color-mix(in srgb,var(--c) 45%,var(--line))}
 .week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.625rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* a head on one line keeps "Past" for screen readers only, and is muted instead */
+.week-dayh.week-dnar.week-pastday{color:var(--muted)}
+.week-dayh.week-dnar.week-pastday::after{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .week-title{margin:0 0 2px;font-size:1rem;font-weight:800;line-height:1.3}
 .week-title small{margin-left:6px;font-size:.8125rem;font-weight:600;color:var(--muted)}
 .wh-tch{display:none}
@@ -503,6 +522,8 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    busiest cluster's blocks keep at least their stream code */
 @media (min-width:721px){
   .week-v{--wh:calc(var(--dur) * .11rem);--vbw:1.3rem}
+  /* My agenda: room beside a session's code for its starred talks */
+  .week-v.week-mine{--vbw:1.6rem}
 }
 @media (max-width:720px){
   .week-ov{--wh:clamp(26rem, calc(100vh - var(--toolbar-full,150px) - 9rem), 40rem);--wgap:3px;padding:8px 6px 10px}
@@ -511,11 +532,26 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
   .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
   .week-v .week-axis .week-odd{display:none}
   .week-dayh .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-  .week-v .week-blk span{display:none}
+  .week-v .week-blk{font-size:.625rem;--upf:.5625rem}
+  /* a little taller than the screen allows at a glance, so a 90-minute session holds its code */
+  .week-ov.week-v{--wh:clamp(30rem, calc(var(--dur) * .045rem), 46rem)}
+  .week-v .week-blk span{padding:2px 2px 0}
   .week-blk:hover{outline:0}
   .week-legend,.week-h .week-legend{margin-left:0;gap:4px 10px}
   .week-h{--dl:3.1rem;--hppm:.07rem}
   .week-h .week-dayh{align-items:flex-start;padding:4px 5px}
+}
+/* Short screens (a phone on its side): the vertical overview's sticky day heads take
+   one slim line, so the grid keeps most of the height under the toolbar */
+@media (max-height:450px){
+  /* ...and its columns share the width, as on a phone (weekFold folds what does not fit
+     into "+N" chips), so the week does not scroll sideways */
+  .week-head,.week-v .week-body{grid-template-columns:2.6rem var(--week-cols-short)}
+  .week-v .week-rul{padding-bottom:3px}
+  .week-v .week-dayh{flex-direction:row;flex-wrap:nowrap;align-items:baseline;gap:0 5px;padding:2px 6px;white-space:nowrap;font-size:.75rem;line-height:1.25}
+  .week-v .week-dayh .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .week-v .week-dayh.week-pastday{color:var(--muted)}
+  .week-v .week-dayh.week-pastday::after{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
 /* View changes (withTransition): the main area cross-fades with a slight slide or zoom;
    the toolbar swaps at once and stays above it. Only set while a transition runs. The
@@ -1287,10 +1323,20 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-open>.vt-tsp{color:var(--bar-meta)}
 .week-mine .week-blk.w-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1.5px solid var(--c);border-radius:5px}
 .week-mine .week-blk.ctx{background:var(--cbg);color:var(--bar-ink);border:1.5px dashed var(--c)}
-.week-tk{position:absolute;z-index:1;pointer-events:none;border-radius:2px;background:var(--card);box-shadow:0 0 0 1px var(--c)}
-.week-blk.ctx .week-tk{background:var(--c);box-shadow:none}
-.week-v .week-tk{right:2px;width:4px;top:calc(var(--ta) * 1%);height:calc(var(--tw) * 1%)}
-.week-h .week-tk{bottom:2px;height:4px;left:calc(var(--ta) * 1%);width:calc(var(--tw) * 1%)}
+.week-ov{--tkw:15px}
+.week-v .week-blk.has-tk{padding-right:var(--tkw)}
+.week-tk{position:absolute;z-index:3;overflow:hidden;box-sizing:border-box;margin:0;padding:0;border:1px solid var(--c);border-radius:3px;background:var(--card);color:inherit;font:inherit;box-shadow:0 0 0 1px var(--card);cursor:pointer}
+.week-tk::before{content:"";position:absolute;left:50%;top:2px;width:.375rem;height:.5rem;margin-left:-.1875rem;background:var(--c);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+.week-tk:hover,.week-tk:focus-visible{z-index:5;box-shadow:0 0 0 2px var(--ink);outline:0}
+.week-tk.ctx{background:var(--c);box-shadow:none}
+.week-tk.ctx::before{background:var(--card)}
+.week-tk.ctx:hover,.week-tk.ctx:focus-visible{box-shadow:0 0 0 2px var(--ink)}
+.week-tk[hidden]{display:none}
+/* a mark sits over its session block's edge (the block's --a/--h/--l/--w): down its right
+   side in the vertical overview, along its bottom in the horizontal one */
+.week-v .week-tk{left:calc((var(--l) + var(--w)) * 1% - var(--tkw));width:calc(var(--tkw) - 1px);top:calc((var(--a) + var(--h) * var(--ta) / 100) * 1%);height:calc(var(--h) * var(--tw) / 100 * 1%);min-height:9px}
+.week-h .week-tk{top:calc(var(--bs) + (100% - var(--bs)) * (var(--l) + var(--w)) / 100 - 10px);height:8px;left:calc(var(--a) * 1% + 1px + (var(--h) * 1% - 2px) * var(--ta) / 100);width:calc((var(--h) * 1% - 2px) * var(--tw) / 100);min-width:10px}
+.week-h .week-tk::before{top:0}
 .week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
 .week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
 .week-legend i{position:relative;overflow:hidden}
@@ -1299,8 +1345,12 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-legend .wk-kt i{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-kg i{background:var(--surface-3);box-shadow:none;border:1.5px dashed var(--ink-2);box-sizing:border-box}
 .week-legend .wk-km i{background:var(--ink-2)}
-.week-legend .wk-km b{position:absolute;right:2px;top:2px;bottom:2px;width:3px;border-radius:1px;background:var(--card)}
-.week-h .week-legend .wk-km b{left:2px;right:2px;top:auto;bottom:2px;width:auto;height:3px}
+.week-legend .wk-km i{width:1.625rem;height:1.125rem}
+.week-legend .wk-km b{position:absolute;right:1px;top:1px;bottom:1px;width:.875rem;box-sizing:border-box;border:1px solid var(--ink-2);border-radius:3px;background:var(--card);box-shadow:0 0 0 1px var(--card)}
+.week-legend .wk-km b::before{content:"";position:absolute;left:50%;top:2px;width:.375rem;height:.5rem;margin-left:-.1875rem;background:var(--ink-2);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+.week-h .week-legend .wk-km i{width:2rem;height:1.125rem}
+.week-h .week-legend .wk-km b{left:.625rem;right:auto;top:auto;bottom:1px;width:.875rem;height:8px}
+.week-h .week-legend .wk-km b::before{top:0}
 .week-legend .wk-k:last-of-type{margin-right:10px}
 .ag-inner{list-style:none;margin:8px 0 2px;padding:0;display:flex;flex-direction:column;gap:5px}
 .ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35;background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-left:3px solid var(--c);border-radius:8px;padding:6px 6px 6px 9px;box-shadow:0 1px 2px var(--pop-shadow);--muted:var(--ink-2)}
@@ -3186,28 +3236,34 @@ function weekOverview(){
   const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   let axis = '';
   for (let m = t0; m <= t1; m += 60) axis += `<span class="${(m - t0) % 120 ? 'week-odd' : ''}" style="--p:${pct(m)}">${hhmm(m)}</span>`;
-  const block = (x, di, l, w, band) => {
+  const block = (x, di, l, w, band, cl = '') => {
     // x is a session, or (My agenda) an entry
     const s = agenda ? x.s : x, on = agenda || slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
     const a = toMin(x.start), b = toMin(x.end);
     const clash = agenda && x.clash.length > 0;
     const bandText = s.cat === 'plenary' ? 'Plenary' : s.title, parts = weekLabelParts(s);
+    // a talk: a mic, then its title, or (weekFit, when narrow) its session's stream code
     const label = band ? esc(bandText)
-      : agenda && x.t ? `<b aria-hidden="true">★</b><em> ${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b class="week-n" data-n="${x.inner.size}" aria-hidden="true">★</b>` : '');
+      : agenda && x.t ? `<i class="k-ic" aria-hidden="true"></i><b class="wk-tc">${esc(parts[0])}</b><em>${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b class="week-n" data-n="${x.inner.size}" aria-hidden="true">★</b>` : '');
     // the accessible name starts with the text shown (the full label; CSS may clamp it)
     const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + parts[1];
     const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
-    const kind = agenda ? (x.t ? 'talk, ' : x.ctx ? 'session not saved, ' : 'session, ') : '';
+    // (a narrow talk shows its session's code instead of its title: both are in its name)
+    const kind = agenda ? (x.t ? `${parts[0]} talk, ` : x.ctx ? 'session not saved, ' : 'session, ') : '';
     const aria = esc(`${shown}, ${kind}${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
     // My agenda: a session's starred talks as marks at their times inside it
+    // (buttons of their own after the block, placed over its edge, so each is a stop for
+    // the keyboard and has its own name)
     const marks = agenda && !x.t ? x.s.talks.filter(t => x.inner.has(t.id)).map(t => {
       const ta = Math.max(toMin(t.s), a), tb = Math.min(toMin(t.e), b);
-      return tb > ta ? `<i class="week-tk" data-tid="${t.id}" style="--ta:${((ta - a) / (b - a) * 100).toFixed(2)};--tw:${((tb - ta) / (b - a) * 100).toFixed(2)}"></i>` : '';
+      return tb > ta ? `<button type="button" class="week-tk${x.ctx ? ' ctx' : ''}" tabindex="-1" data-tid="${t.id}" data-in-sid="${s.id}" data-week-sid="${s.id}" data-week-tid="${t.id}" data-day="${di}" data-start="${ta}" data-end="${tb}"
+        style="--c:${c};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w};--ta:${((ta - a) / (b - a) * 100).toFixed(2)};--tw:${((tb - ta) / (b - a) * 100).toFixed(2)}"
+        aria-label="${esc(`${t.t}, starred ${s.cat === 'poster' ? 'poster' : 'talk'} in ${s.title}, ${DATA.days[di].label} ${t.s}–${t.e}`)}"></button>` : '';
     }).join('') : '';
     const ids = agenda && x.t ? `data-tid="${x.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
-    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
+    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}${marks ? ' has-tk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}${cl}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
-      ${ids} data-week-sid="${s.id}" data-code="${esc(s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat])}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span>${marks}</button>`;
+      ${ids} data-week-sid="${s.id}" data-code="${esc(s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat])}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>${marks}`;
   };
   const counts = [], lanes = [];
   const isBand = s => !agenda && WEEK_BANDS.includes(s.cat);
@@ -3233,7 +3289,8 @@ function weekOverview(){
     lanes.push(Math.max(1, ...clusters.map(c => c.lanes.length)));
     for (const c of clusters){
       const n = c.lanes.length;
-      for (const it of c.items) html += block(it.s, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false);
+      // (weekFit folds lanes too narrow for their column into a "+N" chip)
+      for (const it of c.items) html += block(it.s, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false, ` data-cl="${clusters.indexOf(c)}" data-ln="${it.lane}" data-nl="${n}"`);
     }
     const isToday = d.date === today;
     return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" style="--lanes:${lanes[di]}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
@@ -3276,10 +3333,13 @@ function weekOverview(){
     </div>`;
   }
   // on a wide screen every column is wide enough for its busiest cluster to keep readable
-  // blocks; on a phone the quiet day's column still holds its "Sun 6" head on one line
-  const widths = sm => DATA.days.map((d, di) => quiet(di) ? `minmax(${sm ? '2.5rem' : '5.25rem'},.45fr)`
-    : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
-  return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
+  // blocks; on a phone the quiet day's column still holds its "Sun 6" head on one line.
+  // A busy day's column is wider, in proportion to its most parallel items.
+  const fr = di => +Math.max(1, lanes[di] / 2.5).toFixed(2);
+  // (a short screen's: shared like a phone's, the quiet day's head on one line)
+  const widths = (sm, short) => DATA.days.map((d, di) => quiet(di) ? `minmax(${short ? '3.5rem' : sm ? '2.5rem' : '5.25rem'},.45fr)`
+    : sm ? `minmax(2.5rem,${fr(di)}fr)` : `minmax(max(5.25rem, ${lanes[di]} * var(--vbw)),${fr(di)}fr)`).join(' ');
+  return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--week-cols-short:${widths(true, true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
     ${hint}
     <div class="week-sx sx-box">
     <div class="week-rul"><div class="week-rul-in week-head"><span></span>${heads.join('')}</div>${weekMore(-1)}${weekMore(1)}</div>
@@ -3290,48 +3350,156 @@ function weekOverview(){
 }
 const weekMore = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← Earlier' : 'Later →'}</button>`;
 // After rendering: fit each label to its block, across, wrapping at whole words onto as
-// many lines as the block holds. A block too narrow for its words shows its badge (the
-// stream code) alone; one too narrow for that shows none (its name is in its tooltip and
-// accessible name). In the vertical overview's tall, narrow columns, where nothing
-// fits across, the stream code stands in letters set one under another. One tab stop for the blocks
-// (arrow keys move between them).
+// many lines as the block holds, never mid-word. A block too narrow for its words, or
+// whose title would show none of its first word, shows its badge instead: the stream
+// code (a talk: a mic and its session's code), cut with an ellipsis when it must be. In
+// the vertical overview's tall, narrow columns the code stands in letters set one under
+// another; a talk too small for any letters keeps its mic. Every block's full name is in
+// its tooltip and accessible name. One tab stop for the blocks (arrow keys move between
+// them).
 function weekFit(root = document.getElementById('agenda')){
   const ov = root.querySelector('.week-ov');
   if (!ov) return;
+  const vert = ov.classList.contains('week-v');
+  if (vert){
+    weekFold(ov);
+    // a saved session's starred talks take a strip down its right side: 15px, or at
+    // least 10px (a 9px mark) of a narrow block
+    const tk = [...ov.querySelectorAll('.week-blk.has-tk:not(.week-hid)')], ws = tk.map(b => b.offsetWidth);
+    tk.forEach((b, i) => b.style.setProperty('--tkw', (ws[i] >= 36 ? 15 : Math.max(10, Math.round(ws[i] * .4))) + 'px'));
+  }
+  // the marks follow their block: its lane (folded or not), strip and visibility
+  for (const m of ov.querySelectorAll('.week-tk')){
+    const b = weekMarkBlock(m);
+    for (const k of ['--l', '--w', '--tkw']) m.style.setProperty(k, b.style.getPropertyValue(k));
+    m.hidden = b.classList.contains('week-hid');
+    if (m.hidden) m.tabIndex = -1;
+  }
+  // how far apart upright letters sit (measured: font, weight and spacing as drawn)
+  const probe = document.createElement('i');
+  probe.className = 'week-upm';
+  probe.textContent = 'MMMMMMMMMM';
+  (ov.querySelector('.week-blk:not(.week-hid)') || ov).appendChild(probe);
+  const adv = probe.getBoundingClientRect().height / 10 || 9, upw = probe.getBoundingClientRect().width || 9;
+  probe.remove();
   const cs = getComputedStyle(ov.querySelector('.week-blk') || ov);
   const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12;
+  // (cleared first: a refit, on resize, must not read the last fit's hidden labels)
+  for (const b of ov.querySelectorAll('.week-blk:not(.week-nmore)')){ b.firstElementChild.hidden = false; b.classList.remove('week-up', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny'); }
   const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
-  const vert = ov.classList.contains('week-v');
   const over = el => el.scrollWidth > el.clientWidth + 1;
   const todo = [];
   for (const b of ov.querySelectorAll('.week-blk')){
     const span = b.firstElementChild;
+    if (b.classList.contains('week-nmore')) continue;
     span.hidden = false;
-    b.classList.remove('week-up', 'week-bdg', 'week-brk');
-    if (b.classList.contains('week-off') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
-    // (horizontal: a session's starred-talk marks take its bottom 6px)
-    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (!vert && b.querySelector('.week-tk') ? 6 : 0)) / lh);
-    if (lines < 1 || w < 12){ span.hidden = true; continue; }
+    b.classList.remove('week-up', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny');
+    if (b.classList.contains('week-off') || b.classList.contains('week-hid') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
+    // (horizontal: a session's starred-talk marks take a strip along its bottom)
+    const tk = !vert && b.classList.contains('has-tk');
+    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (tk ? 10 : 0)) / lh);
+    if (lines < 1 || w < 10){
+      if (b.classList.contains('w-talk') && w >= 10 && h >= 10) b.classList.add('week-mic'); else span.hidden = true;
+      continue;
+    }
     span.style.setProperty('--lines', lines);
     todo.push(b);
   }
   // measure after all labels are set (one layout), then fall back to the badge
-  // a talk has no badge to fall back to: its title breaks mid-word instead
-  const nar = todo.filter(b => over(b.firstElementChild));
-  for (const b of nar) b.classList.add(b.classList.contains('w-talk') ? 'week-brk' : 'week-bdg');
-  for (const b of nar.filter(b => over(b.firstElementChild))){
-    const span = b.firstElementChild, w = b.clientWidth, h = b.clientHeight;
-    b.classList.remove('week-bdg');
-    // upright letters are about .625rem tall and wide each
-    const lt = fs * .625 / .6875 * 1.05;
-    if (vert && w >= lt + 4 && h - 6 >= b.dataset.code.length * lt) b.classList.add('week-up');
-    else span.hidden = true;
+  const nar = todo.filter(b => over(b.firstElementChild) || !weekWordShown(b.firstElementChild, fs, lh));
+  for (const b of nar) b.classList.add('week-bdg');
+  // (a badge cut by even part of a letter counts: its ellipsis would show)
+  for (const b of nar.filter(b => over(b.firstElementChild) || !weekCodeShown(b.firstElementChild, 0, true))){
+    const span = b.firstElementChild, h = b.clientHeight, talk = b.classList.contains('w-talk'), n = b.dataset.code.length;
+    const w = b.clientWidth - (vert && b.classList.contains('has-tk') ? parseFloat(b.style.getPropertyValue('--tkw')) : 0);
+    // upright letters (below a 4px top pad): the whole code, or at least three letters
+    // of it and an ellipsis
+    // (horizontal: a tall, narrow block too, above its starred-talk strip)
+    const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - 5 - (!vert && b.classList.contains('has-tk') ? 10 : 0)) / adv) : 0;
+    const up = () => { b.classList.remove('week-bdg'); b.classList.add('week-up'); };
+    if (slots >= Math.min(n, 4)){ up(); continue; }
+    // the code cut to an ellipsis still shows three letters of it (a talk's without its
+    // mic, if need be); failing that, two upright letters and an ellipsis, a talk's
+    // mic, or (too small for any of these) the colour alone
+    if (weekCodeShown(span, fs)) continue;
+    if (talk){ b.classList.add('week-nomic'); if (weekCodeShown(span, fs)) continue; b.classList.remove('week-nomic'); }
+    if (slots >= 3){ up(); continue; }
+    // (last: the code in smaller letters)
+    b.classList.add('week-tiny');
+    if (weekCodeShown(span, fs * .82)) continue;
+    b.classList.remove('week-bdg', 'week-tiny');
+    if (talk && w >= 10) b.classList.add('week-mic'); else span.hidden = true;
   }
   for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
   const blocks = weekBlocks(ov);
-  if (!blocks.some(b => b.tabIndex === 0) && blocks[0]) blocks[0].tabIndex = 0;
+  if (!blocks.some(b => b.tabIndex === 0) && !ov.querySelector('.week-tk[tabindex="0"]:not([hidden])') && blocks[0]) blocks[0].tabIndex = 0;
   weekSync(ov);
   weekPaintNow();
+}
+// Does a label show at least the start (four letters, or the whole word) of its title's
+// first word, with room for the ellipsis when more follows? (No title: nothing to show.)
+function weekWordShown(span, fs, lh){
+  const tn = span.querySelector('em')?.firstChild;
+  if (!tn || tn.nodeType !== 3) return true;
+  const t = tn.textContent, i = t.search(/[^\s·:–-]/);
+  if (i < 0) return true;
+  const sp = t.slice(i).search(/\s/), j = sp < 0 ? t.length : i + sp;
+  const r = document.createRange();
+  r.setStart(tn, i); r.setEnd(tn, Math.min(j, i + 4));
+  // (a text box is taller than its line: compare its middle)
+  const rr = r.getBoundingClientRect(), sr = span.getBoundingClientRect(), right = sr.right - 2.5, mid = (rr.top + rr.bottom) / 2;
+  if (mid > sr.bottom || rr.right > right) return false;
+  const more = Math.min(j, i + 4) < t.length || tn.parentElement.nextSibling;
+  return !more || mid < sr.bottom - lh || rr.right + fs * .9 <= right;
+}
+const weekName = b => { const s = slotById(b.dataset.weekSid), t = b.dataset.weekTid && s.talks.find(x => x.id === b.dataset.weekTid); return t ? t.t : s.title; };
+function weekCodeShown(span, fs, whole = false){
+  const tn = span.querySelector('b')?.firstChild;
+  if (!tn) return false;
+  // (against the label's own content edge: a badge may shrink to fit its code)
+  const right = span.getBoundingClientRect().right - parseFloat(getComputedStyle(span).paddingRight) + .01;
+  const r = document.createRange(), upTo = n => { r.setStart(tn, 0); r.setEnd(tn, n); return r.getBoundingClientRect().right; };
+  if (upTo(tn.length) <= right) return true;
+  return !whole && tn.length > 3 && upTo(3) + fs * .9 <= right;
+}
+// Vertical overview: a cluster with more parallel items than its column has room for
+// (20px each on a phone or a short screen; a wide screen's columns are sized to hold theirs) keeps the
+// lanes that fit and folds the rest into a "+N" chip over their times, which opens the
+// day at the first of them.
+const WEEK_SHORT = matchMedia('(max-height:450px)');
+function weekFold(ov){
+  for (const x of ov.querySelectorAll('.week-nmore')) x.remove();
+  // (a short screen's shared columns: room beside a code for a starred-talk strip)
+  const minW = WEEK_SHORT.matches ? (ov.classList.contains('week-mine') ? 26 : 20) : PHONE_MQ.matches ? 20 : 18, t0 = +ov.dataset.t0, dur = +ov.dataset.t1 - t0;
+  const pct = m => +((m - t0) / dur * 100).toFixed(3);
+  const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  for (const col of ov.querySelectorAll('.week-col')){
+    const k = Math.max(2, Math.floor(col.clientWidth / minW)), cl = new Map();
+    for (const b of col.querySelectorAll('.week-blk[data-cl]')){
+      b.classList.remove('week-hid');
+      const n = +b.dataset.nl, ln = +b.dataset.ln, fold = n > k;
+      b.style.setProperty('--l', +((ln * 100) / (fold ? k : n)).toFixed(3));
+      b.style.setProperty('--w', +(100 / (fold ? k : n)).toFixed(3));
+      if (!fold || ln < k - 1) continue;
+      b.classList.add('week-hid');
+      b.tabIndex = -1;
+      if (!b.classList.contains('week-off')) cl.set(b.dataset.cl, (cl.get(b.dataset.cl) || []).concat(b));
+    }
+    for (const hid of cl.values()){
+      hid.sort((x, y) => x.dataset.start - y.dataset.start);
+      const a = Math.min(...hid.map(b => +b.dataset.start)), z = Math.max(...hid.map(b => +b.dataset.end)), f = hid[0];
+      const day = DATA.days[+f.dataset.day];
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'week-blk week-nmore';
+      chip.tabIndex = -1;
+      Object.assign(chip.dataset, { weekSid: f.dataset.weekSid, weekTid: f.dataset.weekTid || '', day: f.dataset.day, date: f.dataset.date, start: a, end: z, more: hid.map(b => b.dataset.weekSid + '/' + (b.dataset.weekTid || '')).join(' ') });
+      chip.style.cssText = `--a:${pct(a)};--h:${pct(z) - pct(a)};--l:${+((k - 1) * 100 / k).toFixed(3)};--w:${+(100 / k).toFixed(3)}`;
+      chip.setAttribute('aria-label', `${hid.length} more item${hid.length === 1 ? '' : 's'}, ${day.label} ${hhmm(a)}–${hhmm(z)}: ${hid.map(weekName).join('; ')}. Opens the day.`);
+      chip.innerHTML = `<span aria-hidden="true">+${hid.length}</span>`;
+      col.appendChild(chip);
+    }
+  }
 }
 // Band labels (Plenary, Lunch break) sit above the blocks, at the first place inside
 // the band that no session block, later band or other label covers; failing that, at
@@ -3367,9 +3535,15 @@ function weekBandLabels(col, shown, lh){
       }
     }
     if (!spot){
-      // nowhere free: over the blocks at the band's top right, clear of their left-aligned labels
+      // nowhere free: at the band's top right (or bottom right), clear of the blocks'
+      // left-aligned labels; in the vertical overview not over a block at all (its
+      // letters would hide), so a band covered from top to bottom keeps its colour alone
       const w = Math.min(want, r.x1 - r.x0 - 4);
-      spot = { x: r.x1 - w - 2, y: r.y0, w };
+      const blk = items.filter(o => !o.classList.contains('week-band') && !o.classList.contains('week-off') && !o.classList.contains('week-hid')).map(rel);
+      const hits = c => blk.some(o => o.y0 < c.y + lH && o.y1 > c.y && o.x1 > c.x && o.x0 < c.x + c.w);
+      const cands = [r.y0, r.y1 - lH].map(y => ({ x: r.x1 - w - 2, y, w }));
+      spot = cands.find(c => !hits(c)) || (col.closest('.week-v') ? null : cands[0]);
+      if (!spot){ lab.remove(); return; }
       lab.classList.add('week-blab-over');
     }
     Object.assign(lab.style, { left: spot.x + 'px', top: spot.y + 'px', width: spot.w + 'px' });
@@ -3384,7 +3558,15 @@ function weekSync(ov){
   sc.onscroll = move;
   move();
 }
-const weekBlocks = (root, di) => [...root.querySelectorAll(di === undefined ? '.week-blk:not(.week-off)' : `.week-col[data-day="${di}"] .week-blk:not(.week-off)`)];
+// A starred-talk mark's session block (the block it follows in its column).
+const weekMarkBlock = m => { let b = m.previousElementSibling; while (b && !b.classList.contains('week-blk')) b = b.previousElementSibling; return b; };
+const weekBlocks = (root, di) => [...root.querySelectorAll(di === undefined ? '.week-blk:not(.week-off):not(.week-hid)' : `.week-col[data-day="${di}"] .week-blk:not(.week-off):not(.week-hid)`)];
+// A day's keyboard stops in time order, each saved session followed by its starred talks.
+function weekStops(ov, di){
+  const h = ov.classList.contains('week-h');
+  return weekBlocks(ov, di).sort((x, y) => x.dataset.start - y.dataset.start || (h ? x.offsetTop - y.offsetTop : x.offsetLeft - y.offsetLeft))
+    .flatMap(b => { const r = [b]; for (let m = b.nextElementSibling; m && m.classList.contains('week-tk'); m = m.nextElementSibling) if (!m.hidden) r.push(m); return r; });
+}
 function weekPaintNow(){
   const ov = document.querySelector('#agenda .week-ov');
   if (!ov) return;
@@ -3400,6 +3582,7 @@ function weekPaintNow(){
 function weekTarget(sid, tid = ''){
   const main = document.getElementById('agenda');
   const button = main.querySelector(`[data-session-detail="${sid}"][data-talk-detail="${tid}"]:not(.hz-talk):not(.vt-tk)`)
+    || (tid && main.querySelector(`[data-session-detail="${sid}"][data-talk-detail="${tid}"]`))
     || main.querySelector(`[data-session-detail="${sid}"][data-talk-detail=""]`) || main.querySelector(`[data-session-detail="${sid}"]`);
   return button ? { button, box: button.closest('.hz-bar, .vt-card') || button } : null;
 }
@@ -3437,16 +3620,28 @@ function weekTip(){
   if (!tip){ tip = document.createElement('div'); tip.id = 'weekTip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true; document.body.appendChild(tip); }
   return tip;
 }
-function weekShowTip(b){
+function weekShowTip(b, mark){
   const s = slotById(b.dataset.weekSid), d = DATA.days[+b.dataset.day];
-  const t = b.dataset.weekTid ? s.talks.find(x => x.id === b.dataset.weekTid) : null;
+  const tid = mark ? mark.dataset.tid : b.dataset.weekTid;
+  const t = tid ? s.talks.find(x => x.id === tid) : null;
   const tip = weekTip();
+  if (b.classList.contains('week-nmore')){
+    const hid = b.dataset.more.split(' ').map(k => {
+      const [sid, tid] = k.split('/'), x = slotById(sid), y = tid && x.talks.find(z => z.id === tid);
+      return `<br>${y ? `${y.s} ★ ${esc(y.t)}` : `${x.start} ${esc(x.title)}`}`;
+    });
+    tip.innerHTML = `<b>${hid.length} more on ${esc(d.label)}</b>${hid.join('')}`;
+    return weekPlaceTip(tip, b);
+  }
   const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(' · ');
   // My agenda: the starred talks in a saved session, and what an item clashes with
   const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
   const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
-  tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)} · ${t.s}–${t.e}<br>in ${esc(s.title)}${extra}`
+  tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)} · ${t.s}–${t.e}<br>in ${esc(s.title)}${mark ? '' : extra}`
     : `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
+  weekPlaceTip(tip, mark || b);
+}
+function weekPlaceTip(tip, b){
   tip.hidden = false;
   const r = b.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
   const right = r.right + 8 + w < innerWidth - 8;
@@ -3460,6 +3655,9 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
     if (!e.target.closest('.week-ov')) return;
     const head = e.target.closest('[data-week-day]');
     if (head){ weekOpenDay(+head.dataset.weekDay, null, null); return; }
+    // a starred talk marked on a saved session opens at that talk
+    const mark = e.target.closest('.week-tk');
+    if (mark){ weekHideTip(); weekOpenDay(+mark.dataset.day, mark.dataset.weekSid, mark, mark.dataset.tid); return; }
     let b = e.target.closest('.week-blk:not(.week-off)');
     const col = e.target.closest('.week-col');
     if (!b && col){
@@ -3476,18 +3674,21 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
     weekOpenDay(+b.dataset.day, b.dataset.weekSid, b, b.dataset.weekTid || '');
   });
   agendaEl.addEventListener('pointerover', e => {
-    const b = e.target.closest && e.target.closest('.week-blk:not(.week-off)');
-    if (b && e.pointerType === 'mouse') weekShowTip(b); else if (!b) weekHideTip();
+    const m = e.target.closest && e.target.closest('.week-tk'), b = m ? weekMarkBlock(m) : e.target.closest && e.target.closest('.week-blk:not(.week-off)');
+    if (b && e.pointerType === 'mouse') weekShowTip(b, m); else if (!b) weekHideTip();
   });
   agendaEl.addEventListener('pointerleave', weekHideTip);
-  agendaEl.addEventListener('focusin', e => { if (e.target.matches('.week-blk')) weekShowTip(e.target); });
+  agendaEl.addEventListener('focusin', e => {
+    if (e.target.matches('.week-blk')) weekShowTip(e.target);
+    else if (e.target.matches('.week-tk')) weekShowTip(weekMarkBlock(e.target), e.target);
+  });
   agendaEl.addEventListener('focusout', weekHideTip);
   window.addEventListener('scroll', weekHideTip, { passive:true });
   agendaEl.addEventListener('keydown', e => {
-    const b = e.target.closest('.week-blk');
+    const b = e.target.closest('.week-blk, .week-tk');
     if (!b) return;
     const ov = b.closest('.week-ov'), di = +b.dataset.day, h = ov.classList.contains('week-h');
-    const col = weekBlocks(ov, di).sort((x, y) => x.dataset.start - y.dataset.start || (h ? x.offsetTop - y.offsetTop : x.offsetLeft - y.offsetLeft)), i = col.indexOf(b);
+    const col = weekStops(ov, di), i = col.indexOf(b);
     // along a day: down in the vertical overview, right in the horizontal one
     const [later, earlier, nextDay, prevDay] = h ? ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'] : ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'];
     let next = null;
@@ -3497,7 +3698,7 @@ const weekHideTip = () => { const tip = document.getElementById('weekTip'); if (
     else if (e.key === 'End') next = col[col.length - 1];
     else if (e.key === prevDay || e.key === nextDay){
       for (let d = di + (e.key === prevDay ? -1 : 1); d >= 0 && d < DATA.days.length && !next; d += e.key === prevDay ? -1 : 1){
-        next = weekBlocks(ov, d).sort((x, y) => Math.abs(x.dataset.start - b.dataset.start) - Math.abs(y.dataset.start - b.dataset.start))[0];
+        next = weekStops(ov, d).sort((x, y) => Math.abs(x.dataset.start - b.dataset.start) - Math.abs(y.dataset.start - b.dataset.start))[0];
       }
     } else return;
     e.preventDefault();
@@ -3651,7 +3852,7 @@ const mxCap = () => PHONE_MQ.matches ? 36 : 72, mxScanMax = () => PHONE_MQ.match
 const MX_NOOP = { after(){}, animate(){} };
 let txLast = -1e9, txSlow = 0;
 const MX_MS = 300, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
-const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off)';
+const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off), .week-tk:not([hidden])';
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
 const MX_SCROLL = '.hz-vp, .vt-wrap.scroll, .week-sc';
