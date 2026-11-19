@@ -621,6 +621,10 @@ html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom
 .filter-menu{position:relative}
 .toggle .caret{font-size:.625rem;color:var(--muted)}
 .fs-sum{font-weight:500;color:var(--muted)}
+/* the Streams button keeps to one line; a long single stream name is cut short */
+#filterBtn{white-space:nowrap}
+#filterBtn .fs-sum{display:inline-block;max-width:10em;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+@media (max-width:720px){#filterBtn .fs-sum{max-width:5.5em}}
 .filter-menu.active .toggle{border-color:var(--accent);background:var(--active-bg);color:var(--active-ink)}
 .filter-menu.active .fs-sum{color:var(--active-ink)}
 .filter-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(540px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px var(--pop-shadow);padding:12px 14px}
@@ -1254,6 +1258,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-hits{margin:7px 0 0;font-size:.7812rem;color:var(--muted);line-height:1.45}
 .ag-hits .linkish{font-size:.7812rem;text-align:left}
 .ag-hits-k{font-weight:700;color:var(--ink-2)}
+.ag-hits ul{list-style:none;margin:2px 0 0;padding:0}
+.ag-hits li{position:relative;padding-left:12px;margin:2px 0}
+.ag-hits li::before{content:"";position:absolute;left:2px;top:.6em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
+.ag-hit-more .linkish{font-weight:500}
 .ag-cx-off{font-style:italic;opacity:.85}
 .ag-nomatch .ag-empty-icon{color:var(--muted);font-size:1.75rem}
 .ag-menu-note{margin:0 0 4px;padding:7px 12px 9px;border-bottom:1px solid var(--line);font-size:.75rem;line-height:1.4;color:var(--muted);max-width:16rem}
@@ -2085,7 +2093,9 @@ function renderChips(){
     w.querySelector('.chip').setAttribute('aria-pressed', on);
   }
   const n = cats.size, total = Object.keys(DATA.cats).length;
-  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 0 ? 'None' : n === 1 ? DATA.cats[[...cats][0]] : `${n} of ${total}`;
+  const sum = document.getElementById('filterSummary');
+  sum.textContent = n === total ? 'All' : n === 0 ? 'None' : n === 1 ? DATA.cats[[...cats][0]] : `${n} of ${total}`;
+  sum.title = n === 1 ? sum.textContent : '';
   document.getElementById('filterMenu').classList.toggle('active', n !== total);
   document.getElementById('filterEmpty').hidden = n !== 0;
   const pill = document.getElementById('grpill');
@@ -2659,20 +2669,28 @@ document.getElementById('grpclr').addEventListener('click', () => {
 });
 
 const qEl = document.getElementById('q');
-let qTimer = null;
+let qTimer = null, qPending = null;
 // The search box serves the program (state.q), My agenda (state.aq) and, in the
 // Participants view, the people search (state.pq). `which` names the one to clear.
 function searchKey(){ return state.scope === 'participants' ? 'pq' : state.scope === 'agenda' ? 'aq' : 'q'; }
 function clearSearch(which = searchKey()){
-  clearTimeout(qTimer);
+  clearTimeout(qTimer); qPending = null;
   state[which] = '';
   if (which === searchKey()){
     qEl.value = '';
     document.getElementById('clr').style.display = 'none';
   }
 }
+// A view change within the typing delay keeps what was typed for the view it was typed in.
+function flushSearch(){
+  if (!qPending) return;
+  clearTimeout(qTimer);
+  state[qPending.key] = qPending.v;
+  qPending = null;
+}
 function syncSearchBox(){
   const people = state.scope === 'participants';
+  flushSearch();
   qEl.value = state[searchKey()];
   document.getElementById('clr').style.display = qEl.value ? 'block' : 'none';
   qEl.setAttribute('aria-label', people ? 'Search participants by name or affiliation' : state.scope === 'agenda' ? 'Search my agenda' : 'Search the program');
@@ -2681,8 +2699,10 @@ function syncSearchBox(){
 qEl.addEventListener('input', () => {
   clearTimeout(qTimer);
   const key = searchKey();
+  qPending = { key, v: qEl.value.trim() };
   qTimer = setTimeout(() => {
-    state[key] = qEl.value.trim();
+    flushSearch();
+    if (key !== searchKey()) return;
     document.getElementById('clr').style.display = state[key] ? 'block' : 'none';
     rerender(); // re-render so highlights update
     if (window.scrollY > programTop()) scrollToProgramTop();
@@ -2764,8 +2784,12 @@ document.addEventListener('click', e => {
 });
 // "Showing 4 of 7 agenda items · Clear filters" in the result line, and on one day the
 // matches on other days.
+// A day with nothing saved says so (the filters hide nothing there) and points to the
+// matches on other days.
 function agendaFilterLine(shown, total, otherDays){
   const day = state.day === 'all' ? '' : ` on ${esc(DATA.days[state.day].label)}`;
+  const clear = '<button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>';
+  if (!total) return `Nothing saved${day}${otherDays ? ` · <button type="button" class="linkish rl-act" data-search-week>${otherDays} match${otherDays === 1 ? '' : 'es'} on other days</button>` : ''} · ${clear}`;
   const more = otherDays ? ` · <button type="button" class="linkish rl-act" data-search-week>All week <span class="rl-n">(${otherDays} more)</span></button>` : '';
   return `Showing <b>${shown}</b> of ${countWord(total, 'agenda item')}${day}${more} · <button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>` + aliasChipsHtml();
 }
@@ -2894,8 +2918,11 @@ function agRow(it){
     : '';
   // the search matched talks in this session that are not starred: name them
   const hits = (it.hits || []).filter(t => !(it.inner || []).includes(t));
-  const hitsHtml = hits.length ? `<p class="ag-hits"><span class="ag-hits-k">Matches in this session:</span> ${hits.slice(0, 3).map(t =>
-    `<button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>`).join(', ')}${hits.length > 3 ? ` and ${hits.length - 3} more` : ''}</p>` : '';
+  // as a list, one title a line (titles have commas of their own): up to five, and past
+  // that the rest are a click away in the session's details
+  const nHit = hits.length > 5 ? 4 : hits.length;
+  const hitsHtml = hits.length ? `<div class="ag-hits"><span class="ag-hits-k" id="agh-${it.s.id}">Matches in this session</span><ul aria-labelledby="agh-${it.s.id}">${hits.slice(0, nHit).map(t =>
+    `<li><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button></li>`).join('')}${hits.length > nHit ? `<li class="ag-hit-more"><button type="button" class="linkish" data-session-detail="${it.s.id}">${hits.length - nHit} more in the session&#8217;s details</button></li>` : ''}</ul></div>` : '';
   const hit = new Set(it.hits || []);
   const tid = it.kind === 'talk' ? ` data-tstar="${it.t.id}"` : ` data-sstar="${it.s.id}"`;
   // a saved session lists the talks starred in it: one item, not a clash
@@ -3379,9 +3406,11 @@ function renderBuilder(){
   if (personalList){
     const total = state.day === 'all' ? whole.length : whole.filter(x => x.di === state.day).length;
     document.querySelector('.result-row').hidden = !filtered;
-    if (filtered) document.getElementById('resultLine').innerHTML = agendaFilterLine(onDay.length, total, onDay.length && onDay.length < 10 ? items.length - onDay.length : 0);
+    if (filtered) document.getElementById('resultLine').innerHTML = agendaFilterLine(onDay.length, total, !total || onDay.length && onDay.length < 10 ? items.length - onDay.length : 0);
   }
-  if (filtered && !onDay.length){
+  // a day with nothing saved gets the plain empty note below, not "nothing matches"
+  const daySaved = state.day === 'all' || whole.some(x => x.di === state.day);
+  if (filtered && !onDay.length && daySaved){
     body.innerHTML = agendaNoMatchHtml(items.length);
     return;
   }
@@ -3455,7 +3484,10 @@ function withTransition(kind, fn, from){
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
+let shownScope = null; // the scope showView last drew (readHash may already have moved state.scope)
 function showView(layout, scope){
+  const scopeWas = shownScope;
+  shownScope = scope;
   state.layout = layout;
   state.scope = scope;
   // The Participants view keeps the layout for when you return; it has none.
@@ -3488,7 +3520,8 @@ function showView(layout, scope){
   document.getElementById('scheduleLayout').hidden = people;
   document.getElementById('daytabs').hidden = people;
   document.getElementById('filterMenu').hidden = people;
-  setFilterOpen(false);
+  // the program and My agenda each have their own streams: the open panel would show the other's
+  if (people || scope !== scopeWas) setFilterOpen(false);
   filterPanel.classList.toggle('fp-agenda', personal);
   document.getElementById('grpill').hidden = personal || people;
   syncSearchBox();
@@ -4213,6 +4246,8 @@ function hzInit(root){
 // get a single list grouped by start time instead of the grid.
 let vtPick = 'all';
 const vtOpen = new Set();
+// My agenda's search opens a saved session on its matching talks; the ones folded by hand
+const vtShut = new Set();
 let vtWidth = 0;
 const VT_COLS = [
   { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
@@ -4239,7 +4274,8 @@ function vtDayView(day){
   const talksOf = e => agenda ? (e.t ? [] : e.s.cat === 'poster' ? e.s.talks.filter(t => e.inner.has(t.id)) : e.s.talks)
     : e.s.cat === 'poster' ? [] : e.s.talks.filter(t => talkMatches(t, e.s));
   const merged = e => agenda && e.inner && e.inner.size > 0;
-  const hitOpen = e => agenda && !e.t && e.hits && e.hits.size > 0;
+  const hitSess = e => agenda && !merged(e) && !e.t && e.hits && e.hits.size > 0;
+  const hitOpen = e => hitSess(e) && !vtShut.has(e.s.id);
   const isOpen = e => (merged(e) || hitOpen(e) || (!agenda && state.programTalks) || vtOpen.has(e.s.id)) && talksOf(e).length > 0;
   const listOnly = e => e.s.cat === 'poster';
   const star = id => state.starred.has(id) ? '<span class="vt-star" aria-label="In my agenda">★</span> ' : '';
@@ -4274,7 +4310,7 @@ function vtDayView(day){
       : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv">${hl(s.room)}</span>` : '<span></span>';
     const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
     const tog = merged(e) ? `<span class="vt-count">${count} · ★ ${e.inner.size}</span>`
-      : hitOpen(e) ? `<span class="vt-count">${count} · ${e.hits.size} matching</span>`
+      : hitSess(e) && tk.length ? `<button type="button" class="vt-tog" data-vttog="${s.id}" data-vthit aria-expanded="${open}">${count} · ${e.hits.size} matching</button>`
       : tk.length && (agenda || !state.programTalks) ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
       : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
     const talkBtn = (t, style) => {
@@ -4417,7 +4453,8 @@ document.getElementById('agenda').addEventListener('click', e => {
   const t = e.target.closest('[data-vttog]');
   if (t){
     const id = t.dataset.vttog, top = t.getBoundingClientRect().top;
-    vtOpen.has(id) ? vtOpen.delete(id) : vtOpen.add(id);
+    if (t.getAttribute('aria-expanded') === 'true'){ vtOpen.delete(id); if ('vthit' in t.dataset) vtShut.add(id); }
+    else { vtShut.delete(id); vtOpen.add(id); }
     renderCalendar();
     const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
     if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
@@ -4681,7 +4718,7 @@ function renderCalendar(){
     const others = filtered && state.day !== 'all' ? items.length - selected.length : 0;
     const empty = favourites
       ? (!whole.length ? agendaEmptyHtml()
-        : filtered ? agendaNoMatchDay(others)
+        : filtered && wholeSel.length ? agendaNoMatchDay(others)
         : state.day === 'all' ? agendaEmptyHtml() : agendaEmptyDay(DATA.days[state.day]))
       : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
@@ -4692,7 +4729,7 @@ function renderCalendar(){
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     vtPopHide();
     main.classList.toggle('wide', true);
-    result.innerHTML = filtered ? agendaFilterLine(selected.length, wholeSel.length, selected.length && selected.length < 10 ? others : 0)
+    result.innerHTML = filtered ? agendaFilterLine(selected.length, wholeSel.length, !wholeSel.length || selected.length && selected.length < 10 ? others : 0)
       : (favourites ? countWord(selected.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
@@ -6802,6 +6839,7 @@ function start(){
   followHashTargets(r);
 }
 window.addEventListener('hashchange', () => {
+  clearTimeout(qTimer); qPending = null; // the address wins over a search still being typed
   const r = readHash();
   showView(state.layout, state.scope);
   followHashTargets(r);
