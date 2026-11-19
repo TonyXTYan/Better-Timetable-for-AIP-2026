@@ -79,15 +79,16 @@ EVENT_DETAILS = [
              'learned about explaining the universe. Open to the public.',
      'links': [('Official program', AIP_CONGRESS + '/program')]},
     {'title': 'welcome reception',
-     'info': 'Details on the official Activities & social events page.',
+     'info': 'The congress Welcome Reception, at the venue straight after Monday\u2019s last '
+             'sessions. Details on the official Activities & social events page.',
      'links': [('Activities & social events', AIP_CONGRESS + '/activities')]},
     {'title': 'congress dinner',
      'info': 'Congress Dinner on the Harbour: a Sydney Harbour cruise with the AIP & ANZOS '
              'award ceremonies. Tickets via registration.',
      'links': [('Activities & social events', AIP_CONGRESS + '/activities')]},
     {'title': 'career fair',
-     'info': 'One session in the program. Per the official pages, the Australian Physics '
-             'Teachers Day starts from 8am and the Career Fair runs 1\u20134pm.',
+     'info': 'The Australian Physics Teachers Day and the Career Fair share this slot in the '
+             'program; each official page gives its own times.',
      'links': [('Teachers Day', AIP_CONGRESS + '/teachers-day'),
                ('Career Fair', AIP_CONGRESS + '/career-fair')]},
 ]
@@ -99,7 +100,26 @@ def add_event_details(date, slot):
         if ev['title'] in tl and ev.get('date', date) == date:
             slot['info'] = ev['info']
             slot['links'] = [{'l': label, 'u': url} for label, url in ev['links']]
+            slot['desc'] = drop_linked_lines(slot.get('desc', ''), [url for _, url in ev['links']])
             return
+
+
+def drop_linked_lines(desc, urls):
+    """Drop description lines that only repeat an official link shown as a link
+    ("Career fair - https://…"), and a lead-in line ("follow the links:") left with
+    nothing after it."""
+    def norm(u):
+        return u.rstrip('/.').lower()
+    known = {norm(u) for u in urls}
+    lines = desc.split('\n')
+    keep = [ln for ln in lines
+            if not (re.findall(r'https?://\S+', ln)
+                    and all(norm(u) in known for u in re.findall(r'https?://\S+', ln)))]
+    if len(keep) == len(lines):
+        return desc
+    while keep and (not keep[-1].strip() or keep[-1].rstrip().endswith(':')):
+        keep.pop()
+    return '\n'.join(keep).strip()
 
 
 def fix_title(t):
@@ -390,11 +410,13 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    and follow the sideways scroller, which only scrolls across, never down. */
 .week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-full,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:10px 12px 12px;box-shadow:var(--shadow)}
 .week-hint{margin:0 0 8px;font-size:.8125rem;color:var(--muted)}
-.week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;background:var(--card);padding-bottom:6px}
+.week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;overflow:clip visible;background:var(--card);padding-bottom:6px}
 .week-sc{overflow:auto hidden;overscroll-behavior-x:contain}
 .week-head,.week-v .week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
 .week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;text-align:left;cursor:pointer}
 .week-dayh small{font-size:.6875rem;font-weight:500;color:var(--muted)}
+.week-dayh.week-dnar{flex-wrap:nowrap;white-space:nowrap}
+.week-dnar .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
 .week-dayh.today{background:var(--today-bg);border-color:var(--danger-line);color:var(--today-ink)}
 .week-dayh.today small{color:inherit}
@@ -409,10 +431,15 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
 .week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual;pointer-events:none}
 .week-blk b{font-weight:800;letter-spacing:.02em}
+.week-n::after{content:attr(data-n)}
 .week-blk em{font-style:normal}
 .week-blk.week-bdg em{display:none}
 .week-blk.week-brk span{word-break:break-all}
-.week-blk.week-vl span{display:block;writing-mode:vertical-rl;padding:3px 2px 0 0;max-height:100%;white-space:nowrap;text-overflow:ellipsis}
+/* a tall block too narrow for any label across shows its stream code, letters upright
+   one under another (never sideways text); the full name is in its tooltip and name */
+.week-blk.week-up{justify-content:center}
+.week-blk.week-up span{display:none}
+.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:.625rem;font-weight:800;line-height:1.05;letter-spacing:-.06em;pointer-events:none}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
@@ -430,7 +457,9 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 @media (hover:none),(pointer:coarse){.wh-ptr{display:none}.wh-tch{display:inline}}
 .week-sx{--sx-l:calc(2.6rem + var(--wgap))}
 .week-h .week-sx{--sx-l:calc(var(--dl) + var(--wgap))}
-.week-rul .sx-more{top:1px;bottom:3px;min-height:0;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
+/* the pagers hang just under the day heads (or ruler), over the faded edge of the days,
+   so they never cover a head's date or count */
+.week-rul .sx-more{top:calc(100% + 2px);min-height:24px;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
 .week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:1;pointer-events:none}
@@ -471,7 +500,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit 1.4s ease-out}
 @keyframes week-hit{0%{box-shadow:0 0 0 8px var(--focus-ring)}100%{box-shadow:0 0 0 0 transparent}}
 /* Vertical on a wide screen: about 1.75px a minute, and columns wide enough that the
-   busiest cluster's blocks keep a readable (sideways) label */
+   busiest cluster's blocks keep at least their stream code */
 @media (min-width:721px){
   .week-v{--wh:calc(var(--dur) * .11rem);--vbw:1.3rem}
 }
@@ -830,6 +859,23 @@ footer p{margin:4px 0}
 .ag-clash-slot:empty{display:none}
 .favourites-calendar .ag-tz{display:none}
 @media (max-width:1279px){.ag-opt-long{display:none}}
+.ag-opt-f{display:none}
+/* From tablets up the bar is one line: the counts give way (detail first, then an ellipsis)
+   before anything wraps. In the calendar the bar spans the calendar's full width. */
+@media (min-width:721px){
+  .ag-bar{flex-wrap:nowrap}
+  .ag-bar-main{flex:1 1 auto;flex-wrap:nowrap;align-items:center}
+  .builder-stats{flex:0 1 auto;min-width:0;display:flex;white-space:pre}
+  .ag-cnt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .ag-hrs{flex:none}
+  .ag-clash-slot{flex:0 0 auto}
+  .builder-actions{flex:0 0 auto;flex-wrap:nowrap}
+  .ag-opt{white-space:nowrap}
+}
+@media (min-width:721px) and (max-width:1279px){.ag-sx{display:none}}
+@media (min-width:721px) and (max-width:1023px){.ag-opt-show,.ag-about{display:none}.ag-opt-f{display:inline}}
+@media (min-width:721px) and (max-width:819px){.ag-build-long{display:none}}
+.favourites-calendar #builder{max-width:none}
 .ag-clash-ind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:999px;padding:3px 11px;font-size:.8125rem;font-weight:700;white-space:nowrap}
 .ag-clash-ind:hover{border-color:var(--clash-row-line)}
 .ag-clash-ind.quiet{border-color:var(--line);background:var(--surface);color:var(--ink-2);font-weight:600}
@@ -971,9 +1017,12 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual}
 /* a bar too narrow for whole words shows its stream badge only (title in its tooltip and details) */
 .hz-bdg{display:none;font-size:.6875rem;font-weight:800;letter-spacing:.03em;color:var(--bar-ink);white-space:nowrap}
-.hz-nar>.hz-in>:not(.hz-bdg){display:none}
+.hz-nar>.hz-in>:not(.hz-bdg):not(.hz-meta){display:none}
+.hz-nar0>.hz-in>.hz-meta{display:none}
 .hz-nar>.hz-in>.hz-bdg{display:block}
-.hz-nar0>.hz-in{visibility:hidden}
+.hz-nar0{padding-left:2px!important;padding-right:1px!important}
+.hz-nar0>.hz-in>.hz-bdg{font-size:.625rem;letter-spacing:0}
+.hz-nar1>.hz-in{visibility:hidden}
 .hz-meta{color:var(--bar-meta);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .hz-star{color:var(--star)}
 .hz-split{display:flex;flex-direction:column}
@@ -1189,8 +1238,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-top .vt-cx{margin:0 auto 0 4px}
 .hz-label small.hz-lcx{color:var(--warn-ink)}
 .hz-inl{display:block;font-size:.6875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hz-cx{position:absolute;top:0;bottom:0;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
-.hz-cx b{position:absolute;right:3px;bottom:2px;font-size:.6875rem;line-height:1;color:var(--warn-ink)}
+/* the clash's span on the time axis: a hatched strip under the tick labels (never over them) */
+.hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
 .vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
@@ -1516,8 +1565,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .builder-actions{width:100%;flex-wrap:nowrap;gap:6px}
   .builder-actions .toggle{min-height:42px;justify-content:center;white-space:nowrap;padding-left:12px;padding-right:12px}
   .builder-actions #buildAgenda{flex:1 1 auto}
-  .ag-opt{flex:0 1 auto;min-height:42px;font-size:.8125rem;line-height:1.2}
-  .ag-opt-long{display:none}
+  .ag-opt{flex:0 1 auto;min-height:42px;font-size:.8125rem;line-height:1.2;white-space:nowrap}
+  .ag-opt-long,.ag-opt-show{display:none}
+  .ag-opt-f{display:inline}
   .ag-clash-ind{min-height:32px}
   .cp-items li{gap:2px 8px}
   .cp-keep{order:1}
@@ -1854,8 +1904,8 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <span class="ag-clash-slot" id="clashSlot"></span>
     </div>
     <div class="builder-actions">
-      <label class="ag-opt" id="parentOption" hidden><input type="checkbox" id="includeParents"> <span>Show full sessions<span class="ag-opt-long"> for starred talks</span></span></label>
-      <button class="toggle primary" id="buildAgenda" data-build>Build my agenda</button>
+      <label class="ag-opt" id="parentOption" hidden><input type="checkbox" id="includeParents"> <span><span class="ag-opt-show">Show f</span><span class="ag-opt-f">F</span>ull sessions<span class="ag-opt-long"> for starred talks</span></span></label>
+      <button class="toggle primary" id="buildAgenda" data-build><span>Build<span class="ag-build-long"> my agenda</span></span></button>
       <div class="ag-menu" id="exportWrap">
         <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <span class="caret" aria-hidden="true">&#9662;</span></button>
         <div class="ag-menu-list" id="exportMenu" role="menu" aria-labelledby="exportBtn" hidden>
@@ -2788,7 +2838,9 @@ function agendaCountText(items, html, sep = ' · '){
     let t = countWord(sess.length, 'session', html);
     if (hosts.length){
       const what = nInner === 1 ? 'a starred talk' : hosts.length === 1 ? nInner + ' starred talks' : 'starred talks';
-      t += sess.length === 1 ? ' with ' + what : hosts.length === sess.length ? ', all with ' + what : `, ${hosts.length} with ${what}`;
+      const clause = sess.length === 1 ? ' with ' + what : hosts.length === sess.length ? ', all with ' + what : `, ${hosts.length} with ${what}`;
+      // in the bar the clause is detail that gives way first when space is short
+      t += html ? `<span class="ag-sx">${clause}</span>` : clause;
     }
     parts.push(t);
   }
@@ -3007,7 +3059,7 @@ function weekOverview(){
     const clash = agenda && x.clash.length > 0;
     const bandText = s.cat === 'plenary' ? 'Plenary' : s.title, parts = weekLabelParts(s);
     const label = band ? esc(bandText)
-      : agenda && x.t ? `<b aria-hidden="true">★</b><em> ${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b aria-hidden="true">★${x.inner.size}</b>` : '');
+      : agenda && x.t ? `<b aria-hidden="true">★</b><em> ${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b class="week-n" data-n="${x.inner.size}" aria-hidden="true">★</b>` : '');
     // the accessible name starts with the text shown (the full label; CSS may clamp it)
     const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + parts[1];
     const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
@@ -3021,7 +3073,7 @@ function weekOverview(){
     const ids = agenda && x.t ? `data-tid="${x.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
     return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
-      ${ids} data-week-sid="${s.id}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span>${marks}</button>`;
+      ${ids} data-week-sid="${s.id}" data-code="${esc(s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat])}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span>${marks}</button>`;
   };
   const counts = [], lanes = [];
   const isBand = s => !agenda && WEEK_BANDS.includes(s.cat);
@@ -3052,10 +3104,12 @@ function weekOverview(){
     const isToday = d.date === today;
     return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" style="--lanes:${lanes[di]}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
   });
+  // a day with almost nothing on (registration Sunday) gets a narrow column
+  const quiet = di => agenda ? !days[di].length : DATA.days[di].slots.length < 4;
   const heads = DATA.days.map((d, di) => {
     const [wd, dd, ...mon] = d.label.split(' ');
     const what = agenda ? 'item' : 'session';
-    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
+    return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}${!horiz && quiet(di) ? ' week-dnar' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
       <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}<span class="visually-hidden"> ${what}${counts[di] === 1 ? '' : 's'}</span></small></button>`;
   });
   const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
@@ -3087,9 +3141,9 @@ function weekOverview(){
       ${tail}
     </div>`;
   }
-  // a day with almost nothing on (registration Sunday) gets a narrow column; on a wide
-  // screen every column is wide enough for its busiest cluster to keep readable blocks
-  const widths = sm => DATA.days.map((d, di) => (agenda ? !days[di].length : d.slots.length < 4) ? `minmax(${sm ? '0px' : '5.25rem'},.45fr)`
+  // on a wide screen every column is wide enough for its busiest cluster to keep readable
+  // blocks; on a phone the quiet day's column still holds its "Sun 6" head on one line
+  const widths = sm => DATA.days.map((d, di) => quiet(di) ? `minmax(${sm ? '2.5rem' : '5.25rem'},.45fr)`
     : sm ? 'minmax(0,1fr)' : `minmax(calc(${lanes[di]} * var(--vbw)),1fr)`).join(' ');
   return `<div class="week-ov week-v${agenda ? ' week-mine' : ''}" style="--week-cols:${widths(false)};--week-cols-sm:${widths(true)};--dur:${dur}" data-t0="${t0}" data-t1="${t1}" role="region" aria-label="All week overview">
     ${hint}
@@ -3104,14 +3158,14 @@ const weekMore = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}
 // After rendering: fit each label to its block, across, wrapping at whole words onto as
 // many lines as the block holds. A block too narrow for its words shows its badge (the
 // stream code) alone; one too narrow for that shows none (its name is in its tooltip and
-// accessible name). Only the vertical overview's tall, narrow columns, where nothing
-// fits across, set the label sideways (one line, ellipsis). One tab stop for the blocks
+// accessible name). In the vertical overview's tall, narrow columns, where nothing
+// fits across, the stream code stands in letters set one under another. One tab stop for the blocks
 // (arrow keys move between them).
 function weekFit(root = document.getElementById('agenda')){
   const ov = root.querySelector('.week-ov');
   if (!ov) return;
   const cs = getComputedStyle(ov.querySelector('.week-blk') || ov);
-  const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12, cw = fs * .56;
+  const fs = parseFloat(cs.fontSize) || 11, lh = fs * 1.12;
   const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
   const vert = ov.classList.contains('week-v');
   const over = el => el.scrollWidth > el.clientWidth + 1;
@@ -3119,7 +3173,7 @@ function weekFit(root = document.getElementById('agenda')){
   for (const b of ov.querySelectorAll('.week-blk')){
     const span = b.firstElementChild;
     span.hidden = false;
-    b.classList.remove('week-vl', 'week-bdg', 'week-brk');
+    b.classList.remove('week-up', 'week-bdg', 'week-brk');
     if (b.classList.contains('week-off') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
     // (horizontal: a session's starred-talk marks take its bottom 6px)
     const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (!vert && b.querySelector('.week-tk') ? 6 : 0)) / lh);
@@ -3134,10 +3188,10 @@ function weekFit(root = document.getElementById('agenda')){
   for (const b of nar.filter(b => over(b.firstElementChild))){
     const span = b.firstElementChild, w = b.clientWidth, h = b.clientHeight;
     b.classList.remove('week-bdg');
-    if (vert && h > 2.5 * w && Math.floor((w - 3) / lh) >= 1 && (h - 6) / cw >= 4){
-      b.classList.add('week-vl');
-      span.style.setProperty('--lines', 1);
-    } else span.hidden = true;
+    // upright letters are about .625rem tall and wide each
+    const lt = fs * .625 / .6875 * 1.05;
+    if (vert && w >= lt + 4 && h - 6 >= b.dataset.code.length * lt) b.classList.add('week-up');
+    else span.hidden = true;
   }
   for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
   const blocks = weekBlocks(ov);
@@ -3381,7 +3435,8 @@ function renderBuilder(){
     body.innerHTML = agendaEmptyHtml();
     return;
   }
-  stats.innerHTML = `${agendaCountText(items, true)} &middot; about <b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span>`;
+  // the counts may end in an ellipsis on a tight bar; the planned hours never do
+  stats.innerHTML = `<span class="ag-cnt">${agendaCountText(items, true)}</span><span class="ag-hrs"> &middot; <span class="ag-about">about </span><b>${plannedHours(items).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span></span>`;
   let html = '';
   DATA.days.forEach((d, di) => {
     if (personalList && state.day !== 'all' && state.day !== di) return;
@@ -3539,13 +3594,16 @@ function buildIcs(){
     const chars = Array.from(desc);
     if (chars.length > 900) desc = chars.slice(0, 900).join('') + '…';
     const who = it.kind === 'talk' ? speakers(it.t) : (it.s.conv || []).join('; ');
-    const url = it.kind === 'talk' ? it.t.u : it.s.url;
+    // a session with no Indico page (breaks, the Welcome Reception) carries the bare site
+    // root: leave it out; a Congress event gives its note and official pages instead
+    const url = indicoUrl(it.kind === 'talk' ? it.t.u : it.s.url);
+    const official = it.kind === 'talk' ? '' : [it.s.info || '', ...(it.s.links || []).map(l => l.l + ': ' + l.u)].filter(Boolean).join('\n');
     const parent = it.kind === 'talk' ? 'Part of: ' + it.s.title : '';
     const word = it.s.cat === 'poster' ? 'posters' : 'talks';
     const starred = it.inner && it.inner.length ? `Starred ${word} in this session:\n` +
       it.inner.map(t => `★ ${t.s}–${t.e} ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}`).join('\n') : '';
     const clashLine = it.clashes.length ? 'Overlaps: ' + it.clashes.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
-    const body = [starred, who ? (it.kind === 'talk' ? 'Speakers: ' : 'Convened by: ') + who : '', clashLine, desc, parent, url].filter(Boolean).join('\n\n');
+    const body = [starred, who ? (it.kind === 'talk' ? 'Speakers: ' : 'Convened by: ') + who : '', clashLine, desc, official, parent, url].filter(Boolean).join('\n\n');
     lines.push('BEGIN:VEVENT');
     lines.push(icsFold('UID:' + it.s.id + (it.t ? '-' + it.t.id : '') + '@aip2026-program'));
     lines.push('DTSTAMP:' + stamp);
@@ -3554,7 +3612,7 @@ function buildIcs(){
     lines.push(icsFold('SUMMARY:' + icsEscape(itemTitle(it))));
     lines.push(icsFold('DESCRIPTION:' + icsEscape(body)));
     lines.push(icsFold('LOCATION:' + icsEscape('Belinda Hutchinson Building, The University of Sydney' + (it.s.room && it.s.room !== 'Belinda Hutchinson Building' ? ' — ' + it.s.room : ''))));
-    lines.push(icsFold('URL:' + url));
+    if (url) lines.push(icsFold('URL:' + url));
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');
@@ -3681,6 +3739,8 @@ const HZ_GROUPS = [
 const HZ_CAT_AB = { edu:'Edu', events:'Events', special:'Forums', business:'Meetings', social:'Breaks' };
 // the stream badge a bar or block shows when it is too narrow for its title
 const dvCode = s => s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
+// a narrow break bar's badge: which break it is, so two in one lane read apart
+const hzAb = s => { const t = s.cat === 'social' ? s.title : '', ab = /regist/i.test(t) ? 'Reg' : /tea\b/i.test(t) ? 'Tea' : /lunch/i.test(t) ? 'Lunch' : /breakfast/i.test(t) ? 'Bfast' : ''; return ab ? ` data-ab="${ab}"` : ''; };
 const HZ_ZOOMS = [['fit', 'Fit day'], [240, '4 h'], [120, '2 h'], [60, '1 h']];
 const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
 const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
@@ -3860,7 +3920,7 @@ function hzDraw(root, left){
   // My agenda: each clash marked on the time axis and hatched down the canvas
   if (agenda) for (const [a, b] of dvClashSpans(ents)){
     const pos = `left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px`;
-    tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"><b>&#9888;</b></i>`;
+    tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"></i>`;
     gl += `<i class="cx" style="${pos}"></i>`;
   }
   const ticksEl = h.querySelector('.hz-ticks');
@@ -3891,7 +3951,11 @@ function hzDraw(root, left){
     const markRoom = marked(e) ? 14 : 0;
     // My agenda: the kind pill makes the meta line a little taller; a talk adds its speakers and session
     const extra = agenda ? 3 * rs + (e.t ? (e.t.sp.length ? 14 * rs : 0) + 14 * rs : 0) : 0;
-    if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(e.title.length, w - 16, agenda && e.t ? 7.6 : 6.7)) * lineH + 14 * rs) + markRoom + extra
+    // a bar narrower than the title's longest word shows only its stream code (hzFitText),
+    // so it needs one line, not a column of broken words
+    const longest = Math.max(...e.title.split(/\s+/).map(x => x.length));
+    const codeOnly = w - 14 < longest * 6 * rs;
+    if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + (codeOnly ? 1 : Math.min(7, estLines(e.title.length, w - 16, agenda && e.t ? 7.6 : 6.7))) * lineH + 14 * rs) + markRoom + extra
       + Math.min(4, listed(e).length) * 14 * rs };
     const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.1));
     const head = 9 + hl2 * 15.5 * rs + 14 * rs + extra + (agenda ? 2 : 0);
@@ -3934,8 +3998,8 @@ function hzDraw(root, left){
         // My agenda says what each item is: its kind first, then title; a talk adds its speakers and session
         const sp = e.t ? e.t.sp.map(p => p.n).join(', ') : '';
         const inner = tiny ? '' : agenda
-          ? `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span><span class="hz-meta">${dvKind(e)} ${meta}</span>${title}${sp ? `<span class="hz-sp">${hl(sp)}</span>` : ''}${e.t ? `<span class="hz-meta hz-of">in ${hl(s.title)}</span>` : ''}${lst}</span>`
-          : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span>${title}<span class="hz-meta">${meta}</span>${lst}</span>`;
+          ? `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> <span class="hz-meta">${dvKind(e)} ${meta}</span>${title}${sp ? `<span class="hz-sp">${hl(sp)}</span>` : ''}${e.t ? `<span class="hz-meta hz-of">in ${hl(s.title)}</span>` : ''}${lst}</span>`
+          : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true"${hzAb(s)}>${esc(dvCode(s))}</span> ${title}<span class="hz-meta">${meta}</span>${lst}</span>`;
         const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
         if (!m.tks.length){
           let marks = '';
@@ -3961,7 +4025,7 @@ function hzDraw(root, left){
               <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
           bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} ${ids} title="${tip}">
-            <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
+            <button type="button" class="hz-head" style="height:${m.head}px" title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
         }
       }
       yy += hh + 4;
@@ -4047,14 +4111,36 @@ function hzDraw(root, left){
 
 // Titles wrap at whole words only: a bar (or talk) whose title has a word wider than
 // the bar shows just its stream badge (or the talk's time); the title is in its
-// tooltip and details. A badge that does not fit either is hidden.
+// tooltip and details. A badge that does not fit either is set tighter (hz-nar0) and
+// then cut to three, two or one letters ("ASTRO" -> "AST" -> "AS" -> "A"); only a sliver too thin
+// for one letter is left as colour alone (hz-nar1).
 function hzFitText(h){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
   const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')], nar = bars.filter(b => over(b.querySelector('.hz-title')));
   const talks = [...h.querySelectorAll('.hz-talk')], tnar = talks.filter(t => over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')));
-  for (const b of nar) b.classList.add('hz-nar');
+  for (const b of nar){
+    b.classList.add('hz-nar');
+    // a break's badge says which break ("Tea", "Lunch") rather than "Break" for all
+    const bdg = b.querySelector('.hz-bdg');
+    if (bdg.dataset.ab) bdg.textContent = bdg.dataset.ab;
+  }
   for (const t of tnar) t.classList.add('hz-nar');
-  for (const b of nar.filter(b => over(b.querySelector('.hz-in')))) b.classList.add('hz-nar0');
+  const nar0 = nar.filter(b => over(b.querySelector('.hz-in')));
+  for (const b of nar0) b.classList.add('hz-nar0');
+  for (const b of nar0){
+    const in_ = b.querySelector('.hz-in'), bdg = b.querySelector('.hz-bdg'), code = bdg.textContent;
+    for (const n of [3, 2, 1]) if (n < code.length && over(in_)) bdg.textContent = code.slice(0, n);
+    if (over(in_)) b.classList.add('hz-nar1');
+  }
+  // A narrow bar shows only its code (and time): name it by its title, then the text it
+  // shows, then the tooltip's notes (clash, shown for starred talks)
+  for (const b of nar){
+    const t = b.querySelector('.hz-title');
+    const shown = (b.classList.contains('hz-nar1') ? '' : b.querySelector('.hz-bdg').textContent + ' ') + b.querySelector('.hz-meta').textContent;
+    const notes = (b.title || '').split('\n').slice(1);
+    b.setAttribute('aria-label', [t.textContent.replace(/^[\s\u26a0\u2605]+/, '').trim(), shown,
+      t.querySelector('.hz-star') ? 'in My agenda' : '', ...notes].filter(Boolean).join(', '));
+  }
   // Row heights are estimated (and capped): a talk still taller than its row keeps its
   // whole title if it can and shortens its speakers, else drops them and ends the title
   // with an ellipsis, so no line is cut through.
@@ -4072,6 +4158,26 @@ function hzFitText(h){
       tl.classList.add('hz-clamp');
       tl.style.setProperty('--cl', Math.max(1, Math.floor(room / lh(tl))));
     }
+  }
+  // Bar heights are estimated from the title's length; where the title wraps to more lines
+  // than that allowed, end it in an ellipsis (fewer lines) so the time line below stays
+  // whole, and drop the time line only if one title line is all that fits. (Text may run
+  // into a plain bar's bottom padding; a split head or a bar with talk marks clips at its
+  // content edge.)
+  const fix = bars.filter(b => !b.classList.contains('hz-nar')).map(b => {
+    const t = b.querySelector('.hz-title'), m = b.querySelector('.hz-meta'), in_ = b.querySelector('.hz-in');
+    const cs = getComputedStyle(b), ts = getComputedStyle(t), r = b.getBoundingClientRect();
+    const tight = b.classList.contains('hz-head') || b.classList.contains('marked');
+    const avail = r.bottom - parseFloat(cs.borderBottomWidth) - (tight ? parseFloat(cs.paddingBottom) : 2) - in_.getBoundingClientRect().top;
+    const lh = parseFloat(ts.lineHeight) || 16, max = parseInt(ts.webkitLineClamp) || 6;
+    const lines = Math.min(max, Math.round(t.scrollHeight / lh)), mh = m.scrollHeight + 1; // natural heights (either may be squeezed)
+    return { t, m, lh, lines, mh, avail };
+  }).filter(x => x.lines * x.lh + x.mh > x.avail + 1);
+  for (const { t, m, lh, lines, mh, avail } of fix){
+    const keep = Math.floor((avail - mh + 1) / lh);
+    if (keep >= 1){ t.style.webkitLineClamp = Math.min(lines, keep); continue; }
+    m.style.display = 'none';
+    t.style.webkitLineClamp = Math.max(1, Math.min(lines, Math.floor((avail + 1) / lh)));
   }
 }
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
