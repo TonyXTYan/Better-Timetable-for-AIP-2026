@@ -233,6 +233,29 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .hl .hl-d{font-size:13px;color:var(--muted);margin:0}
 .hl .hl-d b{color:var(--ink);font-weight:600}
 
+.highlight-wrap>summary{max-width:1180px;margin:10px auto;padding:4px 20px;cursor:pointer;font-weight:600}
+.session-option{display:block;margin:12px 0;font-size:14px}
+.calendar-hint{display:none;color:var(--muted);font-size:13px;margin:6px 0}
+@media(max-width:720px){.calendar-hint{display:block}}
+.week-scroll{max-height:70vh;overflow:auto;border:1px solid var(--line);background:white;border-radius:10px}
+#programLevel select{font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:8px;background:white}
+.week-scroll table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+.week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
+.week-scroll td{min-width:9rem}
+.week-scroll thead th{position:sticky;top:0;z-index:2;background:#eef2fa}
+.week-scroll tbody th{position:sticky;left:0;background:white;z-index:1}
+.week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:#f8fafc;font-size:12px}
+.week-event small,.child-talk{display:block}
+.child-talk{font-weight:650}
+#eventDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink)}
+#eventDialog::backdrop{background:#16233788}
+#eventDialog form{position:sticky;top:0;text-align:right;pointer-events:none}
+#eventDialog form button{pointer-events:auto}
+#eventDialog h2{font-size:20px;line-height:1.3;margin:8px 0}
+#eventDialog details{padding:10px 0;border-top:1px solid var(--line)}
+#eventDialog summary{cursor:pointer;font-weight:600}
+.detail-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.detail-save[aria-pressed="true"]{color:#92400e;background:#fff7eb}
 /* ---------- toolbar ---------- */
 .sticky-wrap{position:sticky;top:0;z-index:50;background:rgba(246,247,251,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:18px}
 .toolbar{max-width:1180px;margin:0 auto;padding:10px 20px 0}
@@ -409,6 +432,9 @@ footer p{margin:4px 0}
   .ag-main{width:100%}
   .ag-actions{flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:4px}
   .ag-btn{min-height:36px}
+  .card .star{min-width:44px;min-height:44px}
+  .toolbar .chips{flex-wrap:nowrap;overflow-x:auto}
+  .toolbar .chip{flex:none}
   .talk-star{width:44px;height:44px;margin-right:2px}
 }
 @media print{
@@ -447,12 +473,12 @@ footer p{margin:4px 0}
   </div>
 </header>
 
-<section class="highlights" aria-label="Congress highlights">
+<details class="highlight-wrap"><summary>Congress highlights</summary><section class="highlights" aria-label="Congress highlights">
   <div class="hl"><div class="hl-k">Public lecture</div><div class="hl-t">Dr Jessie Christiansen (NASA/Caltech)</div><p class="hl-d"><b>Mon 7 Dec, evening.</b> The hunt for Earth 2.0 — from the first exoplanets to NASA's next flagship telescope. Free, open to all.</p></div>
   <div class="hl"><div class="hl-k">Public lecture</div><div class="hl-t">Dr Derek Muller (Veritasium)</div><p class="hl-d"><b>Thu 10 Dec, evening.</b> From Physics PhD to YouTuber: what Veritasium learned about explaining the universe.</p></div>
   <div class="hl"><div class="hl-k">Social highlight</div><div class="hl-t">Congress Dinner on the Harbour</div><p class="hl-d"><b>Wed 9 Dec.</b> Three-hour Sydney Harbour cruise with the AIP &amp; ANZOS award ceremonies. Tickets via registration.</p></div>
   <div class="hl"><div class="hl-k">Friday programs</div><div class="hl-t">Teachers Day &amp; Career Fair</div><p class="hl-d"><b>Fri 11 Dec.</b> Australian Physics Teachers Day (from 8am) and the Australian Physics Career Fair (1–4pm).</p></div>
-</section>
+</section></details>
 
 <div class="sticky-wrap">
   <div class="toolbar">
@@ -464,6 +490,8 @@ footer p{margin:4px 0}
         <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
       </div>
       <button class="toggle" id="agendaBtn"><span>&#9733;</span> My agenda <span class="cnt" id="starCount">0</span></button>
+      <button class="toggle" id="programCalendarBtn" aria-pressed="false">Calendar</button>
+      <label id="programLevel" hidden><select aria-label="Program calendar events"><option value="sessions">Sessions</option><option value="talks">Individual talks</option></select></label>
       <button class="toggle" id="expandAll">Expand all abstracts</button>
     </div>
     <div class="chips" id="chips" aria-label="Filter by stream"></div>
@@ -505,11 +533,16 @@ footer p{margin:4px 0}
     <div id="builderList"></div>
     <div id="builderCalendar" hidden>
       <div class="cal-days" id="calendarDays" role="group" aria-label="Calendar day"></div>
+      <label class="session-option"><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
       <div id="calendarDay"></div>
     </div>
   </div>
 </section>
 
+<dialog id="eventDialog" aria-labelledby="eventTitle">
+  <form method="dialog"><button class="toggle" autofocus>Close</button></form>
+  <div id="eventContent"></div>
+</dialog>
 <footer>
   <div class="cols">
     <div>
@@ -541,7 +574,7 @@ const CAT_COLORS = {
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, view: 'program',
-  agendaLayout: 'list', calendarDay: null,
+  agendaLayout: 'list', calendarDay: null, programCalendar: false, programTalks:false,
   starred: new Set(),
 };
 try {
@@ -564,10 +597,10 @@ function renderTabs(){
   const el = document.getElementById('daytabs');
   const total = DATA.days.reduce((a,d)=>a+d.slots.length,0);
   const allOn = state.day === 'all';
-  let html = `<button class="daytab ${allOn?'on':''}" data-day="all" role="tab" aria-selected="${allOn}">All week<span class="dt-count">${total}</span></button>`;
+  let html = `<button class="daytab ${allOn?'on':''}" data-day="all" role="tab" tabindex="${allOn ? 0 : -1}" aria-selected="${allOn}">All week<span class="dt-count">${total}</span></button>`;
   html += DATA.days.map((d,i) => {
     const on = state.day === i;
-    return `<button class="daytab ${on?'on':''}" data-day="${i}" role="tab" aria-selected="${on}">${d.label}<span class="dt-count">${d.slots.length}</span></button>`;
+    return `<button class="daytab ${on?'on':''}" data-day="${i}" role="tab" tabindex="${on ? 0 : -1}" aria-selected="${on}">${d.label}<span class="dt-count">${d.slots.length}</span></button>`;
   }).join('');
   el.innerHTML = html;
   document.getElementById('q').placeholder = allOn
@@ -682,6 +715,7 @@ function blocksHtml(slots){
 }
 
 function renderAgenda(){
+  if (state.programCalendar){ renderProgramCalendar(); return; }
   const main = document.getElementById('agenda');
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
@@ -856,17 +890,27 @@ function applyFilters(){
 }
 
 // everything is rendered up front; filtering just toggles visibility
-function refresh(){ applyFilters(); }
+function refresh(){ if (state.programCalendar) renderProgramCalendar(); else applyFilters(); }
 
 function rerender(){
   renderTabs(); renderChips(); renderAgenda();
 }
 
 // ---------- events ----------
+document.getElementById('daytabs').addEventListener('keydown', e => {
+  const tabs = [...e.currentTarget.querySelectorAll('[role="tab"]')];
+  const index = tabs.indexOf(e.target);
+  const destination = {ArrowRight:(index+1)%tabs.length, ArrowLeft:(index+tabs.length-1)%tabs.length,
+                       Home:0, End:tabs.length-1}[e.key];
+  if (destination === undefined || index < 0) return;
+  e.preventDefault();
+  tabs[destination].click();
+});
 document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
   state.day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
   rerender();
+  document.querySelector('#daytabs [aria-selected="true"]').focus({preventScroll:true});
   window.scrollTo({ top: document.querySelector('.sticky-wrap').offsetTop - 8 });
 });
 
@@ -1026,6 +1070,7 @@ function agRow(it){
       ${clash}
     </div>
     <div class="ag-actions">
+      <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
       <button class="ag-btn" ${programJumpAttrs(it)}>View in program</button>
       <button class="ag-btn rm"${tid} aria-label="Remove ${esc(itemTitle(it))}">&#10005; Remove</button>
     </div>
@@ -1054,40 +1099,96 @@ function calendarGroups(items){
 function calendarEvent(event, lanes, firstMinute){
   const { item: it, lane, start, end } = event;
   const [c,bg] = CAT_COLORS[it.s.cat];
-  const context = [it.t ? it.s.title : 'Session', it.s.room].filter(Boolean).join(' · ');
+  const sessionLabel = it.children?.length && !state.starred.has(it.s.id) ? 'Session context' : 'Session';
+  const context = [it.t ? it.s.title : sessionLabel, it.s.room].filter(Boolean).join(' · ');
   const time = `${it.start}–${it.end}`;
   const clashes = it.clashes.length > 0;
   const clashText = clashes ? ' · Overlap' : '';
   const label = esc([time, itemTitle(it), context].join(' · ') + clashText);
-  return `<button type="button" class="cal-event ${clashes?'has-clash':''} ${end-start>=15?'multiline':''}" ${programJumpAttrs(it)}
+  return `<button type="button" class="cal-event ${clashes?'has-clash':''} ${end-start>=15?'multiline':''}" ${calendarDetailAttrs(it)}
     aria-label="${label}" title="${label}"
     style="--c:${c};--cbg:${bg};--offset:${start-firstMinute};--span:${end-start};--left:${100*lane/lanes}%;--width:${100/lanes}%">
     <span class="cal-time">${clashes?'&#9888; ':''}${time}</span>
-    <strong>${esc(itemTitle(it))}</strong>
-    <span class="cal-context">${esc(context)}</span>
+    <strong>${state.starred.has(it.t?.id || it.s.id) ? '★ ' : ''}${esc(itemTitle(it))}</strong>
+    <span class="cal-context">${esc(context)}</span>${savedTalkLabels(it)}
   </button>`;
+}
+
+function calendarDetailAttrs(it){
+  return `data-session-detail="${it.s.id}" data-talk-detail="${it.t?.id || ''}"`;
+}
+
+function groupFavourites(items){
+  const includeParents = document.getElementById('includeParents').checked;
+  const parents = new Map();
+  const grouped = [];
+  for (const it of items){
+    if (!it.t || includeParents){
+      if (!parents.has(it.s.id)){
+        const parent = { ...it, kind:'session', t:null, start:it.s.start, end:it.s.end, children:[], clashes:[] };
+        parents.set(it.s.id, parent);
+        grouped.push(parent);
+      }
+    }
+  }
+  for (const it of items){
+    const parent = parents.get(it.s.id);
+    if (!parent){ grouped.push(it); continue; }
+    if (it.t) parent.children.push(it.t);
+    parent.clashes.push(...it.clashes);
+  }
+  return grouped.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
 }
 
 function renderCalendar(items){
   const preferred = items.find(it => it.di === state.day) || items[0];
   const dayIndex = state.calendarDay ?? preferred?.di ?? 0;
-  const day = DATA.days[dayIndex];
-  const dayItems = items.filter(it => it.di === dayIndex);
-  document.getElementById('calendarDays').innerHTML = DATA.days.map((d, i) => {
+  const all = dayIndex === 'all';
+  document.getElementById('calendarDays').innerHTML = `<button class="daytab ${all?'on':''}" data-cal-day="all" aria-pressed="${all}">All week</button>` + DATA.days.map((d, i) => {
     const count = items.filter(it => it.di === i).length;
     const selected = i === dayIndex;
     return `<button type="button" class="daytab ${selected?'on':''}" data-cal-day="${i}" aria-pressed="${selected}" aria-controls="calendarDay">${esc(d.label)}<span class="dt-count">${count}</span></button>`;
   }).join('');
 
   const pane = document.getElementById('calendarDay');
+  const groups = groupFavourites(items);
+  if (all && items.length){ pane.innerHTML = weekCalendar(groups); return; }
+  const dayItems = groups.filter(it => it.di === dayIndex);
   if (!dayItems.length){
     pane.innerHTML = `<div class="ag-empty">
-      <h3>No favourites on ${esc(day.label)}</h3>
-      <button class="toggle" data-goprogram="${dayIndex}">Browse this day &#8594;</button>
+      <h3>No favourites ${all ? 'this week' : 'on ' + esc(DATA.days[dayIndex].label)}</h3>
+      <button class="toggle" data-goprogram="${dayIndex}">Browse ${all ? 'the program' : 'this day'} &#8594;</button>
     </div>`;
     return;
   }
 
+  pane.innerHTML = dayCalendar(dayItems, DATA.days[dayIndex]);
+}
+
+function weekCalendar(items){
+  const starts = [...new Set(items.map(it => it.start))].sort();
+  const days = DATA.days.map(d => `<th scope="col">${esc(d.label)}</th>`).join('');
+  const rows = starts.map(start => {
+    const cells = DATA.days.map((d, di) => {
+      const events = items.filter(it => it.di === di && it.start === start).map(it => {
+        const [color] = CAT_COLORS[it.s.cat];
+        return `<button class="week-event" style="--c:${color}" ${calendarDetailAttrs(it)}>
+          <small>${it.start}–${it.end}${it.clashes.length?' · Overlap':''}</small>
+          ${state.starred.has(it.t?.id || it.s.id) ? '★ ' : ''}${esc(itemTitle(it))}${savedTalkLabels(it)}
+        </button>`;
+      });
+      return '<td>' + events.join('') + '</td>';
+    });
+    return `<tr><th scope="row">${start}</th>${cells.join('')}</tr>`;
+  });
+  return `<p class="calendar-hint">Scroll across to see later days.</p><div class="week-scroll" tabindex="0" role="region" aria-label="All week calendar"><table><thead><tr><th scope="col">AEDT</th>${days}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
+
+function savedTalkLabels(it){
+  return (it.children || []).map(t => `<span class="child-talk">★ ${t.s} · ${esc(t.t)}</span>`).join('');
+}
+
+function dayCalendar(dayItems, day){
   const tick = 30;
   const firstMinute = Math.floor(toMin(dayItems[0].start) / tick) * tick;
   const lastMinute = Math.ceil(Math.max(...dayItems.map(it => toMin(it.end))) / tick) * tick;
@@ -1100,8 +1201,9 @@ function renderCalendar(items){
   const groups = calendarGroups(dayItems);
   const maxLanes = Math.max(...groups.map(group => group.laneEnds.length));
   const events = groups.flatMap(group => group.events.map(event => calendarEvent(event, group.laneEnds.length, firstMinute)));
-  pane.innerHTML = `<h3 class="cal-day-title" id="calendarDayTitle">${esc(day.label)} 2026</h3>
-    <div class="cal-scroll" tabindex="0" role="region" aria-labelledby="calendarDayTitle">
+  return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>
+    ${maxLanes > 2 ? '<p class="calendar-hint">Scroll across to see parallel events.</p>' : ''}
+    <div class="cal-scroll" tabindex="0" role="region" aria-label="Calendar for ${esc(day.label)}">
       <div class="cal-grid" style="--duration:${lastMinute-firstMinute};--lanes:${maxLanes}">
         <div aria-hidden="true">${hours}</div>
         <div class="cal-events">${events.join('')}</div>
@@ -1164,10 +1266,11 @@ function showView(v){
   document.getElementById('agenda').hidden = isAgenda;
   document.getElementById('emptyNote').hidden = isAgenda;
   document.querySelector('.sticky-wrap').hidden = isAgenda;
-  document.querySelector('.highlights').hidden = isAgenda;
+  document.querySelector('.highlight-wrap').hidden = isAgenda;
   if (isAgenda){
     renderBuilder();
-    document.getElementById('builderTitle').focus();
+    document.getElementById('builderTitle').focus({preventScroll:true});
+    document.getElementById('builderTitle').scrollIntoView({block:'start',behavior:'instant'});
   }
 }
 
@@ -1285,6 +1388,128 @@ function downloadIcs(){
   document.getElementById('icsBox').value = txt;
 }
 
+function setProgramCalendar(on){
+  state.programCalendar = on;
+  const btn = document.getElementById('programCalendarBtn');
+  btn.setAttribute('aria-pressed', on);
+  btn.classList.toggle('on', on);
+  document.getElementById('expandAll').hidden = on;
+  document.getElementById('programLevel').hidden = !on;
+}
+
+function renderProgramCalendar(){
+  const items = [];
+  DATA.days.forEach((d,di) => {
+    for (const s of d.slots.filter(slotMatches)){
+      if (state.programTalks && s.talks.length){
+        for (const t of s.talks.filter(t => talkMatches(t,s))){
+          items.push({di,d,s,t,kind:'talk',start:t.s,end:t.e,clashes:[]});
+        }
+      } else {
+        items.push({di,d,s,t:null,kind:'session',start:s.start,end:s.end,clashes:[]});
+      }
+    }
+  });
+  const main = document.getElementById('agenda');
+  items.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
+  const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
+  const fallback = !selected.length && items.length > 0;
+  const result = document.getElementById('resultLine');
+  if (fallback){
+    const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
+    main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekCalendar(items);
+    result.textContent = message;
+  } else {
+    main.innerHTML = !selected.length ? '<p>No matching events. Change the search or stream filters.</p>'
+      : state.day === 'all' ? weekCalendar(selected) : dayCalendar(selected, DATA.days[state.day]);
+    result.textContent = selected.length + (state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
+  }
+  document.getElementById('emptyNote').classList.remove('show');
+}
+
+document.getElementById('programCalendarBtn').addEventListener('click', () => {
+  setProgramCalendar(!state.programCalendar);
+  renderAgenda();
+});
+document.querySelector('#programLevel select').addEventListener('change', e => {
+  state.programTalks = e.target.value === 'talks';
+  renderProgramCalendar();
+});
+document.getElementById('includeParents').addEventListener('change', () => {
+  const items = agendaItems();
+  markClashes(items);
+  renderCalendar(items);
+});
+
+const eventDialog = document.getElementById('eventDialog');
+let dialogTrigger;
+function favouriteButton(id, kind){
+  const saved = state.starred.has(id);
+  return `<button class="ag-btn detail-save" data-detail-save="${id}" aria-pressed="${saved}">${saved?'★':'☆'} Favourite ${kind}</button>`;
+}
+document.addEventListener('click', e => {
+  const button = e.target.closest('[data-session-detail]');
+  if (!button) return;
+  const s = slotById(button.dataset.sessionDetail);
+  const t = s.talks.find(talk => talk.id === button.dataset.talkDetail);
+  const day = DATA.days.find(d => d.slots.includes(s));
+  const talks = t ? [t] : [...s.talks];
+  if (state.view === 'agenda') talks.sort((a,b) => Number(state.starred.has(b.id)) - Number(state.starred.has(a.id)));
+  const details = talks.map(talk => {
+    const saved = state.starred.has(talk.id);
+    const open = t || (state.view === 'agenda' && saved) || (state.view === 'program' && openMatchingTalk(talk,s));
+    const who = talk.sp.map(p => p.n).join(', ');
+    if (t) return `<p>${esc(who)}</p><h3>Abstract</h3><p class="detail-text">${esc(t.d || 'No abstract provided.')}</p>${favouriteButton(t.id,'talk')}`;
+    return `<details ${open?'open':''}><summary><span class="saved-marker">${saved?'★ ':''}</span>${talk.s}–${talk.e} · ${esc(talk.t)}</summary>
+      <p>${esc(who)}</p><p class="detail-text">${esc(talk.d || 'No abstract provided.')}</p>
+      ${favouriteButton(talk.id,'talk')}</details>`;
+  }).join('');
+  document.getElementById('eventContent').innerHTML = `<h2 id="eventTitle">${esc(t ? t.t : s.title)}</h2>
+    <p>${esc(day.label)} · ${t ? t.s : s.start}–${t ? t.e : s.end} AEDT · ${esc(s.room || 'Room to be confirmed')}</p>
+    ${t ? '<p>' + esc(s.title) + '</p>' : favouriteButton(s.id,'session')}
+    ${!t && s.desc ? '<p class="detail-text">' + esc(s.desc) + '</p>' : ''}
+    <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
+    ${details || (!s.desc ? '<p>No abstract provided.</p>' : '')}`;
+  dialogTrigger = button;
+  eventDialog.showModal();
+  eventDialog.scrollTop = 0;
+});
+eventDialog.addEventListener('click', e => {
+  const jump = e.target.closest('[data-goprogram]');
+  if (jump){
+    delete eventDialog.dataset.changed;
+    eventDialog.close();
+    openInProgram(jump);
+    return;
+  }
+  const btn = e.target.closest('[data-detail-save]');
+  if (!btn) return;
+  const id = btn.dataset.detailSave;
+  const wasSaved = state.starred.delete(id);
+  if (!wasSaved) state.starred.add(id);
+  btn.setAttribute('aria-pressed', !wasSaved);
+  btn.textContent = (wasSaved ? '☆' : '★') + btn.textContent.slice(1);
+  const marker = btn.closest('details')?.querySelector('.saved-marker');
+  if (marker) marker.textContent = wasSaved ? '' : '★ ';
+  saveStars();
+  document.getElementById('starCount').textContent = state.starred.size;
+  eventDialog.dataset.changed = 'true';
+});
+eventDialog.addEventListener('close', () => {
+  if (!eventDialog.dataset.changed) return;
+  delete eventDialog.dataset.changed;
+  const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
+  const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
+  renderAgenda();
+  if (state.view === 'agenda') renderBuilder();
+  const scope = state.view === 'agenda' ? document.querySelector('#builder') : document.querySelector('#agenda');
+  const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]`;
+  const replacement = [...scope.querySelectorAll(selector)].find(b => b.offsetWidth);
+  const scroller = replacement?.closest('.week-scroll,.cal-scroll');
+  if (scroller) scroller.scrollTo({left,top,behavior:'instant'});
+  (replacement || document.getElementById(state.view === 'agenda' ? 'builderTitle' : 'programCalendarBtn')).focus({preventScroll:true});
+});
+
 document.getElementById('agendaBtn').addEventListener('click', () => showView('agenda'));
 document.getElementById('backToProgram').addEventListener('click', () => {
   showView('program');
@@ -1299,7 +1524,7 @@ document.getElementById('builder').addEventListener('click', e => {
   const day = e.target.closest('[data-cal-day]');
   if (layout || day){
     if (layout) state.agendaLayout = layout.dataset.layout;
-    if (day) state.calendarDay = +day.dataset.calDay;
+    if (day) state.calendarDay = day.dataset.calDay === 'all' ? 'all' : +day.dataset.calDay;
     const items = agendaItems();
     markClashes(items);
     renderAgendaLayout(items);
@@ -1311,6 +1536,7 @@ document.getElementById('builder').addEventListener('click', e => {
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
     state.starred.delete(id);
+    renderAgenda();
     afterStarChange();
     const remaining = document.querySelectorAll('#builder .rm');
     const next = remaining[Math.min(removedIndex, remaining.length - 1)];
@@ -1318,34 +1544,37 @@ document.getElementById('builder').addEventListener('click', e => {
     return;
   }
   const go = e.target.closest('[data-goprogram]');
-  if (go){
-    const jump = go.dataset.jump || '';
-    const dayAttr = go.dataset.goprogram;
-    showView('program');
-    state.day = dayAttr === 'all' ? 'all' : +dayAttr;
-    if (jump){
-      clearSearch();
-      state.group = null;
-      state.cats = new Set(Object.keys(DATA.cats));
-    }
-    rerender();
-    if (jump){
-      const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
-      if (card){
-        const talk = go.dataset.jumptalk && card.querySelector(`.talk[data-tid="${go.dataset.jumptalk}"] details`);
-        if (talk) talk.open = true;
-        const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
-        const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
-        target.focus({ preventScroll: true });
-        window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - toolbarHeight - 16, behavior: 'instant' });
-        card.classList.add('flash');
-        setTimeout(() => card.classList.remove('flash'), 1500);
-        return;
-      }
-    }
-    document.querySelector('#daytabs [aria-selected="true"]').focus();
-  }
+  if (go) openInProgram(go);
 });
+
+function openInProgram(go){
+  const jump = go.dataset.jump || '';
+  const dayAttr = go.dataset.goprogram;
+  showView('program');
+  state.day = dayAttr === 'all' ? 'all' : +dayAttr;
+  if (jump){
+    setProgramCalendar(false);
+    clearSearch();
+    state.group = null;
+    state.cats = new Set(Object.keys(DATA.cats));
+  }
+  rerender();
+  if (jump){
+    const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
+    if (card){
+      const talk = go.dataset.jumptalk && card.querySelector(`.talk[data-tid="${go.dataset.jumptalk}"] details`);
+      if (talk) talk.open = true;
+      const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
+      const toolbarHeight = document.querySelector('.sticky-wrap').offsetHeight;
+      target.focus({ preventScroll: true });
+      window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - toolbarHeight - 16, behavior: 'instant' });
+      card.classList.add('flash');
+      setTimeout(() => card.classList.remove('flash'), 1500);
+      return;
+    }
+  }
+  document.querySelector('#daytabs [aria-selected="true"]').focus();
+}
 
 document.getElementById('expandAll').addEventListener('click', e => {
   const ds = document.querySelectorAll('.card:not(.hidden) details');
@@ -1355,6 +1584,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
+  if (eventDialog.open) return;
   if (e.key === '/' && state.view === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
   if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); renderAgenda(); qEl.blur(); }
