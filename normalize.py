@@ -549,3 +549,174 @@ def normalize_payload(payload, ctx=None):
                     sp['n'] = _settle(PERSON_STEPS, sp['n'], ctx, trec, 'n')
                     sp['a'] = _settle(LINE_STEPS, sp['a'], ctx, trec, 'a')
     return out
+
+
+# ---------------------------------------------------------------------------
+# Affiliations: a canonical institution per affiliation string, for grouping
+# ---------------------------------------------------------------------------
+# The displayed affiliation text is never changed; this only computes a group
+# key and label. The first listed institution wins: text after ';' (or after
+# a second numbered affiliation, "... Germany 2Department ...") is a second
+# affiliation, and "A / B", "A & B", "A and University of B" list A first.
+# Within the first affiliation a known institution below wins wherever it
+# appears, so department-prefixed strings group under the institution.
+# Anything else takes its first university-like comma part (then academy or
+# organisation, then institute or college), without a leading "The", an
+# Indico country code such as "(AU)", or a trailing city or country part.
+
+_AFF_TYPOS = (
+    ('Macquaire', 'Macquarie'), ('Macuqarie', 'Macquarie'),
+    ('Syndey', 'Sydney'), ('Syney', 'Sydney'), ('Sydeny', 'Sydney'),
+    ('Technology ydney', 'Technology Sydney'), ('Melboourne', 'Melbourne'),
+    ('Qeensland', 'Queensland'), ('Univeristy', 'University'),
+    ('Universitu', 'University'), ('Chuou univecity', 'Chuo University'),
+)
+
+# (key, label, pattern, search aliases as comma-separated phrases). Acronyms in
+# a pattern match case-sensitively and as whole words, never inside a word.
+AFF_INSTITUTIONS = (
+    ('anu', 'Australian National University',
+     r'Australian National University|\bANU\b|Mount Stromlo', 'anu'),
+    ('unsw', 'UNSW Sydney (University of New South Wales)',
+     r'\bUNSW\b|University of New South Wales', 'unsw, new south wales'),
+    ('usyd', 'University of Sydney', r'University of Sydney',
+     'usyd, sydney uni, uni of sydney, sydney university'),
+    ('uts', 'University of Technology Sydney',
+     r'University of Technology,? Sydney|\bUTS\b', 'uts'),
+    ('uq', 'University of Queensland', r'University of Queensland', 'uq, queensland uni'),
+    ('unimelb', 'University of Melbourne', r'University of Melbourne',
+     'unimelb, melbourne uni, uni of melbourne'),
+    ('monash', 'Monash University', r'Monash', 'monash'),
+    ('rmit', 'RMIT University', r'\bRMIT\b|Royal Melbourne Institute of Technology', 'rmit'),
+    ('csiro', 'CSIRO', r'\bCSIRO\b', 'csiro'),
+    ('adelaide', 'Adelaide University (University of Adelaide)',
+     r'Adelaide University|University of Adelaide|OzGrav-Adelaide',
+     'adelaide, adelaide uni, uofa, university of adelaide, adelaide university'),
+    ('uwa', 'University of Western Australia',
+     r'University of Western Australia|\bUWA\b', 'uwa'),
+    ('macquarie', 'Macquarie University', r'Macquarie', 'mq, macquarie, macquarie uni'),
+    ('swinburne', 'Swinburne University of Technology', r'Swinburne', 'swinburne'),
+    ('griffith', 'Griffith University', r'Griffith University', 'griffith'),
+    ('ansto', 'ANSTO (Australian Nuclear Science and Technology Organisation)',
+     r'\bANSTO\b|Australian Nuclear Science and Technology Organi[sz]ation', 'ansto'),
+    ('qut', 'Queensland University of Technology',
+     r'Queensland University of Technology|\bQUT\b', 'qut'),
+    ('uow', 'University of Wollongong', r'University of Wollongong', 'uow'),
+    ('uon', 'University of Newcastle', r'University of Newcastle', 'uon'),
+    ('wsu', 'Western Sydney University', r'Western Sydney University', 'wsu'),
+    ('imperial', 'Imperial College London', r'Imperial College', 'imperial, icl'),
+    ('ntu', 'Nanyang Technological University', r'Nanyang Technological', 'ntu'),
+    ('mit', 'Massachusetts Institute of Technology',
+     r'Massachusetts Institute of Technology|\bMIT\b', 'mit'),
+    ('caltech', 'Caltech (California Institute of Technology)',
+     r'\bCaltech\b|California Institute of Technology', 'caltech'),
+)
+# The University of California campuses are separate institutions: "University
+# of California, Berkeley" must not fall back to its first comma part.
+_UC_CAMPUSES = (
+    ('berkeley', 'Berkeley', 'UCB'), ('los angeles', 'Los Angeles', 'UCLA'),
+    ('san diego', 'San Diego', 'UCSD'), ('santa barbara', 'Santa Barbara', 'UCSB'),
+    ('davis', 'Davis', None), ('irvine', 'Irvine', 'UCI'), ('santa cruz', 'Santa Cruz', 'UCSC'),
+    ('riverside', 'Riverside', 'UCR'), ('merced', 'Merced', None),
+    ('san francisco', 'San Francisco', 'UCSF'),
+)
+AFF_INSTITUTIONS += tuple(
+    ('uc-' + slug.replace(' ', '-'), 'University of California, ' + name,
+     r'University of California,?\s+(?:at\s+)?' + name + r'\b|\bUC[\s-]+' + name + r'\b'
+     + (r'|\b' + short + r'\b' if short and short != 'UCB' else ''),
+     'uc ' + slug + (', ' + short.lower() if short else ''))
+    for slug, name, short in _UC_CAMPUSES)
+_AFF_RES = tuple((key, label, re.compile(pat)) for key, label, pat, _ in AFF_INSTITUTIONS)
+_AFF_SECOND = re.compile(r';|\s\d(?=[A-Z])|\s+/\s+|\s+(?:&|and)\s+(?=(?:[Tt]he\s+)?Universit)')
+_AFF_PARTS = re.compile(r'\s*[,|/]\s*|\s+-\s+')
+_AFF_PREFS = (re.compile(r'univ|uniwersytet', re.I),
+              re.compile(r'academy|organi[sz]ation', re.I),
+              re.compile(r'institut|college|laborator|observatory', re.I))
+_AFF_CODE = re.compile(r'\s*\([A-Z]{2}\)\s*$')
+_AFF_THE = re.compile(r'^the\s+', re.I)
+_AFF_AT = re.compile(r'^.*?\bat\s+(?=(?:the\s+)?univ)', re.I)
+# Strings that name no institution: a role, a bare city or country, or a
+# "University of <subject>". They count as not listed; the text itself still
+# shows on the person.
+_AFF_VAGUE = re.compile(
+    r'(?:(?:phd|honours|undergraduate|postgraduate|graduate|masters?|research)\s+)?students?'
+    r'|n\s?a|none|unknown|retired|tbc|tba|university|universities'
+    r'|university of (?:physics|science|sciences|engineering|technology|mathematics)'
+    r'|sydney|melbourne|brisbane|canberra|perth|adelaide|hobart|darwin|wollongong|newcastle'
+    r'|geelong|auckland|wellington|christchurch|nsw|vic|qld|act|wa|sa|tas'
+    r'|australia|new zealand|singapore|china|japan|india|usa|united states|united kingdom|uk'
+    r'|germany|france|canada')
+
+
+def _aff_key(text):
+    s = unicodedata.normalize('NFKD', text)
+    s = ''.join(c for c in s if not unicodedata.combining(c)).lower()
+    s = re.sub(r'\([^)]*\)', ' ', s).replace('&', ' and ')
+    s = _AFF_THE.sub('', s.strip())
+    return re.sub(r'[^a-z0-9]+', ' ', s).strip()
+
+
+def canonical_affiliation(aff):
+    """Return (key, label) of the institution an affiliation string belongs
+    to, or None when it is empty or names no institution ("Student", a bare
+    city). Depends on that string alone;
+    affiliation_table() picks the shared label of a group not listed above."""
+    s = collapse_ws(clean_chars(aff or ''))
+    for wrong, right in _AFF_TYPOS:
+        s = s.replace(wrong, right)
+    s = re.sub(r'(?<![A-Z])\.$', '', re.sub(r'^\d+\s+', '', s)).strip()
+    if not s:
+        return None
+    first = _AFF_SECOND.split(s)[0].strip() or s
+    hits = [(m.start(), i) for i, (_, _, rx) in enumerate(_AFF_RES) for m in [rx.search(first)] if m]
+    if hits:
+        key, label, _ = _AFF_RES[min(hits)[1]]
+        return key, label
+    parts = [p.strip() for p in _AFF_PARTS.split(first) if p.strip()] or [first]
+    pick = parts[0]
+    for rx in _AFF_PREFS:
+        found = next((p for p in parts if rx.search(p)), None)
+        if found:
+            pick = found
+            break
+    pick = _AFF_CODE.sub('', _AFF_AT.sub('', pick)).strip()
+    label = _AFF_THE.sub('', pick)
+    label = label[:1].upper() + label[1:]
+    key = _aff_key(label) or _aff_key(s)
+    if not key or _AFF_VAGUE.fullmatch(key):
+        return None
+    return 'x:' + key, label
+
+
+def affiliation_table(payload):
+    """Group every speaker affiliation in the payload.
+
+    Returns {'map': {raw affiliation: key}, 'groups': {key: [label, aliases]}}.
+    A listed institution keeps its fixed label; any other group takes its most
+    used label (ties: fewer capitals, then alphabetical)."""
+    counts = {}
+    for day in payload.get('days', []):
+        for slot in day.get('slots', []):
+            for talk in slot.get('talks', []):
+                for sp in talk.get('sp', []):
+                    a = sp.get('a') or ''
+                    if a:
+                        counts[a] = counts.get(a, 0) + 1
+    aliases = {key: al for key, _, _, al in AFF_INSTITUTIONS}
+    fixed = {key: label for key, label, _, _ in AFF_INSTITUTIONS}
+    votes = {}
+    mapping = {}
+    for a in sorted(counts):
+        hit = canonical_affiliation(a)
+        if hit is None:
+            continue
+        key, label = hit
+        mapping[a] = key
+        v = votes.setdefault(key, {})
+        v[label] = v.get(label, 0) + counts[a]
+    groups = {}
+    for key in sorted(votes):
+        v = votes[key]
+        best = fixed.get(key) or sorted(v, key=lambda lb: (-v[lb], sum(c.isupper() for c in lb), lb))[0]
+        groups[key] = [best, aliases.get(key, '')]
+    return {'map': mapping, 'groups': groups}

@@ -13,7 +13,7 @@ import sys
 import datetime
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from normalize import normalize_payload  # noqa: E402
+from normalize import affiliation_table, normalize_payload  # noqa: E402
 
 RETRIEVED = "19 November 2026"
 
@@ -434,6 +434,47 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .fp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.875rem}
 .fp-all{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.7812rem;font-weight:600;color:var(--link)}
 .fp-tip{margin:10px 0 0;font-size:.75rem;color:var(--muted)}
+.fp-head{flex-wrap:wrap;gap:8px}
+.fp-actions{display:flex;flex-wrap:wrap;gap:6px}
+.fp-none{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:var(--clash-bg);border:1px solid var(--clash-line);color:var(--clash-ink);font-size:13px;font-weight:600}
+.fp-none .linkish{font-size:13px}
+.empty-action{font-size:inherit}
+/* a stream chip: toggle button plus an "only" button, sharing one pill */
+.chip-wrap{display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--surface);overflow:hidden}
+.chip-wrap:hover{border-color:var(--hover-line)}
+.chip-wrap .chip{border:0;border-radius:0;background:transparent;padding-right:9px}
+.chip-wrap .dot{background:var(--chip-c)}
+.chip-only{border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font-size:11px;font-weight:600;padding:0 10px 0 8px;cursor:pointer}
+.chip-only:hover,.chip-only:focus-visible{color:var(--ink);text-decoration:underline}
+.chip-wrap.on{background:var(--chip-fill);border-color:var(--chip-fill)}
+.chip-wrap.on .chip,.chip-wrap.on .chip-only{color:var(--accent-ink)}
+.chip-wrap.on .dot{background:currentColor}
+.chip-wrap.on .chip-only{border-left-color:color-mix(in srgb,currentColor 40%,transparent)}
+.chip-wrap :focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:999px}
+/* ---------- participants ---------- */
+.people{max-width:1180px;margin:0 auto;padding:14px 20px 60px}
+.people-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin:6px 0 2px}
+.people-title{margin:0;font-size:24px;letter-spacing:-.02em}
+.pp-jump{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:13.5px;font-weight:600;color:var(--muted);min-width:0;max-width:100%}
+.pp-jump select{min-height:36px;min-width:0;max-width:min(360px,100%);flex:1 1 auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:500;padding:4px 8px}
+.people-intro{margin:0 0 6px;color:var(--muted);font-size:14px}
+.pp-group{margin:18px 0 0}
+.pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 10px;padding:6px 0 8px;border-bottom:2px solid var(--day-rule);font-size:17px;font-weight:800;letter-spacing:.1px;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
+.pp-n{font-size:12.5px;font-weight:600;color:var(--muted)}
+.pp-none .pp-aff{color:var(--muted)}
+.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
+.pp-person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;min-width:0;box-shadow:var(--shadow)}
+.pp-name{font-weight:700;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.pp-raw{margin-top:1px;font-size:12px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.pp-roles{list-style:none;margin:6px -6px 0;padding:0}
+.pp-role{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;border:0;border-radius:8px;background:transparent;color:var(--ink);padding:5px 6px;font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.pp-role:hover{background:var(--surface-3)}
+.pp-role:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pp-when{font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.pp-what{color:var(--link);font-weight:600}
+.pp-conv .pp-what{font-weight:500}
+.pp-star{color:var(--starOn-ink)}
+.participants-view #nowBtn{display:none}
 #nowBtn{color:var(--now-text);border-color:var(--now-line);background:var(--now-bg)}
 #nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:999px;font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px)}
@@ -810,6 +851,18 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .block-time .live{margin-left:0;margin-top:0}
   .talk-star{width:44px;height:44px;margin-right:2px}
   .searchbox input{font-size:max(1rem,16px)}
+  .chip-wrap .chip,.chip-only{min-height:40px}
+  .fp-actions .fp-all{min-height:40px}
+  .schedule-nav .agenda-views button{min-height:40px}
+  .people{padding:10px 16px 50px}
+  .people-title{font-size:21px}
+  .pp-jump{width:100%}
+  .pp-jump select{min-height:42px;font-size:16px;max-width:none}
+  .people-intro{font-size:13.5px}
+  .pp-people{grid-template-columns:minmax(0,1fr);gap:8px}
+  .pp-person{padding:8px 10px 4px}
+  .pp-aff{font-size:16px}
+  .pp-role{min-height:44px;justify-content:center;padding:6px}
 }
 @media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
@@ -950,6 +1003,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <div id="scheduleScope" class="agenda-views" role="group" aria-label="Schedule">
         <button data-scope="program" aria-pressed="true"><span class="nav-long">Full program</span><span class="nav-short">Program</span></button>
         <button data-scope="agenda" aria-pressed="false">My agenda <span id="starCount">0</span></button>
+        <button data-scope="participants" aria-pressed="false">Participants</button>
       </div>
       <div id="scheduleLayout" class="agenda-views" role="group" aria-label="Layout">
         <button data-layout="list" aria-pressed="true">List</button>
@@ -971,9 +1025,10 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <div class="filter-menu" id="filterMenu">
         <button class="toggle" id="filterBtn" type="button" aria-expanded="false" aria-controls="filterPanel">Streams <span id="filterSummary" class="fs-sum">All</span><span aria-hidden="true" class="caret">&#9662;</span></button>
         <div class="filter-panel" id="filterPanel" hidden>
-          <div class="fp-head"><b>Show streams</b><button type="button" class="fp-all" id="filterAll">Show all</button></div>
+          <div class="fp-head"><b>Show streams</b><div class="fp-actions"><button type="button" class="fp-all" id="filterAll">Select all</button><button type="button" class="fp-all" id="filterNone">Deselect all</button><button type="button" class="fp-all" id="filterReset" title="Show every stream and clear the group filter and search">Reset filters</button></div></div>
           <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
-          <p class="fp-tip">Tip: click a group badge on a session (e.g. QST) to show only that group.</p>
+          <p class="fp-none" id="filterEmpty" hidden>No streams selected &mdash; <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
+          <p class="fp-tip">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream. Click a group badge on a session (e.g. QST) to show only that group.</p>
         </div>
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
@@ -1024,6 +1079,14 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   </div>
 </section>
 
+<section id="people" class="people" aria-labelledby="peopleTitle" hidden>
+  <div class="people-head">
+    <h2 id="peopleTitle" class="people-title" tabindex="-1">Participants</h2>
+    <label class="pp-jump">Jump to <select id="peopleJump"></select></label>
+  </div>
+  <p class="people-intro">Every speaker and convener, grouped by institution. Search a name or an institution, short forms such as <i>unsw</i>, <i>anu</i> or <i>usyd</i> included, and select a talk or session for its details.</p>
+  <div id="peopleList"></div>
+</section>
 <div id="agenda" class="agenda"></div>
 <div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
 </main>
@@ -1130,7 +1193,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     </div>
     <div>
       <h4>Tips</h4>
-      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. During the congress, <b>Now</b> jumps to what is on.</p>
+      <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. Click a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
       <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
     </div>
   </div>
@@ -1160,11 +1223,15 @@ const CAT_COLORS = {
   business:['var(--business)','var(--business-bg)'], social:['var(--social)','var(--social-bg)'],
   poster:['var(--poster)','var(--poster-bg)']
 };
+// Affiliation groups from the build: map is raw affiliation -> group key,
+// groups is key -> [label, "alias, alias"] (normalize.affiliation_table).
+const AFF = DATA.affs || { map: {}, groups: {} };
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, layout: 'list',
   scope: 'program', programTalks:false,
   starred: new Set(), hideClashes: false,
+  pq: '', // the Participants view's own search
 };
 try {
   const saved = JSON.parse(localStorage.getItem('aip2026-stars') || '[]');
@@ -1192,6 +1259,7 @@ function personStr(sp){
 }
 
 // ---------- header tabs & chips ----------
+const NO_STREAMS_HTML = '<b>No streams selected</b> &mdash; <button type="button" class="linkish empty-action" data-select-all-streams>Select all</button>';
 function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).length); }
 function renderTabs(counts = programCounts()){
   const el = document.getElementById('daytabs');
@@ -1206,16 +1274,23 @@ function renderTabs(counts = programCounts()){
     ? 'Search talks, speakers, abstracts…'
     : `Search ${DATA.days[state.day].label}…`;
 }
+// The chips are built once and then only restyled, so a chip keeps focus
+// after a click and a double-click lands on the same element.
 function renderChips(){
   const el = document.getElementById('chips');
-  el.innerHTML = Object.entries(DATA.cats).map(([k,label]) => {
-    const on = state.cats.has(k);
-    const [c,bg] = CAT_COLORS[k];
-    return `<button class="chip ${on?'on':''}" data-cat="${k}" style="${on?`background:var(--${k}-fill);border-color:var(--${k}-fill)`:''}" aria-pressed="${on}"><span class="dot" style="background:${on?'rgba(255,255,255,.9)':c}"></span>${label}</button>`;
-  }).join('');
+  if (!el.firstElementChild){
+    el.innerHTML = Object.entries(DATA.cats).map(([k,label]) =>
+      `<span class="chip-wrap" data-wrap="${k}" style="--chip-c:${CAT_COLORS[k][0]};--chip-fill:var(--${k}-fill)"><button type="button" class="chip" data-cat="${k}" aria-pressed="false"><span class="dot" aria-hidden="true"></span>${esc(label)}</button><button type="button" class="chip-only" data-only="${k}" aria-label="Show only ${esc(label)}" title="Show only ${esc(label)}">only</button></span>`).join('');
+  }
+  for (const w of el.querySelectorAll('.chip-wrap')){
+    const on = state.cats.has(w.dataset.wrap);
+    w.classList.toggle('on', on);
+    w.querySelector('.chip').setAttribute('aria-pressed', on);
+  }
   const n = state.cats.size, total = Object.keys(DATA.cats).length;
-  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 1 ? DATA.cats[[...state.cats][0]] : `${n} of ${total}`;
+  document.getElementById('filterSummary').textContent = n === total ? 'All' : n === 0 ? 'None' : n === 1 ? DATA.cats[[...state.cats][0]] : `${n} of ${total}`;
   document.getElementById('filterMenu').classList.toggle('active', n !== total);
+  document.getElementById('filterEmpty').hidden = n !== 0;
   const pill = document.getElementById('grpill');
   if (state.group){
     pill.style.display = 'inline-flex';
@@ -1260,11 +1335,17 @@ function parseQuery(q){
   }
   return terms;
 }
-let _termCache = { q: null, terms: [] };
-function curTerms(){
-  if (_termCache.q !== state.q) _termCache = { q: state.q, terms: parseQuery(state.q) };
-  return _termCache.terms;
+const _termCache = new Map();
+function termsOf(q){
+  let terms = _termCache.get(q);
+  if (!terms){
+    if (_termCache.size > 32) _termCache.clear();
+    terms = parseQuery(q);
+    _termCache.set(q, terms);
+  }
+  return terms;
 }
+function curTerms(){ return termsOf(state.q); }
 function norm(s){ return fold(s).replace(/\s+/g, ' '); }
 function textMatches(hayNorm, terms){ return terms.every(t => hayNorm.includes(t)); }
 
@@ -1273,9 +1354,15 @@ function hayFor(slot){
   slot._hay = norm([slot.title, slot.desc, slot.room, ...(slot.conv || [])].join(' '));
   return slot._hay;
 }
+// A speaker's institution label and its aliases ("unsw", "usyd", "anu" …) are
+// searchable too, so "unsw" finds talks by anyone at UNSW Sydney.
+function affWords(a){
+  const g = a && AFF.map[a];
+  return g ? ' ' + AFF.groups[g][0] + ' ' + AFF.groups[g][1] : '';
+}
 function hayTalk(t){
   if (t._hay) return t._hay;
-  t._hay = norm(t.t + ' ' + (t.d||'') + ' ' + t.sp.map(p => p.n + ' ' + p.a).join(' '));
+  t._hay = norm(t.t + ' ' + (t.d||'') + ' ' + t.sp.map(p => p.n + ' ' + p.a + affWords(p.a)).join(' '));
   return t._hay;
 }
 
@@ -1301,14 +1388,15 @@ function openMatchingTalk(t, slot){
 
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 let _hlRe = { q: null, re: null };
-function hl(s){
+function hl(s){ return hlWith(s, state.q); }
+function hlWith(s, q){
   if (!s) return '';
-  const terms = curTerms();
+  const terms = termsOf(q);
   if (!terms.length) return esc(s);
-  if (_hlRe.q !== state.q){
+  if (_hlRe.q !== q){
     const pat = terms.filter(t => t.length > 1).map(t => t.split(' ').map(escRe).join('\\s+'))
                      .sort((a,b) => b.length - a.length).join('|');
-    _hlRe = { q: state.q, re: pat ? new RegExp(pat, 'g') : null };
+    _hlRe = { q, re: pat ? new RegExp(pat, 'g') : null };
   }
   const re = _hlRe.re;
   if (!re) return esc(s);
@@ -1534,7 +1622,8 @@ function applyFilters(){
   }
 
   const note = document.getElementById('emptyNote');
-  note.textContent = all
+  if (!state.cats.size) note.innerHTML = NO_STREAMS_HTML;
+  else note.textContent = all
     ? 'No matches anywhere in the program. Try clearing the search or selecting more streams.'
     : 'Nothing matches on this day or elsewhere this week. Try clearing the search or selecting more streams.';
   note.classList.toggle('show', shownSlots === 0 && fbCount === 0);
@@ -1545,7 +1634,7 @@ function applyFilters(){
   } else {
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
-    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} sessions · <b>${shownTalks}</b>${of(totalTalks)} talks`;
+    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`;
   }
   document.getElementById('starCount').textContent = state.starred.size;
   if (state.scope === 'program') renderTabs(programCounts());
@@ -1558,6 +1647,12 @@ function refresh(){
 }
 
 function rerender(){
+  if (state.scope === 'participants'){
+    renderPeople();
+    document.getElementById('starCount').textContent = state.starred.size;
+    paintNow(); writeHash();
+    return;
+  }
   const personal = state.scope === 'agenda';
   if (!personal) renderChips();
   if (personal) renderBuilder();
@@ -1589,17 +1684,24 @@ document.getElementById('daytabs').addEventListener('click', e => {
   scrollToProgramTop();
 });
 
+// A click toggles one stream; "only" or a double-click shows just that stream.
+// An empty selection stays empty (the page says so and offers Select all).
+function soloStream(k){ state.cats = new Set([k]); renderChips(); refresh(); }
 document.getElementById('chips').addEventListener('click', e => {
+  const only = e.target.closest('[data-only]');
+  if (only){ soloStream(only.dataset.only); return; }
   const b = e.target.closest('.chip'); if (!b) return;
   const k = b.dataset.cat;
-  if (state.cats.has(k) && state.cats.size === Object.keys(DATA.cats).length){
-    // if all currently on, clicking one makes it solo-filter
-    state.cats = new Set([k]);
-  } else if (state.cats.has(k)){
-    state.cats.delete(k);
-    if (state.cats.size === 0) state.cats = new Set(Object.keys(DATA.cats));
-  } else state.cats.add(k);
+  if (state.cats.has(k)) state.cats.delete(k); else state.cats.add(k);
   renderChips(); refresh();
+});
+document.getElementById('chips').addEventListener('dblclick', e => {
+  const b = e.target.closest('.chip');
+  if (b) soloStream(b.dataset.cat);
+});
+function selectAllStreams(){ state.cats = new Set(Object.keys(DATA.cats)); renderChips(); refresh(); }
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-select-all-streams]')) selectAllStreams();
 });
 
 document.getElementById('agenda').addEventListener('click', e => {
@@ -1660,20 +1762,33 @@ document.getElementById('grpclr').addEventListener('click', () => {
 
 const qEl = document.getElementById('q');
 let qTimer = null;
-function clearSearch(){
+// The search box serves the program (state.q) and, in the Participants view,
+// the people search (state.pq). `which` names the one to clear.
+function searchKey(){ return state.scope === 'participants' ? 'pq' : 'q'; }
+function clearSearch(which = searchKey()){
   clearTimeout(qTimer);
-  qEl.value = '';
-  state.q = '';
-  document.getElementById('clr').style.display = 'none';
+  state[which] = '';
+  if (which === searchKey()){
+    qEl.value = '';
+    document.getElementById('clr').style.display = 'none';
+  }
+}
+function syncSearchBox(){
+  const people = state.scope === 'participants';
+  qEl.value = state[searchKey()];
+  document.getElementById('clr').style.display = qEl.value ? 'block' : 'none';
+  qEl.setAttribute('aria-label', people ? 'Search participants by name or affiliation' : 'Search the program');
+  if (people) qEl.placeholder = 'Search people or affiliations…';
 }
 qEl.addEventListener('input', () => {
   clearTimeout(qTimer);
+  const key = searchKey();
   qTimer = setTimeout(() => {
-    state.q = qEl.value.trim();
-    document.getElementById('clr').style.display = state.q ? 'block' : 'none';
+    state[key] = qEl.value.trim();
+    document.getElementById('clr').style.display = state[key] ? 'block' : 'none';
     rerender(); // re-render so highlights update
     if (window.scrollY > programTop()) scrollToProgramTop();
-  }, 160);
+  }, key === 'pq' ? 120 : 160);
 });
 document.getElementById('clr').addEventListener('click', () => {
   clearSearch();
@@ -1967,29 +2082,36 @@ function renderBuilder(){
 function showView(layout, scope){
   state.layout = layout;
   state.scope = scope;
-  const calendar = layout === 'calendar';
+  // The Participants view keeps the layout for when you return; it has none.
+  const people = scope === 'participants';
+  const calendar = layout === 'calendar' && !people;
   const personal = scope === 'agenda';
   const agendaList = personal && !calendar;
   document.body.classList.toggle('favourites-calendar', personal && calendar);
+  document.body.classList.toggle('participants-view', people);
   for (const button of document.querySelectorAll('[data-scope]')){
     button.setAttribute('aria-pressed', button.dataset.scope === scope);
   }
   for (const button of document.querySelectorAll('[data-layout]')){
     button.setAttribute('aria-pressed', button.dataset.layout === layout);
   }
-  document.getElementById('agenda').hidden = agendaList;
-  document.getElementById('emptyNote').hidden = personal || calendar;
+  document.getElementById('agenda').hidden = agendaList || people;
+  document.getElementById('people').hidden = !people;
+  document.getElementById('emptyNote').hidden = personal || calendar || people;
   document.getElementById('builder').hidden = !personal;
   document.getElementById('builderList').hidden = !agendaList;
   document.querySelector('.result-row').hidden = agendaList;
   document.querySelector('.toolbar .controls').hidden = agendaList;
-  document.getElementById('expandAll').hidden = calendar || personal;
+  document.getElementById('expandAll').hidden = calendar || personal || people;
   document.getElementById('programLevel').hidden = !calendar || personal;
   document.getElementById('parentOption').hidden = !calendar || !personal;
+  document.getElementById('scheduleLayout').hidden = people;
+  document.getElementById('daytabs').hidden = people;
   document.querySelector('.searchbox').hidden = personal;
-  document.getElementById('filterMenu').hidden = personal;
-  if (personal) setFilterOpen(false);
-  document.getElementById('grpill').hidden = personal;
+  document.getElementById('filterMenu').hidden = personal || people;
+  if (personal || people) setFilterOpen(false);
+  document.getElementById('grpill').hidden = personal || people;
+  syncSearchBox();
   rerender();
 }
 
@@ -2211,6 +2333,7 @@ function renderCalendar(){
   } else {
     const empty = favourites
       ? '<p>No favourites for this period.</p><button class="toggle" data-browse-calendar>Browse full program</button>'
+      : !state.cats.size ? `<div class="empty-note show">${NO_STREAMS_HTML}</div>`
       : '<p>No matching events. Change the search or stream filters.</p>';
     main.innerHTML = !selected.length ? empty
       : state.day === 'all' ? weekCalendar(selected)
@@ -2231,6 +2354,11 @@ const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
   if (!button || button.dataset.scope === state.scope) return;
+  if (button.dataset.scope === 'participants' || state.scope === 'participants'){
+    showView(state.layout, button.dataset.scope);
+    if (window.scrollY > programTop()) scrollToProgramTop();
+    return;
+  }
   if (state.layout === 'list'){
     showView('list', button.dataset.scope);
     return;
@@ -2280,7 +2408,7 @@ function fillEventDialog(sid, tid){
   const details = talks.map(talk => {
     const saved = state.starred.has(talk.id);
     const open = t || (personal && saved) || (!personal && openMatchingTalk(talk,s));
-    const who = talk.sp.map(p => p.n).join(', ');
+    const who = talk.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
     if (t) return `<p>${esc(who)}</p><h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', esc)}</div>${favouriteButton(t.id,'talk')}`;
     return `<details ${open?'open':''}><summary><span class="saved-marker">${saved?'★ ':''}</span>${talk.s}–${talk.e} · ${esc(talk.t)}</summary>
       <p>${esc(who)}</p><div class="detail-text">${paras(talk.d || 'No abstract provided.', esc)}</div>
@@ -2289,7 +2417,7 @@ function fillEventDialog(sid, tid){
   const sessionSaved = t && state.starred.has(s.id) ? ' <span class="ed-saved">· ★ whole session in your agenda</span>' : '';
   document.getElementById('eventContent').innerHTML = `<h2 id="eventTitle" tabindex="-1">${esc(t ? t.t : s.title)}</h2>
     <p>${esc(day.label)} · ${t ? t.s : s.start}–${t ? t.e : s.end} AEDT · ${esc(s.room || 'Room to be confirmed')}</p>
-    ${t ? '<p>' + esc(s.title) + sessionSaved + '</p>' : favouriteButton(s.id,'session')}
+    ${t ? '<p>' + esc(s.title) + sessionSaved + '</p>' : (s.conv && s.conv.length ? '<p>Convened by ' + esc(s.conv.join(', ')) + '</p>' : '') + favouriteButton(s.id,'session')}
     ${replaceButton(s, t)}
     ${!t && s.desc ? '<div class="detail-text">' + paras(s.desc, esc) + '</div>' : ''}
     <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
@@ -2352,8 +2480,10 @@ eventDialog.addEventListener('close', () => {
   const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
   const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
   rerender();
-  const scope = state.scope === 'agenda' && state.layout === 'list' ? document.querySelector('#builder') : document.querySelector('#agenda');
-  const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]`;
+  const scope = state.scope === 'participants' ? document.querySelector('#people')
+    : state.scope === 'agenda' && state.layout === 'list' ? document.querySelector('#builder') : document.querySelector('#agenda');
+  const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]` +
+    (dialogTrigger.dataset.pi ? `[data-pi="${dialogTrigger.dataset.pi}"]` : '');
   const replacement = [...scope.querySelectorAll(selector)].find(b => b.offsetWidth);
   const scroller = replacement?.closest('.week-scroll,.cal-scroll');
   if (scroller) scroller.scrollTo({left,top,behavior:'instant'});
@@ -2811,7 +2941,7 @@ function openInProgram(go){
 function jumpTo(dayAttr, jump, jumpTalk){
   state.day = dayAttr === 'all' || dayAttr === undefined ? 'all' : +dayAttr;
   if (jump){
-    clearSearch();
+    clearSearch('q');
     state.group = null;
     state.cats = new Set(Object.keys(DATA.cats));
   }
@@ -2849,7 +2979,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]')) return;
   if (e.key === 'Escape' && !filterPanel.hidden){ setFilterOpen(false); filterBtn.focus(); return; }
-  if (e.key === '/' && state.scope === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
+  if (e.key === '/' && state.scope !== 'agenda' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
   if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); rerender(); qEl.blur(); }
 });
@@ -2872,9 +3002,151 @@ document.addEventListener('click', e => {
   // composedPath still holds chips that a re-render has since replaced
   if (!filterPanel.hidden && !e.composedPath().includes(document.getElementById('filterMenu'))) setFilterOpen(false);
 });
-document.getElementById('filterAll').addEventListener('click', () => {
-  state.cats = new Set(Object.keys(DATA.cats));
+document.getElementById('filterAll').addEventListener('click', selectAllStreams);
+document.getElementById('filterNone').addEventListener('click', () => {
+  state.cats = new Set();
   renderChips(); refresh();
+});
+document.getElementById('filterReset').addEventListener('click', () => {
+  state.group = null;
+  state.cats = new Set(Object.keys(DATA.cats));
+  clearSearch('q');
+  rerender();
+  toast('Filters reset');
+});
+
+// ---------- participants ----------
+// Every speaker and convener, grouped by the institution the build worked out
+// for their affiliation (AFF). One person may be listed with a title on one
+// talk and without it on another, so people are matched without titles.
+const NO_AFF = 'Affiliation not listed';
+const HONORIFIC = /^(?:dr|prof(?:essor)?|a\/prof|assoc\.? prof\.?|mr|mrs|ms|miss)\.? +/;
+function personKey(n){ return norm(n).trim().replace(HONORIFIC, '').replace(/[^a-z0-9]+/g, ''); }
+function groupLabel(g){ return g ? AFF.groups[g][0] : NO_AFF; }
+function groupAliases(g){ return g ? AFF.groups[g][1].split(',').map(x => norm(x).trim()).filter(Boolean) : []; }
+let _people = null;
+function peopleIndex(){
+  if (_people) return _people;
+  const byKey = new Map();
+  const person = name => {
+    const k = personKey(name) || norm(name);
+    let p = byKey.get(k);
+    if (!p){ p = { names: new Map(), affs: new Map(), groups: new Map(), roles: [] }; byKey.set(k, p); }
+    p.names.set(name, (p.names.get(name) || 0) + 1);
+    return p;
+  };
+  DATA.days.forEach((d, di) => d.slots.forEach(s => {
+    for (const n of s.conv || []){
+      const p = person(n);
+      if (!p.roles.some(r => r.s === s && !r.t)) p.roles.push({ di, d, s, t: null, start: s.start });
+    }
+    for (const t of s.talks) for (const sp of t.sp){
+      const p = person(sp.n);
+      if (!p.roles.some(r => r.t === t)) p.roles.push({ di, d, s, t, start: t.s });
+      if (!sp.a) continue;
+      p.affs.set(sp.a, (p.affs.get(sp.a) || 0) + 1);
+      const g = AFF.map[sp.a];
+      if (g) p.groups.set(g, (p.groups.get(g) || 0) + 1);
+    }
+  }));
+  // Most used wins; a stable sort keeps the first seen on a tie.
+  const top = m => [...m.entries()].sort((a, b) => b[1] - a[1])[0];
+  const people = [];
+  for (const p of byKey.values()){
+    p.name = [...p.names.entries()].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0][0];
+    const bare = p.name.replace(/^(?:Dr|Prof(?:essor)?|A\/Prof|Assoc\.? Prof\.?|Mr|Mrs|Ms|Miss)\.? +/i, '');
+    p.sort = fold(bare.split(' ').pop() + ' ' + bare);
+    p.g = top(p.groups)?.[0] || '';
+    p.roles.sort((a, b) => a.di - b.di || a.start.localeCompare(b.start));
+    const groupWords = [...p.groups.keys()].map(g => AFF.groups[g].join(' '));
+    p.hay = norm([...p.names.keys(), ...p.affs.keys(), ...groupWords].join(' '));
+    people.push(p);
+  }
+  people.sort((a, b) => a.sort.localeCompare(b.sort));
+  people.forEach((p, i) => p.i = i);
+  const groups = new Map();
+  for (const p of people){
+    if (!groups.has(p.g)) groups.set(p.g, { g: p.g, label: groupLabel(p.g), people: [] });
+    groups.get(p.g).people.push(p);
+  }
+  const order = [...groups.values()].sort((a, b) =>
+    (a.g === '') - (b.g === '') || b.people.length - a.people.length || a.label.localeCompare(b.label));
+  return (_people = { people, groups: order });
+}
+
+// A query that is exactly an institution's alias ("unsw", "sydney uni") or its
+// full name of two or more words ("monash university") lists that institution;
+// anything else, a single plain word included, matches every word in names and
+// affiliations. A one-word name is never taken as an alias, so a common word
+// that happens to be a group label cannot narrow the search.
+function aliasGroupFor(q){
+  const nq = norm(q.replace(/"/g, '')).trim();
+  if (!nq) return null;
+  for (const g of Object.keys(AFF.groups)){
+    if (groupAliases(g).includes(nq)) return g;
+    const label = norm(AFF.groups[g][0]).trim();
+    if (label === nq && /\s/.test(label)) return g;
+  }
+  return null;
+}
+
+function roleHtml(p, r){
+  const saved = state.starred.has(r.t ? r.t.id : r.s.id);
+  const what = r.t ? esc(r.t.t) : 'Convener of ' + esc(r.s.title);
+  return `<li><button type="button" class="pp-role${r.t ? '' : ' pp-conv'}" data-pi="${p.i}" data-session-detail="${r.s.id}" data-talk-detail="${r.t ? r.t.id : ''}"><span class="pp-when">${esc(r.d.label)} · ${r.start}${saved ? ' · <span class="pp-star">★ in my agenda</span>' : ''}</span><span class="pp-what">${what}</span></button></li>`;
+}
+
+function personHtml(p, label){
+  // Show the affiliation as written when it says more than the group label.
+  const key = s => norm(s).replace(/^the /, '').replace(/ \([a-z]{2}\)$/, '');
+  const raw = [...p.affs.keys()].filter(a => !key(label).includes(key(a)));
+  const q = state.pq;
+  return `<li class="pp-person"><div class="pp-name">${hlWith(p.name, q)}</div>` +
+    (raw.length ? `<div class="pp-raw" title="${esc(raw.join(' · '))}">${hlWith(raw.join(' · '), q)}</div>` : '') +
+    `<ul class="pp-roles">${p.roles.map(r => roleHtml(p, r)).join('')}</ul></li>`;
+}
+
+function renderPeople(){
+  const { people, groups } = peopleIndex();
+  const q = state.pq;
+  const alias = aliasGroupFor(q);
+  const terms = termsOf(q);
+  const shown = alias ? p => p.groups.has(alias)
+    : terms.length ? p => terms.every(t => p.hay.includes(t)) : () => true;
+  let html = '', nPeople = 0, nGroups = 0, nNone = 0, jump = '';
+  groups.forEach((grp, gi) => {
+    const list = grp.people.filter(shown);
+    if (!list.length) return;
+    nPeople += list.length;
+    if (grp.g) nGroups++; else nNone = list.length;
+    const n = list.length === grp.people.length ? `${list.length}` : `${list.length} of ${grp.people.length}`;
+    jump += `<option value="ppg${gi}">${esc(grp.label)} (${list.length})</option>`;
+    html += `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}"><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${grp.people.length === 1 ? 'person' : 'people'}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label)).join('')}</ul></section>`;
+  });
+  const el = document.getElementById('peopleList');
+  el.innerHTML = html || `<div class="ag-empty"><h3>No one matches &ldquo;${esc(q)}&rdquo;</h3><p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button></div>`;
+  const sel = document.getElementById('peopleJump');
+  sel.innerHTML = `<option value="">an affiliation…</option>` + jump;
+  sel.disabled = nGroups < 2;
+  // Affiliations count institutions only; people with none listed are counted apart.
+  const total = people.length, totalGroups = groups.filter(g => g.g).length;
+  const filtered = nPeople !== total;
+  const plural = (n, one, many) => n === 1 ? one : many;
+  const none = nNone ? ` · <b>${nNone}</b> with no institution listed` : '';
+  document.getElementById('resultLine').innerHTML = filtered
+    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + none + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '')
+    : `<b>${total}</b> people · <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none + ` · speakers and conveners`;
+}
+document.getElementById('peopleJump').addEventListener('change', e => {
+  const h = document.getElementById(e.target.value);
+  e.target.value = '';
+  if (!h) return;
+  h.focus({ preventScroll: true });
+  // Instant: a smooth scroll across hundreds of people takes too long.
+  window.scrollTo({ top: h.getBoundingClientRect().top + window.scrollY - stickyWrap.offsetHeight - 12, behavior: 'instant' });
+});
+document.getElementById('people').addEventListener('click', e => {
+  if (e.target.closest('[data-people-clear]')){ clearSearch('pq'); rerender(); qEl.focus(); }
 });
 
 // ---------- live "now" ----------
@@ -2990,10 +3262,16 @@ document.getElementById('nowBtn').addEventListener('click', () => {
 function stateHash(){
   const p = new URLSearchParams();
   if (state.scope !== 'program') p.set('view', state.scope);
+  // The people list ignores the program's day, search, streams and layout, so
+  // its address carries only its own search.
+  if (state.scope === 'participants'){
+    if (state.pq) p.set('pq', state.pq);
+    return p.toString();
+  }
   if (state.layout !== 'list') p.set('layout', state.layout);
   if (state.day !== 'all') p.set('day', DATA.days[state.day].date);
   if (state.q) p.set('q', state.q);
-  if (state.cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...state.cats].join(','));
+  if (state.cats.size !== Object.keys(DATA.cats).length) p.set('streams', [...state.cats].join(',') || 'none');
   if (state.group) p.set('group', state.group);
   if (state.programTalks) p.set('talks', '1');
   return p.toString();
@@ -3012,7 +3290,8 @@ function writeHash(){
 }
 function readHash(){
   const p = new URLSearchParams(location.hash.slice(1));
-  state.scope = p.get('view') === 'agenda' ? 'agenda' : 'program';
+  state.scope = ['agenda', 'participants'].includes(p.get('view')) ? p.get('view') : 'program';
+  state.pq = (p.get('pq') || '').trim();
   state.layout = p.get('layout') === 'calendar' ? 'calendar' : 'list';
   const di = DATA.days.findIndex(d => d.date === p.get('day'));
   state.day = di >= 0 ? di : 'all';
@@ -3020,7 +3299,7 @@ function readHash(){
   qEl.value = state.q;
   document.getElementById('clr').style.display = state.q ? 'block' : 'none';
   const cats = (p.get('streams') || '').split(',').filter(c => DATA.cats[c]);
-  state.cats = new Set(cats.length ? cats : Object.keys(DATA.cats));
+  state.cats = new Set(cats.length || p.get('streams') === 'none' ? cats : Object.keys(DATA.cats));
   const g = p.get('group');
   state.group = g && DATA.days.some(d => d.slots.some(s => s.grp === g)) ? g : null;
   state.programTalks = p.get('talks') === '1';
@@ -3471,7 +3750,11 @@ def main():
         data_path.write_text(stored, encoding='utf-8')
         print(f'wrote {data_path.name}')
 
-    embedded = json.dumps(payload, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    # The affiliation groups are derived data, so they go into the page only.
+    page_data = dict(payload, affs=affiliation_table(payload))
+    print(f"affiliations: {len(page_data['affs']['map'])} distinct strings "
+          f"in {len(page_data['affs']['groups'])} groups")
+    embedded = json.dumps(page_data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
     html = HTML.replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
         (root / name).write_text(html, encoding='utf-8')
