@@ -255,6 +255,7 @@ DARK_TOKENS = """\
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
   --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
+  --tk-mix:13%;
 """
 DARK_HC_TOKENS = """\
   --ink:#ffffff; --muted:#cbd2dd; --line:#5b6578; --hover-line:#8a93a3; --ink-2:#e2e8f0; --ink-3:#f1f5f9; --faint:#b4bccb; --caret:#8a93a3;"""
@@ -1123,37 +1124,113 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-tk.is-now .vt-ttime{color:var(--now-text)}
 .vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .vt-talks .vt-tk:first-child{border-top:0}
-/* My agenda in the day views and the week overview: a saved session with starred talks
-   is one item (its starred talks marked, the others greyed); a session shown only for
-   its starred talks is dashed; overlapping items get a dashed warning outline and a
-   hatch, and each clash is marked on the time axis. */
-.hz-bar.has-clash,.vt-card.has-clash{outline:2px dashed var(--warn-ink);outline-offset:1px;background-image:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 16%,transparent) 0 5px,transparent 5px 11px)}
-.hz-bar.ctx,.vt-card.ctx{border-style:dashed;background-color:var(--card)}
+/* My agenda in the day views and the week overview. Every colour is the item's stream.
+   A saved session is a container: stream edge, a tinted header strip (its kind, time,
+   title, talk count) and a lighter body, with its talks nested as cards at their own
+   times: starred talks solid, the session's other talks quiet. A starred talk on its own
+   is a talk card (white, stream outline, speakers, "in <session>"); with Show full
+   sessions it sits in a dashed ghost of its session. A clash keeps the stream colours:
+   an orange outline and a hatched orange band along the top, plus its badge, and each
+   clash is marked on the time axis. */
+.pv-list{margin:6px 0 0;padding-left:1.1rem}
+.pv-list li{margin:3px 0}
+.pv-list ul{margin:3px 0 5px;padding-left:1.1rem}
+.pv-in{font-style:italic}
+.ag-key{--c:var(--ink-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:0 0 10px;padding:0;list-style:none;font-size:.75rem;color:var(--ink-2)}
+.ag-key li{display:inline-flex;align-items:center;gap:6px}
+.ag-key .ak-note{color:var(--muted)}
+.ak-sw{display:inline-block;flex:none;width:1.5rem;height:.875rem;border-radius:4px;box-sizing:border-box;position:relative;overflow:hidden}
+.ak-dim{border:1px dashed var(--ink-2)}
+.ak-cx{outline:2px solid var(--warn-ink);outline-offset:-2px;background:var(--surface-2)}
+.ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+.vt-agenda .ag-key{margin-top:-4px}
+.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
+.kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 1px}
+.kind.k-t::before,.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+:root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
+.has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);box-shadow:inset 0 1px 0 var(--warn-ink)}
+.hz-bar.has-clash,.vt-card.has-clash{outline:2px solid var(--warn-ink);outline-offset:1px}
+.vt-card{position:relative}
+.vt-card.has-clash .vt-hd{padding-top:3px}
+.hz-agenda .hz-bar{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c);border-radius:8px}
+.hz-agenda button.hz-bar{padding:0;flex-direction:column;align-items:stretch}
+.hz-agenda button.hz-bar>.hz-in{padding:4px 7px 4px 6px;max-width:none;background:var(--cbg)}
+.hz-agenda button.hz-bar.marked>.hz-in{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.hz-agenda .hz-head{background:var(--cbg);border-bottom-color:color-mix(in srgb,var(--c) 45%,transparent)}
+.hz-agenda .hz-meta{display:flex;align-items:center;gap:5px}
+.hz-agenda .hz-meta .kind{flex:none}
+.hz-agenda .hz-in{gap:2px}
+.hz-sp{color:var(--bar-meta);font-size:.6875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-of{font-style:italic}
+.hz-agenda .hz-bar.has-clash>.hz-in,.hz-agenda .hz-bar.has-clash>.hz-head{padding-top:8px}
+.hz-agenda .hz-bar.is-talk,.vt-agenda .vt-card.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-radius:11px;box-shadow:0 1px 3px var(--pop-shadow)}
+.hz-agenda .hz-bar.is-talk>.hz-in{background:none;padding-top:5px}
+.hz-agenda .hz-bar.is-talk .hz-title{font-size:.8125rem}
+.hz-agenda .hz-bar.ctx,.vt-agenda .vt-card.ctx{--body:var(--card);background:var(--card);border:1px dashed var(--c);border-left:4px dashed var(--c);box-shadow:none}
+.hz-agenda .hz-bar.ctx .hz-head,.vt-agenda .vt-card.ctx .vt-hd{background:color-mix(in srgb,var(--cbg) 55%,var(--card))}
+.hz-agenda .hz-segs{margin:0 3px 0 1px}
+.hz-agenda .hz-talk{top:3px;bottom:3px;border-radius:6px}
+.hz-talk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow);z-index:1}
+.hz-talk.mine .hz-tl{font-weight:700}
+.hz-talk.dim{background:transparent;color:var(--bar-meta);border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line))}
+.hz-talk.dim .hz-tt,.hz-talk.dim .hz-ts{color:var(--bar-meta)}
+.hz-talk.dim .hz-tl{font-weight:500}
+.hz-tt .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
+.hz-talk.dim .k-ic{display:none}
+.hz-tick .hz-talk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-top:5px solid var(--c)}
+.hz-agenda.hz-tick .hz-talk.mine{padding:1px 3px}
+.hz-agenda.hz-tick .hz-talk.mine>.hz-tt{display:block;white-space:nowrap;overflow:hidden}
+.hz-tick .hz-talk.dim{background:transparent;border:1px dashed color-mix(in srgb,var(--c) 45%,var(--line))}
 .hz-cxb,.hz-lcx,.vt-hcx{color:var(--warn-ink);font-weight:700}
 .hz-lane.hz-mine .hz-label{padding:7px 8px}
 .vt-top .vt-cx{margin:0 auto 0 4px}
 .hz-label small.hz-lcx{color:var(--warn-ink)}
 .hz-inl{display:block;font-size:.6875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hz-talk.mine{background:var(--starOn-bg);border-color:var(--starOn-line)}
-.hz-talk.dim{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
-.hz-talk.dim .hz-tt{color:var(--muted)}
-.hz-tick .hz-talk.mine{background:var(--star);border-color:var(--starOn-line)}
-.hz-tick .hz-talk.dim{background:color-mix(in srgb,var(--c) 28%,var(--card));border-color:var(--card)}
 .hz-cx{position:absolute;top:0;bottom:0;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-cx b{position:absolute;right:3px;bottom:2px;font-size:.6875rem;line-height:1;color:var(--warn-ink)}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
 .vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
-.vt-tk.mine{background:var(--starOn-bg)}
-.vt-tk.dim{background:var(--surface-2);color:var(--muted)}
-.vt-tk.dim .vt-ttime{color:var(--muted)}
-.vt-card.is-talk .vt-conv{font-style:italic}
-.week-blk.has-clash{background-image:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--warn-ink) 50%,transparent) 6px 8px);box-shadow:inset 0 0 0 2px var(--warn-ink)}
-.week-blk.ctx{opacity:.7;box-shadow:inset 0 0 0 1px var(--cnt-ink)}
-.week-legend .week-lcx i{background:repeating-linear-gradient(135deg,var(--surface-2) 0 3px,color-mix(in srgb,var(--warn-ink) 70%,transparent) 3px 5px);box-shadow:inset 0 0 0 1.5px var(--warn-ink)}
-.ag-inner{list-style:none;margin:7px 0 2px;padding:6px 0 0;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:4px}
-.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35}
-.ag-itime{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.75rem;font-weight:700;padding-top:.1rem}
+.vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c)}
+.vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:7px 7px 0 0}
+.vt-agenda .vt-card.open .vt-hd{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent);margin-bottom:3px}
+.vt-agenda .vt-card:not(.open) .vt-hd{flex:1 1 auto;border-radius:7px}
+.vt-agenda .vt-top{justify-content:flex-start;gap:3px 6px}
+.vt-agenda .vt-top .vt-badge{margin-left:auto}
+.vt-agenda .vt-top .vt-cx{margin:0}
+.vt-agenda .vt-tk{margin:0 5px 3px;width:auto;border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line));border-radius:6px;background:transparent;color:var(--bar-meta)}
+.vt-agenda .vt-card .vt-tk:last-child{border-radius:6px}
+.vt-agenda .vt-tk.dim .vt-ttime,.vt-agenda .vt-tk.dim .vt-tsp{color:var(--bar-meta)}
+.vt-agenda .vt-tk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow)}
+.vt-agenda .vt-tk.mine .vt-ttl{font-weight:650}
+.vt-ttime .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
+.vt-agenda .vt-talks{border-top:0}
+.vt-agenda .vt-card.is-talk .vt-hd{background:none}
+.vt-agenda .vt-card.is-talk .vt-title{font-size:.8125rem}
+.vt-agenda .vt-card.is-talk .vt-conv{font-style:italic}
+.vt-open>.vt-tsp{color:var(--bar-meta)}
+.week-mine .week-blk.w-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1.5px solid var(--c);border-radius:5px}
+.week-mine .week-blk.ctx{background:var(--cbg);color:var(--bar-ink);border:1.5px dashed var(--c)}
+.week-tk{position:absolute;z-index:1;pointer-events:none;border-radius:2px;background:var(--card);box-shadow:0 0 0 1px var(--c)}
+.week-blk.ctx .week-tk{background:var(--c);box-shadow:none}
+.week-v .week-tk{right:2px;width:4px;top:calc(var(--ta) * 1%);height:calc(var(--tw) * 1%)}
+.week-h .week-tk{bottom:2px;height:4px;left:calc(var(--ta) * 1%);width:calc(var(--tw) * 1%)}
+.week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
+.week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+.week-legend i{position:relative;overflow:hidden}
+.week-legend .week-lcx i{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--warn-ink)}
+.week-legend .wk-k i{background:var(--ink-2)}
+.week-legend .wk-kt i{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+.week-legend .wk-kg i{background:var(--surface-3);box-shadow:none;border:1.5px dashed var(--ink-2);box-sizing:border-box}
+.week-legend .wk-km i{background:var(--ink-2)}
+.week-legend .wk-km b{position:absolute;right:2px;top:2px;bottom:2px;width:3px;border-radius:1px;background:var(--card)}
+.week-h .week-legend .wk-km b{left:2px;right:2px;top:auto;bottom:2px;width:auto;height:3px}
+.week-legend .wk-k:last-of-type{margin-right:10px}
+.ag-inner{list-style:none;margin:8px 0 2px;padding:0;display:flex;flex-direction:column;gap:5px}
+.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35;background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-left:3px solid var(--c);border-radius:8px;padding:6px 6px 6px 9px;box-shadow:0 1px 2px var(--pop-shadow);--muted:var(--ink-2)}
+.ag-itime{flex:none;font-variant-numeric:tabular-nums;color:var(--c);font-size:.75rem;font-weight:800;padding-top:.1rem}
+.ag-itime .k-ic{width:.4375rem;height:.5625rem;margin-right:4px;vertical-align:-1px}
 .ag-istar{flex:none;color:var(--star)}
 .ag-imain{flex:1 1 auto;min-width:0}
 .ag-imain .linkish{font-size:.8125rem;text-align:left}
@@ -1211,7 +1288,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-list{list-style:none;margin:0;padding:0}
 .ag-row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;position:relative;overflow:hidden}
 .ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
-.ag-row.has-clash{border-color:var(--clash-row-line);background:var(--clash-row-bg)}
+/* the list speaks as the calendars do: a session row is tinted (its saved talks nested in
+   it as white talk cards), a talk row is a white card outlined in its stream colour; a
+   clash adds an orange outline and a hatched band, keeping the stream colours */
+.ag-row.is-sess{--muted:var(--bar-meta);background:color-mix(in srgb,var(--cbg) 42%,var(--card));border-color:color-mix(in srgb,var(--c) 30%,var(--line))}
+.ag-row.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border-color:color-mix(in srgb,var(--c) 70%,var(--line))}
+.ag-row.has-clash{outline:2px solid var(--warn-ink);outline-offset:-1px;padding-top:15px}
+.ag-row.has-clash::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);pointer-events:none}
 /* An item that has ended keeps readable text and working buttons: only its stream stripe
    turns grey and an "Ended" label shows by the time */
 .ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
@@ -1221,7 +1304,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
 .ag-title{display:block;font-size:.9062rem;font-weight:650;line-height:1.4}
 .ag-sub{display:block;font-size:.7812rem;color:var(--muted);margin-top:2px}
-.ag-kind{display:inline-block;font-size:.625rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--cbg,#eef);color:var(--c,#555);margin-right:8px;vertical-align:1px}
+.ag-kind{margin-right:8px;vertical-align:2px}
 .ag-clash{display:block;margin-top:6px;font-size:.7812rem;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:8px;padding:5px 10px}
 .ag-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 @media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px;margin-top:-5px}}
@@ -1284,21 +1367,21 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;align-items:start}
 .bd-card{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 12px 6px 16px}
 .bd-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
-.bd-card.on{border-color:var(--starOn-line);box-shadow:0 0 0 1px var(--starOn-line)}
+.bd-card.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
 .bd-card-top{display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--muted)}
 .bd-card-top .badge{cursor:default;margin:0;padding:2px 8px;font-size:0.625rem}
 .bd-when{font-weight:650;font-variant-numeric:tabular-nums}
 .bd-info{margin-left:auto;font-size:0.75rem}
 .bd-check{display:flex;align-items:flex-start;gap:9px;margin:3px -6px 0;padding:5px 6px;border-radius:8px;cursor:pointer}
 @media (hover:hover){.bd-check:hover{background:var(--surface-3)}}
-.bd-check.on{background:var(--starOn-bg)}
+.bd-check.on{--muted:var(--bar-meta);background:color-mix(in srgb,var(--cbg) 70%,var(--card))}
 .bd-check.inc{cursor:default;opacity:.8}
 .bd-check.inc input{cursor:default}
 .bd-check input{flex:none;width:17px;height:17px;margin:1px 0 0;cursor:pointer}
 .bd-title{display:block;font-size:0.875rem;font-weight:650;line-height:1.35;overflow-wrap:anywhere}
 .bd-meta,.bd-hint{display:block;font-size:0.75rem;color:var(--muted)}
 .bd-hint{color:var(--ink-2);font-weight:600}
-.bd-check.on .bd-hint{color:var(--starOn-ink)}
+.bd-check.on .bd-hint{color:var(--bar-ink)}
 .bd-tog{display:flex;align-items:center;gap:0;width:100%;margin-top:4px;border:0;border-top:1px solid var(--line);background:none;border-radius:0;padding:6px 0;font-size:0.7812rem;font-weight:650;color:var(--link);text-align:left}
 .bd-tog .caret{margin-left:6px;font-size:.7em;transition:transform .15s}
 .bd-tog[aria-expanded="true"] .caret{transform:rotate(180deg)}
@@ -1362,7 +1445,7 @@ html:has(#buildDialog[open]){overflow:hidden}
   .bd-cards{grid-template-columns:minmax(0,1fr);gap:6px}
   /* one row: tick box | stream, time, Details over a two-line title | talks toggle */
   .bd-card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;column-gap:6px;padding:5px 6px 5px 12px;border-radius:10px}
-  .bd-card.on{background:var(--starOn-bg)}
+  .bd-card.on{--muted:var(--bar-meta);background:color-mix(in srgb,var(--cbg) 55%,var(--card))}
   .bd-card-top{grid-column:2;grid-row:1;gap:6px;min-height:24px}
   .bd-card-top .badge{font-size:.5938rem;padding:1px 7px;margin:0}
   .bd-info{margin-left:2px;padding:0 4px;min-height:24px}
@@ -2752,6 +2835,9 @@ function groupSpan(g){
 }
 function kindLabel(it){ return it.kind === 'session' ? 'Session' : it.s.cat === 'poster' ? 'Poster' : 'Talk'; }
 
+// An agenda item's identity for the page (and view transitions): data-sid for a session,
+// data-tid (and its session as data-in-sid) for a talk.
+const itemIdAttrs = it => it.t ? `data-tid="${it.t.id}" data-in-sid="${it.s.id}"` : `data-sid="${it.s.id}"`;
 // The ids an agenda item stands for: the item, and for a saved session the talks starred in it.
 function itemIds(it){ return [it.t ? it.t.id : it.s.id, ...(it.inner || []).map(t => t.id)]; }
 // The clash panel: each group of overlapping items, and for each item "Keep this", which
@@ -2763,7 +2849,7 @@ function clashPanelHtml(groups, numbers){
         const [c, bg] = CAT_COLORS[it.s.cat];
         const drop = it.clashes.flatMap(itemIds), n = it.clashes.length;
         const keep = `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
-        return `<li style="--c:${c};--cbg:${bg}"><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="ag-kind">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${keep}${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
+        return `<li style="--c:${c};--cbg:${bg}" ${itemIdAttrs(it)}><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${keep}${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
       }).join('')}</ul></li>`).join('')}</ol>`;
 }
 let clashPanelOpen = false;
@@ -2796,7 +2882,7 @@ function agRow(it){
     : (it.s.room || 'Belinda Hutchinson Building');
   const word = it.s.cat === 'poster' ? 'poster' : 'talk', nIn = it.inner ? it.inner.length : 0;
   const sub2 = it.kind === 'talk'
-    ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
+    ? ['in ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
     : (it.s.talks.length ? it.s.talks.length + ' ' + word + (it.s.talks.length === 1 ? '' : 's') + (nIn ? ` · ${nIn} starred` : '') : '');
   const clashNames = state.hideClashes ? [] : [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
@@ -2806,12 +2892,13 @@ function agRow(it){
   // a saved session lists the talks starred in it: one item, not a clash
   const inner = nIn ? `<ul class="ag-inner" aria-label="Starred ${word}s in this session">${it.inner.map(t => {
     const sp = t.sp.map(p => p.n).join(', ');
-    return `<li><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${sp ? `<span class="ag-isp">${esc(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
+    return `<li data-tid="${t.id}"><span class="ag-itime"><i class="k-ic" aria-hidden="true"></i>${t.s}&#8211;${t.e}</span><span class="ag-istar" aria-hidden="true">&#9733;</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${sp ? `<span class="ag-isp">${esc(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Unstar ${esc(t.t)}" title="Unstar this ${word}">&#10005;</button></li>`;
   }).join('')}</ul>` : '';
-  return `<li class="ag-row ${clashNames.length?'has-clash':''}${nIn ? ' has-inner' : ''}" data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
+  const ids = itemIdAttrs(it);
+  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashNames.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
     <span class="ag-time">${it.start}&#8211;${it.end}<span class="ag-ended">Ended</span></span>
     <div class="ag-main">
-      <span class="ag-title"><span class="ag-kind">${it.kind==='session'?'Session':it.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>${esc(itemTitle(it))}</span>
+      <span class="ag-title"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${esc(itemTitle(it))}</span>
       <span class="ag-sub">${esc(who)}${sub2 ? ' &middot; ' + esc(sub2) : ''}</span>
       ${inner}${clash}
     </div>
@@ -2917,10 +3004,17 @@ function weekOverview(){
     // the accessible name starts with the text shown (the full label; CSS may clamp it)
     const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + parts[1];
     const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
-    const aria = esc(`${shown}, ${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
-    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
+    const kind = agenda ? (x.t ? 'talk, ' : x.ctx ? 'session not saved, ' : 'session, ') : '';
+    const aria = esc(`${shown}, ${kind}${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
+    // My agenda: a session's starred talks as marks at their times inside it
+    const marks = agenda && !x.t ? x.s.talks.filter(t => x.inner.has(t.id)).map(t => {
+      const ta = Math.max(toMin(t.s), a), tb = Math.min(toMin(t.e), b);
+      return tb > ta ? `<i class="week-tk" data-tid="${t.id}" style="--ta:${((ta - a) / (b - a) * 100).toFixed(2)};--tw:${((tb - ta) / (b - a) * 100).toFixed(2)}"></i>` : '';
+    }).join('') : '';
+    const ids = agenda && x.t ? `data-tid="${x.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
+    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
-      data-week-sid="${s.id}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>`;
+      ${ids} data-week-sid="${s.id}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span>${marks}</button>`;
   };
   const counts = [], lanes = [];
   const isBand = s => !agenda && WEEK_BANDS.includes(s.cat);
@@ -2959,11 +3053,18 @@ function weekOverview(){
   });
   const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
   const nClash = agenda ? days.flat().filter(x => x.clash.length).length : 0;
-  const legend = cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
+  // My agenda's key: what each shape is (drawn as in the overview), then the streams
+  const all = days.flat(), has = f => all.some(f);
+  const key = !agenda ? '' : [
+    has(x => !x.t && !x.ctx) ? '<li class="wk-k wk-ks"><i></i>Session</li>' : '',
+    has(x => x.t) ? '<li class="wk-k wk-kt"><i></i>Talk</li>' : '',
+    has(x => x.ctx) ? '<li class="wk-k wk-kg"><i></i>Session not saved (shown for its talks)</li>' : '',
+    has(x => !x.t && x.inner.size) ? '<li class="wk-k wk-km"><i><b></b></i>Starred talk in a session</li>' : ''].join('');
+  const legend = key + cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
     + (nClash ? `<li class="week-lcx"><i></i>Clash (${nClash} item${nClash === 1 ? '' : 's'})</li>` : '');
   // the hint for a mouse or for touch (CSS shows the one that fits the device)
   const hint = `<h2 class="week-title">${agenda ? 'My agenda, all week' : 'All week'} <small>${esc(DATA.days[0].label)} – ${esc(DATA.days[DATA.days.length - 1].label)} 2026</small></h2>
-    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale. Overlapping items sit side by side, hatched. Click one, or a day, to open that day.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
+    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side with an orange edge. Click one, or a day, to open that day.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
     : `<span class="wh-ptr">The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day.</span><span class="wh-tch">The whole congress at a glance. Tap a session to open its day.</span>`}</p>`;
   const tail = `<ul class="week-legend" aria-label="Stream colours">${legend}</ul>`;
   if (horiz){
@@ -3595,6 +3696,21 @@ function dayEntries(day){
   }));
 }
 const dvTid = e => e.t ? e.t.id : '';
+// My agenda's kind pill: a saved session (solid, its stream colour), a session shown only
+// for its starred talks (dashed), or a talk / poster (outlined, with a speaker icon).
+const dvKind = e => e.t ? `<span class="kind k-t">${e.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>`
+  : e.ctx ? '<span class="kind k-g">Session · not saved</span>' : '<span class="kind">Session</span>';
+// My agenda's key under the day heading: the shapes the day uses, as drawn.
+function dvKey(ents){
+  const has = f => ents.some(f), n = c => `<i class="ak-sw ${c}" aria-hidden="true"></i>`;
+  const items = [
+    has(e => !e.t && !e.ctx) ? `<li><span class="kind">Session</span> saved session</li>` : '',
+    has(e => e.t || e.inner.size) ? `<li><span class="kind k-t">Talk</span> starred talk</li>` : '',
+    has(e => e.ctx) ? `<li><span class="kind k-g">Session · not saved</span> shown for your starred talks</li>` : '',
+    has(e => !e.t && e.inner.size && e.s.cat !== 'poster' && e.s.talks.length > e.inner.size) ? `<li>${n('ak-dim')} the session’s other talks</li>` : '',
+    has(e => e.clash.length) ? `<li>${n('ak-cx')} clash</li>` : ''].join('');
+  return `<ul class="ag-key" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
+}
 const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
 // Where saved items overlap: merged [start, end] minute ranges, for the time axis.
 function dvClashSpans(ents){
@@ -3682,7 +3798,7 @@ function hzDayView(day){
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
       <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
     </div>
-    <div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
+    ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
         <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
         <div class="hz-map" role="group" aria-label="Whole day. Drag the window or click to move through the day.">
@@ -3747,10 +3863,12 @@ function hzDraw(root, left){
     const s = e.s, a = toMin(e.start), b = toMin(e.end), w = Math.min((b - a) * ppm, trackW);
     const tks = talksOf(e);
     const markRoom = marked(e) ? 14 : 0;
-    if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(e.title.length, w - 16, 6.7)) * lineH + 14 * rs) + markRoom
+    // My agenda: the kind pill makes the meta line a little taller; a talk adds its speakers and session
+    const extra = agenda ? 3 * rs + (e.t ? (e.t.sp.length ? 14 * rs : 0) + 14 * rs : 0) : 0;
+    if (!tks.length) return { e, s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(e.title.length, w - 16, agenda && e.t ? 7.6 : 6.7)) * lineH + 14 * rs) + markRoom + extra
       + Math.min(4, listed(e).length) * 14 * rs };
     const hl2 = Math.min(2, estLines(e.title.length, Math.min(w, 520) - 16, 7.1));
-    const head = 9 + hl2 * 15.5 * rs + 14 * rs;
+    const head = 9 + hl2 * 15.5 * rs + 14 * rs + extra + (agenda ? 2 : 0);
     let segs;
     if (tmode === 'full'){
       segs = 0;
@@ -3774,7 +3892,7 @@ function hzDraw(root, left){
         const e = m.e, s = m.s, n = s.talks.length, [lc, lbg] = col || CAT_COLORS[e.cat];
         const clash = dvClashText(e);
         const word = s.cat === 'poster' ? 'poster' : 'talk';
-        const meta = (e.t ? [`${e.start}–${e.end}`, 'in ' + s.title]
+        const meta = (e.t ? [`${e.start}–${e.end}`, agenda ? '' : 'in ' + s.title]
           : [`${s.start}–${s.end}`, n ? `${n} ${word}${n > 1 ? 's' : ''}${e.inner && e.inner.size ? ` · ★ ${e.inner.size} starred` : ''}` : '',
             s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(' · ');
         const conv = !e.t && s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
@@ -3785,8 +3903,14 @@ function hzDraw(root, left){
         const cls = (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '');
         const tiny = (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
-        const lst = listed(e).map(t => `<span class="hz-inl">★ ${esc(t.t)}</span>`).join('');
-        const inner = tiny ? '' : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span><span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span><span class="hz-meta">${meta}</span>${lst}</span>`;
+        const lst = listed(e).map(t => `<span class="hz-inl" data-tid="${t.id}">★ ${esc(t.t)}</span>`).join('');
+        const title = `<span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${hl(shown || e.title)}</span>`;
+        // My agenda says what each item is: its kind first, then title; a talk adds its speakers and session
+        const sp = e.t ? e.t.sp.map(p => p.n).join(', ') : '';
+        const inner = tiny ? '' : agenda
+          ? `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span><span class="hz-meta">${dvKind(e)} ${meta}</span>${title}${sp ? `<span class="hz-sp">${hl(sp)}</span>` : ''}${e.t ? `<span class="hz-meta hz-of">in ${hl(s.title)}</span>` : ''}${lst}</span>`
+          : `<span class="hz-in"><span class="hz-bdg" aria-hidden="true">${esc(dvCode(s))}</span>${title}<span class="hz-meta">${meta}</span>${lst}</span>`;
+        const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
         if (!m.tks.length){
           let marks = '';
           if (marked(e) && !tiny){
@@ -3795,10 +3919,10 @@ function hzDraw(root, left){
               if (tb <= ta) continue;
               const fa = (ta - m.a) / (m.b - m.a), fw = (tb - ta) / (m.b - m.a);
               // left/width are of the bar's padding box (4px left border, 1px right)
-              marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
+              marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" data-tid="${t.id}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
             }
           }
-          bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}${cls}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}">${inner}${marks}</button>`;
+          bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}${cls}${e.t ? ' is-talk' : ''}" style="${pos}" ${attrs} ${ids} title="${tip}" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}">${inner}${marks}</button>`;
         } else {
           let segs = '';
           const bw = m.b - m.a;
@@ -3807,10 +3931,10 @@ function hzDraw(root, left){
             const sp = t.sp.map(p => p.n).join(', ');
             const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
             const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
-            segs += `<button type="button" class="hz-talk${mine}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
-              <span class="hz-tt">${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
+            segs += `<button type="button" class="hz-talk${mine}" data-tid="${t.id}" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.s + ' ' + t.t + (sp ? ' ' + sp : '') + ', ' + t.s + '–' + t.e + ', in ' + s.title + (state.starred.has(t.id) ? ', in My agenda' : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
+              <span class="hz-tt">${agenda ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s}</span> <span class="hz-tl">${state.starred.has(t.id) ? '<span class="hz-star" aria-hidden="true">★</span> ' : ''}${hl(t.t)}</span>${sp ? ` <span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
           }
-          bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} title="${tip}">
+          bars += `<div class="hz-bar hz-split${cls}" style="${pos}" ${attrs} ${ids} title="${tip}">
             <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
         }
       }
@@ -3870,9 +3994,11 @@ function hzDraw(root, left){
   hzFitText(h);
   h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
   // bars that can start off to the left: hzSync pads their text into view
+  // (My agenda's bars pad their header strip, which carries the padding there)
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
     const bar = el.classList.contains('hz-head') ? el.parentElement : el;
-    return { el, x: parseFloat(bar.style.left), w: parseFloat(bar.style.width), pad: 0 };
+    const pel = agenda && el === bar ? el.querySelector('.hz-in') || el : el;
+    return { el: pel, x: parseFloat(bar.style.left), w: parseFloat(bar.style.width), pad: 0 };
   });
   // zoom buttons
   const z = HZ.zoom[hzZoomKey(key)];
@@ -4143,7 +4269,7 @@ function vtDayView(day){
   const go = (d, to) => to
     ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day: Alt + ${d < 0 ? 'Left' : 'Right'} arrow, or ${d < 0 ? 'Left' : 'Right'} arrow once the timetable is scrolled to its ${d < 0 ? 'left' : 'right'} edge">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
     : `<span class="vt-go none"></span>`;
-  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)} 2026</h2>${go(1, step(1))}</div>`;
+  const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)} 2026</h2>${go(1, step(1))}</div>${agenda ? dvKey(slots) : ''}`;
 
   // One card. With `rows` the card shows its talks on the grid rows given
   // (subgrid); without, talks (if open) are a plain list under the heading.
@@ -4161,7 +4287,7 @@ function vtDayView(day){
       : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
     const talkBtn = (t, style) => {
       const mine = agenda ? (e.inner.has(t.id) ? ' mine' : ' dim') : '';
-      return `<button type="button" class="vt-tk${mine}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${t.s}</span> ${star(t.id)}${vtWbr(hl(t.t))}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
+      return `<button type="button" class="vt-tk${mine}" data-tid="${t.id}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${agenda && mine === ' mine' ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s}</span> ${star(t.id)}${vtWbr(hl(t.t))}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
     };
     let talks = '';
     if (open && o.rows && !listOnly(e)){
@@ -4181,10 +4307,11 @@ function vtDayView(day){
       + (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '') + (e.t ? ' is-talk' : '');
     const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">&#9888; Clash</span>` : '';
     const what = e.ctx ? ' title="Shown for your starred talks; the session is not in My agenda"' : '';
-    return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
+    const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
+    return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" ${ids} data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
       <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${clash ? ` aria-description="${esc(clash)}"` : ''}>
-        <span class="vt-top"><span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
-        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span></button>
+        <span class="vt-top">${agenda ? dvKind(e) : ''}<span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
+        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span>${e.t && e.t.sp.length ? `<span class="vt-tsp">${hl(who(e.t))}</span>` : ''}</button>
       <span class="vt-foot">${conv}${tog}</span></div>${talks}</div>`;
   };
 
@@ -5113,7 +5240,7 @@ function bdSlotItems(slot){
 
 function bdTalk(s, t){
   const who = t.sp.map(p => p.n).join(', ');
-  return `<li><label class="bd-check bd-talk"><input type="checkbox" data-bd-id="${esc(t.id)}"${state.starred.has(t.id) ? ' checked' : ''}>
+  return `<li data-tid="${esc(t.id)}"><label class="bd-check bd-talk"><input type="checkbox" data-bd-id="${esc(t.id)}"${state.starred.has(t.id) ? ' checked' : ''}>
     <span class="bd-ttime">${esc(t.s)}</span><span class="bd-tmain"><span class="bd-ttitle">${esc(t.t)}</span>${who ? `<span class="bd-sp">${esc(who)}</span>` : ''}</span></label>
     <button type="button" class="bd-abs" data-session-detail="${esc(s.id)}" data-talk-detail="${esc(t.id)}" aria-label="Abstract of ${esc(t.t)}">Abstract</button></li>`;
 }
@@ -5128,13 +5255,13 @@ function bdCard(s, parallel){
     poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join(' · ');
   const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session, all its talks included' : 'Save this session';
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
-  return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
+  return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
       <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
-    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}" aria-label="${open ? 'Hide' : 'Show'} the ${n}${word} of ${esc(s.title)}"><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true">&#9662;</span></button>
+    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}"><span class="visually-hidden">${esc(s.title)}: </span><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true">&#9662;</span></button>
       <ul class="bd-tlist" id="bdt-${esc(s.id)}"${open ? '' : ' hidden'}>${talks.map(t => bdTalk(s, t)).join('')}</ul>` : ''}
   </article>`;
 }
@@ -5353,7 +5480,6 @@ bdEl('bdBody').addEventListener('click', e => {
   if (tog){
     const open = tog.getAttribute('aria-expanded') !== 'true', card = tog.closest('.bd-card');
     tog.setAttribute('aria-expanded', open);
-    tog.setAttribute('aria-label', tog.getAttribute('aria-label').replace(/^(Show|Hide)/, open ? 'Hide' : 'Show'));
     document.getElementById(tog.getAttribute('aria-controls')).hidden = !open;
     card.classList.toggle('open', open);
     return;
@@ -5919,10 +6045,10 @@ function upNextHtml(items){
     const t = (it.inner || []).find(t => toMin(t.e) > n.min);
     if (!t) return '';
     const on = toMin(t.s) <= n.min;
-    return ` <span class="un-in">&#9733; <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button> ${on ? `until ${t.e}` : t.s}</span>`;
+    return ` <span class="un-in" data-tid="${t.id}">&#9733; <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button> ${on ? `until ${t.e}` : t.s}</span>`;
   };
   const row = (label, it, when) =>
-    `<div><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
+    `<div ${itemIdAttrs(it)}><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
   return `<div class="up-next" id="upNext">` +
     current.map(it => row('Now', it, `until ${it.end}`)).join('') +
     next.map(it => row('Next', it, `${it.start} · in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
@@ -6175,9 +6301,18 @@ function resolveAgendaIds(ids){
   }
   return items.sort((a,b) => a.d.date.localeCompare(b.d.date) || a.start.localeCompare(b.start));
 }
+// The same items merged as My agenda shows them: a session with the talks starred in it
+// is one entry, its talks listed under it (never a session and its talk side by side).
+function previewMerged(items){
+  return mergeSaved(items.map(it => ({ ...it, kind: it.t ? 'talk' : 'session' })));
+}
 function agendaPreviewList(items){
-  return `<ul>${items.map(it =>
-    `<li>${esc(it.d.label)} · ${it.start}–${it.end} · ${state.starred.has(it.id) ? '★ ' : ''}${esc(it.t ? it.t.t : it.s.title)}${it.t ? ' <span class="ag-sub" style="display:inline">(' + esc(it.s.title) + ')</span>' : ''}</li>`).join('')}</ul>`;
+  const mine = id => state.starred.has(id) ? '<span class="pv-mine" title="Already in My agenda">★</span> ' : '';
+  return `<ul class="pv-list">${previewMerged(items).map(it => {
+    const [c, bg] = CAT_COLORS[it.s.cat];
+    const inner = (it.inner || []).map(t => `<li data-tid="${t.id}">${t.s}–${t.e} · ${mine(t.id)}${esc(t.t)}</li>`).join('');
+    return `<li style="--c:${c};--cbg:${bg}" ${it.t ? `data-tid="${it.t.id}" data-in-sid="${it.s.id}"` : `data-sid="${it.s.id}"`}><span class="kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span> ${esc(it.d.label)} · ${it.start}–${it.end} · ${mine(it.id)}${esc(itemTitle(it))}${it.t ? ` <span class="pv-in">in ${esc(it.s.title)}</span>` : ''}${inner ? `<ul>${inner}</ul>` : ''}</li>`;
+  }).join('')}</ul>`;
 }
 function mergeIntoAgenda(ids){
   ids.forEach(id => state.starred.add(id));
@@ -6196,7 +6331,7 @@ function showSharedAgenda(ids){
   el.dataset.ids = fresh.map(it => it.id).join(',');
   el.dataset.all = items.map(it => it.id).join(',');
   const differs = state.starred.size > 0 && (fresh.length > 0 || state.starred.size !== items.length);
-  const count = items.length + (items.length === 1 ? ' session or talk' : ' sessions and talks');
+  const count = agendaCountText(previewMerged(items), false, ', ');
   el.innerHTML = `<div class="sb-row"><div><b>Shared agenda:</b> ${count}${fresh.length < items.length ? ` (${items.length - fresh.length} already in yours)` : ''}.</div>
     <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>Add ${fresh.length} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}${differs ? `<button type="button" data-sb-replace>Replace mine with it</button>` : ''}<button type="button" data-sb-close>Dismiss</button></div></div>
     <details><summary>See what’s in it</summary>${agendaPreviewList(items)}</details>`;
@@ -6491,7 +6626,7 @@ function previewImport(text){
   const ids = r.items.map(it => it.id);
   const fresh = ids.filter(id => !state.starred.has(id));
   pendingImport = { ids, fresh };
-  const n = ids.length + (ids.length === 1 ? ' session or talk' : ' sessions and talks');
+  const n = agendaCountText(previewMerged(r.items), false, ', ');
   const have = state.starred.size;
   const same = !fresh.length && have === ids.length;
   const already = ids.length - fresh.length;
