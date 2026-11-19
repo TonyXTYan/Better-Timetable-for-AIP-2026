@@ -1,2 +1,6 @@
 __pycache__/
 node_modules/
+
+# test screenshots written by local checks
+/m[0-9].png
+/n[0-9].png
