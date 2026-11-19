@@ -55,7 +55,7 @@ window.applyDisplay = function(d){
   --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
   --radius:14px;
   /* surfaces and text (light values equal the original hard-coded colours) */
-  --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9; --sunken:#eef1f6; --sunken-2:#eef2fa; --sticky-bg:rgba(246,247,251,.92); --hover-line:#c7cede; --ink-2:#4b5563; --ink-3:#374151; --faint:#94a3b8; --caret:#b6c0cf; --cnt-ink:#ffffff; --pop-shadow:rgba(16,24,40,.18); --flash:#fef9c3; --mark-bg:#fde68a; --mark-ink:#1f2937; --toast-bg:#1e2433; --toast-ink:#ffffff; --warn-ink:#b45309; --ok-ink:#15803d; --now-text:#b91c1c; --live-ink:#dc2626; --now-bg:#fef2f2; --now-line:#fecaca; --next-bg:#dbeafe; --next-ink:#1e40af; --danger-bg:#fee2e2; --danger-line:#fecaca; --today-bg:#fee2e2; --today-ink:#991b1b; --clash-bg:#fef3c7; --clash-line:#fde68a; --clash-ink:#92400e; --clash-row-bg:#fffbeb; --clash-row-line:#fcd34d; --warm-bg:#fff7ed; --warm-line:#fdba74; --warm-ink:#9a3412; --starOn-bg:#fff7eb; --starOn-line:#fcd34d; --starOn-ink:#92400e; --active-bg:#eff6ff; --active-ink:#1e40af; --grp-bg:#eef2ff; --grp-line:#c7d2fe; --grp-ink:#3730a3; --grp-btn:#c7d2fe; --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-strong:#064e3b; --ok-btn:#047857; --info-bg:#eef4ff; --info-line:#c7d8f7; --info-ink:#1e3a5f; --info-strong:#12306b; --info-btn:#1d4ed8; --info-hover:#f3f8ff; --link:#2563eb; --day-rule:#1e2433; --toast-ring:transparent; --backdrop:rgba(22,35,55,.53); --switch-off:#cbd2dd;
+  --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9; --sunken:#eef1f6; --sunken-2:#eef2fa; --sticky-bg:rgba(246,247,251,.92); --hover-line:#c7cede; --ink-2:#4b5563; --ink-3:#374151; --faint:#94a3b8; --caret:#b6c0cf; --cnt-ink:#ffffff; --pop-shadow:rgba(16,24,40,.18); --flash:#fef9c3; --mark-bg:#fde68a; --mark-ink:#1f2937; --toast-bg:#1e2433; --toast-ink:#ffffff; --warn-ink:#b45309; --ok-ink:#15803d; --now-text:#b91c1c; --live-ink:#dc2626; --now-bg:#fef2f2; --now-line:#fecaca; --next-bg:#dbeafe; --next-ink:#1e40af; --danger-bg:#fee2e2; --danger-line:#fecaca; --today-bg:#fee2e2; --today-ink:#991b1b; --clash-bg:#fef3c7; --clash-line:#fde68a; --clash-ink:#92400e; --clash-row-bg:#fffbeb; --clash-row-line:#fcd34d; --warm-bg:#fff7ed; --warm-line:#fdba74; --warm-ink:#9a3412; --starOn-bg:#fff7eb; --starOn-line:#fcd34d; --starOn-ink:#92400e; --active-bg:#eff6ff; --active-ink:#1e40af; --grp-bg:#eef2ff; --grp-line:#c7d2fe; --grp-ink:#3730a3; --grp-btn:#c7d2fe; --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-strong:#064e3b; --ok-btn:#047857; --info-bg:#eef4ff; --info-line:#c7d8f7; --info-ink:#1e3a5f; --info-strong:#12306b; --info-btn:#1d4ed8; --info-hover:#f3f8ff; --link:#2563eb; --day-rule:#1e2433; --toast-ring:transparent; --backdrop:rgba(22,35,55,.53); --switch-off:#cbd2dd; --focus-ring:rgba(37,99,235,.3);
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* solid fills for selected chips: white text on these in both modes */
@@ -81,7 +81,8 @@ window.applyDisplay = function(d){
   --star:#fbbf24;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
-  color-scheme:dark;
+  color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
+
 }
 }
 @media screen{
@@ -101,7 +102,8 @@ window.applyDisplay = function(d){
   --star:#fbbf24;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
-  color-scheme:dark;
+  color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
+
 }
 }
 :root[data-theme="light"]{color-scheme:light}
@@ -464,6 +466,115 @@ footer p{margin:4px 0}
 .ag-empty p{margin:0 auto 16px;max-width:44ch;color:var(--muted);font-size:.875rem}
 .ics-note{margin-top:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:.8125rem;color:var(--muted)}
 .ics-note textarea{width:100%;margin-top:8px;font:.7188rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
+.ag-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.toggle.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.toggle.primary:hover{border-color:var(--accent);filter:brightness(1.08)}
+
+/* ---------- build my agenda: a guided walk through the time slots ---------- */
+#buildDialog{--thumb:22px;border:1px solid var(--line);border-radius:16px;padding:0;width:min(1120px,96vw);height:min(900px,92vh);max-width:none;max-height:none;color:var(--ink);background:var(--card);font-size:13.5px;line-height:1.45;overflow:hidden}
+#buildDialog[open]{display:flex;flex-direction:column}
+html:has(#buildDialog[open]){overflow:hidden}
+#buildDialog::backdrop{background:var(--backdrop)}
+.bd-top{flex:none;padding:12px 20px 6px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.bd-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.bd-titlebar h2{margin:0;font-size:18px;letter-spacing:-.01em}
+.bd-intro{margin:2px 0 0;color:var(--muted);font-size:12.5px;max-width:70ch}
+.bd-scale{margin:6px 0 0;user-select:none;-webkit-user-select:none}
+.bd-bubble-row,.bd-ticks,.bd-days,.bd-times{position:relative;margin:0 calc(var(--thumb) / 2)}
+.bd-bubble-row{height:24px}
+.bd-bubble{position:absolute;bottom:3px;left:0;white-space:nowrap;font-size:12px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:1px 10px;font-variant-numeric:tabular-nums;pointer-events:none}
+.bd-range{--f:0;display:block;width:100%;height:28px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.bd-range:focus{outline:none}
+.bd-range::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(to right,var(--accent) 0 calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--f)),var(--line) 0)}
+.bd-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:var(--thumb);height:var(--thumb);margin-top:calc(3px - var(--thumb) / 2);border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--accent),0 1px 4px var(--pop-shadow)}
+.bd-range::-moz-range-track{height:6px;border-radius:999px;background:var(--line)}
+.bd-range::-moz-range-progress{height:6px;border-radius:999px;background:var(--accent)}
+.bd-range::-moz-range-thumb{width:var(--thumb);height:var(--thumb);box-sizing:border-box;border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--accent)}
+.bd-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1px var(--accent),0 0 0 5px var(--focus-ring)}
+.bd-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 1px var(--accent),0 0 0 5px var(--focus-ring)}
+.bd-ticks{height:10px;margin-top:1px}
+.bd-tick{position:absolute;top:0;width:1px;height:5px;background:var(--faint);transform:translateX(-50%)}
+.bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
+.bd-tick.has{width:4px;height:7px;border-radius:2px;background:var(--star)}
+.bd-tick.day.has{height:9px}
+.bd-days{height:22px}
+.bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:6px;font-size:12px;font-weight:750;color:var(--ink);white-space:nowrap;line-height:1.5}
+.bd-day:hover{background:var(--surface-3)}
+.bd-day.cur{color:var(--link)}
+.bd-times{height:17px}
+.bd-time{position:absolute;top:0;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.5}
+.bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 16px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.bd-opts label{display:inline-flex;align-items:center;gap:6px;min-height:32px;color:var(--ink-2);cursor:pointer}
+.bd-opts input,.bd-check input{accent-color:var(--accent)}
+.bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:12px 20px 18px}
+.bd-slot-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 10px}
+.bd-slot-head h3{margin:0;font-size:16px;letter-spacing:-.01em}
+.bd-slot-sub{margin:0;font-size:12.5px;color:var(--muted)}
+.bd-slot-sub .ag-warn{font-weight:650}
+.bd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;align-items:start}
+.bd-card{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 12px 6px 16px}
+.bd-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.bd-card.on{border-color:var(--starOn-line);box-shadow:0 0 0 1px var(--starOn-line)}
+.bd-card-top{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.bd-card-top .badge{cursor:default;margin:0;padding:2px 8px;font-size:10px}
+.bd-when{font-weight:650;font-variant-numeric:tabular-nums}
+.bd-info{margin-left:auto;font-size:12px}
+.bd-check{display:flex;align-items:flex-start;gap:9px;margin:3px -6px 0;padding:5px 6px;border-radius:8px;cursor:pointer}
+@media (hover:hover){.bd-check:hover{background:var(--surface-3)}}
+.bd-check.on{background:var(--starOn-bg)}
+.bd-check input{flex:none;width:17px;height:17px;margin:1px 0 0;cursor:pointer}
+.bd-title{display:block;font-size:14px;font-weight:650;line-height:1.35;overflow-wrap:anywhere}
+.bd-meta,.bd-hint{display:block;font-size:12px;color:var(--muted)}
+.bd-hint{color:var(--ink-2);font-weight:600}
+.bd-check.on .bd-hint{color:var(--starOn-ink)}
+.bd-talks{margin-top:4px;border-top:1px solid var(--line)}
+.bd-talks summary{cursor:pointer;padding:6px 0;font-size:12.5px;font-weight:650;color:var(--link)}
+.bd-talks[open] .bd-show,.bd-talks:not([open]) .bd-hide{display:none}
+.bd-tcount{color:var(--starOn-ink)}
+.bd-talks ul{list-style:none;margin:0 0 4px;padding:0}
+.bd-talks li{display:flex;align-items:flex-start;gap:2px}
+.bd-talk{flex:1;min-width:0;margin-top:0;font-size:13px}
+.bd-ttime{flex:none;min-width:34px;padding-top:1px;font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.bd-tmain{flex:1;min-width:0;overflow-wrap:anywhere}
+.bd-ttitle{display:block;font-weight:600;line-height:1.35}
+.bd-sp{display:block;font-size:11.5px;color:var(--muted)}
+.bd-abs{flex:none;border:0;background:none;padding:5px 2px 5px 6px;color:var(--link);font-size:11.5px;font-weight:600}
+.bd-abs:hover,.bd-info:hover{text-decoration:underline}
+.bd-done{max-width:52ch;margin:0 auto;padding:36px 10px;text-align:center}
+.bd-done .ag-empty-icon{font-size:34px;color:var(--star)}
+.bd-done h3{margin:6px 0;font-size:20px}
+.bd-done p{margin:0 0 14px;color:var(--muted)}
+.bd-foot{flex:none;display:flex;align-items:center;gap:8px;padding:10px 20px;border-top:1px solid var(--line);background:var(--surface-2)}
+.bd-foot #bdNext{margin-left:auto}
+.bd-foot button:disabled{opacity:.5;cursor:default}
+@media (max-width:720px){
+  #buildDialog{--thumb:28px;width:100vw;height:100vh;height:100dvh;margin:0;border:0;border-radius:0}
+  .bd-top{padding:8px 14px 2px}
+  .bd-titlebar{align-items:center}
+  .bd-titlebar h2{font-size:17px}
+  .bd-intro{display:none}
+  .bd-scale{margin-top:2px}
+  .bd-range{height:40px}
+  .bd-range::-webkit-slider-runnable-track{height:8px}
+  .bd-range::-webkit-slider-thumb{margin-top:calc(4px - var(--thumb) / 2)}
+  .bd-ticks{margin-top:-4px}
+  .bd-days{height:26px}
+  .bd-day{top:-7px;min-height:40px;padding:0 4px;font-size:12.5px}
+  .bd-opts{margin-top:4px}
+  .bd-opts label{min-height:40px}
+  .bd-opts input{width:20px;height:20px}
+  .bd-body{padding:10px 14px 16px}
+  .bd-cards{grid-template-columns:minmax(0,1fr)}
+  .bd-check{min-height:44px;padding:7px 6px}
+  .bd-check input{width:20px;height:20px}
+  .bd-check input{margin-top:0}
+  .bd-ttime{padding-top:2px}
+  .bd-info,.bd-abs{min-height:40px}
+  .bd-talks summary{padding:10px 0;min-height:40px}
+  .bd-foot{display:grid;grid-template-columns:1fr 1fr 1.4fr;padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+  .bd-foot .toggle{justify-content:center;padding:8px 6px}
+  .builder-actions #buildAgenda{grid-column:1 / -1}
+}
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash 1.4s ease-out}
 /* Reduced motion: the system setting unless turned off in Display settings, or turned on there. */
@@ -702,6 +813,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <p class="builder-stats" id="builderStats" aria-live="polite"></p>
     </div>
     <div class="builder-actions">
+      <button class="toggle primary" id="buildAgenda" data-build>Build my agenda</button>
       <button class="toggle" id="printAgenda">Print or save as PDF</button>
       <button class="toggle" id="copyAgenda">Copy as text</button>
       <button class="toggle" id="icsAgenda">Download .ics</button>
@@ -793,6 +905,34 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     <div class="md-row"><button type="button" class="toggle" id="importTextBtn">Import</button></div>
     <div class="import-result" id="importResult" role="status" aria-live="polite"></div>
   </section>
+</dialog>
+<dialog id="buildDialog" aria-labelledby="bdTitle">
+  <div class="bd-top">
+    <div class="bd-titlebar">
+      <div>
+        <h2 id="bdTitle">Build my agenda</h2>
+        <p class="bd-intro">Go through the congress one time slot at a time and tick the sessions or talks you want to attend. Drag the slider to jump around the week.</p>
+      </div>
+      <button type="button" class="toggle" id="bdClose">Close</button>
+    </div>
+    <div class="bd-scale">
+      <div class="bd-bubble-row" aria-hidden="true"><span class="bd-bubble" id="bdBubble"></span></div>
+      <input type="range" class="bd-range" id="bdRange" min="0" max="0" step="1" value="0" aria-label="Time slot" autofocus>
+      <div class="bd-ticks" id="bdTicks" aria-hidden="true"></div>
+      <div class="bd-days" id="bdDays"></div>
+      <div class="bd-times" id="bdTimes" aria-hidden="true"></div>
+    </div>
+    <div class="bd-opts">
+      <span id="bdProgress"></span>
+      <label><input type="checkbox" id="bdAdmin"> Include breaks and meetings</label>
+    </div>
+  </div>
+  <div class="bd-body" id="bdBody"></div>
+  <div class="bd-foot">
+    <button type="button" class="toggle" id="bdBack">&#8592; Back</button>
+    <button type="button" class="toggle" id="bdSkipDay">Skip day</button>
+    <button type="button" class="toggle primary" id="bdNext">Next slot &#8594;</button>
+  </div>
 </dialog>
 <footer>
   <div class="cols">
@@ -1454,7 +1594,7 @@ function agRow(it){
     : (it.s.room || 'Belinda Hutchinson Building');
   const sub2 = it.kind === 'talk'
     ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
-    : (it.s.talks.length ? it.s.talks.length + ' talks' : '');
+    : (it.s.talks.length ? it.s.talks.length + (it.s.talks.length === 1 ? ' talk' : ' talks') : '');
   const clashNames = state.hideClashes ? [] : [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
@@ -1612,9 +1752,12 @@ function renderBuilder(){
     body.innerHTML = `<div class="ag-empty">
       <div class="ag-empty-icon">&#9733;</div>
       <h3>Your agenda is empty</h3>
-      <p>Use the star beside any talk or session to add it to your agenda, or bring your agenda over from another device.</p>
-      <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
-      <button class="toggle" data-open-move>Import from another device</button>
+      <p>Let <b>Build my agenda</b> walk you through the week one time slot at a time, or use the star beside any talk or session in the program, or bring your agenda over from another device.</p>
+      <div class="ag-empty-actions">
+        <button class="toggle primary" data-build>Build my agenda</button>
+        <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
+        <button class="toggle" data-open-move>Import from another device</button>
+      </div>
     </div>`;
     return;
   }
@@ -1984,6 +2127,7 @@ eventDialog.addEventListener('click', e => {
   if (jump){
     delete eventDialog.dataset.changed;
     eventDialog.close();
+    if (buildDialog.open){ bd.nav = true; buildDialog.close(); }
     openInProgram(jump);
     return;
   }
@@ -2015,6 +2159,12 @@ eventDialog.addEventListener('click', e => {
   eventDialog.dataset.changed = 'true';
 });
 eventDialog.addEventListener('close', () => {
+  if (buildDialog.open && buildDialog.contains(dialogTrigger)){
+    // Opened from Build my agenda: refresh its ticks and stay in it.
+    if (eventDialog.dataset.changed){ delete eventDialog.dataset.changed; bd.changed = true; bdPaintChecks(); }
+    dialogTrigger.focus({ preventScroll: true });
+    return;
+  }
   if (!eventDialog.dataset.changed) return;
   delete eventDialog.dataset.changed;
   const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
@@ -2166,8 +2316,310 @@ document.getElementById('builder').addEventListener('click', e => {
     (next || document.querySelector('#builderBody [data-goprogram]')).focus();
     return;
   }
+  const build = e.target.closest('[data-build]');
+  if (build){ openBuild(build); return; }
   const go = e.target.closest('[data-goprogram]');
   if (go) openInProgram(go);
+});
+
+// ---------- build my agenda: a guided walk through the time slots ----------
+// Sessions whose times overlap share a slot, as in the program calendar, but a
+// long session or a lunch break does not chain two slots into one: each session
+// joins the slot it overlaps most. Ticks are saved the moment they change, so
+// moving around never drops a choice.
+const buildDialog = document.getElementById('buildDialog');
+const ADMIN_CATS = new Set(['social', 'business']);
+const isAdminSession = s => ADMIN_CATS.has(s.cat);
+const bdEl = id => document.getElementById(id);
+const bd = { slots: [], i: 0, done: false, admin: false, before: null, changed: false, nav: false, trigger: null, lastKey: null };
+try { bd.admin = sessionStorage.getItem('aip2026-build-admin') === '1'; } catch (e) {}
+try { bd.lastKey = sessionStorage.getItem('aip2026-build-pos'); } catch (e) {}
+
+function hhmmOf(m){ return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+function dayShort(d){ return d.label.replace(/ \w+$/, ''); }
+
+function congressSlots(){
+  if (congressSlots.list) return congressSlots.list;
+  const out = [];
+  DATA.days.forEach((d, di) => {
+    const ss = [...d.slots].sort((a,b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
+    // Slot starts: a session opens a new slot once the current slot's shortest session is over.
+    const starts = [];
+    let coreEnd = -1;
+    for (const s of ss){
+      const a = toMin(s.start), b = toMin(s.end);
+      if (!starts.length || (a >= coreEnd && a > starts[starts.length - 1])){ starts.push(a); coreEnd = b; }
+      else coreEnd = Math.min(coreEnd, b);
+    }
+    const groups = starts.map(() => []);
+    for (const s of ss){
+      const a = toMin(s.start), b = toMin(s.end);
+      let best = -1, most = 0;
+      starts.forEach((st, k) => {
+        const overlap = Math.min(b, k + 1 < starts.length ? starts[k + 1] : Infinity) - Math.max(a, st);
+        if (overlap > most){ best = k; most = overlap; }
+      });
+      // A session without length goes to the last slot that has started by then.
+      if (best < 0){ best = 0; starts.forEach((st, k) => { if (st <= a) best = k; }); }
+      groups[best].push(s);
+    }
+    groups.filter(g => g.length).forEach(g => {
+      const start = Math.min(...g.map(s => toMin(s.start)));
+      out.push({ di, d, sessions: g, key: d.date + ' ' + hhmmOf(start), admin: g.every(isAdminSession) });
+    });
+  });
+  return congressSlots.list = out;
+}
+function bdSessions(slot){ return bd.admin ? slot.sessions : slot.sessions.filter(s => !isAdminSession(s)); }
+function bdSpan(slot){
+  const ss = bdSessions(slot);
+  return [hhmmOf(Math.min(...ss.map(s => toMin(s.start)))), hhmmOf(Math.max(...ss.map(s => toMin(s.end))))];
+}
+function bdVisibleSlots(){ return congressSlots().filter(sl => bd.admin || !sl.admin); }
+function bdIndexFor(key){
+  if (!key) return 0;
+  const i = bd.slots.findIndex(sl => sl.key >= key);
+  return i < 0 ? bd.slots.length - 1 : i;
+}
+function bdStartIndex(){
+  // During the congress, start at the first slot that is not over yet.
+  const n = aedtNow(), days = DATA.days;
+  if (n.date < days[0].date || n.date > days[days.length - 1].date) return 0;
+  const i = bd.slots.findIndex(sl => sl.d.date > n.date || (sl.d.date === n.date && toMin(bdSpan(sl)[1]) > n.min));
+  return i < 0 ? 0 : i;
+}
+function bdSlotItems(slot){
+  const items = [];
+  for (const s of bdSessions(slot)){
+    if (state.starred.has(s.id)) items.push({ kind:'session', d:slot.d, s, t:null, start:s.start, end:s.end });
+    for (const t of s.talks) if (state.starred.has(t.id)) items.push({ kind:'talk', d:slot.d, s, t, start:t.s, end:t.e });
+  }
+  return items;
+}
+
+function bdTalk(s, t){
+  const who = t.sp.map(p => p.n).join(', ');
+  return `<li><label class="bd-check bd-talk"><input type="checkbox" data-bd-id="${esc(t.id)}"${state.starred.has(t.id) ? ' checked' : ''}>
+    <span class="bd-ttime">${esc(t.s)}</span><span class="bd-tmain"><span class="bd-ttitle">${esc(t.t)}</span>${who ? `<span class="bd-sp">${esc(who)}</span>` : ''}</span></label>
+    <button type="button" class="bd-abs" data-session-detail="${esc(s.id)}" data-talk-detail="${esc(t.id)}" aria-label="Abstract of ${esc(t.t)}">Abstract</button></li>`;
+}
+function bdCard(s, parallel){
+  const [c, bg] = CAT_COLORS[s.cat];
+  const poster = s.cat === 'poster';
+  const talks = poster ? [] : s.talks;
+  const open = talks.length <= 3 || parallel <= 2 || talks.some(t => state.starred.has(t.id));
+  const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
+    s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
+    poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join(' · ');
+  const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session' : 'Save this session';
+  return `<article class="bd-card" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
+    <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span>
+      <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
+    <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
+      <span><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
+    ${talks.length ? `<details class="bd-talks"${open ? ' open' : ''}><summary><span class="bd-show">Show ${talks.length} talk${talks.length > 1 ? 's' : ''}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span></summary>
+      <ul>${talks.map(t => bdTalk(s, t)).join('')}</ul></details>` : ''}
+  </article>`;
+}
+
+function bdRenderSlot(){
+  const body = bdEl('bdBody');
+  if (bd.done){
+    const items = agendaItems();
+    markClashes(items);
+    const nSess = items.filter(x => x.kind === 'session').length, nTalk = items.length - nSess;
+    const added = [...state.starred].filter(id => !bd.before.has(id)).length;
+    const removed = [...bd.before].filter(id => !state.starred.has(id)).length;
+    const clashes = items.filter(x => x.clashes.length).length;
+    const run = added || removed ? ` This time you added ${added} and removed ${removed}.` : '';
+    body.innerHTML = `<div class="bd-done">
+      <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
+      <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
+      <p>My agenda has ${nSess} session${nSess !== 1 ? 's' : ''} and ${nTalk} talk${nTalk !== 1 ? 's' : ''}${items.length ? `, about ${plannedHours(items).toFixed(1)} h` : ''}.${run}
+      ${clashes ? `<br><span class="ag-warn">&#9888;&#65039; ${clashes} item${clashes !== 1 ? 's' : ''} overlap</span>; My agenda shows where.` : ''}</p>
+      <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
+    </div>`;
+    body.scrollTop = 0;
+    return;
+  }
+  const slot = bd.slots[bd.i];
+  const sessions = bdSessions(slot);
+  const [a, b] = bdSpan(slot);
+  body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)} · ${a}–${b}</h3>
+    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'} · <span id="bdSlotSaved"></span></p></div>
+    <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
+  body.scrollTop = 0;
+}
+
+// Ticks follow the saved stars, so a change made anywhere (the details dialog too) shows here.
+function bdPaintChecks(){
+  bdEl('starCount').textContent = state.starred.size;
+  [...bdEl('bdTicks').children].forEach((tick, i) => tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0));
+  if (bd.done) return;
+  const body = bdEl('bdBody');
+  body.querySelectorAll('[data-bd-id]').forEach(cb => {
+    cb.checked = state.starred.has(cb.dataset.bdId);
+    cb.closest('.bd-check').classList.toggle('on', cb.checked);
+  });
+  body.querySelectorAll('[data-bd-card]').forEach(card => {
+    const s = slotById(card.dataset.bdCard);
+    card.classList.toggle('on', state.starred.has(s.id));
+    const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
+    const count = card.querySelector('.bd-tcount');
+    if (count) count.textContent = n ? ` · ${n} saved` : '';
+  });
+  const items = bdSlotItems(bd.slots[bd.i]);
+  markClashes(items);
+  const clashing = items.filter(x => x.clashes.length).length;
+  bdEl('bdSlotSaved').innerHTML = (items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet') +
+    (clashing ? ` · <span class="ag-warn">&#9888;&#65039; ${clashing} overlap</span>` : '');
+}
+
+// The slider: one step per slot, a day label at each day's first slot, and the
+// start times underneath, thinned out wherever they would collide.
+function bdFrac(i){ return bd.slots.length > 1 ? i / (bd.slots.length - 1) : 0; }
+function bdPlace(box, idx, keepAll){
+  const W = box.clientWidth, pad = parseFloat(getComputedStyle(box).marginLeft) || 0, gap = keepAll ? 3 : 8;
+  const els = [...box.children];
+  let right = -Infinity;
+  els.forEach((el, k) => {
+    el.hidden = false;
+    const w = el.offsetWidth;
+    let left = Math.min(Math.max(bdFrac(idx[k]) * W - w / 2, -pad), W + pad - w);
+    if (left < right + gap){
+      if (!keepAll){ el.hidden = true; return; }
+      left = right + gap;
+    }
+    el.style.left = left + 'px';
+    right = left + w;
+  });
+  if (!keepAll) return;
+  // Day labels must all stay: push back any that ran past the right edge.
+  let limit = W + pad;
+  for (let k = els.length - 1; k >= 0; k--){
+    const w = els[k].offsetWidth, left = Math.min(parseFloat(els[k].style.left), limit - w);
+    els[k].style.left = left + 'px';
+    limit = left - gap;
+  }
+}
+function bdLayoutScale(){
+  const firsts = bd.slots.map((sl, i) => i).filter(i => i === 0 || bd.slots[i].di !== bd.slots[i - 1].di);
+  bdEl('bdTicks').innerHTML = bd.slots.map((sl, i) =>
+    `<span class="bd-tick${firsts.includes(i) ? ' day' : ''}" style="left:${(bdFrac(i) * 100).toFixed(3)}%"></span>`).join('');
+  bdEl('bdDays').innerHTML = firsts.map(i =>
+    `<button type="button" class="bd-day" tabindex="-1" data-bd-go="${i}" aria-label="Jump to ${esc(bd.slots[i].d.label)}">${esc(dayShort(bd.slots[i].d))}</button>`).join('');
+  bdEl('bdTimes').innerHTML = bd.slots.map(sl => `<span class="bd-time">${bdSpan(sl)[0]}</span>`).join('');
+  bdPlace(bdEl('bdDays'), firsts, true);
+  bdPlace(bdEl('bdTimes'), bd.slots.map((sl, i) => i), false);
+  bdEl('bdRange').max = Math.max(0, bd.slots.length - 1);
+}
+function bdPaintScale(){
+  const range = bdEl('bdRange'), slot = bd.slots[bd.i], n = bd.slots.length;
+  const [a, b] = bdSpan(slot);
+  range.value = bd.i;
+  range.style.setProperty('--f', bdFrac(bd.i));
+  range.setAttribute('aria-valuetext', `${slot.d.label}, ${a} to ${b}, slot ${bd.i + 1} of ${n}`);
+  const bubble = bdEl('bdBubble');
+  bubble.textContent = `${dayShort(slot.d)} · ${a}–${b}`;
+  const row = bubble.parentElement, W = row.clientWidth, pad = parseFloat(getComputedStyle(row).marginLeft) || 0, w = bubble.offsetWidth;
+  bubble.style.left = Math.min(Math.max(bdFrac(bd.i) * W - w / 2, -pad), W + pad - w) + 'px';
+  bdEl('bdDays').querySelectorAll('[data-bd-go]').forEach(btn => btn.classList.toggle('cur', bd.slots[+btn.dataset.bdGo].di === slot.di));
+  bdEl('bdProgress').textContent = bd.done ? 'All slots done · ticks are saved as you go'
+    : `Slot ${bd.i + 1} of ${n} · ticks are saved as you go`;
+  bdEl('bdBack').disabled = !bd.done && bd.i === 0;
+  bdEl('bdSkipDay').hidden = bdEl('bdNext').hidden = bd.done;
+  bdEl('bdNext').innerHTML = bd.i === n - 1 ? 'Finish &#10003;' : 'Next slot &#8594;';
+  bdEl('bdSkipDay').textContent = bd.slots.slice(bd.i + 1).some(sl => sl.di !== slot.di) ? 'Skip day' : 'Skip to end';
+}
+function bdGo(i){
+  bd.done = false;
+  bd.i = Math.max(0, Math.min(bd.slots.length - 1, i));
+  bd.lastKey = bd.slots[bd.i].key;
+  try { sessionStorage.setItem('aip2026-build-pos', bd.lastKey); } catch (e) {}
+  bdPaintScale();
+  bdRenderSlot();
+  bdPaintChecks();
+}
+function bdFinish(){
+  bd.done = true;
+  bdPaintScale();
+  bdRenderSlot();
+  bdPaintChecks();
+  bdEl('bdDoneTitle').focus({ preventScroll: true });
+}
+function openBuild(trigger){
+  bd.trigger = trigger;
+  bd.before = new Set(state.starred);
+  bd.changed = false;
+  bd.nav = false;
+  bd.done = false;
+  bdEl('bdAdmin').checked = bd.admin;
+  bd.slots = bdVisibleSlots();
+  buildDialog.showModal();
+  bdLayoutScale();
+  bdGo(bd.lastKey ? bdIndexFor(bd.lastKey) : bdStartIndex());
+  bdEl('bdRange').focus();
+}
+function bdKeepFocus(){
+  // A button that just became disabled or hidden would drop focus out of the dialog.
+  const a = document.activeElement;
+  if (!a || a === document.body || a.disabled || a.hidden || !buildDialog.contains(a)) bdEl('bdRange').focus();
+}
+
+bdEl('bdRange').addEventListener('input', e => bdGo(+e.target.value));
+bdEl('bdBack').addEventListener('click', () => { bd.done ? bdGo(bd.i) : bdGo(bd.i - 1); bdKeepFocus(); });
+bdEl('bdNext').addEventListener('click', () => {
+  if (bd.i >= bd.slots.length - 1) bdFinish(); else { bdGo(bd.i + 1); bdKeepFocus(); }
+});
+bdEl('bdSkipDay').addEventListener('click', () => {
+  const next = bd.slots.findIndex((sl, k) => k > bd.i && sl.di !== bd.slots[bd.i].di);
+  if (next < 0) bdFinish(); else { bdGo(next); bdKeepFocus(); }
+});
+bdEl('bdDays').addEventListener('click', e => {
+  const b = e.target.closest('[data-bd-go]');
+  if (b){ bdGo(+b.dataset.bdGo); bdEl('bdRange').focus(); }
+});
+bdEl('bdAdmin').addEventListener('change', e => {
+  const key = bd.slots[bd.i].key;
+  bd.admin = e.target.checked;
+  try { sessionStorage.setItem('aip2026-build-admin', bd.admin ? '1' : '0'); } catch (err) {}
+  bd.slots = bdVisibleSlots();
+  bdLayoutScale();
+  if (bd.done){ bd.i = bdIndexFor(key); bdPaintScale(); bdPaintChecks(); }
+  else bdGo(bdIndexFor(key));
+});
+bdEl('bdBody').addEventListener('change', e => {
+  const cb = e.target.closest('[data-bd-id]');
+  if (!cb) return;
+  if (cb.checked) state.starred.add(cb.dataset.bdId); else state.starred.delete(cb.dataset.bdId);
+  saveStars();
+  bd.changed = true;
+  bdPaintChecks();
+});
+bdEl('bdBody').addEventListener('click', e => {
+  if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
+  if (!e.target.closest('[data-bd-view]')) return;
+  bd.nav = true;
+  buildDialog.close();
+  showView('list', 'agenda');
+  scrollToProgramTop();
+  document.getElementById('builderTitle').focus({ preventScroll: true });
+});
+bdEl('bdClose').addEventListener('click', () => buildDialog.close());
+buildDialog.addEventListener('close', () => {
+  if (bd.nav){ bd.nav = false; return; }
+  if (bd.changed) rerender();
+  bd.changed = false;
+  const back = [bd.trigger, document.getElementById('buildAgenda'), document.getElementById('builderTitle')]
+    .find(el => el && el.isConnected && el.getClientRects().length);
+  if (back) back.focus({ preventScroll: true });
+});
+window.addEventListener('resize', () => {
+  if (!buildDialog.open) return;
+  bdLayoutScale();
+  bdPaintScale();
+  bdPaintChecks();
 });
 
 function openInProgram(go){
