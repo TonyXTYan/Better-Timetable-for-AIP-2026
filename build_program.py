@@ -5360,7 +5360,7 @@ function openEventDialog(button, sid, tid, fromHistory, still){
   fillEventDialog(sid, tid);
   dialogTrigger = button;
   dialogBefore = new Set(state.starred);
-  if (!eventDialog.open){ dlgSeq++; if (!fromHistory) dlgHistoryOpen(sid, tid); }
+  if (!eventDialog.open){ dlgSeq++; dlgClosing = false; if (!fromHistory) dlgHistoryOpen(sid, tid); }
   const open = () => { if (!eventDialog.open) eventDialog.showModal(); eventDialog.scrollTop = 0; };
   // the dialog grows out of the block that opened it (not from inside another dialog)
   if (still || !button || button.closest('dialog') || !button.getClientRects().length) open();
@@ -5380,6 +5380,7 @@ function detailButton(sid, tid){
 // outside it or Back
 function closeEventDialog(){
   if (!eventDialog.open) return;
+  dlgClosing = true;   // until it has closed: Back going through must not open it a step again
   dlgHistoryClose();
   if (buildDialog.open){ eventDialog.close(); return; }
   withTransition('dlg', () => {
@@ -5408,7 +5409,7 @@ eventDialog.addEventListener('click', e => {
     delete eventDialog.dataset.changed;
     eventDialog.close();
     dlgHistoryClose();
-    if (buildDialog.open){ bd.nav = true; buildDialog.close(); }
+    if (buildDialog.open){ bd.nav = true; buildDialog.close(); pnlHistoryClose(); }
     openInProgram(jump);
     return;
   }
@@ -5443,6 +5444,7 @@ eventDialog.addEventListener('click', e => {
 // until a transition ends) or the close event (any other way of closing).
 eventDialog.addEventListener('close', eventDialogDone);
 function eventDialogDone(){
+  if (!eventDialog.open) dlgClosing = false;
   if (dlgDoneSeq === dlgSeq) return;
   dlgDoneSeq = dlgSeq;
   dlgHistoryClose();
@@ -6020,7 +6022,7 @@ function bdFinish(){
   bdPaintChecks();
   bdEl('bdDoneTitle').focus({ preventScroll: true });
 }
-function openBuild(trigger){
+function openBuild(trigger, fromHistory){
   bd.trigger = trigger;
   bd.before = new Set(state.starred);
   bd.changed = false;
@@ -6030,6 +6032,7 @@ function openBuild(trigger){
   bdPaintChips();
   bd.slots = bdVisibleSlots();
   buildDialog.showModal();
+  if (!fromHistory) pnlHistoryOpen('build');
   bdLayoutScale();
   // back where the last walk stopped, if that is on the day picked (or no day is)
   const resume = bd.lastKey && (state.day === 'all' || bd.lastKey.startsWith(DATA.days[state.day].date + ' '));
@@ -6104,6 +6107,7 @@ bdEl('bdBody').addEventListener('click', e => {
   if (!e.target.closest('[data-bd-view]')) return;
   bd.nav = true;
   buildDialog.close();
+  pnlHistoryClose();
   showView('list', 'agenda');
   scrollToProgramTop();
   document.getElementById('builderTitle').focus({ preventScroll: true });
@@ -6111,6 +6115,7 @@ bdEl('bdBody').addEventListener('click', e => {
 bdEl('bdClose').addEventListener('click', () => buildDialog.close());
 lightDismiss(buildDialog, () => buildDialog.close());
 buildDialog.addEventListener('close', () => {
+  pnlHistoryClose();
   if (bd.nav){ bd.nav = false; return; }
   if (bd.changed) rerender();
   bd.changed = false;
@@ -6796,11 +6801,14 @@ let pinned = '', pinnedFor = null, pinnedAgenda = '';
 // step, so Back and Forward walk through the views; searching, streams and the like
 // only rewrite the current step. Steps made within HIST_COALESCE ms of the last one
 // merge into it, so fast clicking does not flood the history. Each step keeps its view
-// (nav), orientation (o), place in the history (i) and the page's scroll (y); an open
-// details dialog is a step of its own (dlg).
+// (nav), orientation (o), place in the history (i), the page's scroll (y) and the view
+// of the step before it (pn); an open details dialog (dlg) and an open panel (pnl:
+// Display, Move to another device, Build my agenda) are steps of their own, so Back
+// closes them.
 const HIST_COALESCE = 400;
 let histIdx = 0, lastPushAt = -1e9, shownHash = null, pageY = 0;
 let dlgEntry = false, dlgPopping = false, dlgPopTimer = 0, hashPend = false, popHash = null, popHashTimer = 0;
+let pnlEntry = '', histDropN = 0, dlgClosing = false;
 function navKey(){
   if (state.scope === 'participants') return 'participants';
   const cal = state.layout === 'calendar';
@@ -6817,14 +6825,17 @@ function writeHash(){
   shownHash = h;
   try {
     // a details step whose dialog has closed is taken over by the new view
-    const stale = cur && cur.dlg && !dlgEntry;
+    const stale = cur && ((cur.dlg && !dlgEntry) || (cur.pnl && !pnlEntry));
     if (cur && cur.nav !== nav && !stale){
       const now = performance.now();
-      if (now - lastPushAt < HIST_COALESCE && !cur.dlg) history.replaceState({ nav, o: state.orient, i: cur.i }, '', url);
+      const merge = now - lastPushAt < HIST_COALESCE && !cur.dlg && !cur.pnl;
+      // a quick change and back again: drop the step it made, rather than keep two alike
+      if (merge && cur.pn === nav){ histLeave(1); hashPend = true; return; }
+      if (merge) history.replaceState({ nav, o: state.orient, i: cur.i, pn: cur.pn }, '', url);
       else {
         history.replaceState({ ...cur, y: pageY }, '');
         histIdx = (cur.i || 0) + 1;
-        history.pushState({ nav, o: state.orient, i: histIdx }, '', url);
+        history.pushState({ nav, o: state.orient, i: histIdx, pn: cur.dlg || cur.pnl ? undefined : cur.nav }, '', url);
       }
       lastPushAt = now;
     } else if (!cur || stale || cur.nav !== nav || cur.o !== state.orient || location.hash.slice(1) !== h){
@@ -6839,7 +6850,7 @@ function dlgHistoryOpen(sid, tid){
     const cur = history.state;
     history.replaceState({ ...cur, y: pageY }, '');
     histIdx = (cur.i || 0) + 1;
-    history.pushState({ nav: cur.nav, o: cur.o, i: histIdx, y: pageY, dlg: { s: sid, t: tid || '' } }, '');
+    history.pushState({ nav: cur.nav, o: cur.o, i: histIdx, y: pageY, pnl: pnlEntry || undefined, dlg: { s: sid, t: tid || '' } }, '');
     dlgEntry = true;
   } catch (e) {}
 }
@@ -6847,20 +6858,52 @@ function dlgHistoryOpen(sid, tid){
 function dlgHistoryClose(){
   if (!dlgEntry) return;
   dlgEntry = false;
-  if (!history.state || !history.state.dlg) return;
+  if (history.state && history.state.dlg) histLeave(1);
+}
+// The panels: their open/close functions and the close events call these.
+const PANELS = { display: () => displayDialog, move: () => moveDialog, build: () => buildDialog };
+function openPanelName(){ return Object.keys(PANELS).find(k => PANELS[k]().open) || ''; }
+function pnlHistoryOpen(name){
+  if (!hashReady || pnlEntry || dlgEntry || dlgPopping || !history.state || history.state.nav === undefined) return;
+  try {
+    const cur = history.state;
+    history.replaceState({ ...cur, y: pageY }, '');
+    histIdx = (cur.i || 0) + 1;
+    history.pushState({ nav: cur.nav, o: cur.o, i: histIdx, y: pageY, pnl: name }, '');
+    pnlEntry = name;
+  } catch (e) {}
+}
+function pnlHistoryClose(){
+  if (!pnlEntry) return;
+  pnlEntry = '';
+  if (history.state && history.state.pnl) histLeave(1);
+}
+function openPanel(name){
+  if (name === 'display') openDisplay(true);
+  else if (name === 'move') openMoveDialog(null, true);
+  else if (name === 'build') openBuild(null, true);
+}
+// Go back past n steps that were ours (closed details or panels), in one move: closes
+// made together (the details and the panel under them) leave together.
+function histLeave(n){
+  histDropN += n;
+  if (dlgPopping) return;
   dlgPopping = true;
   hashPend = false;
   clearTimeout(dlgPopTimer);
   dlgPopTimer = setTimeout(dlgPopped, 1000);   // in case the browser never answers
-  history.back();
+  queueMicrotask(() => { const k = histDropN; histDropN = 0; if (k) history.go(-k); });
 }
 function dlgPopped(){
   if (!dlgPopping) return;
   dlgPopping = false;
+  histDropN = 0;
   clearTimeout(dlgPopTimer);
   if (history.state && history.state.i !== undefined) histIdx = history.state.i;
-  // opened again before Back had gone through
-  if (eventDialog.open && eventDialog.dataset.sid) dlgHistoryOpen(eventDialog.dataset.sid, eventDialog.dataset.tid);
+  // opened again before Back had gone through (not the details shrinking away)
+  const op = openPanelName();
+  if (op && !pnlEntry) pnlHistoryOpen(op);
+  if (eventDialog.open && !dlgClosing && !dlgEntry && eventDialog.dataset.sid) dlgHistoryOpen(eventDialog.dataset.sid, eventDialog.dataset.tid);
   if (hashPend){ hashPend = false; writeHash(); }
 }
 window.addEventListener('scroll', () => { pageY = Math.round(scrollY); }, { passive: true });
@@ -6877,23 +6920,29 @@ window.addEventListener('scroll', () => {
 window.addEventListener('popstate', e => {
   const st = e.state;
   lastPushAt = -1e9;
-  if (dlgPopping){ dlgPopped(); return; }
-  if (!st || st.nav === undefined) return;   // an address typed or followed: hashchange takes it
-  const dir = (st.i || 0) < histIdx ? 'back' : 'fwd';
-  histIdx = st.i || 0;
+  if (!st || st.nav === undefined){ if (dlgPopping) dlgPopped(); return; }   // an address typed or followed: hashchange takes it
   popHash = location.hash;
   clearTimeout(popHashTimer);
   popHashTimer = setTimeout(() => { popHash = null; }, 500);
+  if (dlgPopping){ dlgPopped(); return; }
+  let dir = (st.i || 0) < histIdx ? 'back' : 'fwd';
+  histIdx = st.i || 0;
   const fromNav = navKey(), same = st.nav === fromNav && location.hash.slice(1) === shownHash && (st.o || state.orient) === state.orient;
-  // Back from the details' step closes them, shrinking into their block
+  // Back from the details' step closes them, shrinking into their block; Back from a
+  // panel's step closes the panel
+  const op = openPanelName(), shut = op && st.pnl !== op;
   if (eventDialog.open && !st.dlg){
     dlgEntry = false;
-    if (same){ closeEventDialog(); return; }
-    eventDialog.close();
+    if (same && !shut) closeEventDialog(); else { eventDialog.close(); eventDialogDone(); }
   }
-  if (st.dlg) dlgEntry = true;
+  if (shut){ pnlEntry = ''; PANELS[op]().close(); }
+  dlgEntry = !!st.dlg;
+  pnlEntry = st.pnl && PANELS[st.pnl] ? st.pnl : '';
+  // Forward (or Back) onto an open panel or details step opens them again
+  const reopenPnl = pnlEntry && !PANELS[pnlEntry]().open ? pnlEntry : '';
   const reopen = st.dlg && !eventDialog.open && (talkById(st.dlg.t) || slotById(st.dlg.s)) ? st.dlg : null;
   if (same){
+    if (reopenPnl) openPanel(reopenPnl);
     if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true);
     return;
   }
@@ -6912,8 +6961,12 @@ window.addEventListener('popstate', e => {
     if (r.session || r.talk || r.agenda) followHashTargets(r);
     if (typeof st.y === 'number') window.scrollTo({ top: st.y, behavior: 'instant' });
     else if (window.scrollY > programTop()) scrollToProgramTop();
+    if (reopenPnl) openPanel(reopenPnl);
     if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
   };
+  // the side follows the order of the views and days, as it does for a click
+  if (a[0] !== b[0]) dir = SCOPE_ORDER.indexOf(b[0]) > SCOPE_ORDER.indexOf(a[0]) ? 'fwd' : 'back';
+  else if (a[1] !== b[1]) dir = b[1] === 'all' || (a[1] !== 'all' && +b[1] < +a[1]) ? 'back' : 'fwd';
   if (toNav === fromNav) apply();
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
@@ -7163,10 +7216,12 @@ function setDisplay(key, value){
   saveDisplay();
   syncDisplayForm();
 }
-displayBtn.addEventListener('click', () => {
+function openDisplay(fromHistory){
   syncDisplayForm();
   displayDialog.showModal();
-});
+  if (!fromHistory) pnlHistoryOpen('display');
+}
+displayBtn.addEventListener('click', () => openDisplay());
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
   else if (e.target.name === 'dsTheme') setDisplay('theme', e.target.value);
@@ -7187,7 +7242,7 @@ displayDialog.addEventListener('click', e => {
     toast('Display settings reset');
   }
 });
-displayDialog.addEventListener('close', () => displayBtn.focus());
+displayDialog.addEventListener('close', () => { pnlHistoryClose(); displayBtn.focus(); });
 for (const q of [motionQuery, darkQuery]){
   const sync = () => { if (displayDialog.open) syncDisplayForm(); };
   if (q.addEventListener) q.addEventListener('change', sync); else if (q.addListener) q.addListener(sync);
@@ -7260,17 +7315,19 @@ function renderMoveSend(){
       (qr ? `<details class="md-qr"><summary>Show QR code (to scan with another phone)</summary>${qrHtml('Scan this with the other phone’s camera to open your agenda there, then tap <b>Add</b>.')}</details>` : qrHtml(''))
     : qrHtml(`Scan with your phone’s camera to open your agenda (${n}) there, then tap <b>Add</b>.`) + warn + buttons + note;
 }
-function openMoveDialog(trigger){
+function openMoveDialog(trigger, fromHistory){
   moveTrigger = trigger;
   pendingImport = null;
   renderMoveSend();
-  document.getElementById('importText').value = '';
+  // a pasted code stays until it is imported (a tap outside the box closes it)
   showImportResult('');
   moveDialog.showModal();
   moveDialog.scrollTop = 0;
+  if (!fromHistory) pnlHistoryOpen('move');
 }
 lightDismiss(moveDialog, () => moveDialog.close());
 moveDialog.addEventListener('close', () => {
+  pnlHistoryClose();
   pendingImport = null;
   const back = [moveTrigger, document.getElementById('moveAgenda'), document.getElementById('builderTitle')]
     .find(el => el && el.isConnected && el.getClientRects().length);
@@ -7327,6 +7384,7 @@ moveDialog.addEventListener('click', async e => {
   if (act && pendingImport){
     const { ids, fresh } = pendingImport;
     pendingImport = null;
+    document.getElementById('importText').value = '';
     if (act.dataset.import === 'merge'){
       mergeIntoAgenda(fresh);
       moveDialog.close();
@@ -7545,6 +7603,7 @@ function start(){
     histIdx = st.i || 0;
     if (st.o === 'h' || st.o === 'v'){ state.orient = st.o; paintOrient(); }
     dlgEntry = !!reopen;
+    pnlEntry = st.pnl && PANELS[st.pnl] ? st.pnl : '';
   }
   // During the congress a plain visit opens on today.
   if (!st && !r.hasDay && !r.session && !r.talk && todayIdx() >= 0) state.day = todayIdx();
@@ -7554,12 +7613,18 @@ function start(){
   showView(state.layout, state.scope);
   followHashTargets(r);
   if (st && typeof st.y === 'number' && !r.session && !r.talk) window.scrollTo({ top: st.y, behavior: 'instant' });
-  // reloaded with the details open: open them again
+  // reloaded with a panel or the details open: open them again
+  if (pnlEntry) openPanel(pnlEntry);
   if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
 }
-window.addEventListener('hashchange', () => {
-  if (popHash !== null && location.hash === popHash){ popHash = null; return; }   // Back or Forward did it
+window.addEventListener('hashchange', e => {
+  // Back or Forward did it (the step may have been rewritten since)
+  if (popHash !== null && new URL(e.newURL).hash === popHash){ popHash = null; return; }
   if (!history.state) histIdx++;   // a new step
+  // a new address closes the details and panels (their step stays behind it, for Back)
+  dlgEntry = false; pnlEntry = '';
+  if (eventDialog.open){ eventDialog.close(); eventDialogDone(); }
+  for (const d of [displayDialog, moveDialog, buildDialog]) if (d.open) d.close();
   clearTimeout(qTimer); qPending = null; // the address wins over a search still being typed
   const r = readHash();
   showView(state.layout, state.scope);
