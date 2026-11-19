@@ -269,6 +269,8 @@ window.applyDisplay = function(d){
   --radius:14px;
   /* surfaces and text (light values equal the original hard-coded colours) */
   --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9; --sunken:#eef1f6; --sunken-2:#eef2fa; --sticky-bg:rgba(246,247,251,.92); --hover-line:#c7cede; --ink-2:#4b5563; --ink-3:#374151; --faint:#94a3b8; --caret:#b6c0cf; --cnt-ink:#ffffff; --pop-shadow:rgba(16,24,40,.18); --flash:#fef9c3; --mark-bg:#fde68a; --mark-ink:#1f2937; --toast-bg:#1e2433; --toast-ink:#ffffff; --warn-ink:#b45309; --ok-ink:#15803d; --now-text:#b91c1c; --live-ink:#dc2626; --now-bg:#fef2f2; --now-line:#fecaca; --next-bg:#dbeafe; --next-ink:#1e40af; --danger-bg:#fee2e2; --danger-line:#fecaca; --today-bg:#fee2e2; --today-ink:#991b1b; --clash-bg:#fef3c7; --clash-line:#fde68a; --clash-ink:#92400e; --clash-row-bg:#fffbeb; --clash-row-line:#fcd34d; --warm-bg:#fff7ed; --warm-line:#fdba74; --warm-ink:#9a3412; --starOn-bg:#fff7eb; --starOn-line:#fcd34d; --starOn-ink:#92400e; --active-bg:#eff6ff; --active-ink:#1e40af; --grp-bg:#eef2ff; --grp-line:#c7d2fe; --grp-ink:#3730a3; --grp-btn:#c7d2fe; --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-strong:#064e3b; --ok-btn:#047857; --info-bg:#eef4ff; --info-line:#c7d8f7; --info-ink:#1e3a5f; --info-strong:#12306b; --info-btn:#1d4ed8; --info-hover:#f3f8ff; --link:#2563eb; --day-rule:#1e2433; --toast-ring:transparent; --backdrop:rgba(22,35,55,.53); --switch-off:#cbd2dd;
+  /* QR codes stay dark on light in both modes so phone cameras can read them */
+  --qr-dark:#000000; --qr-light:#ffffff;
   /* solid fills for selected chips: white text on these in both modes */
   --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#15803d; --commad-fill:#c2410c; --focus-fill:#7e22ce; --edu-fill:#b45309; --poster-fill:#4338ca; --public-fill:#a21caf; --special-fill:#0e7490; --business-fill:#475569; --social-fill:#57534e;
 }
@@ -346,13 +348,43 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-event{display:block;width:100%;text-align:left;margin:2px 0;padding:5px;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--surface-2);font-size:.75rem}
 .week-event small,.child-talk{display:block}
 .child-talk{font-weight:650}
-#eventDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink);background:var(--card)}
-#eventDialog form{position:sticky;top:-18px;text-align:right;pointer-events:none;background:var(--card);margin:-18px -18px 0;padding:18px 18px 0;z-index:1}
-#eventDialog form .toggle{border-radius:999px;padding:4px 12px;font-size:.7812rem;min-height:0}
-#eventDialog form button{pointer-events:auto}
-#eventDialog h2{font-size:1.25rem;line-height:1.3;margin:8px 0}
+#eventDialog,#moveDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink);background:var(--card)}
+#eventDialog::backdrop,#moveDialog::backdrop{background:#16233788}
+#eventDialog>form,#moveDialog>form{position:sticky;top:-18px;text-align:right;pointer-events:none;background:var(--card);margin:-18px -18px 0;padding:18px 18px 0;z-index:1}
+#eventDialog>form .toggle,#moveDialog>form .toggle{border-radius:999px;padding:4px 12px;font-size:.7812rem;min-height:0}
+#eventDialog>form button,#moveDialog>form button{pointer-events:auto}
+#eventDialog h2,#moveDialog h2{font-size:1.25rem;line-height:1.3;margin:8px 0}
+#eventDialog h2:focus{outline:none}
 #eventDialog details{padding:10px 0;border-top:1px solid var(--line)}
 #eventDialog summary{cursor:pointer;font-weight:600}
+.replace-note{display:block;margin:4px 0 8px;font-size:12.5px;color:var(--muted)}
+.ed-saved{color:var(--starOn-ink);font-weight:600}
+/* ---------- move to another device ---------- */
+#moveDialog{width:min(560px,94vw)}
+.md-intro{margin:0 0 12px;color:var(--ink-2);font-size:14px}
+.md-sec{border-top:1px solid var(--line);padding:12px 0 4px}
+.md-sec h3{margin:0 0 8px;font-size:16px}
+.md-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.md-note{font-size:13px;color:var(--muted);margin:6px 0}
+.md-warn{font-size:13px;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:8px;padding:6px 10px;margin:8px 0}
+.qr-box{width:var(--qr-size,280px);max-width:100%;margin:4px auto 6px;background:var(--qr-light);border-radius:10px;border:1px solid var(--line);overflow:hidden}
+.qr-box svg{display:block;width:100%;height:auto}
+.qr-box .qr-bg{fill:var(--qr-light)}
+.qr-box .qr-fg{fill:var(--qr-dark)}
+.qr-cap{text-align:center;font-size:13px;color:var(--muted);margin:0 0 6px}
+.md-label{display:block;font-weight:600;font-size:14px;margin:10px 0 4px}
+#importText,.md-copy-fallback input{width:100%;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
+.md-copy-fallback{margin:6px 0}
+.md-copy-fallback label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.import-result:empty{display:none}
+.import-result{margin:10px 0 4px;padding:10px 12px;border-radius:10px;font-size:14px;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-strong)}
+.import-result.error{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
+.import-result p{margin:0 0 8px}
+.import-result ul{margin:6px 0 0;padding-left:18px;font-size:13px;max-height:180px;overflow:auto}
+.import-result summary{cursor:pointer;font-weight:600;font-size:13px}
+.toggle.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.toggle.primary:hover{filter:brightness(1.08)}
 .detail-text{overflow-wrap:anywhere}
 .detail-text p,.abstract p,.card .desc p{margin:0 0 .65em}
 .detail-text p:last-child,.abstract p:last-child,.card .desc p:last-child{margin-bottom:0}
@@ -521,6 +553,31 @@ footer p{margin:4px 0}
 .ag-ok{color:var(--ok-ink);font-weight:700}
 .builder-actions{display:flex;flex-wrap:wrap;gap:8px}
 .builder-actions button:disabled{opacity:.55;cursor:default}
+.toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
+.undo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0 0;padding:8px 10px 8px 14px;background:var(--info-bg);border:1px solid var(--info-line);border-radius:12px;color:var(--info-ink);font-size:14px}
+.undo-bar[hidden]{display:none}
+.undo-bar #undoMsg{font-weight:600}
+.undo-actions{display:flex;gap:8px;margin-left:auto}
+.undo-actions .toggle{min-height:34px;padding:5px 13px}
+.clash-tools{margin:10px 0 0}
+.clash-tools .toggle{min-height:34px;padding:5px 12px;font-size:13px}
+.clash-tools .toggle::before{content:"";width:14px;height:14px;border:2px solid var(--muted);border-radius:4px;box-sizing:border-box}
+.clash-tools .toggle[aria-pressed="true"]{background:var(--active-bg);border-color:var(--accent);color:var(--active-ink)}
+.clash-tools .toggle[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--surface)}
+.clash-panel{margin:16px 0 0;background:var(--clash-row-bg);border:1px solid var(--clash-row-line);border-radius:12px;padding:0 14px}
+.clash-panel>summary{cursor:pointer;padding:10px 0;font-weight:700;color:var(--clash-ink)}
+.clash-panel .cp-count{font-weight:500;color:var(--ink-2);margin-left:6px;font-size:13.5px}
+.cp-groups{list-style:none;margin:0;padding:0 0 10px}
+.cp-group{border-top:1px solid var(--clash-line);padding:8px 0}
+.cp-head{font-size:13.5px;color:var(--ink-2);margin-bottom:4px}
+.cp-head b{color:var(--clash-ink)}
+.cp-items{list-style:none;margin:0;padding:0}
+.cp-items li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:3px 0;font-size:13.5px}
+.cp-time{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:84px}
+.cp-items .ag-kind{margin-right:0}
+.cp-open{text-align:left;font-size:13.5px;overflow-wrap:anywhere;min-width:0;flex:1 1 12rem}
+.cp-in{flex-basis:100%;padding-left:92px;font-size:12px;color:var(--muted)}
+.print-doc{display:none}
 .agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--sunken)}
 .agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--ink-2);font-size:.875rem;font-weight:650}
 .agenda-views button[aria-pressed="true"]{background:var(--surface);border-color:var(--line);color:var(--ink)}
@@ -612,7 +669,18 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .ag-btn{min-height:36px}
   .ag-btn .rm-word{display:none}
   .builder-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .builder-actions .toggle{width:100%;justify-content:center}
+  .builder-actions .toggle{width:100%;justify-content:center;text-align:center}
+  .undo-actions{margin-left:0;width:100%}
+  .undo-actions .toggle,.clash-tools .toggle{min-height:40px;flex:1;justify-content:center}
+  .cp-open{min-height:40px;flex-basis:100%}
+  .cp-in{padding-left:0;margin-top:-6px}
+  .cp-items li{padding:4px 0}
+  .md-row .toggle{flex:1 1 140px;justify-content:center}
+  .qr-box{width:100%;max-width:360px}
+  #importText{font-size:16px}
+  .md-copy-fallback input{font-size:16px}
+  #eventDialog>form .toggle,#moveDialog>form .toggle{min-height:40px;padding:6px 16px}
+  #eventDialog .ag-btn{min-height:40px}
   .t-body{padding-left:17px}
   .pg-cluster{grid-template-columns:3rem repeat(var(--cols),minmax(9.5rem,1fr))}
   .controls{position:relative}
@@ -706,7 +774,29 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   body{background:#fff}
   .card,.ag-row{box-shadow:none;break-inside:avoid}
   header.hero{background:#0f2b6b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* My agenda prints from its own list (#printDoc), not from the page */
+  body.print-agenda>*:not(#printDoc){display:none!important}
+  body.print-agenda #printDoc{display:block}
 }
+.print-doc{color:var(--ink);font-size:10pt;line-height:1.35}
+.print-doc h1{font-size:17pt;margin:0 0 2pt;letter-spacing:-.01em}
+.print-doc .pd-meta{margin:0 0 10pt;color:var(--muted);font-size:9pt}
+.print-doc h2{font-size:12pt;margin:12pt 0 4pt;padding-bottom:2pt;border-bottom:1.5pt solid var(--day-rule);break-after:avoid}
+.print-doc h3{font-size:10.5pt;margin:8pt 0 2pt;break-after:avoid}
+.print-doc table{width:100%;border-collapse:collapse;table-layout:fixed}
+.print-doc th{text-align:left;font-size:8pt;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:1pt solid var(--ink);padding:3pt 4pt}
+.print-doc td{vertical-align:top;border-bottom:.5pt solid var(--line);padding:4pt;overflow-wrap:anywhere}
+.print-doc tr{break-inside:avoid}
+.print-doc .pd-time{width:17%;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+.print-doc .pd-kind{width:9%}
+.print-doc .pd-title{width:34%;font-weight:600}
+.print-doc .pd-who{width:20%}
+.print-doc .pd-sess{width:20%}
+.print-doc .pd-aff,.print-doc .pd-room{display:block;color:var(--muted);font-size:8.5pt;font-weight:400}
+.print-doc .pd-clash{display:block;font-weight:700;color:var(--warn-ink);font-size:8.5pt}
+.print-doc .pd-group{break-inside:avoid}
+.print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
+.print-doc .pd-foot{margin-top:14pt;color:var(--muted);font-size:8.5pt}
 </style>
 </head>
 <body>
@@ -795,12 +885,19 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
       <p class="builder-stats" id="builderStats" aria-live="polite"></p>
     </div>
     <div class="builder-actions">
-      <button class="toggle" id="printAgenda">Print</button>
+      <button class="toggle" id="printAgenda">Print or save as PDF</button>
       <button class="toggle" id="copyAgenda">Copy as text</button>
       <button class="toggle" id="icsAgenda">Download .ics</button>
       <button class="toggle" id="shareAgenda">Share link</button>
+      <button class="toggle" id="moveAgenda" aria-haspopup="dialog">Move to another device</button>
+      <button class="toggle danger" id="clearAgenda">Clear all</button>
     </div>
   </div>
+  <div class="undo-bar" id="undoBar" hidden>
+    <span id="undoMsg">Agenda cleared</span>
+    <span class="undo-actions"><button type="button" class="toggle" id="undoBtn" aria-describedby="undoMsg">Undo</button><button type="button" class="toggle" id="undoDismiss">Dismiss</button></span>
+  </div>
+  <div class="clash-tools" id="clashTools" hidden><button type="button" class="toggle" id="hideClashes" aria-pressed="false">Hide clash warnings</button></div>
   <p class="export-status" id="exportStatus" role="status"></p>
   <div class="ics-note" id="copyNote" hidden>
     <label for="copyBox">Select and copy your agenda text below.</label>
@@ -856,6 +953,30 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     </div>
   </div>
 </dialog>
+<dialog id="moveDialog" aria-labelledby="moveTitle">
+  <form method="dialog"><button class="toggle" autofocus>Close</button></form>
+  <h2 id="moveTitle">Move to another device</h2>
+  <p class="md-intro">Carry your agenda between your computer and your phone. Nothing is uploaded: the link, code or file holds the whole list.</p>
+  <section class="md-sec" aria-labelledby="mdSendTitle">
+    <h3 id="mdSendTitle">Send from this device</h3>
+    <div id="moveSend"></div>
+    <div class="md-copy-fallback" id="moveCopyFallback" hidden>
+      <label for="moveCopyBox">Copying is blocked here. Select and copy this text:</label>
+      <input id="moveCopyBox" readonly>
+    </div>
+  </section>
+  <section class="md-sec" aria-labelledby="mdGetTitle">
+    <h3 id="mdGetTitle">Bring an agenda to this device</h3>
+    <div class="md-row">
+      <button type="button" class="toggle" id="importFileBtn">Import file&#8230;</button>
+      <input type="file" id="importFile" class="visually-hidden" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+    </div>
+    <label class="md-label" for="importText">Paste a link, code or file contents</label>
+    <textarea id="importText" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="https://…#agenda=…, s190576,c191558,… or the file's text"></textarea>
+    <div class="md-row"><button type="button" class="toggle" id="importTextBtn">Import</button></div>
+    <div class="import-result" id="importResult" role="status" aria-live="polite"></div>
+  </section>
+</dialog>
 <footer>
   <div class="cols">
     <div>
@@ -875,7 +996,21 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     </div>
   </div>
 </footer>
+<section id="printDoc" class="print-doc" aria-hidden="true"></section>
 
+<script>
+// qrcode-generator 2.0.4 (npm), minified; draws the QR code in "Move to another device".
+// https://github.com/kazuhikoarase/qrcode-generator
+// QR Code Generator for JavaScript
+// Copyright (c) 2009 Kazuhiko Arase
+// URL: http://www.d-project.com/
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,(function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1}))},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}((function(){return qrcode}));
+</script>
 <script>
 const DATA = @@DATA@@;
 const CAT_COLORS = {
@@ -890,15 +1025,21 @@ const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, layout: 'list',
   scope: 'program', programTalks:false,
-  starred: new Set(),
+  starred: new Set(), hideClashes: false,
 };
 try {
   const saved = JSON.parse(localStorage.getItem('aip2026-stars') || '[]');
   saved.forEach(x => state.starred.add(x));
 } catch (e) {}
+try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; } catch (e) {}
 
-function saveStars(){
+function persistStars(){
   try { localStorage.setItem('aip2026-stars', JSON.stringify([...state.starred])); } catch(e){}
+}
+// Any ordinary star change also drops a pending "Undo" of Clear all or Replace.
+function saveStars(){
+  persistStars();
+  dropUndo();
 }
 
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1430,6 +1571,44 @@ function markClashes(items){
   }
 }
 
+// Overlap groups: connected clusters of the clash graph (A overlaps B and B
+// overlaps C makes one group), in agenda order. Needs markClashes first.
+function clashGroups(items){
+  const order = new Map(items.map((it, i) => [it, i]));
+  const seen = new Set(), groups = [];
+  for (const it of items){
+    if (!it.clashes.length || seen.has(it)) continue;
+    const group = [], stack = [it];
+    seen.add(it);
+    while (stack.length){
+      const x = stack.pop();
+      group.push(x);
+      for (const y of x.clashes) if (!seen.has(y)){ seen.add(y); stack.push(y); }
+    }
+    groups.push(group.sort((a, b) => order.get(a) - order.get(b)));
+  }
+  return groups;
+}
+function groupSpan(g){
+  const start = g.map(x => x.start).sort()[0], end = g.map(x => x.end).sort().slice(-1)[0];
+  return start + '–' + end;
+}
+function kindLabel(it){ return it.kind === 'session' ? 'Session' : it.s.cat === 'poster' ? 'Poster' : 'Talk'; }
+
+function clashPanelHtml(groups, numbers){
+  const nItems = groups.reduce((n, g) => n + g.length, 0);
+  return `<details class="clash-panel" id="clashPanel"${clashPanelOpen ? ' open' : ''}>
+    <summary>&#9888;&#65039; Clashes <span class="cp-count">${groups.length} group${groups.length === 1 ? '' : 's'} &middot; ${nItems} items</span></summary>
+    <ol class="cp-groups">${groups.map(g => `<li class="cp-group">
+      <div class="cp-head"><b>Clash ${numbers.get(g)}</b> &middot; ${esc(g[0].d.label)} &middot; ${groupSpan(g)}</div>
+      <ul class="cp-items">${g.map(it => {
+        const [c, bg] = CAT_COLORS[it.s.cat];
+        return `<li style="--c:${c};--cbg:${bg}"><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="ag-kind">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button>${it.t ? `<span class="cp-in">in ${esc(it.s.title)}</span>` : ''}</li>`;
+      }).join('')}</ul></li>`).join('')}</ol>
+  </details>`;
+}
+let clashPanelOpen = true;
+
 function plannedHours(items){
   let mins = 0;
   DATA.days.forEach((d, di) => {
@@ -1459,7 +1638,7 @@ function agRow(it){
   const sub2 = it.kind === 'talk'
     ? ['part of ' + it.s.title, it.s.room].filter(Boolean).join(' · ')
     : (it.s.talks.length ? it.s.talks.length + ' talks' : '');
-  const clashNames = [...new Set(it.clashes.map(itemTitle))];
+  const clashNames = state.hideClashes ? [] : [...new Set(it.clashes.map(itemTitle))];
   const clash = clashNames.length
     ? `<span class="ag-clash">&#9888;&#65039; Clashes with ${clashNames.map(n => '“' + esc(n) + '”').join(', ')}</span>`
     : '';
@@ -1596,14 +1775,18 @@ function renderBuilder(){
   const nSess = items.filter(x => x.kind === 'session').length;
   const nTalk = items.length - nSess;
   const clashItems = items.filter(x => x.clashes.length).length;
+  const personalDay = state.layout === 'list' && state.scope === 'agenda' && state.day !== 'all';
+  const dayClashItems = personalDay ? items.filter(x => x.di === state.day && x.clashes.length).length : clashItems;
   const stats = document.getElementById('builderStats');
   const body = document.getElementById('builderList');
-  for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda']) {
+  for (const id of ['printAgenda', 'copyAgenda', 'icsAgenda', 'shareAgenda', 'clearAgenda']) {
     document.getElementById(id).disabled = items.length === 0;
   }
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
+  document.getElementById('clashTools').hidden = !(dayClashItems || (clashItems && state.hideClashes));
+  document.getElementById('hideClashes').setAttribute('aria-pressed', state.hideClashes);
 
   const personalList = state.layout === 'list' && state.scope === 'agenda';
   if (personalList) renderTabs(DATA.days.map((d,di) => items.filter(it => it.di === di).length));
@@ -1612,14 +1795,22 @@ function renderBuilder(){
     body.innerHTML = `<div class="ag-empty">
       <div class="ag-empty-icon">&#9733;</div>
       <h3>Your agenda is empty</h3>
-      <p>Use the star beside any talk or session to add it to your agenda.</p>
+      <p>Use the star beside any talk or session to add it to your agenda, or bring your agenda over from another device.</p>
       <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
+      <button class="toggle" data-open-move>Import from another device</button>
     </div>`;
     return;
   }
   stats.innerHTML = `Full agenda &middot; <b>${nSess}</b> session${nSess!==1?'s':''} &middot; <b>${nTalk}</b> talk${nTalk!==1?'s':''} &middot; about <b>${plannedHours(items).toFixed(1)} h</b> planned &middot; ` +
-    (clashItems ? `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>` : `<span class="ag-ok">&#10003; no clashes</span>`) +
+    (!clashItems ? `<span class="ag-ok">&#10003; no clashes</span>`
+      : state.hideClashes ? `${clashItems} overlapping item${clashItems!==1?'s':''} (warnings hidden)`
+      : !dayClashItems ? `<span class="ag-ok">&#10003; no clashes on this day</span> (${clashItems} item${clashItems!==1?'s':''} with overlaps on other days)`
+      : `<span class="ag-warn">&#9888;&#65039; ${clashItems} item${clashItems!==1?'s':''} with overlaps</span>${dayClashItems < clashItems ? ` (${dayClashItems} on this day)` : ''}`) +
     ' &middot; All times AEDT';
+  const groups = clashGroups(items);
+  const numbers = new Map(groups.map((g, i) => [g, i + 1]));
+  const shownGroups = groups.filter(g => !personalList || state.day === 'all' || g[0].di === state.day);
+  const panel = personalList && shownGroups.length && !state.hideClashes ? clashPanelHtml(shownGroups, numbers) : '';
   let html = '';
   DATA.days.forEach((d, di) => {
     if (personalList && state.day !== 'all' && state.day !== di) return;
@@ -1627,7 +1818,7 @@ function renderBuilder(){
     if (!dayItems.length) return;
     html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${dayItems.length} item${dayItems.length!==1?'s':''} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
-  body.innerHTML = upNextHtml(items) + (html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
+  body.innerHTML = upNextHtml(items) + panel + (html || `<div class="ag-empty"><h3>No favourites on ${esc(DATA.days[state.day].label)}</h3>
     <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
 
@@ -1694,18 +1885,29 @@ function toUTCStamp(date, time){
 }
 function buildIcs(){
   const items = agendaItems();
+  markClashes(items);
+  // A saved session is one event; its separately saved talks go in its description.
+  const savedSessions = new Map(items.filter(x => x.kind === 'session').map(x => [x.s, x]));
+  const eventOf = x => (x.kind === 'talk' && savedSessions.get(x.s)) || x;
+  const order = new Map(items.map((x, i) => [x, i]));
+  const speakers = t => t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
   const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AIP Congress 2026 Program Explorer//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:AIP Congress 2026 - My agenda'];
-  items.forEach(it => {
+  items.filter(it => eventOf(it) === it).forEach(it => {
     let desc = it.kind === 'talk' ? (it.t.d || '') : (it.s.desc || '');
     const chars = Array.from(desc);
     if (chars.length > 900) desc = chars.slice(0, 900).join('') + '…';
-    const who = it.kind === 'talk'
-      ? it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ')
-      : (it.s.conv || []).join('; ');
+    const who = it.kind === 'talk' ? speakers(it.t) : (it.s.conv || []).join('; ');
     const url = it.kind === 'talk' ? it.t.u : it.s.url;
     const parent = it.kind === 'talk' ? 'Part of: ' + it.s.title : '';
-    const body = [who ? 'Speakers: ' + who : '', desc, parent, url].filter(Boolean).join('\n\n');
+    const inside = items.filter(x => x.kind === 'talk' && x !== it && eventOf(x) === it);
+    const savedTalks = inside.length ? 'Saved talks in this session:\n' +
+      inside.map(x => `${x.start}–${x.end} ${x.t.t}${x.t.sp.length ? ' — ' + speakers(x.t) : ''}`).join('\n') : '';
+    const overlaps = [...new Set([it, ...inside].flatMap(x => x.clashes).map(eventOf))]
+      .filter(x => x !== it).sort((a, b) => order.get(a) - order.get(b))
+      .map(x => `${itemTitle(x)} (${x.start}–${x.end})`);
+    const clashLine = overlaps.length ? 'Overlaps: ' + overlaps.join('; ') : '';
+    const body = [who ? 'Speakers: ' + who : '', clashLine, savedTalks, desc, parent, url].filter(Boolean).join('\n\n');
     lines.push('BEGIN:VEVENT');
     lines.push(icsFold('UID:' + it.s.id + (it.t ? '-' + it.t.id : '') + '@aip2026-program'));
     lines.push('DTSTAMP:' + stamp);
@@ -1849,6 +2051,7 @@ function renderCalendar(){
   if (favourites){
     const saved = agendaItems();
     markClashes(saved);
+    if (state.hideClashes) saved.forEach(it => it.clashes = []);
     items = groupFavourites(saved);
   } else {
     items = programCalendarItems();
@@ -1915,11 +2118,19 @@ function favouriteButton(id, kind){
   const saved = state.starred.has(id);
   return `<button class="ag-btn detail-save" data-detail-save="${id}" aria-pressed="${saved}">${saved?'★':'☆'} Favourite ${kind}</button>`;
 }
-document.addEventListener('click', e => {
-  const button = e.target.closest('[data-session-detail]');
-  if (!button) return;
-  const s = slotById(button.dataset.sessionDetail);
-  const t = s.talks.find(talk => talk.id === button.dataset.talkDetail);
+function replaceButton(s, t){
+  if (state.starred.has(s.id)) return '';
+  const saved = s.talks.filter(x => state.starred.has(x.id));
+  if (t ? !state.starred.has(t.id) : !saved.length) return '';
+  const n = saved.length;
+  return `<button class="ag-btn" data-replace-session="${s.id}">Replace with whole session</button>
+    <small class="replace-note">Saves the whole session and removes ${n === 1 ? 'your saved talk' : 'your ' + n + ' saved talks'} from it.</small>`;
+}
+function fillEventDialog(sid, tid){
+  const s = slotById(sid);
+  const t = s.talks.find(talk => talk.id === tid);
+  eventDialog.dataset.sid = s.id;
+  eventDialog.dataset.tid = t ? t.id : '';
   const day = DATA.days.find(d => d.slots.includes(s));
   const talks = t ? [t] : [...s.talks];
   const personal = state.scope === 'agenda';
@@ -1933,13 +2144,20 @@ document.addEventListener('click', e => {
       <p>${esc(who)}</p><div class="detail-text">${paras(talk.d || 'No abstract provided.', esc)}</div>
       ${favouriteButton(talk.id,'talk')}</details>`;
   }).join('');
-  document.getElementById('eventContent').innerHTML = `<h2 id="eventTitle">${esc(t ? t.t : s.title)}</h2>
+  const sessionSaved = t && state.starred.has(s.id) ? ' <span class="ed-saved">· ★ whole session in your agenda</span>' : '';
+  document.getElementById('eventContent').innerHTML = `<h2 id="eventTitle" tabindex="-1">${esc(t ? t.t : s.title)}</h2>
     <p>${esc(day.label)} · ${t ? t.s : s.start}–${t ? t.e : s.end} AEDT · ${esc(s.room || 'Room to be confirmed')}</p>
-    ${t ? '<p>' + esc(s.title) + '</p>' : favouriteButton(s.id,'session')}
+    ${t ? '<p>' + esc(s.title) + sessionSaved + '</p>' : favouriteButton(s.id,'session')}
+    ${replaceButton(s, t)}
     ${!t && s.desc ? '<div class="detail-text">' + paras(s.desc, esc) + '</div>' : ''}
     <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
     <button class="ag-btn" data-share="${t ? 't=' + t.id : 's=' + s.id}" data-share-title="${esc(t ? t.t : s.title)}">Share link</button>
     ${details || (!s.desc ? '<p>No abstract provided.</p>' : '')}`;
+}
+document.addEventListener('click', e => {
+  const button = e.target.closest('[data-session-detail]');
+  if (!button) return;
+  fillEventDialog(button.dataset.sessionDetail, button.dataset.talkDetail);
   dialogTrigger = button;
   eventDialog.showModal();
   eventDialog.scrollTop = 0;
@@ -1950,6 +2168,20 @@ eventDialog.addEventListener('click', e => {
     delete eventDialog.dataset.changed;
     eventDialog.close();
     openInProgram(jump);
+    return;
+  }
+  const rep = e.target.closest('[data-replace-session]');
+  if (rep){
+    const s = slotById(rep.dataset.replaceSession);
+    let n = 0;
+    s.talks.forEach(x => { if (state.starred.delete(x.id)) n++; });
+    state.starred.add(s.id);
+    saveStars();
+    document.getElementById('starCount').textContent = state.starred.size;
+    eventDialog.dataset.changed = 'true';
+    fillEventDialog(eventDialog.dataset.sid, eventDialog.dataset.tid);
+    document.getElementById('eventTitle').focus();
+    toast(`Saved the whole session in place of ${n} talk${n === 1 ? '' : 's'}`);
     return;
   }
   const btn = e.target.closest('[data-detail-save]');
@@ -1980,7 +2212,124 @@ eventDialog.addEventListener('close', () => {
   (replacement || fallback).focus({preventScroll:true});
 });
 
-document.getElementById('printAgenda').addEventListener('click', () => window.print());
+// ---------- print or save as PDF ----------
+// My agenda prints from a dedicated A4 list; the program view prints the page as before.
+const PRINT_TITLE = 'AIP Congress 2026 - My agenda';
+let titleBeforePrint = null;
+function buildPrintDoc(){
+  const items = agendaItems();
+  markClashes(items);
+  const groups = clashGroups(items);
+  const groupNo = new Map();
+  groups.forEach((g, i) => g.forEach(it => groupNo.set(it, i + 1)));
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+  const nSess = items.filter(x => x.kind === 'session').length;
+  let generated;
+  try { generated = new Date().toLocaleString('en-AU', { day:'numeric', month:'long', year:'numeric', hour:'numeric', minute:'2-digit' }); }
+  catch (e) { generated = new Date().toString(); }
+  const people = sp => sp.map(p => `${esc(p.n)}${p.a ? `<span class="pd-aff">${esc(p.a)}</span>` : ''}`).join('');
+  const row = it => {
+    const who = it.t ? (it.t.sp.length ? people(it.t.sp) : 'Speaker TBA') : esc((it.s.conv || []).join('; '));
+    const sess = it.t ? `${esc(it.s.title)}${it.s.room ? `<span class="pd-room">${esc(it.s.room)}</span>` : ''}`
+      : `${esc(it.s.room || 'Belinda Hutchinson Building')}${it.s.talks.length ? `<span class="pd-room">${plural(it.s.talks.length, it.s.cat === 'poster' ? 'poster' : 'talk')}</span>` : ''}`;
+    const clash = groupNo.has(it) ? `<span class="pd-clash">&#9888; Clash ${groupNo.get(it)}</span>` : '';
+    return `<tr><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
+  };
+  let html = `<h1>AIP Congress 2026 — My agenda</h1>
+    <p class="pd-meta">Generated ${esc(generated)} &middot; ${plural(nSess, 'session')} &middot; ${plural(items.length - nSess, 'talk')} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? groups.length + (groups.length === 1 ? ' clash' : ' clashes') : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
+  DATA.days.forEach((d, di) => {
+    const dayItems = items.filter(x => x.di === di);
+    if (!dayItems.length) return;
+    html += `<section class="pd-day"><h2>${esc(d.label)} 2026</h2><table>
+      <thead><tr><th scope="col" class="pd-time">Time</th><th scope="col" class="pd-kind">Kind</th><th scope="col" class="pd-title">Title</th><th scope="col" class="pd-who">Speakers</th><th scope="col" class="pd-sess">Session / room</th></tr></thead>
+      <tbody>${dayItems.map(row).join('')}</tbody></table></section>`;
+  });
+  if (groups.length){
+    html += `<section class="pd-clashes"><h2>Clash details</h2>` + groups.map((g, i) => `<div class="pd-group">
+      <h3>Clash ${i + 1} &middot; ${esc(g[0].d.label)} &middot; ${groupSpan(g)}</h3>
+      <ul>${g.map(it => `<li>${it.start}&#8211;${it.end} &middot; ${kindLabel(it)} &middot; ${esc(itemTitle(it))}${it.t ? ` (in ${esc(it.s.title)})` : ''}</li>`).join('')}</ul></div>`).join('') + `</section>`;
+  }
+  html += `<p class="pd-foot">From the AIP Congress 2026 Program Explorer, built from the official Indico timetable. Times and rooms can change; check the official program close to the day.</p>`;
+  return html;
+}
+function preparePrint(){
+  if (titleBeforePrint !== null || state.scope !== 'agenda' || !state.starred.size) return;
+  document.getElementById('printDoc').innerHTML = buildPrintDoc();
+  document.body.classList.add('print-agenda');
+  const page = document.createElement('style');
+  page.id = 'printPage';
+  page.textContent = '@page{size:A4;margin:14mm 12mm}';
+  document.head.appendChild(page);
+  titleBeforePrint = document.title;
+  document.title = PRINT_TITLE;
+}
+function finishPrint(){
+  if (titleBeforePrint === null) return;
+  document.title = titleBeforePrint;
+  titleBeforePrint = null;
+  document.body.classList.remove('print-agenda');
+  document.getElementById('printPage')?.remove();
+  document.getElementById('printDoc').innerHTML = '';
+}
+window.addEventListener('beforeprint', preparePrint);
+window.addEventListener('afterprint', finishPrint);
+document.getElementById('printAgenda').addEventListener('click', () => {
+  preparePrint();
+  window.print();
+});
+
+// ---------- clear all, with undo ----------
+let undoSnapshot = null;
+function dropUndo(){
+  if (!undoSnapshot) return;
+  undoSnapshot = null;
+  document.getElementById('undoBar').hidden = true;
+}
+// Replaces the whole agenda and offers Undo until the next ordinary star change.
+function replaceStars(ids, message){
+  const before = [...state.starred];
+  state.starred.clear();
+  ids.forEach(id => state.starred.add(id));
+  persistStars();
+  undoSnapshot = before;
+  document.getElementById('undoMsg').textContent = message;
+  document.getElementById('undoBar').hidden = false;
+  document.getElementById('starCount').textContent = state.starred.size;
+  rerender();
+}
+document.getElementById('clearAgenda').addEventListener('click', () => {
+  if (!state.starred.size) return;
+  replaceStars([], 'Agenda cleared');
+  document.getElementById('undoBtn').focus();
+});
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if (!undoSnapshot) return;
+  const restore = undoSnapshot;
+  undoSnapshot = null;
+  state.starred.clear();
+  restore.forEach(id => state.starred.add(id));
+  persistStars();
+  document.getElementById('undoBar').hidden = true;
+  document.getElementById('starCount').textContent = state.starred.size;
+  rerender();
+  toast('Agenda restored');
+  document.getElementById(state.starred.size ? 'clearAgenda' : 'builderTitle').focus();
+});
+document.getElementById('undoDismiss').addEventListener('click', () => {
+  dropUndo();
+  document.getElementById('builderTitle').focus();
+});
+
+// ---------- clash warnings ----------
+document.getElementById('hideClashes').addEventListener('click', e => {
+  state.hideClashes = !state.hideClashes;
+  try { localStorage.setItem('aip2026-hide-clashes', state.hideClashes ? '1' : '0'); } catch (err) {}
+  e.currentTarget.setAttribute('aria-pressed', state.hideClashes);
+  rerender();
+});
+document.getElementById('builderList').addEventListener('toggle', e => {
+  if (e.target.id === 'clashPanel') clashPanelOpen = e.target.open;
+}, true);
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
 document.getElementById('shareAgenda').addEventListener('click', () => {
@@ -2047,7 +2396,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (eventDialog.open || displayDialog.open) return;
+  if (document.querySelector('dialog[open]')) return;
   if (e.key === 'Escape' && !filterPanel.hidden){ setFilterOpen(false); filterBtn.focus(); return; }
   if (e.key === '/' && state.scope === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
@@ -2271,38 +2620,59 @@ document.addEventListener('click', e => {
   shareUrl(linkTo(b.dataset.share), b.dataset.shareTitle || document.title);
 });
 
-// A shared agenda arrives as #agenda=id,id,… and is only merged when asked.
-function showSharedAgenda(ids){
+// Session and talk ids from a link, code or file, as agenda entries in time order.
+const ID_RE = /^[a-z]\d{1,12}$/i;
+function resolveAgendaIds(ids){
   const items = [];
   for (const id of new Set(ids)){
+    if (!ID_RE.test(id)) continue;
     const hit = talkById(id), s = hit ? hit.s : slotById(id);
     if (!s) continue;
     const d = DATA.days.find(day => day.slots.includes(s));
     items.push({ id, d, s, t: hit ? hit.t : null, start: hit ? hit.t.s : s.start, end: hit ? hit.t.e : s.end });
   }
+  return items.sort((a,b) => a.d.date.localeCompare(b.d.date) || a.start.localeCompare(b.start));
+}
+function agendaPreviewList(items){
+  return `<ul>${items.map(it =>
+    `<li>${esc(it.d.label)} · ${it.start}–${it.end} · ${state.starred.has(it.id) ? '★ ' : ''}${esc(it.t ? it.t.t : it.s.title)}${it.t ? ' <span class="ag-sub" style="display:inline">(' + esc(it.s.title) + ')</span>' : ''}</li>`).join('')}</ul>`;
+}
+function mergeIntoAgenda(ids){
+  ids.forEach(id => state.starred.add(id));
+  saveStars();
+  document.getElementById('starCount').textContent = state.starred.size;
+  rerender();
+}
+
+// A shared agenda arrives as #agenda=id,id,… and is only merged when asked.
+function showSharedAgenda(ids){
+  const items = resolveAgendaIds(ids);
   const el = document.getElementById('sharedBanner');
   if (!items.length){ el.hidden = true; return; }
   pinnedAgenda = 'agenda=' + items.map(it => it.id).join(',');
-  items.sort((a,b) => a.d.date.localeCompare(b.d.date) || a.start.localeCompare(b.start));
   const fresh = items.filter(it => !state.starred.has(it.id));
   el.dataset.ids = fresh.map(it => it.id).join(',');
+  el.dataset.all = items.map(it => it.id).join(',');
+  const differs = state.starred.size > 0 && (fresh.length > 0 || state.starred.size !== items.length);
   const count = items.length + (items.length === 1 ? ' session or talk' : ' sessions and talks');
   el.innerHTML = `<div class="sb-row"><div><b>Shared agenda:</b> ${count}${fresh.length < items.length ? ` (${items.length - fresh.length} already in yours)` : ''}.</div>
-    <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>Add ${fresh.length} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}<button type="button" data-sb-close>Dismiss</button></div></div>
-    <details><summary>See what’s in it</summary><ul>${items.map(it =>
-      `<li>${esc(it.d.label)} · ${it.start}–${it.end} · ${state.starred.has(it.id) ? '★ ' : ''}${esc(it.t ? it.t.t : it.s.title)}${it.t ? ' <span class="ag-sub" style="display:inline">(' + esc(it.s.title) + ')</span>' : ''}</li>`).join('')}</ul></details>`;
+    <div class="fb-actions">${fresh.length ? `<button type="button" data-sb-add>Add ${fresh.length} to My agenda</button>` : `<button type="button" data-sb-open>Open My agenda</button>`}${differs ? `<button type="button" data-sb-replace>Replace mine with it</button>` : ''}<button type="button" data-sb-close>Dismiss</button></div></div>
+    <details><summary>See what’s in it</summary>${agendaPreviewList(items)}</details>`;
   el.hidden = false;
 }
 document.getElementById('sharedBanner').addEventListener('click', e => {
   const el = e.currentTarget;
   if (e.target.closest('[data-sb-add]')){
     const ids = (el.dataset.ids || '').split(',').filter(Boolean);
-    ids.forEach(id => state.starred.add(id));
-    saveStars();
     pinnedAgenda = '';
-    document.getElementById('starCount').textContent = state.starred.size;
-    rerender();
+    mergeIntoAgenda(ids);
     el.innerHTML = `<div class="sb-row"><div>Added ${ids.length} item${ids.length === 1 ? '' : 's'} to My agenda.</div><div class="fb-actions"><button type="button" data-sb-open>Open My agenda</button><button type="button" data-sb-close>Dismiss</button></div></div>`;
+    el.querySelector('[data-sb-open]').focus();
+  } else if (e.target.closest('[data-sb-replace]')){
+    const ids = (el.dataset.all || '').split(',').filter(Boolean);
+    pinnedAgenda = '';
+    replaceStars(ids, 'Agenda replaced with the shared one');
+    el.innerHTML = `<div class="sb-row"><div>My agenda now holds the ${ids.length} shared item${ids.length === 1 ? '' : 's'}. You can undo this in My agenda.</div><div class="fb-actions"><button type="button" data-sb-open>Open My agenda</button><button type="button" data-sb-close>Dismiss</button></div></div>`;
     el.querySelector('[data-sb-open]').focus();
   } else if (e.target.closest('[data-sb-open]')){
     el.hidden = true;
@@ -2396,6 +2766,197 @@ window.addEventListener('storage', e => {
   display = readDisplay();
   window.applyDisplay(display);
   syncDisplayForm();
+});
+
+// ---------- move to another device ----------
+const moveDialog = document.getElementById('moveDialog');
+const APP_ID = 'aip2026-program';
+let moveTrigger = null, pendingImport = null;
+qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+function agendaIds(){ return agendaItems().map(it => it.t ? it.t.id : it.s.id); }
+// QR code as SVG with a 4-module quiet zone, dark on light in both colour schemes;
+// null when the text needs a code too dense to scan reliably.
+function qrSvg(text){
+  for (const level of ['M', 'L']){
+    let qr;
+    try { qr = qrcode(0, level); qr.addData(text, 'Byte'); qr.make(); }
+    catch (e) { continue; }
+    const n = qr.getModuleCount(), q = 4, size = n + 2 * q;
+    if (n > 117) continue;  // past version 25 the modules get too small to scan from a screen
+    let d = '';
+    for (let r = 0; r < n; r++){
+      for (let c = 0; c < n; c++){
+        if (!qr.isDark(r, c)) continue;
+        let w = 1;
+        while (c + w < n && qr.isDark(r, c + w)) w++;
+        d += `M${c + q} ${r + q}h${w}v1h-${w}z`;
+        c += w - 1;
+      }
+    }
+    return { modules: size, svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="QR code of your agenda link"><rect class="qr-bg" width="${size}" height="${size}"/><path class="qr-fg" d="${d}"/></svg>` };
+  }
+  return null;
+}
+function renderMoveSend(){
+  const box = document.getElementById('moveSend');
+  const ids = agendaIds();
+  document.getElementById('moveCopyFallback').hidden = true;
+  if (!ids.length){
+    box.innerHTML = '<p class="md-note">Your agenda is empty on this device, so there is nothing to send yet. To bring an agenda here, use the options below.</p>';
+    return;
+  }
+  const link = linkTo('agenda=' + ids.join(','));
+  const qr = qrSvg(link);
+  const local = !/^https?:$/.test(location.protocol);
+  const n = ids.length + (ids.length === 1 ? ' item' : ' items');
+  box.innerHTML = (qr
+      ? `<div class="qr-box" style="--qr-size:${Math.max(260, Math.min(360, qr.modules * 4))}px">${qr.svg}</div>
+         <p class="qr-cap">Scan with your phone’s camera to open your agenda (${n}) there, then tap <b>Add</b>.</p>`
+      : `<p class="md-warn">Your agenda (${n}) is too long for a QR code that phones can read reliably. Use Copy link, the agenda code or the file instead.</p>`) +
+    (local ? '<p class="md-warn">This page is open from a file on this computer, so the QR code and link only work here. The agenda code and the file work on any device.</p>' : '') +
+    `<div class="md-row">
+      <button type="button" class="toggle" data-move-copy="link">Copy link</button>
+      <button type="button" class="toggle" data-move-copy="code">Copy agenda code</button>
+      <button type="button" class="toggle" id="moveDownload">Download file</button>
+    </div>
+    <p class="md-note">On the other device, open the link; or open this page there, go to <b>My agenda → Move to another device</b>, and paste the code or import the file.</p>`;
+}
+function openMoveDialog(trigger){
+  moveTrigger = trigger;
+  pendingImport = null;
+  renderMoveSend();
+  document.getElementById('importText').value = '';
+  showImportResult('');
+  moveDialog.showModal();
+  moveDialog.scrollTop = 0;
+}
+moveDialog.addEventListener('close', () => {
+  pendingImport = null;
+  const back = [moveTrigger, document.getElementById('moveAgenda'), document.getElementById('builderTitle')]
+    .find(el => el && el.isConnected && el.getClientRects().length);
+  back?.focus({ preventScroll: true });
+});
+document.getElementById('moveAgenda').addEventListener('click', e => openMoveDialog(e.currentTarget));
+document.getElementById('builder').addEventListener('click', e => {
+  const b = e.target.closest('[data-open-move]');
+  if (b) openMoveDialog(b);
+});
+async function copyFromDialog(text, what){
+  const fallback = document.getElementById('moveCopyFallback');
+  try {
+    await navigator.clipboard.writeText(text);
+    fallback.hidden = true;
+    toast(what + ' copied');
+  } catch (e) {
+    const input = document.getElementById('moveCopyBox');
+    fallback.hidden = false;
+    input.value = text;
+    input.focus();
+    input.select();
+  }
+}
+moveDialog.addEventListener('click', e => {
+  const copy = e.target.closest('[data-move-copy]');
+  if (copy){
+    const ids = agendaIds().join(',');
+    if (copy.dataset.moveCopy === 'link') copyFromDialog(linkTo('agenda=' + ids), 'Link');
+    else copyFromDialog(ids, 'Agenda code');
+    return;
+  }
+  if (e.target.closest('#moveDownload')){
+    const file = JSON.stringify({ app: APP_ID, version: 1, exported: new Date().toISOString(), items: agendaIds() }, null, 2) + '\n';
+    try {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([file], { type: 'application/json' }));
+      a.download = 'aip-congress-2026-my-agenda.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('Saved aip-congress-2026-my-agenda.json');
+    } catch (err) {
+      copyFromDialog(file, 'File contents');
+    }
+    return;
+  }
+  const act = e.target.closest('[data-import]');
+  if (act && pendingImport){
+    const { ids, fresh } = pendingImport;
+    pendingImport = null;
+    if (act.dataset.import === 'merge'){
+      mergeIntoAgenda(fresh);
+      moveDialog.close();
+      toast(`Added ${fresh.length} item${fresh.length === 1 ? '' : 's'} to My agenda`);
+    } else {
+      replaceStars(ids, `Agenda replaced with ${ids.length} imported item${ids.length === 1 ? '' : 's'}`);
+      moveDialog.close();
+      document.getElementById('undoBtn').focus();
+    }
+  }
+});
+
+// Reads a pasted link (…#agenda=…), an agenda code (id,id,…) or an exported file.
+function parseAgendaInput(text){
+  const raw = (text || '').trim();
+  if (!raw) return { error: 'Paste a link, an agenda code or the contents of an agenda file first.' };
+  let ids;
+  if (/^[\[{]/.test(raw)){
+    let obj;
+    try { obj = JSON.parse(raw); }
+    catch (e) { return { error: 'This looks like an agenda file, but it isn’t complete or valid. Download the file again, or copy the agenda code instead.' }; }
+    const ours = obj && !Array.isArray(obj) && obj.app === APP_ID;
+    const list = Array.isArray(obj) ? obj : obj && Array.isArray(obj.items) ? obj.items : null;
+    if (ours && !list) return { error: 'This agenda file has no list of items. It may be damaged: download it again, or copy the agenda code instead.' };
+    if (!list || (obj && obj.app && obj.app !== APP_ID)) return { error: 'This file isn’t an AIP Congress 2026 agenda. Use the file from “Download file”.' };
+    ids = list.filter(x => typeof x === 'string').map(x => x.trim());
+  } else {
+    const m = /[#?&]agenda=([^&#\s]*)/.exec(raw);
+    // A real URL (scheme://… or a known non-hierarchical scheme) without agenda= is a link without an agenda;
+    // anything else with a "Label:" prefix (e.g. "Agenda: c1,c2") is read as a code after the label.
+    if (!m && /^(?:[a-z][a-z0-9+.-]*:\/\/|(?:file|mailto|data|blob|about|javascript):)|^www\./i.test(raw)) return { error: 'This link doesn’t carry an agenda. Use the link from “Copy link” or “Share link”.' };
+    let code = m ? m[1] : raw.replace(/^[^:,;\n]{1,60}:\s*/, '');
+    try { code = decodeURIComponent(code); } catch (e) {}
+    ids = code.split(/[\s,;]+/).filter(Boolean);
+  }
+  const unique = [...new Set(ids)];
+  const items = resolveAgendaIds(unique);
+  if (!items.length) return { error: unique.length
+    ? 'Nothing in it matches a session or talk in this program. Check that the whole link or code was copied.'
+    : 'No sessions or talks found in it.' };
+  return { items, unknown: unique.length - items.length };
+}
+function showImportResult(html, error){
+  const el = document.getElementById('importResult');
+  el.classList.toggle('error', !!error);
+  el.innerHTML = html;
+}
+function previewImport(text){
+  const r = parseAgendaInput(text);
+  if (r.error){ pendingImport = null; showImportResult(esc(r.error), true); return; }
+  const ids = r.items.map(it => it.id);
+  const fresh = ids.filter(id => !state.starred.has(id));
+  pendingImport = { ids, fresh };
+  const n = ids.length + (ids.length === 1 ? ' session or talk' : ' sessions and talks');
+  const have = state.starred.size;
+  const same = !fresh.length && have === ids.length;
+  const already = ids.length - fresh.length;
+  showImportResult(`<p><b>Found ${n}:</b> ${fresh.length} new${already ? `, ${already} already in your agenda` : ''}.${r.unknown ? ` ${r.unknown} unknown code${r.unknown === 1 ? ' was' : 's were'} skipped.` : ''}</p>
+    ${same ? '<p>Your agenda already matches it exactly.</p>'
+      : have ? `<p>Add keeps your ${have} saved item${have === 1 ? '' : 's'}; Replace swaps ${have === 1 ? 'it' : 'them'} for this list (you can undo).</p>` : ''}
+    <div class="md-row">${fresh.length ? `<button type="button" class="toggle primary" data-import="merge">Add ${fresh.length} to my agenda</button>` : ''}${have && !same ? `<button type="button" class="toggle" data-import="replace">Replace my agenda</button>` : ''}</div>
+    <details><summary>See what’s in it</summary>${agendaPreviewList(r.items)}</details>`);
+  document.querySelector('#importResult [data-import]')?.focus();
+}
+document.getElementById('importTextBtn').addEventListener('click', () => previewImport(document.getElementById('importText').value));
+document.getElementById('importFileBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (file.size > 1e6){ showImportResult('That file is too large to be an agenda file.', true); return; }
+  let text;
+  try { text = await file.text(); }
+  catch (err) { showImportResult('This file couldn’t be read. Try again, or paste its contents below.', true); return; }
+  previewImport(text);
+  if (!pendingImport) document.getElementById('importFileBtn').focus();
 });
 
 // ---------- start ----------
