@@ -15,6 +15,10 @@ user site's `404.html` that keeps `?query` and `#hash`).
   If the selected day has no match, matches from the rest of the week appear.
 - Star talks or whole sessions to build **My agenda**: clash warnings, list or calendar,
   print, copy as text, download `.ics`, or share it as a link the receiver can merge into theirs.
+- **Build my agenda** walks through the week one time slot at a time: every parallel session
+  with its talks, a tick box for each, saved as you tick. A slider with day and time marks
+  jumps anywhere in the week and updates the slot as you drag; breaks and meetings are left out
+  unless you ask for them. During the congress it starts at the first slot that is not over.
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
