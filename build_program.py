@@ -325,12 +325,21 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .hero .links a:hover{background:rgba(255,255,255,.26);text-decoration:none}
 
 /* ---------- highlights ---------- */
-.highlights{max-width:1180px;margin:18px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:12px}
-.hl{background:var(--card);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.hl .hl-k{font-size:.6875rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
-.hl .hl-t{font-weight:700;margin:3px 0 2px;font-size:.9375rem}
-.hl .hl-d{font-size:.8125rem;color:var(--muted);margin:0}
+.highlights{max-width:1180px;margin:8px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px}
+.hl{background:var(--card);border-radius:var(--radius);padding:12px 14px 12px 16px;box-shadow:var(--shadow);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));display:flex;flex-direction:column;min-width:0}
+.hl .hl-k{font-size:.6875rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--c,var(--muted))}
+.hl .hl-t{font-weight:700;margin:3px 0 2px;font-size:.9375rem;line-height:1.3}
+.hl .hl-when span{white-space:nowrap}
+.hl .hl-when{margin:0 0 4px;font-size:.8125rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.hl .hl-d{font-size:.8125rem;color:var(--muted);margin:0 0 10px;flex:1 0 auto}
 .hl .hl-d b{color:var(--ink);font-weight:600}
+.hl-acts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.hl-acts .ag-btn{color:var(--link);border-color:var(--line)}
+.hl-acts .ag-btn:hover{background:var(--surface-3)}
+.hl-acts .star{font-size:1.25rem;min-width:36px;min-height:32px}
+.hl-acts .star.on{background:var(--starOn-bg)}
+.hl-link{font-size:.75rem;font-weight:600;margin-left:auto;white-space:nowrap}
+@media(max-width:720px){.highlights{padding:0 16px;grid-template-columns:minmax(0,1fr)}.hl-acts .ag-btn,.hl-acts .star{min-height:40px}.hl-acts .star{min-width:44px}.hl-link{min-height:40px;display:inline-flex;align-items:center}}
 
 .highlight-wrap:not([open])+#toolbarAnchor+.sticky-wrap{margin-top:0}
 .highlight-wrap:not([open])>summary{margin-bottom:4px}
@@ -474,6 +483,43 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .pp-what{color:var(--link);font-weight:600}
 .pp-conv .pp-what{font-weight:500}
 .pp-star{color:var(--starOn-ink)}
+/* control row: Sort | Category | Jump */
+.pp-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:4px 0 2px}
+.pp-ctl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:0.8438rem;font-weight:600;color:var(--muted);min-width:0;max-width:100%}
+.pp-ctl select{min-height:36px;min-width:0;max-width:min(300px,100%);flex:1 1 auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:500;padding:4px 8px}
+.pp-ctl[hidden]{display:none}
+.pp-ctl select.pp-on{border-color:var(--accent);background:var(--active-bg);color:var(--active-ink)}
+.pp-sort.agenda-views{margin:0}
+.pp-sort.agenda-views button{padding:5px 12px;font-size:.8125rem;min-height:34px}
+.pp-affl{margin-top:1px;font-size:0.8125rem;line-height:1.4;font-weight:600;color:var(--ink-2);overflow-wrap:anywhere}
+.pp-affl.pp-nil{font-weight:500;font-style:italic;color:var(--muted)}
+.pp-given{font-weight:500}
+.pp-letter{margin:18px 0 0}
+.pp-lh{font-size:1.25rem}
+/* the list and its alphabet rail */
+.pp-body{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:0 10px;align-items:start}
+.pp-body.pp-norail{grid-template-columns:minmax(0,1fr) 0}
+.pp-rail{position:sticky;top:calc(var(--toolbar-h,150px) + 6px);height:calc(100vh - var(--toolbar-h,150px) - 12px);height:calc(100dvh - var(--toolbar-h,150px) - 12px);display:flex;align-items:center;justify-content:center;z-index:30;pointer-events:none}
+.pp-rail[hidden]{display:none}
+.pp-rail-in{position:relative;pointer-events:auto;height:min(calc(var(--n,26) * 1.375rem),100%);display:flex}
+.pp-letters{list-style:none;margin:0;padding:4px 0;display:flex;flex-direction:column;width:28px;border-radius:999px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none}
+.pp-letters li{flex:1 1 0;min-height:0;display:flex}
+.pp-letters button{flex:1;min-height:0;width:100%;border:0;background:transparent;padding:0;border-radius:6px;font-size:.6875rem;font-weight:800;line-height:1;color:var(--link);display:flex;align-items:center;justify-content:center;cursor:pointer;font-variant-numeric:tabular-nums}
+.pp-letters button:hover,.pp-letters button.pp-hot{background:var(--active-bg);color:var(--active-ink)}
+.pp-letters button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pp-letters button[aria-disabled="true"]{color:var(--faint);opacity:.55;cursor:default;font-weight:600}
+.pp-letters button[aria-disabled="true"]:hover{background:transparent;color:var(--faint)}
+.pp-panel{position:absolute;right:calc(100% + 8px);width:min(320px,calc(100vw - 80px));max-height:min(60vh,440px);overflow:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px var(--pop-shadow);padding:6px}
+.pp-panel[hidden]{display:none}
+.pp-ph{display:flex;align-items:baseline;gap:8px;padding:4px 8px 6px;border-bottom:1px solid var(--line);margin-bottom:4px;font-weight:800;font-size:1rem}
+.pp-ph small{font-size:.75rem;font-weight:600;color:var(--muted)}
+.pp-pi{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;text-align:left;border:0;border-radius:8px;background:transparent;color:var(--ink);padding:5px 8px;font-size:.8125rem;line-height:1.3}
+.pp-pi:hover,.pp-pi:focus-visible{background:var(--surface-3);outline:none}
+.pp-pi span{min-width:0;overflow-wrap:anywhere}
+.pp-pi small{display:block;font-size:.7188rem;color:var(--muted);font-weight:500}
+.pp-pi b{flex:0 0 auto;font-size:.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.pp-bubble{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:5.5rem;height:5.5rem;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;background:var(--toast-bg);color:var(--toast-ink);box-shadow:0 10px 30px var(--pop-shadow);pointer-events:none}
+.pp-bubble[hidden]{display:none}
 .participants-view #nowBtn{display:none}
 #nowBtn{color:var(--now-text);border-color:var(--now-line);background:var(--now-bg)}
 #nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
@@ -1047,6 +1093,15 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .pp-person{padding:8px 10px 4px}
   .pp-aff{font-size:16px}
   .pp-role{min-height:44px;justify-content:center;padding:6px}
+  .pp-controls{gap:8px}
+  .pp-ctl{flex:1 1 100%}
+  .pp-ctl select{min-height:42px;font-size:16px;max-width:none}
+  .pp-sort.agenda-views{flex:1 1 100%;width:auto}
+  .pp-sort.agenda-views button{flex:1;min-height:40px;padding:6px 6px}
+  .pp-body{grid-template-columns:minmax(0,1fr) 20px;gap:0 6px;margin-right:-10px}
+  .pp-letters{width:20px;padding:2px 0;box-shadow:none}
+  .pp-letters button{font-size:.625rem;border-radius:4px}
+  .pp-rail-in{height:min(calc(var(--n,26) * 1.25rem),100%)}
 }
 @media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
@@ -1187,11 +1242,37 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 </header>
 <div class="shared-banner" id="sharedBanner" hidden></div>
 
-<details class="highlight-wrap"><summary>Congress highlights</summary><section class="highlights" aria-label="Congress highlights">
-  <div class="hl"><div class="hl-k">Public lecture</div><div class="hl-t">Dr Jessie Christiansen (NASA/Caltech)</div><p class="hl-d"><b>Mon 7 Dec, evening.</b> The hunt for Earth 2.0 — from the first exoplanets to NASA's next flagship telescope. Free, open to all.</p></div>
-  <div class="hl"><div class="hl-k">Public lecture</div><div class="hl-t">Dr Derek Muller (Veritasium)</div><p class="hl-d"><b>Thu 10 Dec, evening.</b> From Physics PhD to YouTuber: what Veritasium learned about explaining the universe.</p></div>
-  <div class="hl"><div class="hl-k">Social highlight</div><div class="hl-t">Congress Dinner on the Harbour</div><p class="hl-d"><b>Wed 9 Dec.</b> Three-hour Sydney Harbour cruise with the AIP &amp; ANZOS award ceremonies. Tickets via registration.</p></div>
-  <div class="hl"><div class="hl-k">Friday programs</div><div class="hl-t">Teachers Day &amp; Career Fair</div><p class="hl-d"><b>Fri 11 Dec.</b> Australian Physics Teachers Day (from 8am) and the Australian Physics Career Fair (1–4pm).</p></div>
+<details class="highlight-wrap" id="events"><summary>Congress events &amp; highlights</summary><section class="highlights" aria-label="Congress events and highlights">
+  <article class="hl" style="--c:var(--public)" data-ev="public lecture" data-ev-day="2026-12-07">
+    <div class="hl-k">Public lecture</div><h3 class="hl-t">Dr Jessie Christiansen (NASA/Caltech)</h3>
+    <p class="hl-when">Mon 7 Dec · evening</p>
+    <p class="hl-d">The hunt for Earth 2.0 — from the first exoplanets to NASA's next flagship telescope. Free, open to all.</p>
+    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  </article>
+  <article class="hl" style="--c:var(--social)" data-ev="congress dinner">
+    <div class="hl-k">Social highlight</div><h3 class="hl-t">Congress Dinner on the Harbour</h3>
+    <p class="hl-when">Wed 9 Dec</p>
+    <p class="hl-d">Sydney Harbour cruise with the AIP &amp; ANZOS award ceremonies. Tickets via registration.</p>
+    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/activities" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  </article>
+  <article class="hl" style="--c:var(--public)" data-ev="public lecture" data-ev-day="2026-12-10">
+    <div class="hl-k">Public lecture</div><h3 class="hl-t">Dr Derek Muller (Veritasium)</h3>
+    <p class="hl-when">Thu 10 Dec · evening</p>
+    <p class="hl-d">From Physics PhD to YouTuber: what Veritasium learned about explaining the universe. Open to the public.</p>
+    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  </article>
+  <article class="hl" style="--c:var(--edu)" data-ev="teachers day" data-ev-keep-time>
+    <div class="hl-k">Friday program</div><h3 class="hl-t">Australian Physics Teachers Day</h3>
+    <p class="hl-when">Fri 11 Dec · from 8am</p>
+    <p class="hl-d">A day for physics teachers on the congress's last day; details on the official page.</p>
+    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/teachers-day" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  </article>
+  <article class="hl" style="--c:var(--special)" data-ev="career fair" data-ev-keep-time>
+    <div class="hl-k">Friday program</div><h3 class="hl-t">Australian Physics Career Fair</h3>
+    <p class="hl-when">Fri 11 Dec · 1–4pm</p>
+    <p class="hl-d">Physics careers fair on the congress's final afternoon; details on the official page.</p>
+    <div class="hl-acts"><a class="hl-link" href="https://www.aip.org.au/congress/career-fair" target="_blank" rel="noopener">Official page&nbsp;↗<span class="visually-hidden"> (opens in a new tab)</span></a></div>
+  </article>
 </section></details>
 
 <div id="toolbarAnchor"></div>
@@ -1285,10 +1366,23 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 <section id="people" class="people" aria-labelledby="peopleTitle" hidden>
   <div class="people-head">
     <h2 id="peopleTitle" class="people-title" tabindex="-1">Participants</h2>
-    <label class="pp-jump">Jump to <select id="peopleJump"></select></label>
   </div>
-  <p class="people-intro">Every speaker and convener, grouped by institution. Search a name or an institution, short forms such as <i>unsw</i>, <i>anu</i> or <i>usyd</i> included, and select a talk or session for its details.</p>
-  <div id="peopleList"></div>
+  <p class="people-intro">Every speaker and convener. Sort by institution or by name, narrow to a category, or search a name or an institution, short forms such as <i>unsw</i>, <i>anu</i> or <i>usyd</i> included. Select a talk or session for its details.</p>
+  <div class="pp-controls">
+    <span class="pp-ctl"><span id="ppSortLabel">Sort</span>
+      <span id="peopleSort" class="agenda-views pp-sort" role="group" aria-labelledby="ppSortLabel">
+        <button type="button" data-psort="aff" aria-pressed="true">Affiliation</button>
+        <button type="button" data-psort="first" aria-pressed="false">First name</button>
+        <button type="button" data-psort="last" aria-pressed="false">Last name</button>
+      </span></span>
+    <label class="pp-ctl">Category <select id="peopleCat"></select></label>
+    <label class="pp-jump pp-ctl">Jump to <select id="peopleJump"></select></label>
+  </div>
+  <div class="pp-body">
+    <div id="peopleList"></div>
+    <nav class="pp-rail" id="ppRail" aria-label="Jump to a letter" hidden><div class="pp-rail-in"><ol class="pp-letters" id="ppLetters"></ol><div class="pp-panel" id="ppPanel" hidden></div></div></nav>
+  </div>
+  <div class="pp-bubble" id="ppBubble" aria-hidden="true" hidden></div>
 </section>
 <div id="agenda" class="agenda"></div>
 <div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
@@ -1391,8 +1485,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
     </div>
     <div>
       <h4>Quick links</h4>
-      <p><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a> · <a href="https://www.aip.org.au/congress/register" target="_blank" rel="noopener">Registration</a> · <a href="https://www.aip.org.au/congress/career-fair" target="_blank" rel="noopener">Career Fair</a> · <a href="https://www.aip.org.au/congress/teachers-day" target="_blank" rel="noopener">Teachers Day</a></p>
-      <p><a href="mailto:admin@congress.aip.org.au">admin@congress.aip.org.au</a> · <a href="mailto:program@congress.aip.org.au">program@congress.aip.org.au</a></p>
+      <p><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a> · <a href="https://www.aip.org.au/congress/register" target="_blank" rel="noopener">Registration</a> · <a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official program</a> · <a href="https://www.aip.org.au/congress/activities" target="_blank" rel="noopener">Activities &amp; social events</a></p>
+      <p>Public lectures, the Congress Dinner, Teachers Day and the Career Fair: <button type="button" class="linkish" data-open-events>see the event cards</button>.</p>
     </div>
     <div>
       <h4>Tips</h4>
@@ -1435,6 +1529,7 @@ const state = {
   scope: 'program', programTalks:false, orient:'h',
   starred: new Set(), hideClashes: false,
   pq: '', // the Participants view's own search
+  psort: 'aff', pcat: '', // the Participants view's sort (aff | first | last) and category
 };
 try {
   const saved = JSON.parse(localStorage.getItem('aip2026-stars') || '[]');
@@ -3818,13 +3913,38 @@ document.getElementById('filterReset').addEventListener('click', () => {
 
 // ---------- participants ----------
 // Every speaker and convener, grouped by the institution the build worked out
-// for their affiliation (AFF). One person may be listed with a title on one
-// talk and without it on another, so people are matched without titles.
+// for their affiliation (AFF), or listed by first or last name under letter
+// headings. One person may be listed with a title on one talk and without it on
+// another, so people are matched without titles.
 const NO_AFF = 'Affiliation not listed';
 const HONORIFIC = /^(?:dr|prof(?:essor)?|a\/prof|assoc\.? prof\.?|mr|mrs|ms|miss)\.? +/;
 function personKey(n){ return norm(n).trim().replace(HONORIFIC, '').replace(/[^a-z0-9]+/g, ''); }
 function groupLabel(g){ return g ? AFF.groups[g][0] : NO_AFF; }
 function groupAliases(g){ return g ? AFF.groups[g][1].split(',').map(x => norm(x).trim()).filter(Boolean) : []; }
+
+// Names for sorting. Titles and asides in brackets are dropped; the last name
+// keeps the particles before it ("de Sterke", "Van Schalkwyk", "Di Fronzo",
+// "Wylie-van Eerd"). A lower-case particle is passed over when filing, as Dutch
+// and German directories do ("de Sterke" files under S); a capitalised one
+// files under itself ("Van Schalkwyk" under V, "Di Fronzo" under D).
+const NAME_TITLES = /^(?:(?:dr|prof(?:essor)?|a\/prof|assoc(?:iate)?\.? prof(?:essor)?|emeritus prof(?:essor)?|mr|mrs|ms|miss|mx|sir|dame)\.?\s+)+/i;
+const NAME_PARTICLES = new Set(['van', 'von', 'der', 'den', 'de', 'del', 'della', 'delle', 'dalle', 'degli', 'dei', 'di', 'da', 'das', 'dos', 'du', 'le', 'la', 'les', 'ten', 'ter', 'al', 'el', 'bin', 'ibn', 'st', 'st.']);
+const PP_COLLATE = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+function sortKey(s){ return fold(s).replace(/[^a-z0-9 ]+/g, '').replace(/\s+/g, ' ').trim(); }
+function initialOf(key){ return /^[a-z]/.test(key) ? key[0].toUpperCase() : '#'; }
+function nameParts(name){
+  let bare = name.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  bare = bare.replace(NAME_TITLES, '').replace(/,?\s+(?:jr|sr|ii|iii|iv)\.?$/i, '').trim() || name.trim();
+  const w = bare.split(' ');
+  let i = w.length - 1;
+  while (i > 1 && NAME_PARTICLES.has(w[i - 1].toLowerCase())) i--;
+  if (i === w.length - 1 && i > 1 && /-(?:van|von|de|der|den|di|da|le|la)$/i.test(w[i - 1])) i--;
+  const last = w.slice(i).join(' '), given = w.slice(0, i).join(' ');
+  const file = last.replace(/^(?:(?:van|von|der|den|de|del|della|di|da|das|dos|du|le|la|ten|ter)\s+)+(?=\S)/, '');
+  const lastKey = sortKey(file + ' ' + given), firstKey = sortKey(bare);
+  return { bare, given, last, lastKey, firstKey, lastL: initialOf(lastKey), firstL: initialOf(firstKey) };
+}
+
 let _people = null;
 function peopleIndex(){
   if (_people) return _people;
@@ -3855,23 +3975,24 @@ function peopleIndex(){
   const people = [];
   for (const p of byKey.values()){
     p.name = [...p.names.entries()].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0][0];
-    const bare = p.name.replace(/^(?:Dr|Prof(?:essor)?|A\/Prof|Assoc\.? Prof\.?|Mr|Mrs|Ms|Miss)\.? +/i, '');
-    p.sort = fold(bare.split(' ').pop() + ' ' + bare);
+    p.np = nameParts(p.name);
     p.g = top(p.groups)?.[0] || '';
     p.roles.sort((a, b) => a.di - b.di || a.start.localeCompare(b.start));
+    p.cats = new Set(p.roles.map(r => r.s.cat));
     const groupWords = [...p.groups.keys()].map(g => AFF.groups[g].join(' '));
     p.hay = norm([...p.names.keys(), ...p.affs.keys(), ...groupWords].join(' '));
     people.push(p);
   }
-  people.sort((a, b) => a.sort.localeCompare(b.sort));
+  people.sort((a, b) => PP_COLLATE.compare(a.np.lastKey, b.np.lastKey));
   people.forEach((p, i) => p.i = i);
   const groups = new Map();
   for (const p of people){
     if (!groups.has(p.g)) groups.set(p.g, { g: p.g, label: groupLabel(p.g), people: [] });
     groups.get(p.g).people.push(p);
   }
-  const order = [...groups.values()].sort((a, b) =>
-    (a.g === '') - (b.g === '') || b.people.length - a.people.length || a.label.localeCompare(b.label));
+  // Institutions A–Z; people with none listed come last.
+  for (const grp of groups.values()){ grp.key = sortKey(grp.label); grp.letter = initialOf(grp.key); }
+  const order = [...groups.values()].sort((a, b) => (a.g === '') - (b.g === '') || PP_COLLATE.compare(a.key, b.key));
   return (_people = { people, groups: order });
 }
 
@@ -3897,14 +4018,42 @@ function roleHtml(p, r){
   return `<li><button type="button" class="pp-role${r.t ? '' : ' pp-conv'}" data-pi="${p.i}" data-session-detail="${r.s.id}" data-talk-detail="${r.t ? r.t.id : ''}"><span class="pp-when">${esc(r.d.label)} · ${r.start}${saved ? ' · <span class="pp-star">★ in my agenda</span>' : ''}</span><span class="pp-what">${what}</span></button></li>`;
 }
 
-function personHtml(p, label){
+function nameHtml(p, q){
+  // By last name, the given names step back so the filing name stands out.
+  const at = state.psort === 'last' ? p.name.lastIndexOf(p.np.last) : -1;
+  if (at <= 0) return hlWith(p.name, q);
+  return `<span class="pp-given">${hlWith(p.name.slice(0, at), q)}</span>${hlWith(p.name.slice(at), q)}`;
+}
+
+function personHtml(p, label, named){
   // Show the affiliation as written when it says more than the group label.
   const key = s => norm(s).replace(/^the /, '').replace(/ \([a-z]{2}\)$/, '');
   const raw = [...p.affs.keys()].filter(a => !key(label).includes(key(a)));
   const q = state.pq;
-  return `<li class="pp-person"><div class="pp-name">${hlWith(p.name, q)}</div>` +
+  // In a list by name, each person carries their institution under the name;
+  // an affiliation that only adds to the label's start ("Sage University,
+  // Indore") stands in for it.
+  let aff = '';
+  if (named && p.g && raw.length && raw.every(a => key(a).startsWith(key(label)))){
+    aff = `<div class="pp-affl">${hlWith(raw.join(' · '), q)}</div>`;
+    raw.length = 0;
+  } else if (named) aff = p.g ? `<div class="pp-affl">${hlWith(label, q)}</div>` : raw.length ? '' : `<div class="pp-affl pp-nil">${NO_AFF}</div>`;
+  return `<li class="pp-person" id="ppp${p.i}" tabindex="-1"><div class="pp-name">${nameHtml(p, q)}</div>` + aff +
     (raw.length ? `<div class="pp-raw" title="${esc(raw.join(' · '))}">${hlWith(raw.join(' · '), q)}</div>` : '') +
     `<ul class="pp-roles">${p.roles.map(r => roleHtml(p, r)).join('')}</ul></li>`;
+}
+
+function paintPeopleControls(matching, cat){
+  for (const b of document.querySelectorAll('[data-psort]')) b.setAttribute('aria-pressed', b.dataset.psort === state.psort);
+  // Category counts follow the search: people with any role in that category.
+  const counts = {};
+  for (const p of matching) for (const c of p.cats) counts[c] = (counts[c] || 0) + 1;
+  const sel = document.getElementById('peopleCat');
+  sel.innerHTML = `<option value="">All (${matching.length})</option>` + Object.entries(DATA.cats).map(([k, label]) =>
+    `<option value="${k}"${counts[k] || k === cat ? '' : ' disabled'}>${esc(label)} (${counts[k] || 0})</option>`).join('');
+  sel.value = cat;
+  sel.classList.toggle('pp-on', Boolean(cat));
+  document.querySelector('#people .pp-jump').hidden = state.psort !== 'aff';
 }
 
 function renderPeople(){
@@ -3913,42 +4062,300 @@ function renderPeople(){
   const alias = aliasGroupFor(q);
   const terms = termsOf(q);
   const fullName = alias ? norm(groupLabel(alias)).replace(/^the /, '').replace(/ \(.*\)$/, '').trim() : '';
-  const shown = alias ? p => p.groups.has(alias) || (fullName.length > 6 && p.hay.includes(fullName))
+  const byQuery = alias ? p => p.groups.has(alias) || (fullName.length > 6 && p.hay.includes(fullName))
     : terms.length ? p => terms.every(t => p.hay.includes(t)) : () => true;
+  const cat = DATA.cats[state.pcat] ? state.pcat : '';
+  const shown = cat ? p => byQuery(p) && p.cats.has(cat) : byQuery;
+  paintPeopleControls(people.filter(byQuery), cat);
+  // The alphabet rail: letter -> the section it jumps to and what it lists.
+  const rail = new Map();
+  const toRail = (L, anchor, item) => {
+    let r = rail.get(L);
+    if (!r) rail.set(L, r = { id: anchor, items: [] });
+    r.items.push(item);
+  };
+  const plural = (n, one, many) => n === 1 ? one : many;
   let html = '', nPeople = 0, nGroups = 0, nNone = 0, jump = '';
-  groups.forEach((grp, gi) => {
-    const list = grp.people.filter(shown);
-    if (!list.length) return;
-    nPeople += list.length;
-    if (grp.g) nGroups++; else nNone = list.length;
-    const n = list.length === grp.people.length ? `${list.length}` : `${list.length} of ${grp.people.length}`;
-    jump += `<option value="ppg${gi}">${esc(grp.label)} (${list.length})</option>`;
-    html += `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}"><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${grp.people.length === 1 ? 'person' : 'people'}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label)).join('')}</ul></section>`;
-  });
+  if (state.psort === 'aff'){
+    groups.forEach((grp, gi) => {
+      const list = grp.people.filter(shown);
+      if (!list.length) return;
+      nPeople += list.length;
+      if (grp.g) nGroups++; else nNone = list.length;
+      const n = list.length === grp.people.length ? `${list.length}` : `${list.length} of ${grp.people.length}`;
+      jump += `<option value="ppg${gi}">${esc(grp.label)} (${list.length})</option>`;
+      if (grp.g) toRail(grp.letter, `ppg${gi}`, { label: grp.label, n: list.length, id: `ppg${gi}` });
+      html += `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}"><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${plural(grp.people.length, 'person', 'people')}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label, false)).join('')}</ul></section>`;
+    });
+  } else {
+    const byFirst = state.psort === 'first';
+    const letterOf = p => byFirst ? p.np.firstL : p.np.lastL;
+    const list = people.filter(shown);
+    if (byFirst) list.sort((a, b) => PP_COLLATE.compare(a.np.firstKey, b.np.firstKey) || PP_COLLATE.compare(a.np.lastKey, b.np.lastKey));
+    list.sort((a, b) => (letterOf(a) === '#') - (letterOf(b) === '#'));
+    const inGroups = new Set();
+    for (const p of list){ if (p.g) inGroups.add(p.g); else nNone++; }
+    nPeople = list.length; nGroups = inGroups.size;
+    let cur = null, run = [];
+    const flush = () => {
+      if (!run.length) return;
+      const id = 'ppl-' + (cur === '#' ? 'num' : cur);
+      html += `<section class="pp-letter" aria-labelledby="${id}"><h3 class="pp-aff pp-lh" id="${id}" tabindex="-1"><span>${cur}</span><span class="pp-n">${run.length} ${plural(run.length, 'person', 'people')}</span></h3><ul class="pp-people">${run.map(p => personHtml(p, groupLabel(p.g), true)).join('')}</ul></section>`;
+    };
+    for (const p of list){
+      const L = letterOf(p);
+      if (L !== cur){ flush(); cur = L; run = []; }
+      run.push(p);
+      toRail(L, 'ppl-' + (L === '#' ? 'num' : L), {
+        label: byFirst ? p.np.bare : p.np.last + (p.np.given ? ', ' + p.np.given : ''),
+        sub: p.g ? groupLabel(p.g) : '', id: `ppp${p.i}`,
+      });
+    }
+    flush();
+  }
   const el = document.getElementById('peopleList');
-  el.innerHTML = html || `<div class="ag-empty"><h3>No one matches &ldquo;${esc(q)}&rdquo;</h3><p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button></div>`;
+  const catName = cat ? DATA.cats[cat] : '';
+  el.innerHTML = html || `<div class="ag-empty"><h3>${q ? `No one${cat ? ' in ' + esc(catName) : ''} matches &ldquo;${esc(q)}&rdquo;` : `No one in ${esc(catName)}`}</h3>` +
+    (q ? `<p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button> ` : '') +
+    (cat ? `<button type="button" class="toggle" data-people-allcats>Show all categories</button>` : '') + `</div>`;
   const sel = document.getElementById('peopleJump');
   sel.innerHTML = `<option value="">an affiliation…</option>` + jump;
   sel.disabled = nGroups < 2;
+  renderRail(rail, state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people']);
   // Affiliations count institutions only; people with none listed are counted apart.
   const total = people.length, totalGroups = groups.filter(g => g.g).length;
   const filtered = nPeople !== total;
-  const plural = (n, one, many) => n === 1 ? one : many;
   const none = nNone ? ` · <b>${nNone}</b> with no institution listed` : '';
+  const where = (cat ? ` · in <b>${esc(catName)}</b>` : '') + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '');
   document.getElementById('resultLine').innerHTML = filtered
-    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + none + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '')
+    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
     : `<b>${total}</b> people · <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none + ` · speakers and conveners`;
 }
+
+// Scroll a heading or person to just below the sticky toolbar.
+function ppJump(id, smooth, focus){
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - stickyWrap.getBoundingClientRect().height - 10;
+  window.scrollTo({ top: Math.max(0, top), behavior: smooth && !motionReduced() ? 'smooth' : 'instant' });
+  if (focus) el.focus({ preventScroll: true });
+}
+
+// ---------- participants: alphabet rail ----------
+// A–Z down the right edge: tap, click or drag along it to jump to a letter.
+// With a mouse, hovering a letter opens a panel of that letter's affiliations
+// (or names, in a list by name). Letters with nothing under them are dimmed.
+const RAIL = {
+  nav: document.getElementById('ppRail'), letters: document.getElementById('ppLetters'),
+  panel: document.getElementById('ppPanel'), bubble: document.getElementById('ppBubble'),
+  data: new Map(), unit: ['', ''], drag: null, closeT: 0, bubbleT: 0,
+};
+const railHover = matchMedia('(hover: hover) and (pointer: fine)');
+function renderRail(rail, unit){
+  RAIL.data = rail; RAIL.unit = unit;
+  closeRailPanel();
+  const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+  if (rail.has('#')) letters.push('#');
+  RAIL.nav.hidden = rail.size < 2;
+  RAIL.nav.parentElement.classList.toggle('pp-norail', RAIL.nav.hidden);
+  RAIL.nav.firstElementChild.style.setProperty('--n', letters.length);
+  let tab = true;
+  RAIL.letters.innerHTML = letters.map(L => {
+    const r = rail.get(L);
+    const n = r ? r.items.length : 0;
+    const label = r ? `${L}, ${n} ${n === 1 ? unit[0] : unit[1]}` : `${L}, none`;
+    const ti = r && tab ? (tab = false, 0) : -1;
+    return `<li><button type="button" data-l="${L}" tabindex="${ti}" aria-label="${label}"${r ? '' : ' aria-disabled="true"'}>${L}</button></li>`;
+  }).join('');
+}
+function railButtons(){ return [...RAIL.letters.querySelectorAll('button[data-l]')]; }
+// The letter under a point; over a dimmed letter, the nearest one with entries (next first).
+function railLetterAt(y){
+  const bs = railButtons();
+  let i = bs.findIndex(b => b.getBoundingClientRect().bottom > y);
+  if (i < 0) i = bs.length - 1;
+  for (let d = 0; d < bs.length; d++){
+    for (const j of [i + d, i - d]){
+      if (bs[j] && bs[j].getAttribute('aria-disabled') !== 'true') return bs[j];
+    }
+  }
+  return null;
+}
+function railJump(L, smooth){
+  const r = RAIL.data.get(L);
+  if (r) ppJump(r.id, smooth, false);
+}
+function showRailBubble(L){
+  clearTimeout(RAIL.bubbleT);
+  RAIL.bubble.textContent = L;
+  RAIL.bubble.hidden = false;
+}
+function hideRailBubble(delay){
+  clearTimeout(RAIL.bubbleT);
+  RAIL.bubbleT = setTimeout(() => { RAIL.bubble.hidden = true; }, delay);
+}
+function openRailPanel(btn){
+  const L = btn.dataset.l, r = RAIL.data.get(L);
+  if (!r) return;
+  clearTimeout(RAIL.closeT);
+  for (const b of railButtons()) b.classList.toggle('pp-hot', b === btn);
+  const n = r.items.length;
+  RAIL.panel.innerHTML = `<div class="pp-ph">${esc(L)} <small>${n} ${n === 1 ? RAIL.unit[0] : RAIL.unit[1]}</small></div>` +
+    r.items.map(it => `<button type="button" class="pp-pi" data-jump="${it.id}"><span>${esc(it.label)}${it.sub ? `<small>${esc(it.sub)}</small>` : ''}</span>${it.n ? `<b>${it.n}</b>` : ''}</button>`).join('');
+  RAIL.panel.hidden = false;
+  RAIL.panel.scrollTop = 0;
+  // Beside the letter, kept inside the space below the toolbar.
+  const box = RAIL.panel.parentElement.getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const h = RAIL.panel.offsetHeight, minTop = stickyWrap.getBoundingClientRect().bottom + 8;
+  const top = Math.max(minTop, Math.min(b.top + b.height / 2 - h / 2, window.innerHeight - h - 8));
+  RAIL.panel.style.top = (top - box.top) + 'px';
+}
+function closeRailPanel(){
+  clearTimeout(RAIL.closeT);
+  RAIL.panel.hidden = true;
+  for (const b of RAIL.letters.querySelectorAll('.pp-hot')) b.classList.remove('pp-hot');
+}
+RAIL.letters.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse' || RAIL.drag || !railHover.matches) return;
+  const b = e.target.closest('button[data-l]');
+  if (b && b.getAttribute('aria-disabled') !== 'true') openRailPanel(b);
+});
+RAIL.nav.firstElementChild.addEventListener('pointerleave', e => {
+  if (e.pointerType === 'mouse') RAIL.closeT = setTimeout(closeRailPanel, 280);
+});
+RAIL.nav.firstElementChild.addEventListener('pointerenter', () => clearTimeout(RAIL.closeT));
+RAIL.letters.addEventListener('pointerdown', e => {
+  const b = e.target.closest('button[data-l]');
+  if (!b || e.button > 0) return;
+  e.preventDefault();
+  try { RAIL.letters.setPointerCapture(e.pointerId); } catch (err) {}
+  closeRailPanel();
+  RAIL.drag = { id: e.pointerId, y: e.clientY, moved: false, L: null, touch: e.pointerType !== 'mouse', start: b };
+  const on = b.getAttribute('aria-disabled') !== 'true';
+  if (RAIL.drag.touch && on) showRailBubble(b.dataset.l);
+});
+RAIL.letters.addEventListener('pointermove', e => {
+  const d = RAIL.drag;
+  if (!d || d.id !== e.pointerId) return;
+  if (!d.moved && Math.abs(e.clientY - d.y) < 6) return;
+  d.moved = true;
+  const b = railLetterAt(e.clientY);
+  if (!b || b.dataset.l === d.L) return;
+  d.L = b.dataset.l;
+  for (const x of railButtons()) x.classList.toggle('pp-hot', x === b);
+  showRailBubble(d.L);
+  railJump(d.L, false);
+});
+function endRailDrag(e){
+  const d = RAIL.drag;
+  if (!d || d.id !== e.pointerId) return;
+  RAIL.drag = null;
+  for (const x of RAIL.letters.querySelectorAll('.pp-hot')) x.classList.remove('pp-hot');
+  if (e.type === 'pointerup' && !d.moved && d.start.getAttribute('aria-disabled') !== 'true') railJump(d.start.dataset.l, true);
+  hideRailBubble(d.touch ? 450 : 250);
+}
+RAIL.letters.addEventListener('pointerup', endRailDrag);
+RAIL.letters.addEventListener('pointercancel', endRailDrag);
+// Keyboard: one tab stop; arrows move along the letters, Enter jumps.
+RAIL.letters.addEventListener('click', e => {
+  const b = e.target.closest('button[data-l]');
+  if (b && e.detail === 0 && b.getAttribute('aria-disabled') !== 'true') railJump(b.dataset.l, true);
+});
+RAIL.letters.addEventListener('keydown', e => {
+  const on = railButtons().filter(b => b.getAttribute('aria-disabled') !== 'true');
+  const i = on.indexOf(document.activeElement);
+  const to = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: on.length - 1 }[e.key];
+  if (to === undefined || i < 0) return;
+  e.preventDefault();
+  const b = on[Math.max(0, Math.min(on.length - 1, to))];
+  for (const x of on) x.tabIndex = x === b ? 0 : -1;
+  b.focus();
+});
+RAIL.panel.addEventListener('keydown', e => { if (e.key === 'Escape') closeRailPanel(); });
+
+document.getElementById('peopleSort').addEventListener('click', e => {
+  const b = e.target.closest('[data-psort]');
+  if (!b || b.dataset.psort === state.psort) return;
+  state.psort = b.dataset.psort;
+  rerender();
+  if (window.scrollY > programTop()) scrollToProgramTop();
+});
+document.getElementById('peopleCat').addEventListener('change', e => {
+  state.pcat = e.target.value;
+  rerender();
+  if (window.scrollY > programTop()) scrollToProgramTop();
+});
 document.getElementById('peopleJump').addEventListener('change', e => {
-  const h = document.getElementById(e.target.value);
+  const id = e.target.value;
   e.target.value = '';
-  if (!h) return;
-  h.focus({ preventScroll: true });
   // Instant: a smooth scroll across hundreds of people takes too long.
-  window.scrollTo({ top: h.getBoundingClientRect().top + window.scrollY - stickyWrap.offsetHeight - 12, behavior: 'instant' });
+  if (id) ppJump(id, false, true);
 });
 document.getElementById('people').addEventListener('click', e => {
-  if (e.target.closest('[data-people-clear]')){ clearSearch('pq'); rerender(); qEl.focus(); }
+  if (e.target.closest('[data-people-clear]')){ clearSearch('pq'); rerender(); qEl.focus(); return; }
+  if (e.target.closest('[data-people-allcats]')){ state.pcat = ''; rerender(); return; }
+  const go = e.target.closest('[data-jump]');
+  if (go){ closeRailPanel(); ppJump(go.dataset.jump, true, true); }
+});
+
+// ---------- congress events ----------
+// The event cards above the toolbar. Each finds its session in the program by
+// title (and day), takes its time from there unless the card states its own,
+// and gains "View in program" and a star for My agenda.
+function eventSlot(card){
+  const re = new RegExp(escRe(card.dataset.ev), 'i');
+  for (const d of DATA.days){
+    if (card.dataset.evDay && d.date !== card.dataset.evDay) continue;
+    for (const s of d.slots){
+      if (re.test(s.title) || s.talks.some(t => re.test(t.t))) return { d, s };
+    }
+  }
+  return null;
+}
+function paintEventStars(){
+  for (const b of document.querySelectorAll('[data-ev-star]')){
+    const on = state.starred.has(b.dataset.evStar);
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on);
+    b.textContent = on ? '★' : '☆';
+    b.title = on ? 'In My agenda: select to remove' : 'Add to My agenda';
+  }
+}
+for (const card of document.querySelectorAll('.highlights [data-ev]')){
+  const hit = eventSlot(card);
+  if (!hit) continue;
+  const { d, s } = hit;
+  if (!('evKeepTime' in card.dataset)) card.querySelector('.hl-when').innerHTML = `${esc(d.label)} · <span>${s.start}–${s.end}</span>`;
+  const name = card.querySelector('.hl-t').textContent;
+  card.querySelector('.hl-acts').insertAdjacentHTML('afterbegin',
+    `<button type="button" class="ag-btn" data-session-detail="${s.id}" data-talk-detail="" aria-label="View ${esc(name)} in the program">View in program</button>` +
+    `<button type="button" class="star" data-ev-star="${s.id}" aria-pressed="false" aria-label="Save ${esc(name)} to My agenda">☆</button>`);
+}
+paintEventStars();
+document.querySelector('.highlights').addEventListener('click', e => {
+  const b = e.target.closest('[data-ev-star]');
+  if (!b) return;
+  const id = b.dataset.evStar;
+  state.starred.has(id) ? state.starred.delete(id) : state.starred.add(id);
+  // Keep the program's own stars for this session in step.
+  for (const x of document.querySelectorAll(`[data-sstar="${id}"]`)){
+    x.classList.toggle('on', state.starred.has(id));
+    x.setAttribute('aria-pressed', state.starred.has(id));
+    x.textContent = state.starred.has(id) ? '★' : '☆';
+  }
+  afterStarChange();
+  paintEventStars();
+  toast(state.starred.has(id) ? 'Added to My agenda' : 'Removed from My agenda');
+});
+// Stars change elsewhere too (program cards, the details dialog, imports).
+document.addEventListener('click', () => setTimeout(paintEventStars));
+document.getElementById('events').addEventListener('toggle', paintEventStars);
+document.addEventListener('click', e => {
+  if (!e.target.closest('[data-open-events]')) return;
+  const ev = document.getElementById('events');
+  ev.open = true;
+  ev.scrollIntoView({ behavior: motionReduced() ? 'instant' : 'smooth', block: 'start' });
+  ev.querySelector('summary').focus({ preventScroll: true });
 });
 
 // ---------- live "now" ----------
@@ -4087,9 +4494,11 @@ function stateHash(){
   const p = new URLSearchParams();
   if (state.scope !== 'program') p.set('view', state.scope);
   // The people list ignores the program's day, search, streams and layout, so
-  // its address carries only its own search.
+  // its address carries only its own search, sort and category.
   if (state.scope === 'participants'){
     if (state.pq) p.set('pq', state.pq);
+    if (state.psort !== 'aff') p.set('psort', state.psort);
+    if (state.pcat) p.set('pcat', state.pcat);
     return p.toString();
   }
   if (state.layout !== 'list') p.set('layout', state.layout);
@@ -4117,6 +4526,8 @@ function readHash(){
   const p = new URLSearchParams(location.hash.slice(1));
   state.scope = ['agenda', 'participants'].includes(p.get('view')) ? p.get('view') : 'program';
   state.pq = (p.get('pq') || '').trim();
+  state.psort = ['first', 'last'].includes(p.get('psort')) ? p.get('psort') : 'aff';
+  state.pcat = DATA.cats[p.get('pcat')] ? p.get('pcat') : '';
   state.layout = p.get('layout') === 'calendar' ? 'calendar' : 'list';
   const di = DATA.days.findIndex(d => d.date === p.get('day'));
   state.day = di >= 0 ? di : 'all';
