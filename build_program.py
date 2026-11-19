@@ -437,8 +437,12 @@ footer p{margin:4px 0}
   .toolbar .chip{flex:none}
   .talk-star{width:44px;height:44px;margin-right:2px}
 }
+#calendarScope{margin:0 0 8px}
+#parentOption{font-size:14px}
+.favourites-calendar #builder{padding-bottom:0}
 @media print{
-  .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.builder-actions,.agenda-views,#builderCalendar,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  .favourites-calendar #agenda,#agendaCalendarBtn{display:none!important}
+  .sticky-wrap,.star,.talk-star,.hero .links,.chips,.controls,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:#fff}
@@ -482,6 +486,10 @@ footer p{margin:4px 0}
 
 <div class="sticky-wrap">
   <div class="toolbar">
+    <div id="calendarScope" class="agenda-views" role="group" aria-label="Calendar schedule" hidden>
+      <button data-scope="program" aria-pressed="true">Full program</button>
+      <button data-scope="agenda" aria-pressed="false">My agenda</button>
+    </div>
     <div class="daytabs" id="daytabs" role="tablist" aria-label="Congress days"></div>
     <div class="controls">
       <div class="searchbox">
@@ -490,7 +498,8 @@ footer p{margin:4px 0}
         <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
       </div>
       <button class="toggle" id="agendaBtn"><span>&#9733;</span> My agenda <span class="cnt" id="starCount">0</span></button>
-      <button class="toggle" id="programCalendarBtn" aria-pressed="false">Calendar</button>
+      <button class="toggle" id="programCalendarBtn">Calendar</button>
+      <label id="parentOption" hidden><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
       <label id="programLevel" hidden><select aria-label="Program calendar events"><option value="sessions">Sessions</option><option value="talks">Individual talks</option></select></label>
       <button class="toggle" id="expandAll">Expand all abstracts</button>
     </div>
@@ -500,8 +509,7 @@ footer p{margin:4px 0}
   </div>
 </div>
 
-<main id="agenda"></main>
-<div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
+
 
 <section id="builder" class="builder" hidden>
   <div class="builder-head">
@@ -516,10 +524,7 @@ footer p{margin:4px 0}
       <button class="toggle" id="icsAgenda">Download .ics</button>
     </div>
   </div>
-  <div class="agenda-views" id="agendaViews" role="group" aria-label="Agenda view">
-    <button type="button" data-layout="list" aria-pressed="true" aria-controls="builderList">List</button>
-    <button type="button" data-layout="calendar" aria-pressed="false" aria-controls="builderCalendar">Calendar</button>
-  </div>
+  <button class="toggle" id="agendaCalendarBtn">Calendar</button>
   <p class="export-status" id="exportStatus" role="status"></p>
   <div class="ics-note" id="copyNote" hidden>
     <label for="copyBox">Select and copy your agenda text below.</label>
@@ -531,13 +536,11 @@ footer p{margin:4px 0}
   </div>
   <div id="builderBody">
     <div id="builderList"></div>
-    <div id="builderCalendar" hidden>
-      <div class="cal-days" id="calendarDays" role="group" aria-label="Calendar day"></div>
-      <label class="session-option"><input type="checkbox" id="includeParents"> Show full sessions for favourite talks</label>
-      <div id="calendarDay"></div>
-    </div>
   </div>
 </section>
+
+<main id="agenda"></main>
+<div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
 
 <dialog id="eventDialog" aria-labelledby="eventTitle">
   <form method="dialog"><button class="toggle" autofocus>Close</button></form>
@@ -574,7 +577,7 @@ const CAT_COLORS = {
 const state = {
   day: 'all', q: '', cats: new Set(Object.keys(DATA.cats)),
   group: null, view: 'program',
-  agendaLayout: 'list', calendarDay: null, programCalendar: false, programTalks:false,
+  calendarScope: 'program', programTalks:false,
   starred: new Set(),
 };
 try {
@@ -593,14 +596,14 @@ function personStr(sp){
 }
 
 // ---------- header tabs & chips ----------
-function renderTabs(){
+function renderTabs(counts = DATA.days.map(d => d.slots.length)){
   const el = document.getElementById('daytabs');
-  const total = DATA.days.reduce((a,d)=>a+d.slots.length,0);
+  const total = counts.reduce((a,b)=>a+b,0);
   const allOn = state.day === 'all';
   let html = `<button class="daytab ${allOn?'on':''}" data-day="all" role="tab" tabindex="${allOn ? 0 : -1}" aria-selected="${allOn}">All week<span class="dt-count">${total}</span></button>`;
   html += DATA.days.map((d,i) => {
     const on = state.day === i;
-    return `<button class="daytab ${on?'on':''}" data-day="${i}" role="tab" tabindex="${on ? 0 : -1}" aria-selected="${on}">${d.label}<span class="dt-count">${d.slots.length}</span></button>`;
+    return `<button class="daytab ${on?'on':''}" data-day="${i}" role="tab" tabindex="${on ? 0 : -1}" aria-selected="${on}">${d.label}<span class="dt-count">${counts[i]}</span></button>`;
   }).join('');
   el.innerHTML = html;
   document.getElementById('q').placeholder = allOn
@@ -715,7 +718,7 @@ function blocksHtml(slots){
 }
 
 function renderAgenda(){
-  if (state.programCalendar){ renderProgramCalendar(); return; }
+  if (state.view === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
@@ -890,10 +893,11 @@ function applyFilters(){
 }
 
 // everything is rendered up front; filtering just toggles visibility
-function refresh(){ if (state.programCalendar) renderProgramCalendar(); else applyFilters(); }
+function refresh(){ if (state.view === 'calendar') renderCalendar(); else applyFilters(); }
 
 function rerender(){
-  renderTabs(); renderChips(); renderAgenda();
+  if (state.view !== 'calendar') renderTabs();
+  renderChips(); renderAgenda();
 }
 
 // ---------- events ----------
@@ -928,6 +932,11 @@ document.getElementById('chips').addEventListener('click', e => {
 });
 
 document.getElementById('agenda').addEventListener('click', e => {
+  if (e.target.closest('[data-browse-calendar]')){
+    showView('calendar','program');
+    document.querySelector('[data-scope="program"]').focus();
+    return;
+  }
   const f = e.target.closest('[data-focusday]');
   if (f){
     state.day = +f.dataset.focusday;
@@ -1140,31 +1149,6 @@ function groupFavourites(items){
   return grouped.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
 }
 
-function renderCalendar(items){
-  const preferred = items.find(it => it.di === state.day) || items[0];
-  const dayIndex = state.calendarDay ?? preferred?.di ?? 0;
-  const all = dayIndex === 'all';
-  document.getElementById('calendarDays').innerHTML = `<button class="daytab ${all?'on':''}" data-cal-day="all" aria-pressed="${all}">All week</button>` + DATA.days.map((d, i) => {
-    const count = items.filter(it => it.di === i).length;
-    const selected = i === dayIndex;
-    return `<button type="button" class="daytab ${selected?'on':''}" data-cal-day="${i}" aria-pressed="${selected}" aria-controls="calendarDay">${esc(d.label)}<span class="dt-count">${count}</span></button>`;
-  }).join('');
-
-  const pane = document.getElementById('calendarDay');
-  const groups = groupFavourites(items);
-  if (all && items.length){ pane.innerHTML = weekCalendar(groups); return; }
-  const dayItems = groups.filter(it => it.di === dayIndex);
-  if (!dayItems.length){
-    pane.innerHTML = `<div class="ag-empty">
-      <h3>No favourites ${all ? 'this week' : 'on ' + esc(DATA.days[dayIndex].label)}</h3>
-      <button class="toggle" data-goprogram="${dayIndex}">Browse ${all ? 'the program' : 'this day'} &#8594;</button>
-    </div>`;
-    return;
-  }
-
-  pane.innerHTML = dayCalendar(dayItems, DATA.days[dayIndex]);
-}
-
 function weekCalendar(items){
   const starts = [...new Set(items.map(it => it.start))].sort();
   const days = DATA.days.map(d => `<th scope="col">${esc(d.label)}</th>`).join('');
@@ -1211,16 +1195,6 @@ function dayCalendar(dayItems, day){
     </div>`;
 }
 
-function renderAgendaLayout(items){
-  const calendar = state.agendaLayout === 'calendar';
-  document.getElementById('builderList').hidden = calendar;
-  document.getElementById('builderCalendar').hidden = !calendar;
-  document.querySelectorAll('#agendaViews [data-layout]').forEach(button => {
-    button.setAttribute('aria-pressed', button.dataset.layout === state.agendaLayout);
-  });
-  if (calendar) renderCalendar(items);
-}
-
 function renderBuilder(){
   const items = agendaItems();
   markClashes(items);
@@ -1235,7 +1209,7 @@ function renderBuilder(){
   document.getElementById('exportStatus').textContent = '';
   document.getElementById('copyNote').hidden = true;
   document.getElementById('icsNote').hidden = true;
-  renderAgendaLayout(items);
+
   if (!items.length){
     stats.textContent = 'Nothing saved yet.';
     body.innerHTML = `<div class="ag-empty">
@@ -1258,17 +1232,36 @@ function renderBuilder(){
   body.innerHTML = html;
 }
 
-function showView(v){
-  state.view = v;
-  const isAgenda = v === 'agenda';
-  document.body.classList.toggle('view-agenda', isAgenda);
-  document.getElementById('builder').hidden = !isAgenda;
-  document.getElementById('agenda').hidden = isAgenda;
-  document.getElementById('emptyNote').hidden = isAgenda;
-  document.querySelector('.sticky-wrap').hidden = isAgenda;
-  document.querySelector('.highlight-wrap').hidden = isAgenda;
-  if (isAgenda){
-    renderBuilder();
+function showView(view, scope = state.calendarScope){
+  state.view = view;
+  state.calendarScope = scope;
+  const calendar = view === 'calendar';
+  const agendaList = view === 'agenda';
+  const favourites = calendar && scope === 'agenda';
+  document.body.classList.toggle('favourites-calendar', favourites);
+  document.getElementById('calendarScope').hidden = !calendar;
+  for (const button of document.querySelectorAll('[data-scope]')){
+    button.setAttribute('aria-pressed', button.dataset.scope === scope);
+  }
+  document.querySelector('.sticky-wrap').hidden = agendaList;
+  document.querySelector('.highlight-wrap').hidden = view !== 'program';
+  document.getElementById('agenda').hidden = agendaList;
+  document.getElementById('emptyNote').hidden = view !== 'program';
+  document.getElementById('builder').hidden = !(agendaList || favourites);
+  document.getElementById('builderList').hidden = !agendaList;
+  document.getElementById('agendaCalendarBtn').hidden = !agendaList;
+  document.getElementById('backToProgram').hidden = !agendaList;
+  document.getElementById('expandAll').hidden = calendar;
+  document.getElementById('programLevel').hidden = !calendar || favourites;
+  document.getElementById('parentOption').hidden = !favourites;
+  document.querySelector('.searchbox').hidden = favourites;
+  document.getElementById('chips').hidden = favourites;
+  document.getElementById('grpill').hidden = favourites;
+  document.getElementById('programCalendarBtn').textContent = calendar ? 'List view' : 'Calendar';
+  document.getElementById('agendaBtn').hidden = calendar;
+  if (agendaList || favourites) renderBuilder();
+  if (!agendaList) rerender();
+  if (agendaList){
     document.getElementById('builderTitle').focus({preventScroll:true});
     document.getElementById('builderTitle').scrollIntoView({block:'start',behavior:'instant'});
   }
@@ -1388,16 +1381,7 @@ function downloadIcs(){
   document.getElementById('icsBox').value = txt;
 }
 
-function setProgramCalendar(on){
-  state.programCalendar = on;
-  const btn = document.getElementById('programCalendarBtn');
-  btn.setAttribute('aria-pressed', on);
-  btn.classList.toggle('on', on);
-  document.getElementById('expandAll').hidden = on;
-  document.getElementById('programLevel').hidden = !on;
-}
-
-function renderProgramCalendar(){
+function programCalendarItems(){
   const items = [];
   DATA.days.forEach((d,di) => {
     for (const s of d.slots.filter(slotMatches)){
@@ -1406,40 +1390,73 @@ function renderProgramCalendar(){
           items.push({di,d,s,t,kind:'talk',start:t.s,end:t.e,clashes:[]});
         }
       } else {
-        items.push({di,d,s,t:null,kind:'session',start:s.start,end:s.end,clashes:[]});
+        items.push({di,d,s,t:null,kind:'session',start:s.start,end:s.end,clashes:[],
+                    children:s.talks.filter(t => state.starred.has(t.id))});
       }
     }
   });
+  return items.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
+}
+
+function renderCalendar(){
+  const favourites = state.calendarScope === 'agenda';
+  let items;
+  if (favourites){
+    const saved = agendaItems();
+    markClashes(saved);
+    items = groupFavourites(saved);
+  } else {
+    items = programCalendarItems();
+  }
+  renderTabs(DATA.days.map((d,i) => items.filter(it => it.di === i).length));
   const main = document.getElementById('agenda');
-  items.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start));
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
-  const fallback = !selected.length && items.length > 0;
+  const fallback = !favourites && !selected.length && items.length > 0;
   const result = document.getElementById('resultLine');
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekCalendar(items);
     result.textContent = message;
   } else {
-    main.innerHTML = !selected.length ? '<p>No matching events. Change the search or stream filters.</p>'
+    const empty = favourites
+      ? '<p>No favourites for this period.</p><button class="toggle" data-browse-calendar>Browse full program</button>'
+      : '<p>No matching events. Change the search or stream filters.</p>';
+    main.innerHTML = !selected.length ? empty
       : state.day === 'all' ? weekCalendar(selected) : dayCalendar(selected, DATA.days[state.day]);
-    result.textContent = selected.length + (state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
+    result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
 }
 
 document.getElementById('programCalendarBtn').addEventListener('click', () => {
-  setProgramCalendar(!state.programCalendar);
-  renderAgenda();
+  if (state.view === 'calendar'){
+    showView(state.calendarScope);
+    if (state.view === 'program') document.getElementById('programCalendarBtn').focus();
+  } else {
+    showView('calendar','program');
+    document.querySelector('[data-scope="program"]').focus();
+  }
+});
+document.getElementById('agendaCalendarBtn').addEventListener('click', () => {
+  showView('calendar', 'agenda');
+  document.querySelector('[data-scope="agenda"]').focus();
+});
+const calendarPositions = new Map();
+document.getElementById('calendarScope').addEventListener('click', e => {
+  const button = e.target.closest('[data-scope]');
+  if (!button || button.dataset.scope === state.calendarScope) return;
+  const previous = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
+  const left = previous?.scrollLeft || 0;
+  if (previous) calendarPositions.set(state.calendarScope + ':' + state.day, previous.scrollTop);
+  showView('calendar', button.dataset.scope);
+  const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
+  next?.scrollTo({left, top:calendarPositions.get(state.calendarScope + ':' + state.day) || 0, behavior:'instant'});
 });
 document.querySelector('#programLevel select').addEventListener('change', e => {
   state.programTalks = e.target.value === 'talks';
-  renderProgramCalendar();
+  renderCalendar();
 });
-document.getElementById('includeParents').addEventListener('change', () => {
-  const items = agendaItems();
-  markClashes(items);
-  renderCalendar(items);
-});
+document.getElementById('includeParents').addEventListener('change', renderCalendar);
 
 const eventDialog = document.getElementById('eventDialog');
 let dialogTrigger;
@@ -1454,10 +1471,11 @@ document.addEventListener('click', e => {
   const t = s.talks.find(talk => talk.id === button.dataset.talkDetail);
   const day = DATA.days.find(d => d.slots.includes(s));
   const talks = t ? [t] : [...s.talks];
-  if (state.view === 'agenda') talks.sort((a,b) => Number(state.starred.has(b.id)) - Number(state.starred.has(a.id)));
+  const personal = state.view === 'agenda' || (state.view === 'calendar' && state.calendarScope === 'agenda');
+  if (personal) talks.sort((a,b) => Number(state.starred.has(b.id)) - Number(state.starred.has(a.id)));
   const details = talks.map(talk => {
     const saved = state.starred.has(talk.id);
-    const open = t || (state.view === 'agenda' && saved) || (state.view === 'program' && openMatchingTalk(talk,s));
+    const open = t || (personal && saved) || (!personal && openMatchingTalk(talk,s));
     const who = talk.sp.map(p => p.n).join(', ');
     if (t) return `<p>${esc(who)}</p><h3>Abstract</h3><p class="detail-text">${esc(t.d || 'No abstract provided.')}</p>${favouriteButton(t.id,'talk')}`;
     return `<details ${open?'open':''}><summary><span class="saved-marker">${saved?'★ ':''}</span>${talk.s}–${talk.e} · ${esc(talk.t)}</summary>
@@ -1500,8 +1518,8 @@ eventDialog.addEventListener('close', () => {
   delete eventDialog.dataset.changed;
   const oldScroll = dialogTrigger.closest('.week-scroll,.cal-scroll');
   const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
-  renderAgenda();
-  if (state.view === 'agenda') renderBuilder();
+  if (state.view !== 'agenda') renderAgenda();
+  if (state.view === 'agenda' || (state.view === 'calendar' && state.calendarScope === 'agenda')) renderBuilder();
   const scope = state.view === 'agenda' ? document.querySelector('#builder') : document.querySelector('#agenda');
   const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]`;
   const replacement = [...scope.querySelectorAll(selector)].find(b => b.offsetWidth);
@@ -1520,17 +1538,6 @@ document.getElementById('copyAgenda').addEventListener('click', () => copyToClip
 document.getElementById('icsAgenda').addEventListener('click', () => downloadIcs());
 
 document.getElementById('builder').addEventListener('click', e => {
-  const layout = e.target.closest('[data-layout]');
-  const day = e.target.closest('[data-cal-day]');
-  if (layout || day){
-    if (layout) state.agendaLayout = layout.dataset.layout;
-    if (day) state.calendarDay = day.dataset.calDay === 'all' ? 'all' : +day.dataset.calDay;
-    const items = agendaItems();
-    markClashes(items);
-    renderAgendaLayout(items);
-    if (day) document.querySelector('#calendarDays [aria-pressed="true"]').focus();
-    return;
-  }
   const rm = e.target.closest('[data-sstar],[data-tstar]');
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
@@ -1550,15 +1557,13 @@ document.getElementById('builder').addEventListener('click', e => {
 function openInProgram(go){
   const jump = go.dataset.jump || '';
   const dayAttr = go.dataset.goprogram;
-  showView('program');
   state.day = dayAttr === 'all' ? 'all' : +dayAttr;
   if (jump){
-    setProgramCalendar(false);
     clearSearch();
     state.group = null;
     state.cats = new Set(Object.keys(DATA.cats));
   }
-  rerender();
+  showView('program');
   if (jump){
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
@@ -1585,7 +1590,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
 
 document.addEventListener('keydown', e => {
   if (eventDialog.open) return;
-  if (e.key === '/' && state.view === 'program' && !e.target.closest('input, textarea, [contenteditable]') &&
+  if (e.key === '/' && (state.view === 'program' || (state.view === 'calendar' && state.calendarScope === 'program')) && !e.target.closest('input, textarea, [contenteditable]') &&
       !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); qEl.focus(); }
   if (e.key === 'Escape' && document.activeElement === qEl){ clearSearch(); renderAgenda(); qEl.blur(); }
 });
