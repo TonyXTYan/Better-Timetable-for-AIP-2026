@@ -762,7 +762,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-tcol{display:none}
 .vt-wrap{margin:0 0 14px}
 .vt-wrap .vt-grid{margin:0}
-.vt-wrap.scroll{overflow:auto;max-height:calc(100vh - var(--toolbar-h,150px) - 16px);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+/* sideways only: vertical scrolling stays with the page */
+.vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 .vt-wrap.scroll .vt-head,.vt-wrap.scroll .vt-corner{top:0}
 .vt-wrap.scroll .vt-corner{left:0;z-index:7}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
@@ -3065,7 +3066,7 @@ document.getElementById('agenda').addEventListener('click', e => {
     vtOpen.has(id) ? vtOpen.delete(id) : vtOpen.add(id);
     renderCalendar();
     const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
-    if (nt){ (nt.closest('.vt-wrap.scroll') || window).scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
+    if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
     return;
   }
   const b = e.target.closest('[data-vtpick]');
