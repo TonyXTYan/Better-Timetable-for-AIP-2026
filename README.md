@@ -18,14 +18,20 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - A Full program day in the calendar has two layouts, picked with **Horizontal | Vertical**
   (remembered on the device as `aip2026-orient`, and `orient=v` in the address; All week keeps
   the week table):
-  - **Horizontal** is a zoomable timeline. A whole-day overview with a draggable, resizable
-    window and presets (Now, Morning, Afternoon, Evening, Whole day) sets the time range, and the
-    timeline fills the page width for that range (no sideways scrolling). A slim copy of the
-    window and ‹ › buttons ride in the sticky hour ruler, so the range can change anywhere down
-    the page. Streams are grouped (AIP groups get a lane each) and collapse; lanes with nothing
-    in the range are left out. In Sessions mode small marks along each bar's foot show where its
-    talks start, the talk on now in red; Talks mode splits each bar into its talks. Inside an AIP group's
-    lane the repeated "AIP QST:" prefix is left out of titles.
+  - **Horizontal** is one wide canvas for the whole day, scrolled sideways (scrollbar, trackpad,
+    shift + wheel, touch); the page does all the vertical scrolling. The hour ruler stays under
+    the toolbar and follows the canvas, and the lane labels stay on the left. One whole-day
+    minimap with the visible window is the range control: drag the window or click the map to
+    move. It is full size at the top of the view and shrinks to a slim strip inside the sticky
+    ruler once the view scrolls under the toolbar. Zoom with **Fit day / 4 h / 2 h / 1 h**, the
+    − + buttons in the ruler's corner, or ctrl/cmd + wheel (pinch) around the pointer; **Morning,
+    Afternoon, Evening, Now** scroll to those times. Zoom and position are kept per day while the
+    page is open; a day opens at about 4 hours per screen (2 on a phone), on now during the
+    congress, else on the first session. Talks mode opens zoomed in so a 15-minute talk is at least
+    6 rem wide on a phone. Streams are grouped (AIP groups get a lane each) and collapse; a lane
+    shows if it has anything that day. In Sessions mode small marks along each bar's foot show
+    where its talks start, the talk on now in red; Talks mode splits each bar into its talks.
+    Inside an AIP group's lane the repeated "AIP QST:" prefix is left out of titles.
   - **Vertical** puts time down the page in stream columns (AIP groups, ANZCOP, COMMAD, Focus,
     Posters and education, Forums), which split into sub-columns where sessions run side by side;
     plenaries and breaks are full-width bands and the column heads stay in view. Each session

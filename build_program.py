@@ -743,61 +743,59 @@ footer p{margin:4px 0}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
 .agenda.wide{max-width:none}
-/* Full program day view: Horizontal (hz-, timeline) or Vertical (vt-, stream columns) */
-.hz-ov{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:8px 10px 6px;margin:0 0 10px}
-.hz-ovtop{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:8px}
+/* Full program day view: Horizontal (hz-, one sideways-scrolling canvas) or Vertical (vt-, stream columns) */
+.hz-ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 8px}
 .hz-pre{display:flex;gap:4px;flex-wrap:wrap}
 .hz-pre button{min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.78rem;font-weight:650}
 .hz-pre button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.hz-pre button[hidden]{display:none}
 .hz-pre button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.hz-read{margin-left:auto;font-size:.78rem;color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:650;text-align:right}
-.hz-read small{display:block;font-weight:500;color:var(--muted);font-size:.7rem}
-.hz-ovmap{position:relative;min-height:28px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.hz-ovt{position:absolute;height:3px;border-radius:1px;background:var(--c);min-width:2px;opacity:.9}
-.hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 62%,transparent);pointer-events:none}
-.hz-brush{position:absolute;top:0;bottom:0;border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);cursor:grab;box-sizing:border-box;border-radius:4px}
-.hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.hz-day{--lw:9.25rem;--hzd:50px;position:relative;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);margin:0 0 14px}
+/* sticky head: [corner | minimap] over [corner | ruler]; the minimap shrinks to a
+   slim strip once stuck, and the head's bottom margin grows by the same amount so
+   nothing below it moves */
+.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 1.875rem;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow);transition:margin-bottom .2s ease}
+.hz-day.stuck .hz-top{margin-bottom:var(--hzd);border-radius:0}
+.hz-corner{grid-row:1 / 3;grid-column:1;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:2px 6px 4px 10px;min-width:0;overflow:hidden}
+.hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.hz-zb{display:inline-flex;gap:3px;margin-left:auto}
+.hz-zb button{width:1.5rem;height:1.125rem;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
+.hz-zb button:disabled{opacity:.35}
+.hz-zb button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hz-read{font-size:.6875rem;line-height:1.15;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:6px 10px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:height .2s ease,margin .2s ease}
+.hz-day.stuck .hz-map{height:14px;margin:1px 10px 1px}
+.hz-mt{position:absolute;left:0;right:0;top:3px;bottom:15px;transition:top .2s ease,bottom .2s ease,opacity .2s ease}
+.hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
+.hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
+.hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.hz-mlab{position:absolute;bottom:1px;padding-left:3px;font-size:.5625rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+.hz-day.stuck .hz-mlab{opacity:0}
+.hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
+.hz-sl{left:0}.hz-sr{right:0}
+.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:2px solid var(--accent);border-radius:4px;background:color-mix(in srgb,var(--accent) 12%,transparent);cursor:grab}
 .hz-brush:active{cursor:grabbing}
-.hz-hl,.hz-hr{position:absolute;top:0;bottom:0;width:16px;cursor:ew-resize;display:flex;align-items:center;justify-content:center}
-.hz-hl{left:-9px}.hz-hr{right:-9px}
-.hz-hl::after,.hz-hr::after{content:"";width:5px;height:22px;max-height:60%;border-radius:3px;background:var(--accent);box-shadow:0 0 0 1px var(--card)}
-@media (pointer:coarse){.hz-hl,.hz-hr{width:32px}.hz-hl{left:-17px}.hz-hr{right:-17px}.hz-ovmap{min-height:48px}.hz-hl::after,.hz-hr::after{width:7px;height:28px}
-  .hz-mini{height:2.25rem}.hz-pan button{height:1.75rem;width:1.375rem;font-size:1rem}.hz-mmap{margin:4px 16px}}
-.hz-ovnow{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--live-ink);pointer-events:none;left:calc(var(--onp,0) * 1%)}
+.hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.hz-day.stuck .hz-brush{border-width:1.5px;border-radius:3px}
+.hz-ovnow{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--live-ink);pointer-events:none}
 .hz-ovnow[hidden]{display:none}
-.hz-ovax{position:relative;height:16px;margin-top:2px;font-size:.6875rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.hz-ovax span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
-.hz-ovax span:first-child{transform:none}.hz-ovax span:last-child{transform:translateX(-100%)}
-.hz-canvas{--lw:9.25rem;position:relative;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);margin:0 0 14px}
-.hz-stick{position:sticky;top:var(--toolbar-h,150px);z-index:20;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow)}
-.hz-ruler{display:flex;height:1.875rem}
-.hz-mini{display:flex;height:1.5rem;border-bottom:1px solid var(--line)}
-.hz-pan{gap:3px;padding:0 4px!important}
-.hz-pan button{width:1.75rem;height:1.125rem;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
-.hz-pan button:disabled{opacity:.35}
-.hz-pan button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.hz-mmap{position:relative;flex:1 1 auto;min-width:0;margin:3px 12px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;background:var(--surface-2);border:1px solid var(--line);border-radius:4px}
-.hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
-.hz-mmap .hz-brush{border-radius:3px}
-.hz-mmap .hz-hl::after,.hz-mmap .hz-hr::after{height:100%;max-height:none;width:4px}
-.hz-mmap .hz-shade{border-radius:3px}
-.hz-corner{flex:0 0 var(--lw);box-sizing:border-box;border-right:1px solid var(--line);font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em;display:flex;align-items:center;padding-left:10px}
-.hz-ticks{position:relative;flex:1 1 auto;min-width:0;overflow:hidden}
-.hz-ticks span.t{position:absolute;top:0;height:100%;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hz-ruler{grid-row:2;grid-column:2;position:relative;overflow:hidden;min-width:0}
+.hz-ticks{position:absolute;left:0;top:0;bottom:0;will-change:transform}
+.hz-ticks span.t{position:absolute;top:0;height:100%;box-sizing:border-box;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .hz-ticks span.t.m{border-left-color:transparent;font-weight:500;color:var(--muted)}
-.hz-nowpill{position:absolute;top:5px;left:calc(var(--np,0) * 1%);transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
+.hz-nowpill{position:absolute;top:6px;transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.625rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
 .hz-nowpill[hidden],.hz-nowl[hidden]{display:none}
-.hz-body{position:relative}
-.hz-lines,.hz-nowl{position:absolute;left:var(--lw);right:0;top:0;bottom:0;pointer-events:none}
-.hz-lines{z-index:1}
+/* the canvas: sideways only; its height is its content's height */
+.hz-vp{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:0 0 var(--radius) var(--radius)}
+.hz-inner{position:relative;min-width:100%}
+.hz-lines{position:absolute;left:var(--lw);top:0;bottom:0;pointer-events:none;z-index:1}
 .hz-lines i{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
 .hz-lines i.m{border-left-color:color-mix(in srgb,var(--line) 45%,transparent)}
-.hz-nowl{z-index:4;left:calc(var(--lw) + (100% - var(--lw)) * var(--np,0) / 100)}
-.hz-nowl{right:auto;width:0;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
+.hz-nowl{position:absolute;top:0;bottom:0;width:0;z-index:4;pointer-events:none;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
 .hz-lane,.hz-grp{display:flex;border-bottom:1px solid var(--line)}
-.hz-lane:last-child{border-bottom:0}
-.hz-grp{background:var(--surface-3);height:30px;border-top:0}
-.hz-label{flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.78rem;line-height:1.25;overflow:hidden;position:relative;z-index:3}
+.hz-rows>:last-child{border-bottom:0}
+.hz-grp{background:var(--surface-3);height:30px}
+.hz-label{position:sticky;left:0;z-index:6;flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.78rem;line-height:1.25;overflow:hidden}
 .hz-label b{font-weight:750;color:var(--ink)}
 .hz-label small{color:var(--muted);font-size:.6562rem;line-height:1.25}
 .hz-grp .hz-label{background:var(--surface-3);flex-direction:row;align-items:center;padding:0}
@@ -810,15 +808,12 @@ button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
 .hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 7px;text-transform:none;letter-spacing:0;font-size:.78rem;color:var(--ink)}
 .hz-lane.sole button.hz-gl .hz-cnt{display:none}
 .hz-lane.sole.col{height:30px}
-.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0}
-.hz-lane.sole.col button.hz-gl{text-transform:uppercase;letter-spacing:.04em;font-size:.7188rem;color:var(--c)}
+.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0;text-transform:uppercase;letter-spacing:.04em;font-size:.7188rem;color:var(--c)}
 .hz-ab{display:none}
-.hz-track{position:relative;flex:1 1 auto;min-width:0}
+.hz-track{position:relative;flex:0 0 auto}
 .hz-colt{position:absolute;top:10px;height:10px;border-radius:2px;background:var(--c);opacity:.85;min-width:2px;z-index:2}
 .hz-empty{padding:26px 16px;color:var(--muted);font-size:.9rem;text-align:center}
 .hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px}
-.hz-bar.cl{border-left-style:dotted;border-top-left-radius:0;border-bottom-left-radius:0}
-.hz-bar.cr{border-right-style:dotted;border-top-right-radius:0;border-bottom-right-radius:0}
 button.hz-bar{padding:4px 7px 4px 6px;display:flex;align-items:flex-start;justify-content:flex-start}
 button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
 .hz-in{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:100%;box-sizing:border-box}
@@ -843,6 +838,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-mark.first.is-now{border-left-color:transparent}
 .hz-bar.marked{padding-bottom:15px}
 .hz-bar.marked .hz-in{max-height:100%;overflow:hidden}
+.hz-bar.marked .hz-title{flex-shrink:0}
 .hz-bar.past{opacity:.55}
 .hz-bar.is-now{border-color:var(--live-ink);border-left-color:var(--c);box-shadow:inset 0 0 0 1px var(--live-ink)}
 .hz-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
@@ -850,9 +846,15 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-talk.is-now .hz-tt{color:var(--live-ink)}
 #hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:8px;font-size:.75rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px var(--pop-shadow)}
 #hzTip[hidden]{display:none}
+@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}}
 @media (max-width:720px){
-.hz-canvas{--lw:3.1rem}
+.hz-day{--lw:3.1rem}
 .hz-full{display:none}.hz-ab{display:inline}
+.hz-corner{padding:4px 3px 6px 5px;align-items:flex-start}
+.hz-zb,.hz-read{display:none}
+.hz-tz{font-size:.5625rem;letter-spacing:.02em}
+.hz-map{margin:6px 8px 4px}
+.hz-day.stuck .hz-map{margin:1px 8px 1px}
 .hz-label{padding:6px 3px 6px 4px;font-size:.66rem;align-items:flex-start}
 .hz-label small{display:none}
 .hz-cnt{display:none}
@@ -860,7 +862,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .hz-lane.sole button.hz-gl{font-size:.625rem;padding:8px 2px 0 3px;font-weight:800}
 .hz-lane.sole.col button.hz-gl{font-size:.625rem}
 .hz-pre button{padding:4px 10px}
-.hz-read{margin-left:0;width:100%;text-align:left}
+.hz-ctl{gap:6px}
 }
 .vt-grid{--vtw:3.1rem;display:grid;grid-template-columns:var(--vtw) var(--vtcols);grid-auto-rows:minmax(1.75rem,auto);column-gap:6px;margin:0 0 14px;position:relative}
 .vt-head{grid-row:1;align-self:stretch;position:sticky;top:var(--toolbar-h,150px);z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:6px;white-space:nowrap;overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:8px 8px 0 0;padding:5px 8px;margin-bottom:4px;font-weight:800;font-size:.75rem;line-height:1.2;color:var(--ink);box-shadow:0 4px 6px -4px var(--pop-shadow)}
@@ -2502,14 +2504,8 @@ function weekTarget(sid){
 // layout, scrolled to the session, zooming in from the block.
 function weekOpenDay(di, sid, from){
   const day = DATA.days[di], s = sid ? slotById(sid) : null;
-  if (s && state.orient !== 'v'){
-    // the timeline's window starts a little before the session
-    const cur = HZ.range[day.date], phone = PHONE_MQ.matches;
-    const w = cur ? cur[1] - cur[0] : phone ? 120 : 270;
-    const a = Math.max(0, toMin(s.start) - (phone ? 15 : 30));
-    HZ.range[day.date] = [a, a + w];
-    HZ.preset[day.date] = null;
-  }
+  // the timeline opens with the session near its left edge
+  if (s && state.orient !== 'v') HZ.left[day.date] = toMin(s.start) - (PHONE_MQ.matches ? 15 : 30);
   withTransition('zoom', () => {
     state.day = di;
     rerender();
@@ -2519,9 +2515,12 @@ function weekOpenDay(di, sid, from){
       document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll:true });
       return null;
     }
-    t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
+    const hz = t.box.closest('.hz-day');
+    if (hz) hzScrollTo(hz, toMin(s.start) - (PHONE_MQ.matches ? 15 : 30), 0, 'instant');
+    else t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
+    if (hz) t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
     const bar = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
-    const stick = t.box.closest('.hz-canvas')?.querySelector('.hz-stick')?.offsetHeight || t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
+    const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
     const top = t.box.getBoundingClientRect().top - bar - stick - 12;
     if (top < 0) window.scrollBy({ top, behavior:'instant' });
     t.button.focus({ preventScroll:true });
@@ -2942,14 +2941,21 @@ function programDayGrid(day){
   return state.orient === 'v' ? vtDayView(day) : hzDayView(day);
 }
 
-// Horizontal day view: a zoomable timeline. An overview strip shows the whole
-// day (one tick per session, by stream) with a brush; the brush range is what
-// the main timeline shows, scaled to the page width (no sideways scrolling).
-// A slim copy of the brush rides in the sticky ruler, so the range can change
-// anywhere down the page. Stream groups collapse; lanes with nothing in the
-// range are left out. In Sessions mode thin marks in each bar show where its
-// talks start (the talk on now in red); Talks mode splits bars into talks.
-const HZ = { range: {}, preset: {}, collapsed: new Set() };
+// Horizontal day view: one wide canvas for the whole day (first start to last
+// end) at a zoom in px per minute, scrolled natively sideways inside .hz-vp;
+// the page does all the vertical scrolling. The hour ruler cannot stick to the
+// page from inside a sideways scroller, so it sits outside it in a sticky head
+// (.hz-top, under the page toolbar) and follows the canvas's scroll; lane
+// labels stick to the left inside the scroller. The one range control, an
+// overview minimap of the whole day with the visible window, lives in the same
+// head: full size at the top of the view, a slim strip once the head is stuck.
+// Zoom buttons (Fit day, 4 h, 2 h, 1 h) set the scale, Morning / Afternoon /
+// Evening / Now scroll to those times, ctrl/cmd + wheel (trackpad pinch) zooms
+// around the pointer. Zoom (per day and mode) and scroll (per day) are kept in
+// memory. Groups collapse; a lane shows if it has anything that day. Sessions
+// mode marks each talk start inside a bar (the talk on now in red); Talks mode
+// splits bars into talks, with a zoom that keeps a 15-minute talk readable.
+const HZ = { zoom: {}, left: {}, collapsed: new Set() };
 const HZ_GROUPS = [
   { k:'plenary', name:'Plenary', ab:'PLN', cats:['plenary'] },
   { k:'aip', name:'AIP groups', ab:'AIP', cats:['aip'], split:'grp' },
@@ -2961,151 +2967,121 @@ const HZ_GROUPS = [
   { k:'misc', name:'Forums, meetings, breaks', ab:'MTG', cats:['special','business','social'], split:'cat' },
 ];
 const HZ_CAT_AB = { edu:'EDU', public:'PUB', special:'FOR', business:'MTG', social:'BRK' };
+const HZ_ZOOMS = [['fit', 'Fit day'], [240, '4 h'], [120, '2 h'], [60, '1 h']];
 const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
 const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
+const hzSmooth = () => motionReduced() ? 'instant' : 'smooth';
 function hzBounds(slots){
   return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
-function hzPresets(d0, d1, date){
-  const narrow = PHONE_MQ.matches;
-  const clampW = (a, b) => {   // keep width, shift into the day
-    const w = Math.min(b - a, d1 - d0);
-    a = Math.max(d0, Math.min(a, d1 - w));
-    return [a, a + w];
-  };
-  const p = {
-    morning: [d0, Math.max(d0 + 120, Math.min(d1, 12 * 60 + 30))],
-    afternoon: clampW(Math.max(d0, 12 * 60), Math.max(d0, 12 * 60) + 330),
-    evening: clampW(Math.max(d0, 17 * 60), Math.max(d0, 17 * 60) + 240),
-    whole: [d0, d1],
-  };
-  if (d1 <= 12 * 60 + 30) p.afternoon = p.evening = p.whole;
-  const n = aedtNow();
-  if (n.date === date && n.min >= d0 - 30 && n.min <= d1 + 30){
-    p.now = narrow ? clampW(n.min - 30, n.min + 90) : clampW(n.min - 75, n.min + 135);
-  }
-  return p;
+const hzZoomKey = date => date + (state.programTalks ? ':t' : ':s');
+// Minutes across the viewport: the zoom the user picked, else the default
+// (4 h on a desktop, 2 h on a phone; Talks mode zooms in until a 15-minute
+// talk is 6rem wide on a phone, or wide enough for full talk text on a desktop).
+function hzSpan(date, trackW, d0, d1){
+  const z = HZ.zoom[hzZoomKey(date)];
+  let span = z === 'fit' ? d1 - d0 : typeof z === 'number' ? z : PHONE_MQ.matches ? 120 : 240;
+  if (z === undefined && state.programTalks) span = Math.min(span, trackW / (PHONE_MQ.matches ? 6 * remPx() / 15 : 5.2));
+  return Math.max(20, Math.min(d1 - d0, span));
 }
-function hzDefaultRange(d0, d1, date){
-  const p = hzPresets(d0, d1, date);
-  if (p.now){ HZ.preset[date] = 'now'; return p.now; }
-  HZ.preset[date] = PHONE_MQ.matches ? null : 'morning';
-  return PHONE_MQ.matches ? [Math.max(d0, 9 * 60), Math.min(d1, Math.max(d0, 9 * 60) + 120)] : p.morning;
-}
-// The window for a day after the bounds may have changed (search, filters): a
-// preset is recomputed for the new bounds; a range the user set is kept (moved
-// inside the bounds) if it still shows something, else the default is used.
-function hzFitRange(date, d0, d1, slots){
-  const cur = HZ.range[date], key = HZ.preset[date];
-  if (cur && key){
-    const q = hzPresets(d0, d1, date)[key];
-    if (q){ HZ.range[date] = q; return; }
-  }
-  if (cur){
-    const w = Math.min(cur[1] - cur[0], d1 - d0), a = Math.max(d0, Math.min(cur[0], d1 - w));
-    if (slots.some(s => toMin(s.start) < a + w && toMin(s.end) > a)){ HZ.range[date] = [a, a + w]; return; }
-  }
-  HZ.range[date] = hzDefaultRange(d0, d1, date);
-}
-function hzPack(items, ppm, r0, r1){
+function hzPack(items, ppm){
   const subs = [];
   for (const it of items){
-    const a = Math.max(it.a, r0);
-    const b = Math.max(Math.min(it.b, r1), a + 8 / ppm);
+    const a = it.a, b = Math.max(it.b, a + 8 / ppm);
     let sub = subs.find(x => x.end <= a + 1e-6);
     if (!sub){ sub = { end: 0, items: [] }; subs.push(sub); }
     sub.end = b; sub.items.push(it);
   }
   return subs;
 }
+// Scroll targets at the current zoom (start minute), or null where the day has none.
+function hzTargets(d0, d1, date){
+  const n = aedtNow();
+  return {
+    morning: d0,
+    afternoon: d1 > 13 * 60 && d0 < 12 * 60 ? 12 * 60 : null,
+    evening: d1 > 17 * 60 + 30 && d0 < 17 * 60 ? 17 * 60 : null,
+    now: n.date === date && n.min >= d0 - 30 && n.min <= d1 ? n.min : null,
+  };
+}
 
 function hzDayView(day){
   const slots = programDaySlots(day);
-  const [d0, d1] = hzBounds(slots);
-  hzFitRange(day.date, d0, d1, slots);
-  // overview: every session as a thin tick, packed per stream group
-  let y = 3, ov = '';
-  for (const g of HZ_GROUPS){
-    const gs = slots.filter(s => g.cats.includes(s.cat));
-    if (!gs.length) continue;
-    const subs = hzPack(gs.map(s => ({ s, a: toMin(s.start), b: toMin(s.end) })), 1, d0, d1);
-    for (const sub of subs){
-      for (const it of sub.items){
-        const [col] = CAT_COLORS[it.s.cat];
-        ov += `<i class="hz-ovt" style="--c:${col};left:${(it.a - d0) / (d1 - d0) * 100}%;width:${(it.b - it.a) / (d1 - d0) * 100}%;top:${y}px"></i>`;
-      }
-      y += 4;
-    }
-    y += 3;
-  }
-  const ovH = y;
-  let ax = '';
-  const step = (d1 - d0) / 60 > 10 ? 120 : 60;
-  for (let m = Math.ceil(d0 / step) * step; m <= d1; m += step) ax += `<span style="left:${(m - d0) / (d1 - d0) * 100}%">${hzHM(m)}</span>`;
+  if (!slots.length) return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3><div class="hz-empty">No sessions match.</div>`;
+  const [d0, d1] = hzBounds(slots), full = d1 - d0;
+  const pc = m => ((m - d0) / full * 100).toFixed(3);
+  // minimap: every session as a tick, one row per stream group (overlaps merge)
+  const gsets = HZ_GROUPS.map(g => slots.filter(s => g.cats.includes(s.cat))).filter(gs => gs.length);
+  const R = Math.max(6, gsets.length), off = (R - gsets.length) / 2;
+  let mt = '';
+  gsets.forEach((gs, i) => { for (const s of gs){
+    const a = toMin(s.start), b = toMin(s.end), [col] = CAT_COLORS[s.cat];
+    mt += `<i class="hz-mtk" style="--c:${col};left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%;top:${((i + off) / R * 100).toFixed(2)}%;height:${(0.8 / R * 100).toFixed(2)}%"></i>`;
+  } });
   let mh = '';
-  for (let m = Math.ceil(d0 / 60) * 60; m <= d1; m += 60) mh += `<i class="hz-mh" style="left:${(m - d0) / (d1 - d0) * 100}%"></i>`;
-  const p = hzPresets(d0, d1, day.date);
-  const btn = (k, label) => p[k] ? `<button type="button" data-hzpre="${k}" aria-pressed="false">${label}</button>` : '';
+  const lstep = full > 600 ? 120 : 60;
+  for (let m = Math.ceil(d0 / 60) * 60; m <= d1; m += 60){
+    mh += `<i class="hz-mh" style="left:${pc(m)}%"></i>`;
+    if ((m - d0) % lstep === 0 && m < d1) mh += `<span class="hz-mlab" style="left:${pc(m)}%">${hzHM(m)}</span>`;
+  }
+  const t = hzTargets(d0, d1, day.date);
+  const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
   return `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>
-    <div class="hz-ov" data-date="${day.date}">
-      <div class="hz-ovtop">
-        <div class="hz-pre" role="group" aria-label="Time window">${btn('now','Now')}${btn('morning','Morning')}${btn('afternoon','Afternoon')}${btn('evening','Evening')}${btn('whole','Whole day')}</div>
-        <div class="hz-read" aria-live="polite"></div>
-      </div>
-      <div class="hz-ovmap hz-map" style="height:${ovH}px" aria-label="Whole-day overview. Drag the window to choose the time range shown below.">
-        ${ov}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div>
-        <div class="hz-ovnow" hidden></div>
-        <div class="hz-brush" tabindex="0" role="group" aria-label="Visible time window. Arrow keys move it, Shift plus arrows resize it."><span class="hz-hl"></span><span class="hz-hr"></span></div>
-      </div>
-      <div class="hz-ovax">${ax}</div>
+    <div class="hz-ctl">
+      <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
+      <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
     </div>
-    <div class="hz-canvas" data-date="${day.date}" data-d0="${d0}" data-d1="${d1}">
-      <div class="hz-stick">
-        <div class="hz-mini"><div class="hz-corner hz-pan"><button type="button" data-hzpan="-1" aria-label="Show earlier">&#8249;</button><button type="button" data-hzpan="1" aria-label="Show later">&#8250;</button></div>
-          <div class="hz-mmap hz-map" aria-label="Whole day. Drag the window to change the time range.">${mh}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div><div class="hz-brush" tabindex="0" role="group" aria-label="Visible time window. Arrow keys move it, Shift plus arrows resize it."><span class="hz-hl"></span><span class="hz-hr"></span></div></div></div>
-        <div class="hz-ruler"><div class="hz-corner">AEDT</div><div class="hz-ticks"><span class="hz-nowpill" hidden>Now</span></div></div>
+    <div class="hz-day" data-date="${day.date}" data-d0="${d0}" data-d1="${d1}">
+      <div class="hz-top">
+        <div class="hz-corner"><span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
+        <div class="hz-map" aria-label="Whole day. Drag the window or click to move through the day.">
+          <div class="hz-mt">${mt}</div>${mh}<div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div>
+          <div class="hz-brush" tabindex="0" role="slider" aria-label="Visible time window" aria-valuemin="${d0}" aria-valuemax="${d1}"></div>
+        </div>
+        <div class="hz-ruler"><div class="hz-ticks"></div></div>
       </div>
-      <div class="hz-body"><div class="hz-lines"></div><div class="hz-nowl" hidden></div><div class="hz-rows"></div></div>
+      <div class="hz-vp"><div class="hz-inner"><div class="hz-lines"></div><div class="hz-nowl" hidden></div><div class="hz-rows"></div></div></div>
     </div>`;
 }
 
-function hzDraw(root){
-  const cv = root.querySelector('.hz-canvas'), date = cv.dataset.date;
-  const day = DATA.days.find(d => d.date === date);
-  const d0 = +cv.dataset.d0, d1 = +cv.dataset.d1;
-  const [r0, r1] = HZ.range[date], span = r1 - r0;
-  const slotsAll = programDaySlots(day);
+// Build the canvas at the current zoom; scroll it to `left` (a minute) or the kept position.
+function hzDraw(root, left){
+  const h = root.querySelector('.hz-day');
+  if (!h) return;
+  const date = h.dataset.date, day = DATA.days.find(d => d.date === date);
+  const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
+  const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
+  const trackW = Math.max(120, vp.clientWidth - lw);
+  const span = hzSpan(date, trackW, d0, d1), ppm = trackW / span, W = Math.round(full * ppm);
+  const X = m => ((m - d0) * ppm).toFixed(1);
+  const slots = programDaySlots(day);
   const talksMode = state.programTalks;
-  const ticksEl = cv.querySelector('.hz-ticks');
-  const W = Math.max(120, ticksEl.clientWidth || 300), ppm = W / span;
-  const pct = m => (m - r0) / span * 100;
   const tmode = ppm >= 5.2 ? 'full' : ppm >= 2.4 ? 'mid' : 'tick';
-  cv.dataset.r0 = r0; cv.dataset.r1 = r1;
-  cv.classList.toggle('hz-mid', talksMode && tmode === 'mid');
-  cv.classList.toggle('hz-tick', talksMode && tmode === 'tick');
-  const vis = slotsAll.filter(s => toMin(s.start) < r1 && toMin(s.end) > r0);
-  const talksOf = s => talksMode && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s) && toMin(t.s) < r1 && toMin(t.e) > r0) : [];
+  Object.assign(h.dataset, { ppm, tw: trackW, w: W, span });
+  h.classList.toggle('hz-mid', talksMode && tmode === 'mid');
+  h.classList.toggle('hz-tick', talksMode && tmode === 'tick');
+  const talksOf = s => talksMode && s.cat !== 'poster' ? s.talks.filter(t => talkMatches(t, s)) : [];
   const star = id => state.starred.has(id) ? '<span class="hz-star" aria-label="In my agenda">★</span> ' : '';
   // ruler + grid
   const px60 = ppm * 60;
   const lstep = px60 >= 50 ? 60 : px60 >= 26 ? 120 : 180;
   const mstep = px60 >= 200 ? 15 : px60 >= 96 ? 30 : lstep;
   let tk = '<span class="hz-nowpill" hidden>Now</span>', gl = '';
-  for (let m = Math.ceil(r0 / mstep) * mstep; m <= r1; m += mstep){
+  for (let m = Math.ceil(d0 / mstep) * mstep; m <= d1; m += mstep){
     const major = m % lstep === 0;
-    const x = pct(m);
-    gl += `<i class="${major ? '' : 'm'}" style="left:${x}%"></i>`;
-    if (x > 100 - 3600 / W) continue;
-    if (major || px60 >= 96) tk += `<span class="t${major ? '' : ' m'}" style="left:${x}%">${hzHM(m)}</span>`;
+    gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px"></i>`;
+    if (m < d1 && (major || px60 >= 96)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
   }
-  ticksEl.innerHTML = tk;
-  cv.querySelector('.hz-lines').innerHTML = gl;
+  const ticksEl = h.querySelector('.hz-ticks');
+  ticksEl.innerHTML = tk; ticksEl.style.width = W + 'px';
+  h.querySelector('.hz-lines').innerHTML = gl;
+  h.querySelector('.hz-inner').style.width = `calc(var(--lw) + ${W}px)`;
   // lane heights: talks mode lets the bar grow with the text it must show
   const rs = remPx() / 16, lineH = 16.5 * rs;
   const estLines = (len, w, cw) => Math.max(1, Math.ceil(len * cw * rs / Math.max(24, w)));
   const barModel = s => {
-    const a = Math.max(toMin(s.start), r0), b = Math.min(toMin(s.end), r1), w = (b - a) * ppm;
+    const a = toMin(s.start), b = toMin(s.end), w = Math.min((b - a) * ppm, trackW);
     const tks = talksOf(s);
     const markRoom = !talksMode && s.cat !== 'poster' && s.talks.length ? 14 : 0;
     if (!tks.length) return { s, a, b, w, tks, h: Math.min(150 * rs, 12 + Math.min(7, estLines(s.title.length, w - 16, 6.7)) * lineH + 14 * rs) + markRoom };
@@ -3115,20 +3091,19 @@ function hzDraw(root){
     if (tmode === 'full'){
       segs = 0;
       for (const t of tks){
-        const tw = (Math.min(toMin(t.e), r1) - Math.max(toMin(t.s), r0)) * ppm - 10;
+        const tw = (toMin(t.e) - toMin(t.s)) * ppm - 10;
         const sp = t.sp.map(p => p.n).join(', ');
-        const h = 18 * rs + Math.min(8, estLines(t.t.length, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, estLines(sp.length, tw, 6.1)) * 13 * rs : 0) + 4;
-        segs = Math.max(segs, h);
+        const hh = 18 * rs + Math.min(8, estLines(t.t.length, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, estLines(sp.length, tw, 6.1)) * 13 * rs : 0) + 4;
+        segs = Math.max(segs, hh);
       }
     } else segs = tmode === 'mid' ? 64 * rs : 24;
     return { s, a, b, w, tks, h: head + segs, head };
   };
-  // groups -> lanes
-  let rows = '', shown = 0;
+  // groups -> lanes (a lane is shown if it has anything that day)
+  let rows = '';
   for (const g of HZ_GROUPS){
-    const gs = vis.filter(s => g.cats.includes(s.cat));
+    const gs = slots.filter(s => g.cats.includes(s.cat));
     if (!gs.length) continue;
-    shown += gs.length;
     const lanes = new Map();
     for (const s of gs){
       const k = g.split === 'grp' ? (s.grp || 'other') : g.split === 'cat' ? s.cat : g.k;
@@ -3139,37 +3114,32 @@ function hzDraw(root){
       : g.cats.indexOf(a) - g.cats.indexOf(b));
     const col = CAT_COLORS[g.cats[0]], multi = laneKeys.length > 1, collapsed = HZ.collapsed.has(g.k);
     const ticks = () => gs.map(s => {
-      const a = Math.max(toMin(s.start), r0), b = Math.min(toMin(s.end), r1), [c] = CAT_COLORS[s.cat];
-      return `<i class="hz-colt" style="--c:${c};left:${pct(a)}%;width:${(b - a) / span * 100}%" title="${esc(s.title + ' (' + s.start + '–' + s.end + ')')}"></i>`;
+      const a = toMin(s.start), b = toMin(s.end), [c] = CAT_COLORS[s.cat];
+      return `<i class="hz-colt" style="--c:${c};left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px" title="${esc(s.title + ' (' + s.start + '–' + s.end + ')')}"></i>`;
     }).join('');
     const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car">▾</span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
-    if (collapsed || !multi){
-      if (collapsed){
-        rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track">${ticks()}</div></div>`;
-        continue;
-      }
-    } else {
-      rows += `<div class="hz-grp" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track"></div></div>`;
+    if (collapsed){
+      rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px">${ticks()}</div></div>`;
+      continue;
     }
+    if (multi) rows += `<div class="hz-grp" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px"></div></div>`;
     for (const k of laneKeys){
       const ls = lanes.get(k);
       const cat = ls[0].cat, [lc, lbg] = CAT_COLORS[cat];
       const models = ls.map(barModel);
-      const subs = hzPack(models.map(m => ({ m, a: toMin(m.s.start), b: toMin(m.s.end) })), ppm, r0, r1);
+      const subs = hzPack(models.map(m => ({ m, a: m.a, b: m.b })), ppm);
       let yy = 5, bars = '';
       for (const sub of subs){
         const hh = Math.max(...sub.items.map(x => x.m.h));
         for (const { m } of sub.items){
-          const s = m.s, full0 = toMin(s.start), full1 = toMin(s.end);
-          const n = s.talks.length;
+          const s = m.s, n = s.talks.length;
           const meta = [`${s.start}–${s.end}`, n ? `${n} ${s.cat === 'poster' ? 'poster' : 'talk'}${n > 1 ? 's' : ''}` : '',
             s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : ''].filter(Boolean).join(' · ');
           const conv = s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
           const tip = esc(`${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})`);
-          const cls = 'hz-bar' + (full0 < r0 ? ' cl' : '') + (full1 > r1 ? ' cr' : '');
-          const pos = `left:${pct(m.a)}%;width:${(m.b - m.a) / span * 100}%;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
-          const attrs = `data-date="${day.date}" data-start="${full0}" data-end="${full1}"`;
-          const tiny = m.w < 30;
+          const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
+          const attrs = `data-date="${day.date}" data-start="${m.a}" data-end="${m.b}"`;
+          const tiny = (m.b - m.a) * ppm < 30;
           // a lane already named after the group (QST, ANZCOP …) needs no "AIP QST:" in each title
           const shown = multi && g.split === 'grp' ? s.title.replace(/^AIP(\s+[A-Z]{2,6})?\s*:\s*/, '') : !multi ? s.title.replace(/^(ANZCOP|COMMAD)\s*:\s*/, '') : s.title;
           const inner = tiny ? '' : `<span class="hz-in"><span class="hz-title">${star(s.id)}${hl(shown || s.title)}</span><span class="hz-meta">${meta}</span></span>`;
@@ -3184,24 +3154,23 @@ function hzDraw(root){
                 marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
               }
             }
-            bars += `<button type="button" class="${cls}${marks ? ' marked' : ''}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}${marks}</button>`;
+            bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}" style="${pos}" ${attrs} title="${tip}" data-session-detail="${s.id}" data-talk-detail="">${inner}${marks}</button>`;
           } else {
             let segs = '';
             const bw = m.b - m.a;
             for (const t of m.tks){
-              const ta = Math.max(toMin(t.s), r0), tb = Math.min(toMin(t.e), r1);
+              const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
               const sp = t.sp.map(p => p.n).join(', ');
               const tip2 = `${t.t}\n${t.s}–${t.e}${sp ? '\n' + sp : ''}\nin ${s.title}`;
               segs += `<button type="button" class="hz-talk" style="left:${(ta - m.a) / bw * 100}%;width:calc(${(tb - ta) / bw * 100}% - 2px)" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-tip="${esc(tip2)}" aria-label="${esc(t.t + ', ' + t.s + (sp ? ', ' + sp : ''))}" data-session-detail="${s.id}" data-talk-detail="${t.id}">
                 <span class="hz-tt">${t.s}</span><span class="hz-tl">${star(t.id)}${hl(t.t)}</span>${sp ? `<span class="hz-ts">${hl(sp)}</span>` : ''}</button>`;
             }
-            bars += `<div class="${cls} hz-split" style="${pos}" ${attrs} title="${tip}">
+            bars += `<div class="hz-bar hz-split" style="${pos}" ${attrs} title="${tip}">
               <button type="button" class="hz-head" style="height:${m.head}px" data-session-detail="${s.id}" data-talk-detail="">${inner}</button><div class="hz-segs">${segs}</div></div>`;
           }
         }
         yy += hh + 4;
       }
-      const total = yy + 1;
       let label;
       if (!multi) label = `<div class="hz-label" style="--c:${lc}">${gbtn}</div>`;
       else {
@@ -3210,131 +3179,205 @@ function hzDraw(root){
         const sub = isGrp ? (DATA.groups[k] || '') : '';
         label = `<div class="hz-label" style="--c:${lc}" title="${esc(sub || main)}"><b><span class="hz-full">${esc(main)}</span><span class="hz-ab">${esc(ab)}</span></b>${sub ? `<small>${esc(sub)}</small>` : ''}</div>`;
       }
-      rows += `<div class="hz-lane${multi ? '' : ' sole'}" style="--c:${lc};--cbg:${lbg}">${label}<div class="hz-track" style="height:${total}px">${bars}</div></div>`;
+      rows += `<div class="hz-lane${multi ? '' : ' sole'}" style="--c:${lc};--cbg:${lbg}">${label}<div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
     }
   }
-  cv.querySelector('.hz-rows').innerHTML = rows || '<div class="hz-empty">No sessions in this time window. Drag the window above or pick a preset.</div>';
-  // overview: brush, shades, presets, readout
-  const ovEl = root.querySelector('.hz-ov');
-  const f = m => (m - d0) / (d1 - d0) * 100;
-  root.querySelectorAll('.hz-map').forEach(map => {
-    const brush = map.querySelector('.hz-brush');
-    brush.style.left = f(r0) + '%'; brush.style.width = (r1 - r0) / (d1 - d0) * 100 + '%';
-    map.querySelector('.hz-sl').style.cssText = `left:0;width:${f(r0)}%`;
-    map.querySelector('.hz-sr').style.cssText = `left:${f(r1)}%;right:0`;
+  h.querySelector('.hz-rows').innerHTML = rows;
+  // bars that can start off to the left: hzSync pads their text into view
+  h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
+    const bar = el.classList.contains('hz-head') ? el.parentElement : el;
+    return { el, x: parseFloat(bar.style.left), w: parseFloat(bar.style.width), pad: 0 };
   });
-  root.querySelectorAll('[data-hzpan]').forEach(b => { b.disabled = +b.dataset.hzpan < 0 ? r0 <= d0 : r1 >= d1; });
-  const pr = hzPresets(d0, d1, date);
-  ovEl.querySelectorAll('[data-hzpre]').forEach(b => {
-    const q = pr[b.dataset.hzpre];
-    b.setAttribute('aria-pressed', !!q && q[0] === r0 && q[1] === r1);
+  // zoom buttons
+  const z = HZ.zoom[hzZoomKey(date)];
+  h.parentElement.querySelectorAll('[data-hzzoom]').forEach(b => {
+    const v = b.dataset.hzzoom === 'fit' ? full : +b.dataset.hzzoom;
+    b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5 && (z !== undefined || !state.programTalks || !PHONE_MQ.matches));
+    b.hidden = b.dataset.hzzoom !== 'fit' && v >= full;
   });
-  ovEl.querySelector('.hz-read').innerHTML = `${hzHM(r0)}–${hzHM(r1)} · ${hzDur(span)}<small>${shown} of ${slotsAll.length} ${talksMode ? 'sessions' : 'sessions'} in this window</small>`;
+  h.querySelectorAll('[data-hzstep]').forEach(b => { b.disabled = +b.dataset.hzstep > 0 ? span >= full - 0.5 : span <= 30.5; });
+  // scroll: the minute asked for, the kept one, else now on a congress day, else the first session
+  if (left === undefined) left = HZ.left[date];
+  if (left === undefined){
+    const n = aedtNow();
+    left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...slots.map(s => toMin(s.start))) - 10;
+  }
+  vp.scrollLeft = Math.max(0, (left - d0) * ppm);
+  hzSync(h);
   paintNow();
 }
 
-function hzPaintNow(c){
-  const n = aedtNow(), r0 = +c.dataset.r0, r1 = +c.dataset.r1, d0 = +c.dataset.d0, d1 = +c.dataset.d1;
-  if (!r1) return;
-  const today = c.dataset.date === n.date;
-  const show = today && n.min >= r0 && n.min <= r1;
-  c.style.setProperty('--np', (n.min - r0) / (r1 - r0) * 100);
-  c.querySelector('.hz-nowl').hidden = !show;
-  const pill = c.querySelector('.hz-nowpill'); if (pill) pill.hidden = !show;
-  const Wp = c.querySelector('.hz-ticks').clientWidth, nx = (n.min - r0) / (r1 - r0) * Wp;
-  c.querySelectorAll('.hz-ticks .t').forEach(t => { const x = parseFloat(t.style.left) / 100 * Wp; t.style.visibility = show && x > nx - 34 && x < nx + 44 ? 'hidden' : ''; });
-  document.querySelectorAll('#agenda .hz-ovnow').forEach(ov => {
-    ov.hidden = !(today && n.min >= d0 && n.min <= d1);
-    ov.style.setProperty('--onp', (n.min - d0) / (d1 - d0) * 100);
-  });
+// Ruler, minimap window and readout follow the canvas's scroll (no redraw).
+function hzSync(h){
+  const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm, tw = +h.dataset.tw;
+  if (!ppm) return;
+  const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0, sl = vp.scrollLeft;
+  h.querySelector('.hz-ticks').style.transform = `translateX(${-sl}px)`;
+  // a bar cut by the left edge keeps the start of its title in view
+  for (const e of h._edge || []){
+    const cut = sl - e.x, pad = cut > 0 && cut < e.w - 48 ? Math.round(cut) : 0;
+    if (pad !== e.pad){ e.pad = pad; e.el.style.paddingLeft = pad ? `calc(${pad}px + 6px)` : ''; }
+  }
+  const a = d0 + sl / ppm, b = Math.min(d1, a + tw / ppm);
+  HZ.left[h.dataset.date] = a;
+  const f = m => (m - d0) / full * 100;
+  const brush = h.querySelector('.hz-brush');
+  brush.style.left = f(a) + '%'; brush.style.width = (b - a) / full * 100 + '%';
+  brush.setAttribute('aria-valuenow', Math.round(a));
+  brush.setAttribute('aria-valuetext', hzHM(a) + ' to ' + hzHM(b));
+  h.querySelector('.hz-sl').style.width = f(a) + '%';
+  h.querySelector('.hz-sr').style.left = f(b) + '%';
+  const r = h.querySelector('.hz-read'), txt = `${hzHM(Math.round(a / 5) * 5)}–${hzHM(Math.round(b / 5) * 5)}`;
+  if (r.textContent !== txt) r.textContent = txt;
+}
+
+function hzPaintNow(h){
+  const n = aedtNow(), ppm = +h.dataset.ppm, d0 = +h.dataset.d0, d1 = +h.dataset.d1;
+  if (!ppm) return;
+  const show = h.dataset.date === n.date && n.min >= d0 && n.min <= d1, x = (n.min - d0) * ppm;
+  const line = h.querySelector('.hz-nowl'), pill = h.querySelector('.hz-nowpill'), ov = h.querySelector('.hz-ovnow');
+  line.hidden = pill.hidden = ov.hidden = !show;
+  line.style.left = `calc(var(--lw) + ${x}px)`;
+  pill.style.left = x + 'px';
+  ov.style.left = (n.min - d0) / (d1 - d0) * 100 + '%';
+  h.querySelectorAll('.hz-ticks .t').forEach(t => { const tx = (+t.dataset.m - d0) * ppm; t.style.visibility = show && tx > x - 62 && tx < x + 18 ? 'hidden' : ''; });
+}
+
+// Full minimap at the top of the view, slim once its head sticks under the toolbar.
+function hzStuck(){
+  const h = document.querySelector('#agenda .hz-day');
+  if (!h) return;
+  const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+  h.classList.toggle('stuck', h.getBoundingClientRect().top < th - 0.5);
+}
+let hzStuckRaf = 0;
+window.addEventListener('scroll', () => {
+  if (!hzStuckRaf) hzStuckRaf = requestAnimationFrame(() => { hzStuckRaf = 0; hzStuck(); });
+}, { passive: true });
+
+// Scroll the canvas so minute m is at fraction `at` of the visible width.
+function hzScrollTo(h, m, at = 0, behavior = hzSmooth()){
+  const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm;
+  vp.scrollTo({ left: Math.max(0, (m - +h.dataset.d0) * ppm - at * +h.dataset.tw), behavior });
+}
+function hzGo(root, key){
+  const h = root.querySelector('.hz-day');
+  if (!h) return;
+  const m = hzTargets(+h.dataset.d0, +h.dataset.d1, h.dataset.date)[key];
+  if (m !== null && m !== undefined) hzScrollTo(h, key === 'now' ? m : m - 5, key === 'now' ? 0.2 : 0);
+}
+// Page-scroll a bar to just under the sticky stack (toolbar + slim head); the canvas scrolls itself.
+function hzReveal(bar){
+  const h = bar.closest('.hz-day'), th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+  const head = h.querySelector('.hz-ruler').offsetHeight + 18;
+  window.scrollTo({ top: Math.max(0, scrollY + bar.getBoundingClientRect().top - th - head - 8), behavior: hzSmooth() });
+}
+// New zoom (minutes across), keeping minute `m` at fraction `at` of the visible width.
+function hzZoom(root, span, m, at){
+  const h = root.querySelector('.hz-day'), d0 = +h.dataset.d0, d1 = +h.dataset.d1, cur = +h.dataset.span;
+  if (m === undefined){ at = 0.5; m = HZ.left[h.dataset.date] + cur * at; }
+  span = span === 'fit' ? 'fit' : Math.max(30, Math.min(d1 - d0, span));
+  HZ.zoom[hzZoomKey(h.dataset.date)] = span === 'fit' || span >= d1 - d0 - 0.5 ? 'fit' : span;
+  const s = span === 'fit' ? d1 - d0 : span;
+  hzDraw(root, m - at * s);
 }
 
 function hzInit(root){
-  const cv = root.querySelector('.hz-canvas'), date = cv.dataset.date;
-  const d0 = +cv.dataset.d0, d1 = +cv.dataset.d1, ov = root.querySelector('.hz-ov');
-  const redraw = () => hzDraw(root);
-  const set = (a, b) => {
-    const snap = x => Math.round(x / 15) * 15;
-    a = snap(a); b = snap(b);
-    if (b - a < 30){ b = a + 30; }
-    if (b > d1){ b = d1; a = Math.min(a, b - 30); }
-    if (a < d0){ a = d0; b = Math.max(b, a + 30); }
-    HZ.range[date] = [Math.max(d0, a), Math.min(d1, b)];
-    HZ.preset[date] = null;
-    redraw();
-  };
-  ov.addEventListener('click', e => {
-    const b = e.target.closest('[data-hzpre]');
-    if (!b) return;
-    const q = hzPresets(d0, d1, date)[b.dataset.hzpre];
-    if (q){ HZ.range[date] = q.slice(); HZ.preset[date] = b.dataset.hzpre; redraw(); }
+  const h = root.querySelector('.hz-day');
+  if (!h) return;
+  const ctl = root.querySelector('.hz-ctl'), vp = h.querySelector('.hz-vp'), map = h.querySelector('.hz-map');
+  const date = h.dataset.date, d0 = +h.dataset.d0, d1 = +h.dataset.d1;
+  ctl.addEventListener('click', e => {
+    const zb = e.target.closest('[data-hzzoom]'), gb = e.target.closest('[data-hzgo]');
+    if (zb) hzZoom(root, zb.dataset.hzzoom === 'fit' ? 'fit' : +zb.dataset.hzzoom);
+    else if (gb) hzGo(root, gb.dataset.hzgo);
   });
-  root.querySelectorAll('.hz-map').forEach(map => map.addEventListener('pointerdown', e => {
-    const rect = map.getBoundingClientRect();
-    const toM = x => d0 + (x - rect.left) / rect.width * (d1 - d0);
-    const t = e.target, start = toM(e.clientX), x0 = e.clientX;
-    const orig = HZ.range[date].slice();
-    const mode = t.closest('.hz-hl') ? 'l' : t.closest('.hz-hr') ? 'r' : t.closest('.hz-brush') ? 'm' : 'n';
+  let raf = 0;
+  vp.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; hzSync(h); }); }, { passive: true });
+  // ctrl/cmd + wheel (a trackpad pinch arrives as ctrl + wheel) zooms around the pointer
+  let zf = 1, zx = 0, zraf = 0;
+  vp.addEventListener('wheel', e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    zf *= Math.exp(e.deltaY * (e.deltaMode ? 0.05 : 0.0025));
+    zx = e.clientX;
+    if (zraf) return;
+    zraf = requestAnimationFrame(() => {
+      zraf = 0;
+      const tw = +h.dataset.tw, cur = +h.dataset.span, rect = vp.getBoundingClientRect();
+      const lw = h.querySelector('.hz-corner').offsetWidth;
+      const at = Math.max(0, Math.min(1, (zx - rect.left - lw) / tw));
+      const m = HZ.left[date] + at * cur;
+      hzZoom(root, cur * zf, m, at);
+      zf = 1;
+    });
+  }, { passive: false });
+  // the minimap: drag the window, or click / drag anywhere to centre the window there
+  map.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    const rect = map.getBoundingClientRect(), W = +h.dataset.w, k = W / rect.width;
+    const onBrush = !!e.target.closest('.hz-brush'), x0 = e.clientX, sl0 = vp.scrollLeft;
+    const centre = (x, behavior) => hzScrollTo(h, d0 + (x - rect.left) / rect.width * (d1 - d0), 0.5, behavior);
     try { map.setPointerCapture(e.pointerId); } catch (_) {}
     e.preventDefault();
     let moved = false;
     const mv = ev => {
       if (Math.abs(ev.clientX - x0) > 3) moved = true;
-      const m = toM(ev.clientX), dm = m - start, w = orig[1] - orig[0];
-      if (mode === 'l') set(Math.min(m, orig[1] - 30), orig[1]);
-      else if (mode === 'r') set(orig[0], Math.max(m, orig[0] + 30));
-      else if (mode === 'm'){ const a = Math.max(d0, Math.min(d1 - w, orig[0] + dm)); set(a, a + w); }
-      else if (moved) set(Math.min(start, m), Math.max(start, m));
+      if (!moved) return;
+      if (onBrush) vp.scrollLeft = sl0 + (ev.clientX - x0) * k;
+      else centre(ev.clientX, 'instant');
     };
     const up = () => {
       map.removeEventListener('pointermove', mv);
       map.removeEventListener('pointerup', up);
       map.removeEventListener('pointercancel', up);
-      if (mode === 'n' && !moved){ const w = orig[1] - orig[0], a = Math.max(d0, Math.min(d1 - w, start - w / 2)); set(a, a + w); }
+      if (!moved && !onBrush) centre(x0);
     };
     map.addEventListener('pointermove', mv);
     map.addEventListener('pointerup', up);
     map.addEventListener('pointercancel', up);
-  }));
-  root.querySelectorAll('.hz-brush').forEach(brush => brush.addEventListener('keydown', e => {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  });
+  h.querySelector('.hz-brush').addEventListener('keydown', e => {
+    const step = { ArrowLeft: -30, ArrowRight: 30, PageUp: -120, PageDown: 120 }[e.key];
+    if (step) hzScrollTo(h, HZ.left[date] + step, 0, 'instant');
+    else if (e.key === 'Home') hzScrollTo(h, d0, 0, 'instant');
+    else if (e.key === 'End') hzScrollTo(h, d1, 1, 'instant');
+    else return;
     e.preventDefault();
-    const [a, b] = HZ.range[date], dir = e.key === 'ArrowLeft' ? -15 : 15;
-    if (e.shiftKey) set(a, b + dir);
-    else { const na = Math.max(d0, Math.min(d1 - (b - a), a + dir)); set(na, na + (b - a)); }
-    brush.focus({ preventScroll: true });
-  }));
-  cv.addEventListener('click', e => {
-    const pan = e.target.closest('[data-hzpan]');
-    if (pan){
-      const [a, b] = HZ.range[date], w = b - a, d = Math.max(15, Math.round(w / 2 / 15) * 15) * +pan.dataset.hzpan;
-      const na = Math.max(d0, Math.min(d1 - w, a + d));
-      set(na, na + w);
+  });
+  h.addEventListener('click', e => {
+    const st = e.target.closest('[data-hzstep]');
+    if (st){
+      const cur = +h.dataset.span, levels = [30, 60, 90, 120, 180, 240, 360, 480, 720, 1440];
+      const next = +st.dataset.hzstep > 0 ? levels.find(v => v > cur + 1) : [...levels].reverse().find(v => v < cur - 1);
+      hzZoom(root, next || (d1 - d0));
       return;
     }
     const g = e.target.closest('[data-hzgrp]');
     if (!g) return;
     const k = g.dataset.hzgrp;
     HZ.collapsed.has(k) ? HZ.collapsed.delete(k) : HZ.collapsed.add(k);
-    redraw();
-    cv.querySelector(`[data-hzgrp="${k}"]`)?.focus({ preventScroll: true });
+    hzDraw(root);
+    h.querySelector(`[data-hzgrp="${k}"]`)?.focus({ preventScroll: true });
   });
   // hover/focus text for talks too small to print
   let tip = document.getElementById('hzTip');
   if (!tip){ tip = document.createElement('div'); tip.id = 'hzTip'; tip.hidden = true; document.body.appendChild(tip); }
   const showTip = e => {
     const t = e.target.closest && e.target.closest('.hz-talk');
-    if (!t || !(cv.classList.contains('hz-tick') || cv.classList.contains('hz-mid'))){ tip.hidden = true; return; }
+    if (!t || !(h.classList.contains('hz-tick') || h.classList.contains('hz-mid'))){ tip.hidden = true; return; }
     tip.textContent = t.dataset.tip; tip.hidden = false;
-    const r = t.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    const r = t.getBoundingClientRect(), w = tip.offsetWidth, hh = tip.offsetHeight;
     tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
-    tip.style.top = (r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8) + 'px';
+    tip.style.top = (r.top - hh - 8 < 8 ? r.bottom + 8 : r.top - hh - 8) + 'px';
   };
-  cv.addEventListener('pointerover', showTip);
-  cv.addEventListener('focusin', showTip);
-  cv.addEventListener('pointerleave', () => { tip.hidden = true; });
-  cv.addEventListener('focusout', () => { tip.hidden = true; });
-  redraw();
+  vp.addEventListener('pointerover', showTip);
+  vp.addEventListener('focusin', showTip);
+  vp.addEventListener('pointerleave', () => { tip.hidden = true; });
+  vp.addEventListener('focusout', () => { tip.hidden = true; });
+  vp.addEventListener('scroll', () => { tip.hidden = true; }, { passive: true });
+  hzStuck();
+  hzDraw(root);
 }
 
 // Vertical day view: time runs down the page, one column per stream family
@@ -3698,7 +3741,7 @@ function renderCalendar(){
     main.innerHTML = !selected.length ? empty
       : state.day === 'all' ? (favourites ? weekCalendar(selected) : weekOverview())
       : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
-    if (main.querySelector('.hz-canvas')) hzInit(main);
+    if (main.querySelector('.hz-day')) hzInit(main);
     const nw = vtKeep && main.querySelector('.vt-wrap.scroll');
     if (nw){ nw.scrollLeft = vtKeep[0]; nw.scrollTop = vtKeep[1]; }
     main.classList.toggle('wide', true);
@@ -3774,7 +3817,7 @@ window.addEventListener('resize', () => {
   clearTimeout(dayViewResize);
   dayViewResize = setTimeout(() => {
     const main = document.getElementById('agenda');
-    if (main.querySelector('.hz-canvas')) hzDraw(main);
+    if (main.querySelector('.hz-day')) hzDraw(main);
     else if (main.querySelector('.vt-grid') && Math.abs(main.clientWidth - vtWidth) > 40) renderCalendar();
   }, 120);
 });
@@ -4947,7 +4990,7 @@ function paintNow(){
   for (const x of dayItems) x.classList.toggle('is-next', x.dataset.date === n.date && +x.dataset.start === nextMin);
   document.querySelectorAll('#agenda .hz-talk, #agenda .hz-mark, #agenda .vt-tk').forEach(x =>
     x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
-  document.querySelectorAll('#agenda .hz-canvas').forEach(hzPaintNow);
+  document.querySelectorAll('#agenda .hz-day').forEach(hzPaintNow);
   weekPaintNow();
   // Vertical view: a now line at the exact time, between the rows around it.
   document.querySelectorAll('#agenda .vt-grid').forEach(g => {
@@ -4982,17 +5025,15 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   if (ti < 0) return;
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
   paintNow();
-  // The timeline moves its window to now; then go to the topmost item on now (or next).
-  const cv = state.layout === 'calendar' && document.querySelector('#agenda .hz-canvas');
-  if (cv){
-    const p = hzPresets(+cv.dataset.d0, +cv.dataset.d1, cv.dataset.date);
-    if (p.now){ HZ.range[cv.dataset.date] = p.now; HZ.preset[cv.dataset.date] = 'now'; hzDraw(document.getElementById('agenda')); }
-  }
+  // The timeline scrolls its canvas to now; then go to the topmost item on now (or next).
+  const hzOn = state.layout === 'calendar' && document.querySelector('#agenda .hz-day');
+  if (hzOn) hzGo(document.getElementById('agenda'), 'now');
   const topmost = sel => [...document.querySelectorAll(sel)].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
   const target = state.layout === 'calendar'
     ? document.querySelector('#agenda .cal-now:not([hidden]), #agenda .vt-nowl:not([hidden])')
       || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
+  if (hzOn && target) return hzReveal(target);
   if (target) target.scrollIntoView({ block: target.matches('.cal-now, .vt-nowl') ? 'center' : 'start' });
   else toast(state.q || state.group || state.cats.size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
