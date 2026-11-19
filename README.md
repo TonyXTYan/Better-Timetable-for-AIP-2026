@@ -11,8 +11,19 @@ user site's `404.html` that keeps `?query` and `#hash`).
 ## What it does
 
 - Browse by day or the whole week, as a list or a calendar; filter by stream or group badge.
+  In the **Streams** menu a click shows or hides a stream, **only** (or a double-click) shows
+  just that one, and **Select all**, **Deselect all** and **Reset filters** (streams, group and
+  search) are one click away.
 - Search every word in any order, ignoring case and accents; `"quotes"` for an exact phrase.
-  If the selected day has no match, matches from the rest of the week appear.
+  If the selected day has no match, matches from the rest of the week appear. Short forms of
+  institutions find their speakers' talks too (`unsw`, `anu`, `usyd`, `uts`, `uq`, `csiro` …).
+- **Participants** lists every speaker and convener grouped by institution, largest first, with
+  each person's talks and convened sessions (select one for its details). Search it by name or
+  institution, short forms included; `#view=participants&pq=anu` links to a search.
+  Affiliations are grouped by `canonical_affiliation()` in `normalize.py`: department prefixes,
+  a leading "The", case, country codes and typos are ignored, and Adelaide University and the
+  University of Adelaide (merged in 2026) are one group. The affiliation text itself is never
+  changed; talk details show each speaker as "Name (Affiliation)".
 - Star talks or whole sessions to build **My agenda**: clash warnings, list or calendar,
   print, copy as text, download `.ics`, or share it as a link the receiver can merge into theirs.
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
