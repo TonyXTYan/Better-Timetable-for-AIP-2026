@@ -11,6 +11,18 @@ user site's `404.html` that keeps `?query` and `#hash`).
 ## What it does
 
 - Browse by day or the whole week, as a list or a calendar; filter by stream or group badge.
+  The toolbar (view switches, day tabs, search, Streams, Now) stays at the top of the screen;
+  scrolling down past it folds it to one slim row of day tabs (the Program / My agenda /
+  Participants switch in Participants), a search button and **Now**, and scrolling up, focusing
+  it, opening Streams or pressing `/` brings the whole toolbar back (no animation with reduced
+  motion). Jumps made by the page (links to a talk, the A–Z rail, View in program) leave it as
+  it is and land just below it.
+- **Congress events** is a stream of its own: the two public lectures, the Welcome Reception,
+  the Congress Dinner and the Career Fair; Teachers Day session. Each carries a short note and
+  its official links (in `EVENT_DETAILS` in `build_program.py`, taken from the official congress
+  pages), shown on its card and in its details. The footer's links column holds the official
+  pages (program, registration, activities, speakers, workshops, the Indico timetable) and a
+  link that shows just this stream.
   In the **Streams** menu a click shows or hides a stream, **only** (or a double-click) shows
   just that one, and **Select all**, **Deselect all** and **Reset filters** (streams, group and
   search) are one click away. In the calendar, **Sessions | Talks** switches between sessions and
@@ -48,7 +60,8 @@ user site's `404.html` that keeps `?query` and `#hash`).
   institutions find their speakers' talks too (`unsw`, `anu`, `usyd`, `uts`, `uq`, `csiro` …).
 - **Participants** lists every speaker and convener grouped by institution, largest first, with
   each person's talks and convened sessions (select one for its details). Search it by name or
-  institution, short forms included; `#view=participants&pq=anu` links to a search.
+  institution, short forms included; `#view=participants&pq=anu` links to a search. The A–Z rail
+  down the right edge jumps to a letter.
   Affiliations are grouped by `canonical_affiliation()` in `normalize.py`: department prefixes,
   a leading "The", case, country codes and typos are ignored, and Adelaide University and the
   University of Adelaide (merged in 2026) are one group. The affiliation text itself is only

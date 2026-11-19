@@ -2,13 +2,13 @@
  "retrieved": "19 November 2026",
  "cats": {
   "plenary": "Plenary & Welcome",
+  "events": "Congress events",
   "aip": "AIP Sessions",
   "anzcop": "ANZCOP",
   "commad": "COMMAD",
   "focus": "Focus Sessions",
   "poster": "Posters",
   "edu": "Education & PEG",
-  "public": "Public & Community",
   "special": "Forums & Special Events",
   "business": "Meetings & AGMs",
   "social": "Meals & Social"
@@ -2205,7 +2205,7 @@
     {
      "id": "b165574",
      "title": "Welcome Reception",
-     "cat": "social",
+     "cat": "events",
      "grp": "",
      "start": "17:15",
      "end": "18:30",
@@ -2213,12 +2213,19 @@
      "desc": "",
      "conv": [],
      "url": "https://indico.global",
-     "talks": []
+     "talks": [],
+     "info": "Details on the official Activities & social events page.",
+     "links": [
+      {
+       "l": "Activities & social events",
+       "u": "https://www.aip.org.au/congress/activities"
+      }
+     ]
     },
     {
      "id": "s162579",
      "title": "Public Lecture",
-     "cat": "public",
+     "cat": "events",
      "grp": "",
      "start": "18:30",
      "end": "20:00",
@@ -2240,6 +2247,13 @@
        ],
        "d": "For thousands of years, we’ve wondered if the Earth is unique, or if there are other Earths out there to find. In just the last 30 years, we’ve progressed from merely wondering if planets exist around other stars to knowing that almost every star we see has planets. Ambitious planet searches have been probing further and further, finding planetary systems of an incredible – and incredibly surprising! – variety. However, we have yet to discover another planet that might be like Earth – a rocky planet orbiting just the right distance from a Sun-like star to have liquid water on its surface. NASA has a audacious new plan for a next-generation flagship telescope that will directly image Earth-like planets around nearby stars, but it will take all of our ingenuity and technical prowess to achieve this feat. Dr Christiansen will walk you through the past, present, and future of our hunt for Earth 2.0.",
        "u": "https://indico.global/event/16926/contributions/173429/"
+      }
+     ],
+     "info": "Dr Jessie Christiansen (NASA/Caltech): the hunt for Earth 2.0, from the first exoplanets to NASA’s next flagship telescope. Free and open to all.",
+     "links": [
+      {
+       "l": "Official program",
+       "u": "https://www.aip.org.au/congress/program"
       }
      ]
     }
@@ -9211,7 +9225,7 @@
     {
      "id": "b190314",
      "title": "Congress Dinner",
-     "cat": "social",
+     "cat": "events",
      "grp": "",
      "start": "18:00",
      "end": "22:30",
@@ -9219,7 +9233,14 @@
      "desc": "",
      "conv": [],
      "url": "https://indico.global",
-     "talks": []
+     "talks": [],
+     "info": "Congress Dinner on the Harbour: a Sydney Harbour cruise with the AIP & ANZOS award ceremonies. Tickets via registration.",
+     "links": [
+      {
+       "l": "Activities & social events",
+       "u": "https://www.aip.org.au/congress/activities"
+      }
+     ]
     }
    ]
   },
@@ -13312,7 +13333,7 @@
     {
      "id": "s165599",
      "title": "Public Lecture",
-     "cat": "public",
+     "cat": "events",
      "grp": "",
      "start": "18:30",
      "end": "20:00",
@@ -13334,6 +13355,13 @@
        ],
        "d": "In this public lecture, Dr Derek Muller explores the connections between AI, human cognition and education, examining how we understand ideas, process information and learn. Known for his ability to bring complex ideas to life, Derek will challenge us to think differently about intelligence, both human and artificial.\n\nDr Derek Muller is a physicist, science communicator and creator of the popular YouTube channel Veritasium, where he makes science accessible and engaging for millions of viewers. Also known for his television presenting, Derek asks thought-provoking questions that uncover the science behind things we often take for granted. We look forward to welcoming Derek back to the University of Sydney for this lecture, which invites audiences of all backgrounds to explore the science of thinking, learning and understanding.",
        "u": "https://indico.global/event/16926/contributions/173430/"
+      }
+     ],
+     "info": "Dr Derek Muller (Veritasium): from Physics PhD to YouTuber, what Veritasium learned about explaining the universe. Open to the public.",
+     "links": [
+      {
+       "l": "Official program",
+       "u": "https://www.aip.org.au/congress/program"
       }
      ]
     }
@@ -14090,7 +14118,7 @@
     {
      "id": "s165603",
      "title": "Career Fair; Teachers Day",
-     "cat": "public",
+     "cat": "events",
      "grp": "",
      "start": "13:00",
      "end": "17:30",
@@ -14098,7 +14126,18 @@
      "desc": "For more detail follow the links:\nCareer fair - https://www.aip.org.au/congress/career-fair\nTeachers Day - https://www.aip.org.au/congress/teachers-day",
      "conv": [],
      "url": "https://indico.global/event/16926/sessions/23106/",
-     "talks": []
+     "talks": [],
+     "info": "One session in the program. Per the official pages, the Australian Physics Teachers Day starts from 8am and the Career Fair runs 1–4pm.",
+     "links": [
+      {
+       "l": "Teachers Day",
+       "u": "https://www.aip.org.au/congress/teachers-day"
+      },
+      {
+       "l": "Career Fair",
+       "u": "https://www.aip.org.au/congress/career-fair"
+      }
+     ]
     }
    ]
   }
