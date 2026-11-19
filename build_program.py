@@ -580,7 +580,8 @@ html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-v
 html[data-view-tx="fwd"]::view-transition-new(root){animation-name:week-tx-in-r}
 html[data-view-tx="back"]::view-transition-new(root){animation-name:week-tx-in-l}
 html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom;animation-duration:300ms}
-#main.view-enter{animation:week-tx-fade 180ms ease-out}
+html[data-view-tx-quick]::view-transition-old(root){animation-duration:60ms}
+html.tx-busy{cursor:progress}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -828,6 +829,11 @@ html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
 .block{display:grid;grid-template-columns:86px 1fr;gap:14px;margin:0 0 22px}
 .block.hidden{display:none}
+/* The browser lays out and paints only the time blocks near the screen (All week is
+   thousands of elements): a block away from it keeps the height it last had, or one
+   estimated from its cards (--cih, set by blocksHtml), and its cards' shadows are not cut. */
+.block{content-visibility:auto;contain-intrinsic-size:auto 600px auto var(--cih,400px);overflow-clip-margin:24px}
+@media print{.block{content-visibility:visible}}
 .block-time{position:sticky;top:calc(var(--toolbar-h,150px) + 10px);align-self:start;text-align:right;padding-top:2px}
 .card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .block-time .bt{font-weight:800;font-size:1.0625rem;letter-spacing:-.01em}
@@ -1516,6 +1522,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-day .day-head{padding-top:8px}
 .ag-list{list-style:none;margin:0;padding:0}
 .ag-row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;position:relative;overflow:hidden}
+/* (as the program's time blocks: rows away from the screen are not laid out) */
+.ag-row{content-visibility:auto;contain-intrinsic-size:auto 600px auto var(--cih,210px)}
+@media (max-width:720px){.ag-row{contain-intrinsic-size:auto 350px auto var(--cih,430px)}}
+@media print{.ag-row{content-visibility:visible}}
 .ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
 /* the list speaks as the calendars do: a session row is tinted (its saved talks nested in
    it as white talk cards), a talk row is a white card outlined in its stream colour; a
@@ -2399,14 +2409,26 @@ function renderTabs(counts = programCounts(), totals = null){
 }
 // The longest of the given placeholders that fits the search box (the last one, or
 // "Search…", when none does); kept up to date as the box changes width.
+// The box's room and font are read once and again only when it changes size (or the
+// text size changes), never while a view is being drawn: a read then would make the
+// browser lay out the whole new page at once.
 const phCanvas = document.createElement('canvas').getContext('2d');
+let phRoom = null;
 function fitPlaceholder(list){
   const q = document.getElementById('q');
-  if (list) q._ph = [...list.filter(Boolean), 'Search…'];
+  if (list){
+    const ph = [...list.filter(Boolean), 'Search…'];
+    if (phRoom && q._ph && ph.join('\n') === q._ph.join('\n')) return;
+    q._ph = ph;
+  } else phRoom = null;
   if (!q._ph) return;
-  const cs = getComputedStyle(q), room = q.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+  if (!phRoom){
+    const cs = getComputedStyle(q);
+    phRoom = { room: q.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2, font: cs.font };
+  }
+  const room = phRoom.room;
   if (room <= 0){ if (list) q.placeholder = q._ph[0]; return; }
-  phCanvas.font = cs.font;
+  phCanvas.font = phRoom.font;
   q.placeholder = q._ph.find(t => phCanvas.measureText(t).width <= room) || q._ph[q._ph.length - 1];
 }
 if (window.ResizeObserver) new ResizeObserver(() => fitPlaceholder()).observe(document.getElementById('q'));
@@ -2549,6 +2571,9 @@ function hayTalk(t){
   return t._hay;
 }
 
+// The search's text for every session and talk is made in idle time after the page
+// loads (a day at a time), so the first letter typed does not wait for it.
+(window.requestIdleCallback || (f => setTimeout(f, 400)))(() => DATA.days.forEach((d, i) => setTimeout(() => d.slots.forEach(s => { hayFor(s); s.talks.forEach(hayTalk); }), i * 60)));
 function slotTextMatches(slot){
   const terms = curTerms();
   return !terms.length || terms.every(term => slotHas(slot, term)) || slot.talks.some(t => talkMatches(t, slot));
@@ -2559,9 +2584,12 @@ function slotMatches(slot){
   return slotTextMatches(slot);
 }
 
+// (kept for the search it was worked out for: one search asks several times a talk)
 function talkMatches(t, slot){
-  const terms = curTerms();
-  return terms.every(term => slotHas(slot, term) || talkHas(t, term));
+  const q = viewQ();
+  if (t._mq === q) return t._mv;
+  t._mq = q;
+  return t._mv = curTerms().every(term => slotHas(slot, term) || talkHas(t, term));
 }
 
 function openMatchingTalk(t, slot){
@@ -2627,6 +2655,23 @@ function slotById(id){
   return slotById.map[id];
 }
 
+// A time block's height before it is first drawn (see .block in the CSS): its cards in
+// the grid's columns, each card its head and a row a talk. Only roughly: it keeps the
+// page about as tall as it will be, so the scrollbar and jumps far down stay close.
+function blockEst(slots){
+  const phone = PHONE_MQ.matches, w = Math.min(1180, innerWidth) - 40 - (phone ? 0 : 100);
+  const cols = slots.length === 1 ? 1 : Math.max(1, Math.floor((w + 12) / 342)), cw = (w - (cols - 1) * 12) / cols;
+  const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
+  const hs = slots.map(s => {
+    const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
+    return s.talks.length ? head + 25 + s.talks.reduce((h, t) => h + 20 + 20.5 * lines(t.t.length, 8, cw - 90)
+        + 20 * lines(t.sp.reduce((n, p) => n + p.n.length + (p.a ? p.a.length + 5 : 2), 0), 7, cw - 90), 0)
+      : head - 28 + (s.desc ? 30 : 0);
+  });
+  let h = phone ? 36 : 0;
+  for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
+  return Math.round(h);
+}
 function blocksHtml(slots, date){
   const blocks = {};
   slots.forEach(s => { (blocks[s.start] = blocks[s.start] || []).push(s); });
@@ -2634,7 +2679,7 @@ function blocksHtml(slots, date){
   Object.keys(blocks).sort().forEach(st => {
     const bl = blocks[st];
     const end = bl.map(x => x.end).sort().slice(-1)[0];
-    inner += `<section class="block" data-date="${date}" data-start="${st}" data-end="${end}"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards ${bl.length===1?'single':''}">`;
+    inner += `<section class="block" data-date="${date}" data-start="${st}" data-end="${end}" style="--cih:${blockEst(bl)}px"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards ${bl.length===1?'single':''}">`;
     bl.forEach(s => inner += cardHtml(s));
     inner += `</div></section>`;
   });
@@ -2644,6 +2689,18 @@ function blocksHtml(slots, date){
 function renderAgenda(){
   if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
+  // The list already on the page for this day (kept behind My agenda, or aside while a
+  // calendar showed) is shown as it is, its stars brought up to date, rather than built
+  // again.
+  if (main._stash){
+    if (main._list.day === state.day) main.replaceChildren(main._stash);
+    main._stash = null;
+  }
+  if (main._list && main._list.day === state.day && main.firstElementChild === main._list.first){
+    main.classList.remove('wide');
+    syncListStars(main);
+    if (searchQuick()) return;
+  }
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
   // While searching, only build the cards that can match: filters then just toggle visibility.
@@ -2659,8 +2716,100 @@ function renderAgenda(){
   }
   main.innerHTML = html;
   main.classList.remove('wide');
+  main._list = { day: state.day, first: main.firstElementChild };
+  remarkStop();
   document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
   applyFilters();
+}
+
+// In idle time after a list is drawn (or its cards change), each time block (My
+// agenda: each row) not drawn yet is laid out once to learn its real height, which it
+// then keeps while it is away from the screen: the page is as tall as it will be, so a
+// long smooth scroll (find in page, a link) lands on its target rather than short of it
+// as the blocks on the way are drawn. (A block once drawn keeps its height by itself.)
+// One block at a time while the browser is idle, and none while the page scrolls.
+let heightsJob = 0, heightsGen = 0, lastScrollAt = -1e9;
+window.addEventListener('scroll', () => { lastScrollAt = performance.now(); }, { passive: true });
+document.addEventListener('contentvisibilityautostatechange', e => { if (!e.skipped) e.target._drawn = true; }, true);
+function blockHeightsSoon(){
+  clearTimeout(heightsJob);
+  const gen = ++heightsGen, blocks = [...document.querySelectorAll('#agenda .block, #builderList .ag-row')];
+  const idle = f => window.requestIdleCallback ? requestIdleCallback(f, { timeout: 4000 }) : setTimeout(() => f({ timeRemaining: () => 8 }), 50);
+  let i = 0;
+  const step = dl => {
+    if (gen !== heightsGen) return;
+    if (performance.now() - lastScrollAt < 500){ heightsJob = setTimeout(() => idle(step), 500); return; }
+    do {
+      const b = blocks[i++];
+      if (!b || b._drawn || !b.isConnected || !b.getClientRects().length) continue;
+      b.style.contentVisibility = 'visible';
+      const h = b.offsetHeight;
+      b.style.contentVisibility = '';
+      if (h) b.style.setProperty('--cih', h + 'px');
+    } while (i < blocks.length && dl.timeRemaining() > 6);
+    if (i < blocks.length) idle(step);
+  };
+  heightsJob = setTimeout(() => idle(step), 1000);
+}
+
+// Typing in the program list's search: when every card the search finds is already on
+// the page (the search got longer), the cards are only shown or hidden, and the marks
+// on them redone near the screen at once and on the rest in idle time, instead of the
+// whole week being built again. False: the list has to be rebuilt.
+let remarkJob = 0;
+function remarkStop(){ clearTimeout(remarkJob); remarkJob = 0; }
+function searchQuick(){
+  const main = document.getElementById('agenda');
+  if (state.layout !== 'list' || state.scope !== 'program' || !main._list || main._list.day !== state.day || main.firstElementChild !== main._list.first) return false;
+  const have = new Set([...main.querySelectorAll('.card[data-sid]')].filter(c => !c.closest('#fallbackZone')).map(c => c.dataset.sid));
+  const days = state.day === 'all' ? DATA.days : [DATA.days[state.day]];
+  if (days.some(d => d.slots.some(s => !have.has(s.id) && slotMatches(s)))) return false;
+  remarkStop();
+  document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
+  applyFilters();
+  const q = viewQ(), vh = innerHeight;
+  const stale = [...main.querySelectorAll('.card[data-sid]:not(.hidden)')].filter(c => c._q !== q && !c.closest('#fallbackZone'));
+  if (!stale.length) return true;
+  // near the screen first (one read of the blocks' places), then outwards
+  const at = new Map();
+  const dist = c => { const b = c.closest('.block'); if (!at.has(b)){ const r = b.getBoundingClientRect(); at.set(b, Math.max(0, -r.bottom, r.top - vh)); } return at.get(b); };
+  stale.sort((a, b) => dist(a) - dist(b));
+  const n = stale.findIndex(c => dist(c) > vh / 2);
+  remarkCards(stale.splice(0, n < 0 ? stale.length : n), q);
+  const next = () => {
+    remarkJob = 0;
+    if (viewQ() !== q) return;
+    const t0 = performance.now();
+    while (stale.length && performance.now() - t0 < 12) remarkCards(stale.splice(0, 4), q);
+    if (stale.length) remarkJob = setTimeout(next, 30); else { paintNow(); blockHeightsSoon(); }
+  };
+  if (stale.length) remarkJob = setTimeout(next, 120);
+  paintNow();
+  return true;
+}
+// The list's stars as the saved items are now (one may have changed elsewhere: in the
+// details dialog, in My agenda).
+function syncListStars(main){
+  for (const b of main.querySelectorAll('[data-sstar], [data-tstar]')){
+    const on = state.starred.has(b.dataset.sstar || b.dataset.tstar);
+    if (b.classList.contains('on') === on) continue;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on);
+    b.textContent = on ? '★' : '☆';
+  }
+}
+// Cards drawn again for the current search (marks), keeping what applyFilters set.
+function remarkCards(cards, q){
+  const tpl = document.createElement('template');
+  for (const card of cards){
+    if (!card.isConnected) continue;
+    const s = slotById(card.dataset.sid);
+    tpl.innerHTML = cardHtml(s);
+    const nc = tpl.content.firstElementChild;
+    nc._q = q;
+    card.replaceWith(nc);
+    filterCard(nc, s, filterAuto);
+  }
 }
 
 function slotDurLabel(slots){
@@ -2763,22 +2912,19 @@ function applyFilters(){
       s.talks.forEach(t => { if (talkMatches(t, s)) shownTalks++; });
     }
   }));
-  const autoOpen = state.q && (!all || shownTalks <= 30);
+  const autoOpen = filterAuto = state.q && (!all || shownTalks <= 30);
+  // (the cards and talks found in one pass: a lookup each on a page of thousands of
+  // elements would take longer than all the rest)
+  const cardOf = new Map();
+  for (const card of document.querySelectorAll('#agenda .card[data-sid]')) if (!cardOf.has(card.dataset.sid)) cardOf.set(card.dataset.sid, card);
+  const q = viewQ();
   days.forEach(d => d.slots.forEach(s => {
-    const card = document.querySelector(`.card[data-sid="${s.id}"]`);
+    const card = cardOf.get(s.id);
     if (!card) return;
+    if (card._q === undefined) card._q = q;   // (built for this search)
     const ok = slotMatches(s);
     card.classList.toggle('hidden', !ok);
-    if (!ok) return;
-    s.talks.forEach(t => {
-      const li = card.querySelector(`.talk[data-tid="${t.id}"]`);
-      if (!li) return;
-      li.classList.toggle('hidden', !talkMatches(t, s));
-      if (autoOpen && openMatchingTalk(t, s)) li.querySelector('details').open = true;
-    });
-    if (autoOpen && curTerms().some(term => norm(s.desc).includes(term))){
-      const ab = card.querySelector('details.about'); if (ab) ab.open = true;
-    }
+    if (ok) filterCard(card, s, autoOpen);
   }));
   document.querySelectorAll('#agenda > .block, #agenda > .day-section .block').forEach(b => {
     const any = [...b.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
@@ -2834,8 +2980,25 @@ function applyFilters(){
   }
   paintStarCount();
   if (state.scope === 'program') renderTabs(programCounts());
+  blockHeightsSoon();
 }
 
+// A shown card's talks: those the search finds, opened when few are found.
+let filterAuto = false;
+function filterCard(card, s, autoOpen){
+  if (s.talks.length){
+    const lis = new Map([...card.querySelectorAll('.talk[data-tid]')].map(li => [li.dataset.tid, li]));
+    s.talks.forEach(t => {
+      const li = lis.get(t.id);
+      if (!li) return;
+      li.classList.toggle('hidden', !talkMatches(t, s));
+      if (autoOpen && openMatchingTalk(t, s)) li.querySelector('details').open = true;
+    });
+  }
+  if (autoOpen && curTerms().some(term => norm(s.desc).includes(term))){
+    const ab = card.querySelector('details.about'); if (ab) ab.open = true;
+  }
+}
 // A search on one day with few results offers the rest of the week (with none, the
 // rest of the week shows by itself).
 function searchWeekHtml(shown){
@@ -2879,6 +3042,7 @@ function rerender(){
   if (personal) renderBuilder();
   if (state.layout === 'calendar') renderCalendar();
   else if (!personal){ renderTabs(); renderAgenda(); }
+  else blockHeightsSoon();
   paintStarCount();
   paintNow(); writeHash();
 }
@@ -2910,7 +3074,7 @@ document.getElementById('daytabs').addEventListener('click', e => {
   };
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
   if (vertical || day === state.day) go();
-  else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go);
+  else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go, null, { to: { day }, press: b });
 });
 
 // A click toggles one stream; "only" or a double-click shows just that stream.
@@ -3035,9 +3199,12 @@ qEl.addEventListener('input', () => {
     flushSearch();
     if (key !== searchKey()) return;
     document.getElementById('clr').style.display = state[key] ? 'block' : 'none';
-    rerender(); // re-render so highlights update
+    // re-render so highlights update (the program list only shows and hides its cards
+    // when it can)
+    if (key === 'q' && searchQuick()){ paintStarCount(); writeHash(); }
+    else rerender();
     if (window.scrollY > programTop()) scrollToProgramTop();
-  }, key === 'pq' ? 120 : 160);
+  }, key === 'pq' ? 120 : PHONE_MQ.matches ? 250 : 160);
 });
 document.getElementById('clr').addEventListener('click', () => {
   clearSearch();
@@ -3611,15 +3778,15 @@ function weekFit(root = document.getElementById('agenda')){
   const shown = getComputedStyle(ov.querySelector('.week-blk span') || ov).display !== 'none';
   const over = el => el.scrollWidth > el.clientWidth + 1;
   const todo = [];
-  for (const b of ov.querySelectorAll('.week-blk')){
+  // (every block's size read first and every label set after: one layout in all, not
+  // one a block; a block's size does not depend on its label)
+  const blks = [...ov.querySelectorAll('.week-blk:not(.week-nmore)')], size = new Map(blks.map(b => [b, [b.clientWidth, b.clientHeight]]));
+  for (const b of blks){
     const span = b.firstElementChild;
-    if (b.classList.contains('week-nmore')) continue;
-    span.hidden = false;
-    b.classList.remove('week-up', 'week-bdg', 'week-mic', 'week-nomic', 'week-tiny');
     if (b.classList.contains('week-off') || b.classList.contains('week-hid') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
     // (horizontal: a session's starred-talk marks take a strip along its bottom)
     const tk = !vert && b.classList.contains('has-tk');
-    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (tk ? 10 : 0)) / lh);
+    const [w, h] = size.get(b), lines = Math.floor((h - 2 - (tk ? 10 : 0)) / lh);
     if (lines < 1 || w < 10){
       if (b.classList.contains('w-talk') && w >= 10 && h >= 10) b.classList.add('week-mic'); else span.hidden = true;
       continue;
@@ -3631,28 +3798,36 @@ function weekFit(root = document.getElementById('agenda')){
   const nar = todo.filter(b => over(b.firstElementChild) || !weekWordShown(b.firstElementChild, fs, lh));
   for (const b of nar) b.classList.add('week-bdg');
   // (a badge cut by even part of a letter counts: its ellipsis would show)
+  // Each step below is tried on all the blocks left at once: measured together, then set.
+  const up = b => { b.classList.remove('week-bdg'); b.classList.add('week-up'); };
+  let rest = [];
   for (const b of nar.filter(b => over(b.firstElementChild) || !weekCodeShown(b.firstElementChild, 0, true))){
-    const span = b.firstElementChild, h = b.clientHeight, talk = b.classList.contains('w-talk'), n = b.dataset.code.length;
-    const w = b.clientWidth - (vert && b.classList.contains('has-tk') ? parseFloat(b.style.getPropertyValue('--tkw')) : 0);
+    const [bw, h] = size.get(b), talk = b.classList.contains('w-talk'), n = b.dataset.code.length;
+    const w = bw - (vert && b.classList.contains('has-tk') ? parseFloat(b.style.getPropertyValue('--tkw')) : 0);
     // upright letters (below a 4px top pad): the whole code, or at least three letters
     // of it and an ellipsis
     // (horizontal: a tall, narrow block too, above its starred-talk strip)
     const slots = w >= upw * .8 && (vert || h > 2.5 * w) ? Math.floor((h - 5 - (!vert && b.classList.contains('has-tk') ? 10 : 0)) / adv) : 0;
-    const up = () => { b.classList.remove('week-bdg'); b.classList.add('week-up'); };
-    if (slots >= Math.min(n, 4)){ up(); continue; }
-    // the code cut to an ellipsis still shows three letters of it (a talk's without its
-    // mic, if need be); failing that, two upright letters and an ellipsis, a talk's
-    // mic, or (too small for any of these) the colour alone
-    if (weekCodeShown(span, fs)) continue;
-    if (talk){ b.classList.add('week-nomic'); if (weekCodeShown(span, fs)) continue; b.classList.remove('week-nomic'); }
-    if (slots >= 3){ up(); continue; }
-    // (last: the code in smaller letters)
-    b.classList.add('week-tiny');
-    if (weekCodeShown(span, fs * .82)) continue;
-    b.classList.remove('week-bdg', 'week-tiny');
-    if (talk && w >= 10) b.classList.add('week-mic'); else span.hidden = true;
+    if (slots >= Math.min(n, 4)) up(b); else rest.push({ b, w, talk, slots });
   }
-  for (const col of ov.querySelectorAll('.week-col')) weekBandLabels(col, shown, lh);
+  // the code cut to an ellipsis still shows three letters of it (a talk's without its
+  // mic, if need be); failing that, two upright letters and an ellipsis, a talk's
+  // mic, or (too small for any of these) the colour alone
+  rest = rest.filter(x => !weekCodeShown(x.b.firstElementChild, fs));
+  const tl = rest.filter(x => x.talk);
+  for (const x of tl) x.b.classList.add('week-nomic');
+  const nomic = new Set(tl.filter(x => weekCodeShown(x.b.firstElementChild, fs)));
+  for (const x of tl) if (!nomic.has(x)) x.b.classList.remove('week-nomic');
+  rest = rest.filter(x => !nomic.has(x));
+  for (const x of rest) if (x.slots >= 3) up(x.b);
+  // (last: the code in smaller letters)
+  rest = rest.filter(x => x.slots < 3);
+  for (const x of rest) x.b.classList.add('week-tiny');
+  for (const x of rest.filter(x => !weekCodeShown(x.b.firstElementChild, fs * .82))){
+    x.b.classList.remove('week-bdg', 'week-tiny');
+    if (x.talk && x.w >= 10) x.b.classList.add('week-mic'); else x.b.firstElementChild.hidden = true;
+  }
+  weekBandLabels([...ov.querySelectorAll('.week-col')], shown, lh);
   const blocks = weekBlocks(ov);
   if (!blocks.some(b => b.tabIndex === 0) && !ov.querySelector('.week-tk[tabindex="0"]:not([hidden])') && blocks[0]) blocks[0].tabIndex = 0;
   weekSync(ov);
@@ -3726,51 +3901,62 @@ function weekFold(ov){
 // Band labels (Plenary, Lunch break) sit above the blocks, at the first place inside
 // the band that no session block, later band or other label covers; failing that, at
 // the band's top right on their own background.
-function weekBandLabels(col, shown, lh){
-  for (const x of col.querySelectorAll('.week-blab')) x.remove();
+// (All the columns at once, in steps: every place read, then every label added, then
+// their widths read, then every label placed: a few layouts in all, not two a label.)
+function weekBandLabels(cols, shown, lh){
+  for (const col of cols) for (const x of col.querySelectorAll('.week-blab')) x.remove();
   if (!shown) return;
-  const cr = col.getBoundingClientRect();
-  const rel = el => { const r = el.getBoundingClientRect(); return { x0: r.left - cr.left, x1: r.right - cr.left, y0: r.top - cr.top, y1: r.bottom - cr.top }; };
-  const items = [...col.querySelectorAll('.week-blk')];
-  const placed = [];
   const lH = Math.ceil(lh) + 2;
-  items.forEach((b, i) => {
+  const jobs = cols.map(col => {
+    const cr = col.getBoundingClientRect();
+    const items = [...col.querySelectorAll('.week-blk')];
+    const rs = items.map(el => { const r = el.getBoundingClientRect(); return { x0: r.left - cr.left, x1: r.right - cr.left, y0: r.top - cr.top, y1: r.bottom - cr.top }; });
+    return { col, items, rs, labs: [] };
+  });
+  for (const job of jobs) job.items.forEach((b, i) => {
     if (!b.classList.contains('week-band') || b.classList.contains('week-off')) return;
-    const r = rel(b);
+    const r = job.rs[i];
     if (r.x1 - r.x0 < 26 || r.y1 - r.y0 < lH - 1) return;
     const lab = document.createElement('span');
     lab.className = 'week-blab' + (b.classList.contains('week-past') ? ' week-past' : '');
     lab.setAttribute('aria-hidden', 'true');
     for (const k of ['--c', '--cbg']) lab.style.setProperty(k, b.style.getPropertyValue(k));
     lab.textContent = b.firstElementChild.textContent;
-    col.appendChild(lab);
-    const want = Math.ceil(lab.getBoundingClientRect().width) + 1;
-    // what covers this band: session blocks, bands painted over it, labels so far
-    const obst = items.filter((o, j) => o !== b && !o.classList.contains('week-off') && (!o.classList.contains('week-band') || j > i)).map(rel).concat(placed);
-    let spot = null;
-    for (let y = r.y0; y + lH <= r.y1 + 1 && !spot; y += 3){
-      const cut = obst.filter(o => o.y0 < y + lH && o.y1 > y && o.x1 > r.x0 && o.x0 < r.x1).sort((a, c) => a.x0 - c.x0);
-      let x = r.x0 + 3;
-      for (const o of cut.concat([{ x0: r.x1, x1: r.x1 }])){
-        if (o.x0 - x >= Math.min(want, 44)){ spot = { x, y, w: Math.min(want, o.x0 - x) }; break; }
-        x = Math.max(x, o.x1 + 2);
-      }
-    }
-    if (!spot){
-      // nowhere free: at the band's top right (or bottom right), clear of the blocks'
-      // left-aligned labels; in the vertical overview not over a block at all (its
-      // letters would hide), so a band covered from top to bottom keeps its colour alone
-      const w = Math.min(want, r.x1 - r.x0 - 4);
-      const blk = items.filter(o => !o.classList.contains('week-band') && !o.classList.contains('week-off') && !o.classList.contains('week-hid')).map(rel);
-      const hits = c => blk.some(o => o.y0 < c.y + lH && o.y1 > c.y && o.x1 > c.x && o.x0 < c.x + c.w);
-      const cands = [r.y0, r.y1 - lH].map(y => ({ x: r.x1 - w - 2, y, w }));
-      spot = cands.find(c => !hits(c)) || (col.closest('.week-v') ? null : cands[0]);
-      if (!spot){ lab.remove(); return; }
-      lab.classList.add('week-blab-over');
-    }
-    Object.assign(lab.style, { left: spot.x + 'px', top: spot.y + 'px', width: spot.w + 'px' });
-    placed.push({ x0: spot.x, x1: spot.x + spot.w, y0: spot.y, y1: spot.y + lH });
+    job.col.appendChild(lab);
+    job.labs.push({ lab, i, r });
   });
+  for (const job of jobs) for (const l of job.labs) l.want = Math.ceil(l.lab.getBoundingClientRect().width) + 1;
+  for (const { col, items, rs, labs } of jobs){
+    const placed = [];
+    for (const { lab, i, r, want } of labs){
+      const b = items[i];
+      // what covers this band: session blocks, bands painted over it, labels so far
+      const obst = rs.filter((o, j) => items[j] !== b && !items[j].classList.contains('week-off') && (!items[j].classList.contains('week-band') || j > i)).concat(placed);
+      let spot = null;
+      for (let y = r.y0; y + lH <= r.y1 + 1 && !spot; y += 3){
+        const cut = obst.filter(o => o.y0 < y + lH && o.y1 > y && o.x1 > r.x0 && o.x0 < r.x1).sort((a, c) => a.x0 - c.x0);
+        let x = r.x0 + 3;
+        for (const o of cut.concat([{ x0: r.x1, x1: r.x1 }])){
+          if (o.x0 - x >= Math.min(want, 44)){ spot = { x, y, w: Math.min(want, o.x0 - x) }; break; }
+          x = Math.max(x, o.x1 + 2);
+        }
+      }
+      if (!spot){
+        // nowhere free: at the band's top right (or bottom right), clear of the blocks'
+        // left-aligned labels; in the vertical overview not over a block at all (its
+        // letters would hide), so a band covered from top to bottom keeps its colour alone
+        const w = Math.min(want, r.x1 - r.x0 - 4);
+        const blk = rs.filter((o, j) => !items[j].classList.contains('week-band') && !items[j].classList.contains('week-off') && !items[j].classList.contains('week-hid'));
+        const hits = c => blk.some(o => o.y0 < c.y + lH && o.y1 > c.y && o.x1 > c.x && o.x0 < c.x + c.w);
+        const cands = [r.y0, r.y1 - lH].map(y => ({ x: r.x1 - w - 2, y, w }));
+        spot = cands.find(c => !hits(c)) || (col.closest('.week-v') ? null : cands[0]);
+        if (!spot){ lab.remove(); continue; }
+        lab.classList.add('week-blab-over');
+      }
+      Object.assign(lab.style, { left: spot.x + 'px', top: spot.y + 'px', width: spot.w + 'px' });
+      placed.push({ x0: spot.x, x1: spot.x + spot.w, y0: spot.y, y1: spot.y + lH });
+    }
+  }
 }
 // The sticky ruler (horizontal) or day heads (vertical) follow the sideways scroller.
 function weekSync(ov){
@@ -3835,7 +4021,7 @@ function weekOpenDay(di, sid, from, tid = ''){
     t.box.classList.add('week-hit');
     setTimeout(() => t.box.classList.remove('week-hit'), 1600);
     return t.box;
-  }, from);
+  }, from, { to: { day: di } });
 }
 function weekTip(){
   let tip = document.getElementById('weekTip');
@@ -4137,8 +4323,19 @@ function mxScan(aux, far){
     const sc = el.closest(MX_SCROLL);
     return sc ? sc.getBoundingClientRect() : null;
   };
+  // (a list's time blocks far from the screen are not laid out by the browser, and
+  // measuring an item in one would make it lay that block out: such items are skipped)
+  const blockFar = new Map();
+  const off = el => {
+    const b = el.closest('.block, .ag-row');
+    if (!b) return false;
+    let f = blockFar.get(b);
+    if (f === undefined){ const r = b.getBoundingClientRect(); blockFar.set(b, f = r.bottom < -m || r.top > vh + m); }
+    return f;
+  };
   const add = (el, key, kind) => {
     key = mxSafe(key);
+    if (kind === 'item' && off(el)) return;
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2) return;
     const c = box(el);
@@ -4161,10 +4358,17 @@ function mxScan(aux, far){
   for (const el of main.querySelectorAll(MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, 'item');
   return items;
 }
+// Too many items to measure: counted by class first (live lists, no search of the page),
+// and only a page under the limit by that count is searched with the full selector.
+const MX_CLASSES = ['card', 'talk', 'ag-row', 'hz-bar', 'hz-talk', 'vt-card', 'vt-tk', 'week-blk', 'week-tk'];
+function mxMany(){
+  const main = document.getElementById('main');
+  return MX_CLASSES.reduce((n, c) => n + main.getElementsByClassName(c).length, 0) > mxScanMax() * 2 || main.querySelectorAll(MX_ITEM).length > mxScanMax();
+}
 // Starts a morph: names the old state's elements. Returns { after(target), animate() }.
 function mxBegin(kind, from, opts){
   mxClear();
-  if (opts.plain || document.getElementById('main').querySelectorAll(MX_ITEM).length > mxScanMax()) return MX_NOOP;
+  if (opts.plain || mxMany()) return MX_NOOP;
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
   if (from){
@@ -4182,17 +4386,34 @@ function mxBegin(kind, from, opts){
   const plan = { pairs: [], grow: [], fold: [], fade: [], added: [] };
   return {
     after(target){
-      const now = pop || document.getElementById('main').querySelectorAll(MX_ITEM).length > mxScanMax() ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
+      const now = pop || mxMany() ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const near = it => it.d <= Math.max(240, innerHeight * .5);
-      const named = new Set();
+      const named = new Set(), cand = [];
       let count = old.size;
       for (const [key, o] of old){
         const n = now.get(key);
-        if (n && !named.has(n.el)){ mxName(n.el, key, o.kind === 'cover' ? 'mx-cover' : 'mx'); named.add(n.el); plan.pairs.push({ key, o, n }); }
+        if (n && !named.has(n.el)){ named.add(n.el); cand.push({ key, o, n }); }
         else if (o.p && old.has(o.p) && now.has(o.p)) plan.fold.push({ key, o, po: old.get(o.p), pn: now.get(o.p) });
         else plan.fade.push({ key, o });
+      }
+      // most items changing shape wildly (a day's cards into the week's thin blocks): no
+      // morph but the clicked item's; the rest fade where they were, with the page
+      const ratio = (a, b) => Math.max(a.width / (b.width || 1), b.width / (a.width || 1), a.height / (b.height || 1), b.height / (a.height || 1));
+      const its = cand.filter(x => x.o.kind === 'item' && x.key !== fromKey);
+      const wild = its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
+      for (const x of cand){
+        if (wild && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
+        mxName(x.n.el, x.key, x.o.kind === 'cover' ? 'mx-cover' : 'mx');
+        plan.pairs.push(x);
+      }
+      if (wild){
+        for (const { key, o } of plan.fold) plan.fade.push({ key, o });
+        plan.fold = [];
+        // (the old picture goes quickly: the two pages are too unlike to show together)
+        plan.quick = true;
+        document.documentElement.dataset.viewTxQuick = '';
       }
       for (const [key, n] of now){
         if (old.has(key) || named.has(n.el) || !near(n) || count >= mxCap()) continue;
@@ -4241,6 +4462,7 @@ function mxBegin(kind, from, opts){
       }
       for (const { key, o } of plan.fade){
         if (o.c) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
+        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 60, easing: 'linear' });
         if (opts.collapse && o.kind === 'item'){
           run(key, 'group', [box(o.r), box(o.r, 0)]);
           run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in' });
@@ -4256,26 +4478,34 @@ function mxBegin(kind, from, opts){
 function withTransition(kind, fn, from, opts = {}){
   settleTransition();
   const root = document.documentElement;
-  if (motionReduced()){ fn(); return; }
+  // No snapshot while a modal dialog is up, but for the details dialog's own opening and
+  // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
+  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
+  // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
+  // only the short fade, and its pressed button shows before the redraw starts.
+  const heavy = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
+  const timed = after => () => { const t0 = performance.now(); fn(); txNote(performance.now() - t0, opts.to); if (after) after(); };
+  if (motionReduced()){ if (heavy && opts.press) txPending(opts.press, timed()); else timed()(); return; }
   // quick succession (another change under 450ms ago) or slow redraws: no morph; and
   // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
   const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
   txLast = t;
-  if (busy){
-    if (kind === 'mx' || kind === 'dlg' || txSlow >= 3){ const t0 = performance.now(); fn(); txNote(performance.now() - t0); return; }
+  if (heavy || busy){
+    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){
+      const go = timed(heavy && kind !== 'mx' ? viewEnter : null);
+      if (heavy && opts.press) txPending(opts.press, go); else go();
+      return;
+    }
     opts = { ...opts, plain: true };
   }
   if (!document.startViewTransition){
     fn();
     if (kind === 'mx' || kind === 'dlg') return;
-    const main = document.getElementById('main');
-    main.classList.remove('view-enter');
-    void main.offsetWidth;
-    main.classList.add('view-enter');
-    main.addEventListener('animationend', () => main.classList.remove('view-enter'), { once:true });
+    viewEnter();
     return;
   }
   delete root.dataset.viewTxNew;
+  delete root.dataset.viewTxQuick;
   root.dataset.viewTx = kind;
   const mx = mxBegin(kind, from, opts);
   let ran = false, done;
@@ -4284,27 +4514,75 @@ function withTransition(kind, fn, from, opts = {}){
     ran = true;
     mxClear();
     const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
-    const t0 = performance.now();
+    const t0 = performance.now(), y0 = window.scrollY;
     const out = fn();
-    txNote(performance.now() - t0);
+    txNote(performance.now() - t0, opts.to);
+    // a page that jumped (to the top of a new view): the old picture goes at once, so the
+    // two never show doubled
+    if (Math.abs(window.scrollY - y0) > 40) root.dataset.viewTxQuick = '';
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
     return done;
   };
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ run(); mxClear(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; return; }
+  catch (e){ run(); mxClear(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; return; }
   const tx = viewTx = mxOwner = { vt, run };
   vt.ready.then(() => mx.animate(), () => {});
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
-    if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; }
+    if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; }
   });
 }
+// The cheap way in for a new view: a short fade of the main area (no snapshot).
+function viewEnter(){
+  const main = document.getElementById('main');
+  if (main.animate) main.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+}
 // A redraw over 250ms counts as slow (after two in a row, changes stop animating); a
-// quick one earns back trust.
-function txNote(ms){ txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow; }
+// quick one earns back trust. Each view's last redraw time is kept too (by txKey), so
+// going back to a view known to be slow is not animated.
+const txCost = new Map();
+const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks].join('|'); };
+function txNote(ms, to){
+  txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow;
+  if (to !== undefined) txCost.set(txKey(), ms);
+}
+// Slow to draw: a list of more than ~150 sessions or saved items (the Full program's
+// whole week), or a view whose last redraw took over 250ms.
+function txHeavy(to){
+  const v = { ...state, ...to };
+  if (txCost.get(txKey(to)) > 250) return true;
+  if (v.layout !== 'list' || v.scope === 'participants') return false;
+  if (v.scope === 'agenda') return agendaSaved().filter(it => v.day === 'all' || it.di === v.day).length > 150;
+  const n = programCounts();
+  return (v.day === 'all' ? n.reduce((a, b) => a + b, 0) : n[v.day]) > 150;
+}
+// The page as it is now: a long list, which a snapshot (and the morph's measuring)
+// would hold up.
+function pageHeavy(){
+  const ag = document.getElementById('agenda'), bl = document.getElementById('builderList');
+  return (!ag.hidden && ag.getElementsByClassName('card').length > 150) || (!bl.hidden && bl.getElementsByTagName('li').length > 150);
+}
+// A slow change shows its pressed button (and a busy cursor) first and draws in the
+// next task, after that frame is painted; a click or key meanwhile applies it at once.
+function txPending(press, go){
+  const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
+  paint(true);
+  document.documentElement.classList.add('tx-busy');
+  let ran = false;
+  const end = () => {
+    ran = true;
+    if (viewTx === tx) viewTx = null;
+    document.documentElement.classList.remove('tx-busy');
+  };
+  const run = () => { if (!ran){ end(); go(); } };
+  // (Back, Forward or a new address meanwhile drops it: the address wins)
+  const tx = viewTx = { run, vt: null, drop: () => { if (!ran){ end(); paint(false); } } };
+  requestAnimationFrame(() => setTimeout(run, 0));
+}
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
 let shownScope = null; // the scope showView last drew (readHash may already have moved state.scope)
@@ -5768,6 +6046,8 @@ function renderCalendar(){
   const fallback = !favourites && !selected.length && items.length > 0;
   const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
+  // the list is kept aside, not thrown away, for a return to it (renderAgenda)
+  if (main._list && main.firstElementChild === main._list.first && !main._stash){ main._stash = document.createDocumentFragment(); main._stash.append(...main.childNodes); }
   main.classList.add('wide');
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
@@ -5805,13 +6085,14 @@ function renderCalendar(){
 
 document.getElementById('scheduleLayout').addEventListener('click', e => {
   const button = e.target.closest('[data-layout]');
-  if (button && button.dataset.layout !== state.layout) withTransition('fade', () => showView(button.dataset.layout, state.scope));
+  if (button && button.dataset.layout !== state.layout) withTransition('fade', () => showView(button.dataset.layout, state.scope), null, { to: { layout: button.dataset.layout }, press: button });
 });
 const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
   if (!button || button.dataset.scope === state.scope) return;
   const kind = SCOPE_ORDER.indexOf(button.dataset.scope) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
+  const txo = { to: { scope: button.dataset.scope }, press: button };
   withTransition(kind, () => {
   if (button.dataset.scope === 'agenda') agendaLandOnSaved();
   if (button.dataset.scope === 'participants' || state.scope === 'participants'){
@@ -5831,7 +6112,7 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
   // the page's own scroll belonged to the other calendar: start this one at its top
   if (window.scrollY > programTop()) scrollToProgramTop();
-  });
+  }, null, txo);
 });
 function paintLevel(){
   for (const b of document.querySelectorAll('[data-level]')) b.setAttribute('aria-pressed', (b.dataset.level === 'talks') === state.programTalks);
@@ -5844,7 +6125,7 @@ document.getElementById('programLevel').addEventListener('click', e => {
     state.programTalks = b.dataset.level === 'talks';
     paintLevel();
     renderCalendar();
-  });
+  }, null, { to: { programTalks: b.dataset.level === 'talks' } });
 });
 function savedOrient(){
   try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
@@ -5860,7 +6141,7 @@ document.getElementById('programOrient').addEventListener('click', e => {
     try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
     paintOrient();
     renderCalendar();
-  });
+  }, null, { to: { orient: b.dataset.orient } });
 });
 // A day of the Full program or of My agenda in Horizontal or Vertical.
 const dayViewShown = () => state.layout === 'calendar' && state.scope !== 'participants' && state.day !== 'all';
@@ -6770,6 +7051,7 @@ document.getElementById('expandAll').addEventListener('click', e => {
   const anyClosed = [...ds].some(d => !d.open);
   ds.forEach(d => d.open = anyClosed);
   e.currentTarget.innerHTML = (anyClosed ? 'Collapse all' : 'Expand all') + '<span class="xa-word"> abstracts</span>';
+  blockHeightsSoon();
 });
 
 document.addEventListener('keydown', e => {
@@ -7352,10 +7634,19 @@ document.getElementById('nowBtn').addEventListener('click', () => {
       || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
   if (hzOn && target) return hzReveal(target);
-  if (target) target.scrollIntoView({ block: target.matches('.vt-nowl') ? 'center' : 'start' });
+  if (target){ const o = { block: target.matches('.vt-nowl') ? 'center' : 'start' }; target.scrollIntoView(o); scrollSettle(target, o); }
   else toast(viewQ() || (state.scope !== 'agenda' && state.group) || viewCats().size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });
+
+// A long smooth scroll passes list blocks whose heights were only estimated (.block in
+// the CSS) and are drawn on the way: once it ends, the target is put in place again.
+function scrollSettle(el, o){
+  let t = 0;
+  const fix = () => { clearTimeout(t); window.removeEventListener('scrollend', fix); if (el.isConnected) el.scrollIntoView({ ...o, behavior: 'instant' }); };
+  window.addEventListener('scrollend', fix);
+  t = setTimeout(fix, 1500);
+}
 
 // ---------- links: the address keeps the view, and items can be shared ----------
 function stateHash(){
@@ -7421,7 +7712,7 @@ function writeHash(){
       if (merge && cur.pn === nav){ histLeave(1); hashPend = true; return; }
       if (merge) history.replaceState({ nav, o: state.orient, i: cur.i, pn: cur.pn }, '', url);
       else {
-        history.replaceState({ ...cur, y: pageY }, '');
+        history.replaceState({ ...cur, y: pageY, ya: pageA }, '');
         histIdx = (cur.i || 0) + 1;
         history.pushState({ nav, o: state.orient, i: histIdx, pn: cur.dlg || cur.pnl ? undefined : cur.nav }, '', url);
       }
@@ -7436,7 +7727,7 @@ function dlgHistoryOpen(sid, tid){
   if (!hashReady || dlgEntry || dlgPopping || !history.state || history.state.nav === undefined) return;
   try {
     const cur = history.state;
-    history.replaceState({ ...cur, y: pageY }, '');
+    history.replaceState({ ...cur, y: pageY, ya: pageA }, '');
     histIdx = (cur.i || 0) + 1;
     history.pushState({ nav: cur.nav, o: cur.o, i: histIdx, y: pageY, pnl: pnlEntry || undefined, dlg: { s: sid, t: tid || '' } }, '');
     dlgEntry = true;
@@ -7455,7 +7746,7 @@ function pnlHistoryOpen(name){
   if (!hashReady || pnlEntry || dlgEntry || dlgPopping || !history.state || history.state.nav === undefined) return;
   try {
     const cur = history.state;
-    history.replaceState({ ...cur, y: pageY }, '');
+    history.replaceState({ ...cur, y: pageY, ya: pageA }, '');
     histIdx = (cur.i || 0) + 1;
     history.pushState({ nav: cur.nav, o: cur.o, i: histIdx, y: pageY, pnl: name }, '');
     pnlEntry = name;
@@ -7495,17 +7786,47 @@ function dlgPopped(){
   if (hashPend){ hashPend = false; writeHash(); }
 }
 window.addEventListener('scroll', () => { pageY = Math.round(scrollY); }, { passive: true });
-// the page's scroll, kept in the current step, for Back and for a reload
-let scrollSave = 0;
+// the page's scroll, kept in the current step, for Back and for a reload; with it the
+// list item at the top of the screen (ya: where it was, at scroll y)
+let scrollSave = 0, pageA = null;
 window.addEventListener('scroll', () => {
   clearTimeout(scrollSave);
   scrollSave = setTimeout(() => {
     const cur = history.state;
+    pageA = pageAnchor();
     if (!hashReady || dlgPopping || !cur || cur.nav === undefined || cur.y === pageY) return;
-    try { history.replaceState({ ...cur, y: pageY }, ''); } catch (e) {}
+    try { history.replaceState({ ...cur, y: pageY, ya: pageA }, ''); } catch (e) {}
   }, 300);
 }, { passive: true });
+// (and again as a click lands, before it changes the view: the page may have settled
+// since the last save)
+window.addEventListener('click', () => { if (hashReady) pageA = pageAnchor(); }, true);
+function pageAnchor(){
+  const top = stickyWrap.getBoundingClientRect().bottom + 24;
+  if (top >= innerHeight) return null;
+  for (const x of [.5, .25, .75]){
+    const it = document.elementFromPoint(innerWidth * x, top)?.closest('#agenda .card[data-sid], #builderList .ag-row');
+    if (it) return { sel: it.matches('.card') ? `#agenda .card[data-sid="${it.dataset.sid}"]` : `#builderList .ag-row[data-${it.dataset.tid ? 'tid' : 'sid'}="${it.dataset.tid || it.dataset.sid}"]`,
+      d: Math.round(it.getBoundingClientRect().top), y: pageY };
+  }
+  return null;
+}
+// Back to a step: the item that was at the top of the screen goes back where it was (a
+// list's blocks far from the screen have estimated heights until drawn, so the same
+// scroll position alone can show the list a little higher or lower).
+function anchorBack(a, y){
+  if (!a || a.y !== y) return;
+  const go = () => {
+    const el = document.querySelector(a.sel);
+    if (!el || !el.getClientRects().length) return;
+    const d = el.getBoundingClientRect().top - a.d;
+    if (Math.abs(d) > 1) window.scrollBy({ top: d, behavior: 'instant' });
+  };
+  go();
+  requestAnimationFrame(() => requestAnimationFrame(go));
+}
 window.addEventListener('popstate', e => {
+  viewTx?.drop?.();
   const st = e.state;
   lastPushAt = -1e9;
   if (!st || st.nav === undefined){ if (dlgPopping) dlgPopped(); return; }   // an address typed or followed: hashchange takes it
@@ -7547,7 +7868,7 @@ window.addEventListener('popstate', e => {
   const apply = () => {
     showView(state.layout, state.scope);
     if (r.session || r.talk || r.agenda) followHashTargets(r);
-    if (typeof st.y === 'number') window.scrollTo({ top: st.y, behavior: 'instant' });
+    if (typeof st.y === 'number'){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
     else if (window.scrollY > programTop()) scrollToProgramTop();
     if (reopenPnl) openPanel(reopenPnl);
     if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
@@ -7558,7 +7879,7 @@ window.addEventListener('popstate', e => {
   if (toNav === fromNav) apply();
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
-    : a[4] !== b[4] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3] && state.day !== 'all' ? 'mx' : 'fade', apply);
+    : a[4] !== b[4] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3] && state.day !== 'all' ? 'mx' : 'fade', apply, null, { to: {} });
 });
 // A click outside a dialog's box closes it, if the press began outside it too (so a drag
 // that selects text inside it and ends outside does not).
@@ -7831,6 +8152,7 @@ function setDisplay(key, value){
   window.applyDisplay(display);
   saveDisplay();
   syncDisplayForm();
+  fitPlaceholder();
 }
 function openDisplay(fromHistory){
   syncDisplayForm();
@@ -8232,12 +8554,13 @@ function start(){
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   showView(state.layout, state.scope);
   followHashTargets(r);
-  if (st && typeof st.y === 'number' && !r.session && !r.talk) window.scrollTo({ top: st.y, behavior: 'instant' });
+  if (st && typeof st.y === 'number' && !r.session && !r.talk){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
   // reloaded with a panel or the details open: open them again
   if (pnlEntry) openPanel(pnlEntry);
   if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
 }
 window.addEventListener('hashchange', e => {
+  viewTx?.drop?.();
   // Back or Forward did it (the step may have been rewritten since)
   if (popHash !== null && new URL(e.newURL).hash === popHash){ popHash = null; return; }
   if (!history.state) histIdx++;   // a new step
