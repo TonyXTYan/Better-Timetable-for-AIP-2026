@@ -411,6 +411,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .week-blk b{font-weight:800;letter-spacing:.02em}
 .week-blk em{font-style:normal}
 .week-blk.week-bdg em{display:none}
+.week-blk.week-brk span{word-break:break-all}
 .week-blk.week-vl span{display:block;writing-mode:vertical-rl;padding:3px 2px 0 0;max-height:100%;white-space:nowrap;text-overflow:ellipsis}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
 .week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
@@ -984,6 +985,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.7188rem}
 .hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
 .hz-talk.hz-nar .hz-tl,.hz-talk.hz-nar .hz-ts{display:none}
+.hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.65rem}
 .hz-mid .hz-ts{display:none}
 .hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
@@ -1162,7 +1164,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-agenda .hz-meta .kind{flex:none}
 .hz-agenda .hz-in{gap:2px}
 .hz-sp{color:var(--bar-meta);font-size:.6875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hz-of{font-style:italic}
+.hz-of,.hz-agenda .hz-of{font-style:italic;display:block}
 .hz-agenda .hz-bar.has-clash>.hz-in,.hz-agenda .hz-bar.has-clash>.hz-head{padding-top:8px}
 .hz-agenda .hz-bar.is-talk,.vt-agenda .vt-card.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-radius:11px;box-shadow:0 1px 3px var(--pop-shadow)}
 .hz-agenda .hz-bar.is-talk>.hz-in{background:none;padding-top:5px}
@@ -2923,11 +2925,16 @@ function agendaCalendarItems(){
   if (state.hideClashes) items.forEach(it => it.clashes = []);
   return groupFavourites(items);
 }
+// Without full sessions, posters starred from one poster session (which all share its
+// time slot) still show together in it, not as separate blocks stacked in one slot.
 function groupFavourites(items){
-  if (!document.getElementById('includeParents').checked) return items;
+  const all = document.getElementById('includeParents').checked, nPost = new Map();
+  for (const it of items) if (it.kind === 'talk' && it.s.cat === 'poster') nPost.set(it.s, (nPost.get(it.s) || 0) + 1);
+  const grouped = it => it.kind === 'talk' && (all || nPost.get(it.s) > 1);
+  if (!items.some(grouped)) return items;
   const hosts = new Map(), hostOf = new Map(), out = [];
   for (const it of items){
-    if (it.kind !== 'talk'){ out.push(it); continue; }
+    if (!grouped(it)){ out.push(it); continue; }
     let h = hosts.get(it.s);
     if (!h){
       h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, inner:[], clashes:[] };
@@ -3057,9 +3064,9 @@ function weekOverview(){
   const all = days.flat(), has = f => all.some(f);
   const key = !agenda ? '' : [
     has(x => !x.t && !x.ctx) ? '<li class="wk-k wk-ks"><i></i>Session</li>' : '',
-    has(x => x.t) ? '<li class="wk-k wk-kt"><i></i>Talk</li>' : '',
-    has(x => x.ctx) ? '<li class="wk-k wk-kg"><i></i>Session not saved (shown for its talks)</li>' : '',
-    has(x => !x.t && x.inner.size) ? '<li class="wk-k wk-km"><i><b></b></i>Starred talk in a session</li>' : ''].join('');
+    has(x => x.t) ? `<li class="wk-k wk-kt"><i></i>${has(x => x.t && x.s.cat !== 'poster') ? 'Talk' + (has(x => x.t && x.s.cat === 'poster') ? ' or poster' : '') : 'Poster'}</li>` : '',
+    has(x => x.ctx) ? '<li class="wk-k wk-kg"><i></i>Session not saved (shown for what you starred in it)</li>' : '',
+    has(x => !x.t && x.inner.size) ? `<li class="wk-k wk-km"><i><b></b></i>Starred ${has(x => !x.t && x.inner.size && x.s.cat !== 'poster') ? 'talk' : 'poster'} in a session</li>` : ''].join('');
   const legend = key + cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
     + (nClash ? `<li class="week-lcx"><i></i>Clash (${nClash} item${nClash === 1 ? '' : 's'})</li>` : '');
   // the hint for a mouse or for touch (CSS shows the one that fits the device)
@@ -3112,16 +3119,18 @@ function weekFit(root = document.getElementById('agenda')){
   for (const b of ov.querySelectorAll('.week-blk')){
     const span = b.firstElementChild;
     span.hidden = false;
-    b.classList.remove('week-vl', 'week-bdg');
+    b.classList.remove('week-vl', 'week-bdg', 'week-brk');
     if (b.classList.contains('week-off') || !shown || b.classList.contains('week-band')){ span.hidden = true; continue; }
-    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2) / lh);
+    // (horizontal: a session's starred-talk marks take its bottom 6px)
+    const w = b.clientWidth, h = b.clientHeight, lines = Math.floor((h - 2 - (!vert && b.querySelector('.week-tk') ? 6 : 0)) / lh);
     if (lines < 1 || w < 12){ span.hidden = true; continue; }
     span.style.setProperty('--lines', lines);
     todo.push(b);
   }
   // measure after all labels are set (one layout), then fall back to the badge
+  // a talk has no badge to fall back to: its title breaks mid-word instead
   const nar = todo.filter(b => over(b.firstElementChild));
-  for (const b of nar) b.classList.add('week-bdg');
+  for (const b of nar) b.classList.add(b.classList.contains('w-talk') ? 'week-brk' : 'week-bdg');
   for (const b of nar.filter(b => over(b.firstElementChild))){
     const span = b.firstElementChild, w = b.clientWidth, h = b.clientHeight;
     b.classList.remove('week-bdg');
@@ -3703,10 +3712,15 @@ const dvKind = e => e.t ? `<span class="kind k-t">${e.s.cat === 'poster' ? 'Post
 // My agenda's key under the day heading: the shapes the day uses, as drawn.
 function dvKey(ents){
   const has = f => ents.some(f), n = c => `<i class="ak-sw ${c}" aria-hidden="true"></i>`;
+  // talks and posters carry their own pill (dvKind), so the key names the ones drawn
+  const starred = e => e.t || e.inner.size, post = e => e.s.cat === 'poster';
+  const tk = has(e => starred(e) && !post(e)), ps = has(e => starred(e) && post(e));
+  const gw = has(e => e.ctx && !post(e)) ? (has(e => e.ctx && post(e)) ? 'talks and posters' : 'talks') : 'posters';
   const items = [
     has(e => !e.t && !e.ctx) ? `<li><span class="kind">Session</span> saved session</li>` : '',
-    has(e => e.t || e.inner.size) ? `<li><span class="kind k-t">Talk</span> starred talk</li>` : '',
-    has(e => e.ctx) ? `<li><span class="kind k-g">Session · not saved</span> shown for your starred talks</li>` : '',
+    tk ? `<li><span class="kind k-t">Talk</span> starred talk</li>` : '',
+    ps ? `<li><span class="kind k-t">Poster</span> starred poster</li>` : '',
+    has(e => e.ctx) ? `<li><span class="kind k-g">Session · not saved</span> shown for your starred ${gw}</li>` : '',
     has(e => !e.t && e.inner.size && e.s.cat !== 'poster' && e.s.talks.length > e.inner.size) ? `<li>${n('ak-dim')} the session’s other talks</li>` : '',
     has(e => e.clash.length) ? `<li>${n('ak-cx')} clash</li>` : ''].join('');
   return `<ul class="ag-key" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
@@ -3856,6 +3870,18 @@ function hzDraw(root, left){
   // lane heights: talks mode lets the bar grow with the text it must show
   const rs = remPx() / 16, lineH = 16.5 * rs;
   const estLines = (len, w, cw) => Math.max(1, Math.ceil(len * cw * rs / Math.max(24, w)));
+  // whole-word wrapping, for narrow talk columns where long words take a line each
+  const wrapLines = (text, w, cw) => {
+    const cpl = Math.max(1, Math.floor(Math.max(24, w) / (cw * rs)));
+    let n = 1, cur = 0;
+    for (const wd of text.split(/\s+/)){
+      if (!wd) continue;
+      if (cur && cur + 1 + wd.length > cpl){ n++; cur = 0; }
+      cur += (cur ? 1 : 0) + wd.length;
+      while (cur > cpl){ n++; cur -= cpl; }
+    }
+    return Math.max(n, estLines(text.length, w, cw));
+  };
   // starred posters (no split) are listed in their session's bar
   const listed = e => agenda && !talksOf(e).length ? e.s.talks.filter(t => e.inner.has(t.id)) : [];
   const marked = e => !e.t && !talksOf(e).length && !listed(e).length && (agenda || !talksMode) && e.s.cat !== 'poster' && e.s.talks.length;
@@ -3875,7 +3901,7 @@ function hzDraw(root, left){
       for (const t of tks){
         const tw = (toMin(t.e) - toMin(t.s)) * ppm - 10;
         const sp = t.sp.map(p => p.n).join(', ');
-        const hh = 18 * rs + Math.min(8, estLines(t.t.length, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, estLines(sp.length, tw, 6.1)) * 13 * rs : 0) + 4;
+        const hh = 18 * rs + Math.min(9, wrapLines(t.t, tw, 7)) * 14.5 * rs + (sp ? Math.min(3, wrapLines(sp, tw, 6.1)) * 13 * rs : 0) + 4;
         segs = Math.max(segs, hh);
       }
     } else segs = tmode === 'mid' ? 64 * rs : 24;
@@ -4029,6 +4055,24 @@ function hzFitText(h){
   for (const b of nar) b.classList.add('hz-nar');
   for (const t of tnar) t.classList.add('hz-nar');
   for (const b of nar.filter(b => over(b.querySelector('.hz-in')))) b.classList.add('hz-nar0');
+  // Row heights are estimated (and capped): a talk still taller than its row keeps its
+  // whole title if it can and shortens its speakers, else drops them and ends the title
+  // with an ellipsis, so no line is cut through.
+  for (const t of talks){
+    const tl = t.querySelector('.hz-tl'), ts = t.querySelector('.hz-ts'), tt = t.querySelector('.hz-tt');
+    if (t.classList.contains('hz-nar') || t.scrollHeight <= t.clientHeight + 1 || !tl || getComputedStyle(tl).display === 'none') continue;
+    const cs = getComputedStyle(t), room = t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (tt ? tt.offsetHeight + 1 : 0);
+    const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 13;
+    const showsSp = ts && getComputedStyle(ts).display !== 'none';
+    if (showsSp && tl.offsetHeight <= room - lh(ts) - 1){
+      ts.classList.add('hz-clamp');
+      ts.style.setProperty('--cl', Math.floor((room - tl.offsetHeight - 1) / lh(ts)));
+    } else {
+      if (showsSp) ts.hidden = true;
+      tl.classList.add('hz-clamp');
+      tl.style.setProperty('--cl', Math.max(1, Math.floor(room / lh(tl))));
+    }
+  }
 }
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
 function hzSync(h){
@@ -4873,7 +4917,7 @@ eventDialog.addEventListener('close', () => {
   const left = oldScroll?.scrollLeft || 0, top = oldScroll?.scrollTop || 0;
   rerender();
   // unstarred here while in My agenda: offer Undo, as Remove does
-  if (state.scope === 'agenda' && dialogBefore && goneItems(dialogBefore).length) offerUndo(dialogBefore, removedMessage(dialogBefore));
+  if (state.scope === 'agenda' && dialogBefore && starsLeft(dialogBefore)) offerUndo(dialogBefore, removedMessage(dialogBefore));
   const scope = state.scope === 'participants' ? document.querySelector('#people')
     : state.scope === 'agenda' && state.layout === 'list' ? document.querySelector('#builder') : document.querySelector('#agenda');
   const selector = `[data-session-detail="${dialogTrigger.dataset.sessionDetail}"][data-talk-detail="${dialogTrigger.dataset.talkDetail}"]` +
@@ -4990,10 +5034,22 @@ const quoteTitle = t => '“' + (t.length > 60 ? t.slice(0, 57).trimEnd() + '…
 function goneItems(before){
   return mergeSaved(agendaSaved(before)).filter(it => !state.starred.has(itemIds(it)[0]) && !(it.t && state.starred.has(it.s.id)));
 }
+// From the starred-set diff, so a talk unstarred inside a saved session (not an item of
+// its own) is still named, and a removed session whose starred talks stay says so.
 function removedMessage(before){
-  const gone = goneItems(before);
-  return gone.length === 1 ? 'Removed ' + quoteTitle(itemTitle(gone[0])) : 'Removed ' + countWord(gone.length, 'item');
+  const left = [...before].filter(id => !state.starred.has(id));
+  const gone = goneItems(before), parts = [];
+  if (gone.length) parts.push('Removed ' + (gone.length === 1 ? quoteTitle(itemTitle(gone[0])) : countWord(gone.length, 'item')));
+  const unst = left.map(talkById).filter(x => x && state.starred.has(x.s.id));
+  if (unst.length) parts.push((parts.length ? 'unstarred ' : 'Unstarred ') + (unst.length === 1 ? quoteTitle(unst[0].t.t) : countWord(unst.length, 'talk')));
+  const kept = [...state.starred].map(talkById).filter(x => x && left.includes(x.s.id)).length;
+  const msg = parts.join('; ') || 'Removed ' + countWord(left.length, 'star');
+  if (!kept) return msg;
+  const sess = gone.filter(it => it.kind === 'session').length;
+  return msg + `; ${sess === 1 ? 'its ' : ''}${kept === 1 ? 'starred talk stays' : kept + ' starred talks stay'}`;
 }
+// Whether a change from `before` took anything out of My agenda (for Undo).
+const starsLeft = before => [...before].some(id => !state.starred.has(id));
 // Replaces the whole agenda and offers Undo.
 function replaceStars(ids, message){
   const before = [...state.starred];
@@ -5129,8 +5185,7 @@ document.getElementById('builder').addEventListener('click', e => {
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
-    const title = talkById(id)?.t.t || slotById(id)?.title || '';
-    removeStars([id], (rm.dataset.inSession ? 'Unstarred ' : 'Removed ') + quoteTitle(title));
+    removeStars([id]);
     // a talk unstarred inside its saved session: stay on that session
     const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
     if (host){ host.focus(); return; }
