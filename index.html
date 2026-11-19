@@ -563,6 +563,8 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-check{display:flex;align-items:flex-start;gap:9px;margin:3px -6px 0;padding:5px 6px;border-radius:8px;cursor:pointer}
 @media (hover:hover){.bd-check:hover{background:var(--surface-3)}}
 .bd-check.on{background:var(--starOn-bg)}
+.bd-check.inc{cursor:default;opacity:.8}
+.bd-check.inc input{cursor:default}
 .bd-check input{flex:none;width:17px;height:17px;margin:1px 0 0;cursor:pointer}
 .bd-title{display:block;font-size:0.875rem;font-weight:650;line-height:1.35;overflow-wrap:anywhere}
 .bd-meta,.bd-hint{display:block;font-size:0.75rem;color:var(--muted)}
@@ -689,15 +691,21 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 #starCount{font-size:.82em;font-variant-numeric:tabular-nums}
 .nav-short{display:none}
 @media(max-width:480px){.schedule-nav{gap:4px}.schedule-nav button{font-size:.8125rem;padding:6px 8px}
-  /* room for the Display button beside the two switches on a 390-480px phone */
+  /* both switches stay on one row, whatever the agenda count */
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
-  .schedule-nav .agenda-views button{padding:6px 6px}
+  .schedule-nav{flex-wrap:nowrap}
+  .schedule-nav .agenda-views{padding:2px;gap:2px;min-width:0}
+  .schedule-nav .agenda-views button{padding:6px 7px;white-space:nowrap}
+  #starCount{font-size:.75em}
 }
+@media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 5px;font-size:.75rem}}
 #parentOption{font-size:.875rem}
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
 :root[data-text="xl"]{font-size:130%}
+/* On phones the sticky toolbar keeps its default size, so larger text doesn't eat the screen. */
+@media (max-width:720px){:root[data-text="lg"] .sticky-wrap{zoom:.8696}:root[data-text="xl"] .sticky-wrap{zoom:.7692}}
 .hero-inner{position:relative}
 .display-btn{position:absolute;top:0;right:0;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:600}
 .display-btn:hover{background:rgba(255,255,255,.26)}
@@ -747,8 +755,6 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .card-head{padding-right:54px}
   .card-head .star{top:6px;right:6px}
   /* at the largest text size the search box gets its own line */
-  :root[data-text="xl"] .controls{flex-wrap:wrap}
-  :root[data-text="xl"] .searchbox{flex:1 1 100%}
 }
 .favourites-calendar #builder{padding-bottom:0}
 @media print{
@@ -1969,9 +1975,13 @@ function toUTCStamp(date, time){
   const dt = new Date(iso + 'T' + time + ':00+11:00');
   return dt.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
 }
+function exportClashes(items){
+  markClashes(items);
+  if (state.hideClashes) items.forEach(it => it.clashes = []);
+}
 function buildIcs(){
   const items = agendaItems();
-  markClashes(items);
+  exportClashes(items);
   // A saved session is one event; its separately saved talks go in its description.
   const savedSessions = new Map(items.filter(x => x.kind === 'session').map(x => [x.s, x]));
   const eventOf = x => (x.kind === 'talk' && savedSessions.get(x.s)) || x;
@@ -2010,7 +2020,7 @@ function buildIcs(){
 }
 function agendaText(){
   const items = agendaItems();
-  markClashes(items);
+  exportClashes(items);
   const clashItems = items.filter(x => x.clashes.length).length;
   let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
   const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
@@ -2019,7 +2029,7 @@ function agendaText(){
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
-    out += `\n${d.label} 2026\n${'-'.repeat(d.label.length + 6)}\n`;
+    out += `\n${d.label} 2026\n${'-'.repeat(d.label.length + 5)}\n`;
     dayItems.forEach(it => {
       out += `  ${it.start}–${it.end}  ${itemTitle(it)}  [${it.kind === 'session' ? 'Session' : 'Talk'}]\n`;
       const who = it.kind === 'talk' ? (it.t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ') || 'Speaker TBA') : (it.s.room || '');
@@ -2319,7 +2329,7 @@ const PRINT_TITLE = 'AIP Congress 2026 - My agenda';
 let titleBeforePrint = null;
 function buildPrintDoc(){
   const items = agendaItems();
-  markClashes(items);
+  exportClashes(items);
   const groups = clashGroups(items);
   const groupNo = new Map();
   groups.forEach((g, i) => g.forEach(it => groupNo.set(it, i + 1)));
@@ -2545,7 +2555,7 @@ function bdCard(s, parallel){
   const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
     s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
     poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join(' · ');
-  const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session' : 'Save this session';
+  const hint = poster ? 'Save the poster session' : talks.length ? 'Save the whole session, all its talks included' : 'Save this session';
   return `<article class="bd-card" data-bd-card="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
       <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span>
@@ -2593,15 +2603,21 @@ function bdPaintChecks(){
   if (bd.done) return;
   const body = bdEl('bdBody');
   body.querySelectorAll('[data-bd-id]').forEach(cb => {
-    cb.checked = state.starred.has(cb.dataset.bdId);
+    // A talk in a saved session is part of it: shown ticked and locked until the session is unticked.
+    const hit = talkById(cb.dataset.bdId);
+    const included = !!hit && state.starred.has(hit.s.id);
+    cb.disabled = included;
+    cb.checked = included || state.starred.has(cb.dataset.bdId);
+    cb.title = included ? 'Included in the saved session' : '';
     cb.closest('.bd-check').classList.toggle('on', cb.checked);
+    cb.closest('.bd-check').classList.toggle('inc', included);
   });
   body.querySelectorAll('[data-bd-card]').forEach(card => {
     const s = slotById(card.dataset.bdCard);
     card.classList.toggle('on', state.starred.has(s.id));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
-    if (count) count.textContent = n ? ` · ${n} saved` : '';
+    if (count) count.textContent = state.starred.has(s.id) ? ' · all included' : n ? ` · ${n} saved` : '';
   });
   const items = bdSlotItems(bd.slots[bd.i]);
   markClashes(items);
@@ -2642,7 +2658,7 @@ function bdLayoutScale(){
   bdEl('bdTicks').innerHTML = bd.slots.map((sl, i) =>
     `<span class="bd-tick${firsts.includes(i) ? ' day' : ''}" style="left:${(bdFrac(i) * 100).toFixed(3)}%"></span>`).join('');
   bdEl('bdDays').innerHTML = firsts.map(i =>
-    `<button type="button" class="bd-day" tabindex="-1" data-bd-go="${i}" aria-label="Jump to ${esc(bd.slots[i].d.label)}">${esc(dayShort(bd.slots[i].d))}</button>`).join('');
+    `<button type="button" class="bd-day" data-bd-go="${i}" aria-label="Jump to ${esc(bd.slots[i].d.label)}">${esc(dayShort(bd.slots[i].d))}</button>`).join('');
   bdEl('bdTimes').innerHTML = bd.slots.map(sl => `<span class="bd-time">${bdSpan(sl)[0]}</span>`).join('');
   bdPlace(bdEl('bdDays'), firsts, true);
   bdPlace(bdEl('bdTimes'), bd.slots.map((sl, i) => i), false);
@@ -2933,7 +2949,8 @@ function renderPeople(){
   const q = state.pq;
   const alias = aliasGroupFor(q);
   const terms = termsOf(q);
-  const shown = alias ? p => p.groups.has(alias)
+  const fullName = alias ? norm(groupLabel(alias)).replace(/^the /, '').replace(/ \(.*\)$/, '').trim() : '';
+  const shown = alias ? p => p.groups.has(alias) || (fullName.length > 6 && p.hay.includes(fullName))
     : terms.length ? p => terms.every(t => p.hay.includes(t)) : () => true;
   let html = '', nPeople = 0, nGroups = 0, nNone = 0, jump = '';
   groups.forEach((grp, gi) => {
@@ -3329,7 +3346,7 @@ function agendaIds(){ return agendaItems().map(it => it.t ? it.t.id : it.s.id); 
 // QR code as SVG with a 4-module quiet zone, dark on light in both colour schemes;
 // null when the text needs a code too dense to scan reliably.
 function qrSvg(text){
-  for (const level of ['M', 'L']){
+  for (const level of ['L']){
     let qr;
     try { qr = qrcode(0, level); qr.addData(text, 'Byte'); qr.make(); }
     catch (e) { continue; }
@@ -3457,6 +3474,7 @@ function parseAgendaInput(text){
     const ours = obj && !Array.isArray(obj) && obj.app === APP_ID;
     const list = Array.isArray(obj) ? obj : obj && Array.isArray(obj.items) ? obj.items : null;
     if (ours && !list) return { error: 'This agenda file has no list of items. It may be damaged: download it again, or copy the agenda code instead.' };
+    if (Array.isArray(obj) && !obj.every(x => typeof x === 'string')) return { error: 'This isn’t an AIP Congress 2026 agenda. Paste a link, an agenda code or the file from “Download file”.' };
     if (!list || (obj && obj.app && obj.app !== APP_ID)) return { error: 'This file isn’t an AIP Congress 2026 agenda. Use the file from “Download file”.' };
     ids = list.filter(x => typeof x === 'string').map(x => x.trim());
   } else {
@@ -3513,7 +3531,7 @@ document.getElementById('importFile').addEventListener('change', async e => {
 
 // ---------- start ----------
 const stickyWrap = document.querySelector('.sticky-wrap');
-function syncToolbarHeight(){ document.documentElement.style.setProperty('--toolbar-h', stickyWrap.offsetHeight + 'px'); }
+function syncToolbarHeight(){ document.documentElement.style.setProperty('--toolbar-h', Math.round(stickyWrap.getBoundingClientRect().height) + 'px'); }
 if (window.ResizeObserver) new ResizeObserver(syncToolbarHeight).observe(stickyWrap);
 syncToolbarHeight();
 
