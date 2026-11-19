@@ -521,20 +521,29 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    the toolbar swaps at once and stays above it. Only set while a transition runs. The
    old and new main areas get different names, so each stays where it was on screen
    when the change also scrolls the page. */
-html[data-view-tx]:not([data-view-tx-new]) #main{view-transition-name:main-old}
-html[data-view-tx-new] #main{view-transition-name:main}
-html[data-view-tx] .sticky-wrap{view-transition-name:toolbar}
+html[data-view-tx]:not([data-view-tx="mx"]):not([data-view-tx="dlg"]):not([data-view-tx-new]) #main{view-transition-name:main-old}
+html[data-view-tx-new]:not([data-view-tx="mx"]):not([data-view-tx="dlg"]) #main{view-transition-name:main}
+html[data-view-tx]:not([data-view-tx="dlg"]) .sticky-wrap{view-transition-name:toolbar}
 ::view-transition{pointer-events:none}
 ::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar){animation:none}
 ::view-transition-old(toolbar){display:none}
-::view-transition-group(toolbar){z-index:3}
+::view-transition-group(toolbar){z-index:4;background:var(--sticky-bg)}
+/* Shared-element morphs (mxBegin): each item moves and resizes from its old box to its
+   new one; its old and new looks cross-fade at their own size, pinned to the top left
+   and clipped to the moving box, so text never stretches. Sticky heads and label
+   columns (mx-cover) stay above the items, and the toolbar above everything. */
+::view-transition-group(*.mx),::view-transition-group(*.mx-cover){animation-duration:300ms;animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+::view-transition-group(*.mx){z-index:2}
+::view-transition-group(*.mx-cover){z-index:3}
+::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
+::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:120ms}
+::view-transition-group(mx-pop){z-index:5}
+html[data-view-tx="dlg"]::view-transition-new(root){animation:240ms ease both week-tx-fade}
 ::view-transition-old(main-old){animation:120ms ease-in both week-tx-out}
 ::view-transition-new(main){animation:210ms cubic-bezier(.2,.7,.3,1) both week-tx-in}
 html[data-view-tx="fwd"]::view-transition-new(main){animation-name:week-tx-in-r}
 html[data-view-tx="back"]::view-transition-new(main){animation-name:week-tx-in-l}
 html[data-view-tx="zoom"]::view-transition-new(main){animation-name:week-tx-zoom;animation-duration:300ms}
-::view-transition-group(week-zoom){z-index:2;animation-duration:320ms;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
-::view-transition-old(week-zoom),::view-transition-new(week-zoom){width:100%;height:100%}
 #main.view-enter{animation:week-tx-fade 180ms ease-out}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
@@ -3591,32 +3600,196 @@ function renderBuilder(){
     <button class="toggle" data-goprogram="${state.day}">Browse this day</button></div>`);
 }
 
-// View changes animate: withTransition(kind, fn) runs fn (which changes state and
-// renders) inside document.startViewTransition, so the main area cross-fades with a
-// slight slide ('fwd', 'back'), rise ('fade') or zoom ('zoom'; fn may return the
-// element the `from` element grows into). Browsers without view transitions get a
-// short fade. Nothing animates when motion is reduced (system setting, unless Display
-// settings say Full, or Reduce there). A click, key press or input while a change is
-// pending applies it first and skips the animation, so the state is never stale.
+// View changes animate: withTransition(kind, fn, from, opts) runs fn (which changes
+// state and renders) inside document.startViewTransition, so the main area cross-fades
+// with a slight slide ('fwd', 'back'), rise ('fade') or zoom ('zoom'). 'mx' keeps the
+// main area still and only moves the items (expanding a session, Sessions/Talks, My
+// agenda removals); 'dlg' grows the details dialog out of a block or back into it.
+// On top of that, every session or talk on screen in both states moves and resizes from
+// its old place to its new one (mx*, below); fn may return the element the `from`
+// element turns into. Browsers without view transitions get a short fade. Nothing
+// animates when motion is reduced (system setting, unless Display settings say Full, or
+// Reduce there). A click, key press or input while a change is pending applies it first
+// and skips the animation, so the state is never stale.
 let viewTx = null;
 function motionReduced(){
   const m = document.documentElement.dataset.motion;
   return m === 'reduce' || (m !== 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
+let settledAt = -1e9;
 function settleTransition(){
   const tx = viewTx;
   if (!tx) return;
   viewTx = null;
+  settledAt = performance.now();
   tx.run();
   try { tx.vt.skipTransition(); } catch (e) {}
 }
 for (const type of ['pointerdown', 'click', 'keydown', 'input']) document.addEventListener(type, settleTransition, true);
-function withTransition(kind, fn, from){
+// While a transition shows, a pointer lands on the page root; the click that settled it
+// goes on to whatever is under the pointer now.
+document.addEventListener('click', e => {
+  if (!e.isTrusted || e.target !== document.documentElement || performance.now() - settledAt > 1500) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if (!el || el === document.documentElement || el === document.body) return;
+  settledAt = -1e9;
+  e.stopImmediatePropagation();
+  el.click();
+}, true);
+
+// ---------- shared-element morphs ----------
+// Items are matched by data-sid / data-tid ("s-<id>", "t-<id>"). A talk with no
+// partner grows out of its session (data-in-sid, or the session block around it) or
+// folds back into it. Sticky heads and label columns get names of their own and sit
+// above the moving items, as they do on the page. Names are set only while a
+// transition runs, only on elements near the viewport, never twice in one state, at
+// most MX_CAP of them, and are cleared afterwards.
+const MX_CAP = 120, MX_MS = 300, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
+const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off)';
+const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
+const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
+const MX_SCROLL = '.hz-vp, .vt-wrap.scroll, .week-sc';
+let mxNamed = [], mxOwner = null;
+function mxClear(){
+  for (const el of mxNamed){ el.style.viewTransitionName = ''; el.style.viewTransitionClass = ''; }
+  mxNamed = [];
+}
+function mxName(el, key, cls){
+  el.style.viewTransitionName = 'mx-' + key.replace(/[^\w-]/g, '_');
+  el.style.viewTransitionClass = cls;
+  mxNamed.push(el);
+}
+const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + key.replace(/[^\w-]/g, '_') + ')';
+// What is on screen now: items, grid marks (aux) and sticky covers by key, each with its
+// rect, its scroll box's rect (the part of it that shows) and its session's key.
+function mxScan(aux, far){
+  const vw = innerWidth, vh = innerHeight, m = far ? vh * 1.5 : Math.max(240, vh * .5);
+  const main = document.getElementById('main'), items = new Map(), list = [];
+  const box = el => {
+    const sc = el.closest(MX_SCROLL);
+    return sc ? sc.getBoundingClientRect() : null;
+  };
+  const add = (el, key, kind) => {
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2 || r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2) return;
+    const c = box(el);
+    if (c && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
+    const was = items.get(key);
+    if (was && was.r.width * was.r.height >= r.width * r.height) return;
+    const p = kind !== 'item' ? '' : el.dataset.inSid ? 's-' + el.dataset.inSid
+      : (el.parentElement.closest('[data-sid]') ? 's-' + el.parentElement.closest('[data-sid]').dataset.sid : '');
+    const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
+    items.set(key, { key, el, r, c, p, kind, d });
+  };
+  const nth = new Map();
+  for (const el of main.querySelectorAll(MX_COVER)){
+    const cls = el.classList[0], i = nth.get(cls) || 0;
+    nth.set(cls, i + 1);
+    const lane = cls === 'hz-label' && el.parentElement.getAttribute('aria-label');
+    add(el, 'c-' + cls + '-' + (lane || i), 'cover');
+  }
+  if (aux) for (const el of main.querySelectorAll(MX_GRID)) add(el, 'g-' + el.classList[0] + '-' + el.dataset.m, 'grid');
+  for (const el of main.querySelectorAll(MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, 'item');
+  return items;
+}
+// Starts a morph: names the old state's elements. Returns { after(target), animate() }.
+function mxBegin(kind, from, opts){
+  mxClear();
+  const pop = kind === 'dlg', old = new Map();
+  let fromKey = '';
+  if (from){
+    fromKey = pop ? 'pop' : from.dataset.tid ? 't-' + from.dataset.tid : from.dataset.sid ? 's-' + from.dataset.sid : 'pop';
+    old.set(fromKey, { key: fromKey, el: from, r: from.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
+  }
+  if (!pop){
+    const seen = [...mxScan(kind === 'mx' || opts.aux).values()].sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
+    for (const it of seen){
+      if (old.size >= MX_CAP * .75) break;
+      if (!old.has(it.key) && it.el !== from) old.set(it.key, it);
+    }
+  }
+  for (const [key, it] of old) mxName(it.el, key, it.kind === 'cover' ? 'mx-cover' : 'mx');
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [] };
+  return {
+    after(target){
+      const now = pop ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
+      if (from && target && target.isConnected && target.getClientRects().length)
+        now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
+      const near = it => it.d <= Math.max(240, innerHeight * .5);
+      const named = new Set();
+      let count = old.size;
+      for (const [key, o] of old){
+        const n = now.get(key);
+        if (n && !named.has(n.el)){ mxName(n.el, key, o.kind === 'cover' ? 'mx-cover' : 'mx'); named.add(n.el); plan.pairs.push({ key, o, n }); }
+        else if (o.p && old.has(o.p) && now.has(o.p)) plan.fold.push({ key, o, po: old.get(o.p), pn: now.get(o.p) });
+        else plan.fade.push({ key, o });
+      }
+      for (const [key, n] of now){
+        if (old.has(key) || named.has(n.el) || !near(n) || count >= MX_CAP) continue;
+        if (n.kind === 'item' && n.p && old.has(n.p) && now.has(n.p) && plan.pairs.some(x => x.key === n.p)){
+          mxName(n.el, key, 'mx'); named.add(n.el); count++;
+          plan.grow.push({ key, n, po: old.get(n.p), pn: now.get(n.p) });
+        } else if (opts.grow && n.kind === 'item' && n.d === 0){
+          mxName(n.el, key, 'mx'); named.add(n.el); count++;
+          plan.added.push({ key, n });
+        }
+      }
+    },
+    animate(){
+      const root = document.documentElement;
+      const run = (key, part, frames, o = {}) => {
+        try { root.animate(frames, { duration: MX_MS, easing: MX_EASE, fill: 'both', ...o, pseudoElement: mxPart(part, key) }); } catch (e) {}
+      };
+      const box = (r, s = 1) => ({ transform: `translate(${r.left}px,${r.top}px)`, width: r.width + 'px', height: Math.max(0, r.height * s) + 'px' });
+      // a rect inside `a` taken to the same place inside `b`
+      const map = (r, a, b) => {
+        const sx = b.width / (a.width || 1), sy = b.height / (a.height || 1);
+        return { left: b.left + (r.left - a.left) * sx, top: b.top + (r.top - a.top) * sy, width: r.width * sx, height: r.height * sy };
+      };
+      // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
+      // canvas do not spill past its edges while they move)
+      const clip = (r, c) => c ? `inset(${Math.max(0, c.top - r.top)}px ${Math.max(0, r.right - c.right)}px ${Math.max(0, r.bottom - c.bottom)}px ${Math.max(0, c.left - r.left)}px)` : 'inset(0px 0px 0px 0px)';
+      const clipped = (...xs) => xs.some(x => x.c);
+      for (const { key, o, n } of plan.pairs){
+        if (clipped(o, n)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(n.r, n.c) }]);
+        // a block that changes shape: its new look comes in over the old one early, so
+        // the two never show as doubled text for long
+        if (Math.abs(o.r.width - n.r.width) > 6 || Math.abs(o.r.height - n.r.height) > 6){
+          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MX_MS * .4, easing: 'ease-out' });
+          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal', offset: .4 }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MX_MS * .55, easing: 'linear' });
+        }
+      }
+      plan.grow.forEach(({ key, n, po, pn }, i) => {
+        const from = map(n.r, pn.r, po.r);
+        run(key, 'group', [{ ...box(from), clipPath: clip(from, po.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
+        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: 180, delay: 40 + Math.min(i, 5) * 18, easing: 'ease-out' });
+      });
+      for (const { key, o, po, pn } of plan.fold){
+        const to = map(o.r, po.r, pn.r);
+        run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, pn.c) }]);
+        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'ease-in' });
+      }
+      for (const { key, o } of plan.fade){
+        if (o.c) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
+        if (opts.collapse && o.kind === 'item'){
+          run(key, 'group', [box(o.r), box(o.r, 0)]);
+          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in' });
+        }
+      }
+      for (const { key, n } of plan.added){
+        run(key, 'group', [box(n.r, 0), box(n.r)]);
+        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 60, easing: 'ease-out' });
+      }
+    },
+  };
+}
+function withTransition(kind, fn, from, opts = {}){
   settleTransition();
   const root = document.documentElement;
   if (motionReduced()){ fn(); return; }
   if (!document.startViewTransition){
     fn();
+    if (kind === 'mx' || kind === 'dlg') return;
     const main = document.getElementById('main');
     main.classList.remove('view-enter');
     void main.offsetWidth;
@@ -3624,27 +3797,29 @@ function withTransition(kind, fn, from){
     main.addEventListener('animationend', () => main.classList.remove('view-enter'), { once:true });
     return;
   }
-  let ran = false, target = null;
-  const run = () => {
-    if (ran) return;
-    ran = true;
-    target = fn() || null;
-    if (target && from) target.style.viewTransitionName = 'week-zoom';
-    root.dataset.viewTxNew = '';
-  };
   delete root.dataset.viewTxNew;
   root.dataset.viewTx = kind;
-  if (from) from.style.viewTransitionName = 'week-zoom';
+  const mx = mxBegin(kind, from, opts);
+  let ran = false, done;
+  const run = () => {
+    if (ran) return done;
+    ran = true;
+    mxClear();
+    const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
+    const out = fn();
+    done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
+    return done;
+  };
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ run(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; return; }
-  const tx = viewTx = { vt, run };
-  vt.ready.catch(() => {});
+  catch (e){ run(); mxClear(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; return; }
+  const tx = viewTx = mxOwner = { vt, run };
+  vt.ready.then(() => mx.animate(), () => {});
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
+    if (mxOwner === tx){ mxOwner = null; mxClear(); }
     if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; }
-    if (target) target.style.viewTransitionName = '';
   });
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
@@ -4734,11 +4909,14 @@ document.getElementById('agenda').addEventListener('click', e => {
   const t = e.target.closest('[data-vttog]');
   if (t){
     const id = t.dataset.vttog, top = t.getBoundingClientRect().top;
-    if (t.getAttribute('aria-expanded') === 'true'){ vtOpen.delete(id); if ('vthit' in t.dataset) vtShut.add(id); }
-    else { vtShut.delete(id); vtOpen.add(id); }
-    renderCalendar();
-    const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
-    if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
+    // the card grows or shrinks, its talks unfold from its heading, the rest moves along
+    withTransition('mx', () => {
+      if (t.getAttribute('aria-expanded') === 'true'){ vtOpen.delete(id); if ('vthit' in t.dataset) vtShut.add(id); }
+      else { vtShut.delete(id); vtOpen.add(id); }
+      renderCalendar();
+      const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
+      if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
+    });
     return;
   }
   const b = e.target.closest('[data-vtpick]');
@@ -5055,7 +5233,8 @@ function paintLevel(){
 document.getElementById('programLevel').addEventListener('click', e => {
   const b = e.target.closest('[data-level]');
   if (!b || (b.dataset.level === 'talks') === state.programTalks) return;
-  withTransition('fade', () => {
+  // each session block turns into its talks (or folds them back in)
+  withTransition(state.layout === 'calendar' && state.day !== 'all' ? 'mx' : 'fade', () => {
     state.programTalks = b.dataset.level === 'talks';
     paintLevel();
     renderCalendar();
@@ -5143,8 +5322,35 @@ document.addEventListener('click', e => {
   fillEventDialog(button.dataset.sessionDetail, button.dataset.talkDetail);
   dialogTrigger = button;
   dialogBefore = new Set(state.starred);
-  eventDialog.showModal();
-  eventDialog.scrollTop = 0;
+  const open = () => { eventDialog.showModal(); eventDialog.scrollTop = 0; };
+  // the dialog grows out of the block that opened it (not from inside another dialog)
+  if (button.closest('dialog') || !button.getClientRects().length) open();
+  else withTransition('dlg', () => { open(); return eventDialog; }, button.closest(MX_ITEM) || button);
+});
+// ...and shrinks back into it (or into what now stands for it) on Close or Escape
+function closeEventDialog(){
+  if (!eventDialog.open) return;
+  if (buildDialog.open){ eventDialog.close(); return; }
+  withTransition('dlg', () => {
+    eventDialog.close();
+    if (eventDialog.open) return null;
+    dialogClosedEarly = true;
+    eventDialogClosed();   // may redraw; moves the focus back
+    const f = document.activeElement, el = f && f.closest && f.closest('#main [data-session-detail]') ? f
+      : dialogTrigger && dialogTrigger.isConnected ? dialogTrigger : null;
+    const box = el && (el.closest(MX_ITEM) || el), r = box && box.getBoundingClientRect();
+    return r && r.width && r.bottom > 0 && r.top < innerHeight ? box : null;
+  }, eventDialog);
+}
+eventDialog.querySelector('form').addEventListener('submit', e => {
+  if (motionReduced() || !document.startViewTransition) return;
+  e.preventDefault();
+  closeEventDialog();
+});
+eventDialog.addEventListener('cancel', e => {
+  if (!e.cancelable || motionReduced() || !document.startViewTransition) return;
+  e.preventDefault();
+  closeEventDialog();
 });
 eventDialog.addEventListener('click', e => {
   const jump = e.target.closest('[data-goprogram]');
@@ -5182,7 +5388,13 @@ eventDialog.addEventListener('click', e => {
   paintStarCount();
   eventDialog.dataset.changed = 'true';
 });
+// (closeEventDialog runs this itself, as the close event can wait until a transition ends)
+let dialogClosedEarly = false;
 eventDialog.addEventListener('close', () => {
+  if (dialogClosedEarly){ dialogClosedEarly = false; return; }
+  eventDialogClosed();
+});
+function eventDialogClosed(){
   if (buildDialog.open && buildDialog.contains(dialogTrigger)){
     // Opened from Build my agenda: refresh its ticks and stay in it.
     if (eventDialog.dataset.changed){ delete eventDialog.dataset.changed; bd.changed = true; bdPaintChecks(); }
@@ -5205,7 +5417,7 @@ eventDialog.addEventListener('close', () => {
   if (scroller) scroller.scrollTo({left,top,behavior:'instant'});
   const fallback = state.scope === 'agenda' ? document.getElementById('builderTitle') : document.querySelector('#scheduleScope [aria-pressed="true"]');
   (replacement || fallback).focus({preventScroll:true});
-});
+}
 
 // ---------- print or save as PDF ----------
 // My agenda prints from a dedicated A4 list; the program view prints the page as before.
@@ -5360,12 +5572,15 @@ function undoNow(){
   state.starred = new Set(restore);
   persistStars();
   paintStarCount();
-  rerender();
-  toast('Agenda restored');
-  // back to what came back, or the top of My agenda
-  const back = removed.flatMap(id => [...document.querySelectorAll(`#builder [data-sstar="${id}"], #builder [data-tstar="${id}"], #agenda [data-talk-detail="${id}"], #agenda [data-session-detail="${id}"][data-talk-detail=""]`)])
-    .find(el => el.getClientRects().length);
-  (back || document.getElementById('builderTitle')).focus({ preventScroll: !back });
+  // what comes back opens out, the rest make room
+  withTransition('mx', () => {
+    rerender();
+    toast('Agenda restored');
+    // back to what came back, or the top of My agenda
+    const back = removed.flatMap(id => [...document.querySelectorAll(`#builder [data-sstar="${id}"], #builder [data-tstar="${id}"], #agenda [data-talk-detail="${id}"], #agenda [data-session-detail="${id}"][data-talk-detail=""]`)])
+      .find(el => el.getClientRects().length);
+    (back || document.getElementById('builderTitle')).focus({ preventScroll: !back });
+  }, null, { grow: true });
   return true;
 }
 document.getElementById('undoBtn').addEventListener('click', undoNow);
@@ -5454,10 +5669,12 @@ document.getElementById('builder').addEventListener('click', e => {
     const before = new Set(state.starred);
     drop.forEach(id => state.starred.delete(id));
     const n = goneItems(before).length;
-    afterStarChange();
-    offerUndo(before, `Kept ${quoteTitle(kept ? itemTitle(kept) : '')}, removed ${countWord(n, 'item')}`);
-    const next = document.querySelector('#clashBox [data-keep]') || document.getElementById('clashToggle') || document.getElementById('builderTitle');
-    next.focus({ preventScroll: true });
+    withTransition('mx', () => {
+      afterStarChange();
+      offerUndo(before, `Kept ${quoteTitle(kept ? itemTitle(kept) : '')}, removed ${countWord(n, 'item')}`);
+      const next = document.querySelector('#clashBox [data-keep]') || document.getElementById('clashToggle') || document.getElementById('builderTitle');
+      next.focus({ preventScroll: true });
+    }, null, { collapse: true });
   }
 });
 document.getElementById('copyAgenda').addEventListener('click', () => copyToClipboard(agendaText()));
@@ -5471,13 +5688,16 @@ document.getElementById('builder').addEventListener('click', e => {
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
-    removeStars([id]);
-    // a talk unstarred inside its saved session: stay on that session
-    const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
-    if (host){ host.focus(); return; }
-    const remaining = document.querySelectorAll('#builder .rm');
-    const next = remaining[Math.min(removedIndex, remaining.length - 1)];
-    (next || document.querySelector('#builderBody [data-goprogram]') || document.getElementById('builderTitle')).focus();
+    // the row folds away and the rest close up
+    withTransition('mx', () => {
+      removeStars([id]);
+      // a talk unstarred inside its saved session: stay on that session
+      const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
+      if (host){ host.focus(); return; }
+      const remaining = document.querySelectorAll('#builder .rm');
+      const next = remaining[Math.min(removedIndex, remaining.length - 1)];
+      (next || document.querySelector('#builderBody [data-goprogram]') || document.getElementById('builderTitle')).focus();
+    }, null, { collapse: true });
     return;
   }
   const build = e.target.closest('[data-build]');
