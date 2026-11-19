@@ -828,7 +828,7 @@ function hl(s){
   const terms = curTerms();
   if (!terms.length) return esc(s);
   if (_hlRe.q !== state.q){
-    const pat = terms.map(t => t.split(' ').map(escRe).join('\\s+'))
+    const pat = terms.filter(t => t.length > 1).map(t => t.split(' ').map(escRe).join('\\s+'))
                      .sort((a,b) => b.length - a.length).join('|');
     _hlRe = { q: state.q, re: pat ? new RegExp(pat, 'g') : null };
   }
@@ -1808,6 +1808,9 @@ const filterPanel = document.getElementById('filterPanel');
 function setFilterOpen(open){
   filterPanel.hidden = !open;
   filterBtn.setAttribute('aria-expanded', open);
+  // Opened from the top of the page on a phone, the menu would hang below the screen.
+  if (open && filterPanel.getBoundingClientRect().bottom > window.innerHeight)
+    window.scrollTo({ top: programTop(), behavior: 'instant' });
 }
 filterBtn.addEventListener('click', () => setFilterOpen(filterPanel.hidden));
 document.addEventListener('click', e => {
@@ -1930,9 +1933,14 @@ function stateHash(){
   return p.toString();
 }
 let hashReady = false;
+// A followed link (#t=, #s=) stays in the address until the view changes, and a
+// shared agenda (#agenda=) until its banner is handled, so a reload keeps them.
+let pinned = '', pinnedFor = null, pinnedAgenda = '';
 function writeHash(){
   if (!hashReady) return;
-  const h = stateHash();
+  const view = stateHash();
+  if (pinned && pinnedFor !== null && view !== pinnedFor) pinned = '';
+  const h = [view, pinned, pinnedAgenda].filter(Boolean).join('&');
   if (location.hash.slice(1) === h) return;
   try { history.replaceState(null, '', location.pathname + location.search + (h ? '#' + h : '')); } catch (e) {}
 }
@@ -1956,11 +1964,16 @@ function readHash(){
 function followHashTargets(r){
   const hit = r.talk ? talkById(r.talk) : null;
   const s = hit ? hit.s : r.session ? slotById(r.session) : null;
+  pinned = hit ? 't=' + hit.t.id : s ? 's=' + s.id : '';
+  pinnedFor = null;
   if (s){
     const di = DATA.days.findIndex(d => d.slots.includes(s));
     jumpTo(String(di), s.id, hit ? hit.t.id : '');
   }
+  pinnedFor = stateHash();
+  pinnedAgenda = '';
   if (r.agenda) showSharedAgenda(r.agenda.split(','));
+  writeHash();
 }
 function linkTo(hash){
   // Share the real address: the short /AIP2026 alias answers through a 404 page,
@@ -2003,6 +2016,7 @@ function showSharedAgenda(ids){
   }
   const el = document.getElementById('sharedBanner');
   if (!items.length){ el.hidden = true; return; }
+  pinnedAgenda = 'agenda=' + items.map(it => it.id).join(',');
   items.sort((a,b) => a.d.date.localeCompare(b.d.date) || a.start.localeCompare(b.start));
   const fresh = items.filter(it => !state.starred.has(it.id));
   el.dataset.ids = fresh.map(it => it.id).join(',');
@@ -2019,17 +2033,21 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
     const ids = (el.dataset.ids || '').split(',').filter(Boolean);
     ids.forEach(id => state.starred.add(id));
     saveStars();
+    pinnedAgenda = '';
     document.getElementById('starCount').textContent = state.starred.size;
     rerender();
     el.innerHTML = `<div class="sb-row"><div>Added ${ids.length} item${ids.length === 1 ? '' : 's'} to My agenda.</div><div class="fb-actions"><button type="button" data-sb-open>Open My agenda</button><button type="button" data-sb-close>Dismiss</button></div></div>`;
     el.querySelector('[data-sb-open]').focus();
   } else if (e.target.closest('[data-sb-open]')){
     el.hidden = true;
+    pinnedAgenda = '';
     showView(state.layout, 'agenda');
     scrollToProgramTop();
     document.getElementById('builderTitle').focus({ preventScroll: true });
   } else if (e.target.closest('[data-sb-close]')){
     el.hidden = true;
+    pinnedAgenda = '';
+    writeHash();
   }
 });
 
