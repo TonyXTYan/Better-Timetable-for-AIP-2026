@@ -881,8 +881,12 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-wrap .vt-grid{margin:0}
 /* sideways only: vertical scrolling stays with the page */
 .vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
-.vt-wrap.scroll .vt-head,.vt-wrap.scroll .vt-corner{top:0}
-.vt-wrap.scroll .vt-corner{left:0;z-index:7}
+.vt-wrap.scroll .vt-grid{grid-template-rows:4px}
+.vt-hbar{position:sticky;top:var(--toolbar-h,150px);z-index:6;overflow:hidden;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:var(--radius) var(--radius) 0 0;padding:4px 0 5px}
+.vt-hbar + .vt-wrap.scroll{border-top:0;border-radius:0 0 var(--radius) var(--radius)}
+.vt-hgrid{--vtw:3.1rem;display:grid;grid-template-columns:var(--vtw) var(--vtcols);column-gap:6px}
+.vt-hgrid .vt-head{position:relative;top:auto;margin:0}
+.vt-hgrid .vt-corner{position:sticky;left:0;top:auto;z-index:7;margin:0;background:var(--bg)}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
 .vt-wrap.scroll .vt-nowl{z-index:4}
@@ -909,7 +913,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-ttime{font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);font-size:.6562rem}
 .vt-tsp{display:block;color:var(--muted);font-size:.625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-star{color:var(--star)}
-.vt-stack{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:0 5px;align-content:start;z-index:1}
 .vt-card.band{flex-direction:row;flex-wrap:wrap;align-items:center}
 .vt-card.band.sub{display:grid}
 .vt-card.band .vt-hd{flex-direction:row;flex-wrap:wrap;align-items:center}
@@ -948,6 +951,18 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.625rem;letter-spacing:0}
 .vt-lb .vt-card.band .vt-foot{padding:0 9px 5px}
 .vt-lb .vt-card.band .vt-open,.vt-lb .vt-card.band .vt-foot{flex:none}
 .vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
+.vt-day{outline:none}
+.vt-daynav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0 0 10px;padding:2px 0 8px;border-bottom:2px solid var(--day-rule)}
+.vt-daynav .cal-day-title{margin:0;padding:0;border:0;text-align:center;white-space:nowrap}
+.vt-go{justify-self:start;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font:inherit;font-size:.8125rem;font-weight:700;line-height:1.4;white-space:nowrap;cursor:pointer}
+.vt-go.next{justify-self:end}
+.vt-go span[aria-hidden]{font-size:1.2em;line-height:1}
+.vt-go:hover{border-color:var(--hover-line)}
+.vt-go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vt-go.none{visibility:hidden}
+.agenda.vt-sliding{position:relative;overflow:clip}
+.vt-ghost{position:absolute;left:0;right:0;padding:inherit;padding-bottom:0;pointer-events:none}
+@media (max-width:720px){.vt-god{display:none}.vt-go{padding:9px 13px}}
 .cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .cal-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
 .cal-grid{--minute:.28125rem;--time-gutter:3.5rem;position:relative;min-width:calc(var(--time-gutter) + var(--lanes) * 6.25rem);height:calc(var(--duration) * var(--minute));margin:12px 8px}
@@ -1253,9 +1268,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media print{
   .favourites-calendar #agenda{display:none!important}
   .sticky-wrap,.star,.talk-star,.hero .links,.display-btn,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
-  .hz-ov,.hz-mini,.vt-picker,#hzTip{display:none!important}
+  .hz-ov,.hz-mini,.vt-picker,.vt-go,#hzTip{display:none!important}
   #weekTip,.week-hint{display:none!important}
-  .hz-stick,.vt-head,.vt-corner,.vt-lh{position:static;box-shadow:none}
+  .hz-stick,.vt-head,.vt-corner,.vt-lh,.vt-hbar{position:static;box-shadow:none}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:#fff}
@@ -2048,6 +2063,8 @@ document.getElementById('daytabs').addEventListener('keydown', e => {
 });
 document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
+  // The Vertical day view slides between days itself.
+  if (b.dataset.day !== 'all' && vtShown() && vtSlideTo(+b.dataset.day, { focus: 'tab', toTop: true })) return;
   const day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
   const go = () => {
     state.day = day;
@@ -2055,7 +2072,6 @@ document.getElementById('daytabs').addEventListener('click', e => {
     document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
     scrollToProgramTop();
   };
-  // The Vertical day view slides between days itself.
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
   if (vertical || day === state.day) go();
   else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go);
@@ -3342,7 +3358,7 @@ const VT_COLS = [
   { key:'event',  label:'Forums & meetings', short:'Forums · Meetings', col:'var(--special)', of:() => true },
 ];
 const VT_BAND_CATS = ['plenary','special','business','social'];
-const VT_TRACK_REM = 7.5, VT_AIM_REM = 10;   // narrowest sub-column; preferred width
+const VT_TRACK_REM = 7.5;   // narrowest sub-column
 
 function vtDayView(day){
   const slots = programDaySlots(day);
@@ -3362,7 +3378,13 @@ function vtDayView(day){
     else colSlots[colOf(s).key].push(s);
   }
   const cols = VT_COLS.filter(c => colSlots[c.key].length).map(c => ({ ...c }));
-  const head = `<h3 class="cal-day-title">${esc(day.label)} 2026</h3>`;
+  // The day heading sits between previous/next day buttons; the whole view is
+  // one focusable box, so arrow keys work on it (vtDayNav below).
+  const step = d => { const i = vtDayStep(d); return i < 0 ? null : DATA.days[i]; };
+  const go = (d, to) => to
+    ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
+    : `<span class="vt-go none"></span>`;
+  const head = `<div class="vt-day" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h3 class="cal-day-title">${esc(day.label)} 2026</h3>${go(1, step(1))}</div>`;
 
   // One card. With `rows` the card shows its talks on the grid rows given
   // (subgrid); without, talks (if open) are a plain list under the heading.
@@ -3407,10 +3429,10 @@ function vtDayView(day){
     slots.filter(shown).forEach(s => { const k = toMin(s.start); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); });
     html += `<section class="vt-list" aria-label="Timetable by time">`;
     for (const [m, g] of groups){
-      html += `<div class="vt-lh">${hhmm(m)}<small>${g.length} session${g.length > 1 ? 's' : ''} starting</small></div><div class="vt-lb">${g.map(s => card(s, { band: bands.includes(s) })).join('')}</div>`;
+      html += `<div class="vt-lh">${hhmm(m)}<small>${g.length} session${g.length > 1 ? 's' : ''} starting</small></div><div class="vt-lb" data-m="${m}">${g.map(s => card(s, { band: bands.includes(s) })).join('')}</div>`;
     }
     if (!groups.size) html += '<p class="vt-none">Nothing in this stream today.</p>';
-    return html + '</section>';
+    return html + '</section></div>';
   }
 
   // Clusters of overlapping sessions per column, with greedy lanes.
@@ -3426,25 +3448,15 @@ function vtDayView(day){
     }
     c.demand = Math.max(1, ...cells.filter(x => x.col === c).map(x => x.lanes.length));
   }
-  // Share the width: each stream starts with one sub-column; the stream with
-  // the most unmet parallelism per sub-column gets the next one, while
-  // sub-columns stay at least VT_TRACK_REM wide (aiming for VT_AIM_REM). Collapsed
-  // sessions beyond a stream's sub-columns stack in its cell. A cluster that
-  // shows talks gets one sub-column per parallel session, so every talk keeps
-  // its row; if that needs more width than the page has, the grid scrolls
-  // sideways inside its own box (time column and heads stay put).
+  // Share the width: each stream gets one sub-column per session running side
+  // by side (its demand), so no card stacks under another and every card and
+  // talk keeps its own start-time row; the sub-columns share the width equally.
+  // If they would be narrower than VT_TRACK_REM, the grid scrolls sideways
+  // inside its own box (time column and heads stay put).
   const R = remPx(), GAP = 6;
   vtWidth = document.getElementById('agenda').clientWidth || 1200;
   const avail = vtWidth - 3.1 * R - GAP;
-  const budget = Math.max(cols.length, Math.floor((avail + GAP) / (VT_AIM_REM * R + GAP)));
-  cells.forEach(c => c.aligned = c.slots.some(isOpen));
-  cols.forEach(c => c.k = 1);
-  for (let used = cols.length; used < budget; used++){
-    const pick = cols.filter(c => c.k < c.demand).sort((a,b) => b.demand / b.k - a.demand / a.k)[0];
-    if (!pick) break;
-    pick.k++;
-  }
-  cols.forEach(c => { c.k = Math.max(c.k, ...cells.filter(x => x.col === c && x.aligned).map(x => x.lanes.length)); });
+  cols.forEach(c => { c.k = c.demand; });
   const tracks = cols.reduce((n, c) => n + c.k, 0) || 1;
   const scroll = tracks * (VT_TRACK_REM * R + GAP) > avail + GAP + 1;
   let track = 2;
@@ -3471,9 +3483,14 @@ function vtDayView(day){
 
   const talksCls = state.programTalks ? ' talks' : '';
   const tr = scroll ? `${VT_TRACK_REM}rem` : 'minmax(0,1fr)';
-  let html = head + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}" aria-label="Timetable by stream">`;
-  html += `<div class="vt-corner"></div><div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
-  cols.forEach(c => { html += `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span><small>${colSlots[c.key].length}</small></div>`; });
+  const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
+  const heads = '<div class="vt-corner"></div>' + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span><small>${colSlots[c.key].length}</small></div>`).join('');
+  // A grid that scrolls sideways keeps its column heads in a bar above it,
+  // sticky under the toolbar and kept in step with the grid's scroll (a head
+  // inside the scroll box could only stick to the box, not the page).
+  let html = head + (scroll ? `<div class="vt-hbar"><div class="vt-hgrid" style="${colsCss}">${heads}</div></div>` : '')
+    + `<div class="vt-wrap${scroll ? ' scroll' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="Timetable by stream">`;
+  html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div>`;
   // Each time has a solid line and label on its first row; a talk row under a
   // heading row of the same time gets a dashed line and a lighter label.
   for (const r of rows){
@@ -3488,18 +3505,15 @@ function vtDayView(day){
   };
   for (const c of cells){
     if (c.band){ html += placed(c.slots[0], '2 / -1', 1, true); continue; }
+    // every stream has a sub-column per parallel session, so no card ever
+    // stacks under another: each one's top sits on its start-time row
     const L = c.lanes.length, K = c.col.k;
-    if (L <= K){
-      for (const s of c.slots){
-        const l = c.lane.get(s), a = Math.floor(l * K / L), b = Math.floor((l + 1) * K / L);
-        html += placed(s, `${c.col.t0 + a} / ${c.col.t0 + b}`, 1);
-      }
-      continue;
+    for (const s of c.slots){
+      const l = c.lane.get(s), a = Math.floor(l * K / L), b = Math.floor((l + 1) * K / L);
+      html += placed(s, `${c.col.t0 + a} / ${c.col.t0 + b}`, 1);
     }
-    const a = lineH.get(c.start), b = Math.max(a + 1, lineAt(c.end));
-    html += `<div class="vt-stack" style="--n:${K};grid-column:${c.col.t0} / span ${K};grid-row:${a} / ${b}">${c.slots.map(s => card(s, {})).join('')}</div>`;
   }
-  return html + '</section></div>';
+  return html + '</section></div></div>';
 }
 
 document.getElementById('agenda').addEventListener('click', e => {
@@ -3515,6 +3529,144 @@ document.getElementById('agenda').addEventListener('click', e => {
   const b = e.target.closest('[data-vtpick]');
   if (b){ vtPick = b.dataset.vtpick; renderCalendar(); }
 });
+
+// Vertical day view: moving between days. Previous/next buttons, Left/Right
+// arrow keys on the calendar, a sideways touch swipe or trackpad swipe all
+// step to the nearest day with matching sessions, and the days slide past
+// (vtSlideTo). A swipe never takes over from the grid's own sideways scroll:
+// it turns the day only when the gesture starts with the grid at its edge.
+function vtDayStep(dir){
+  if (state.day === 'all') return -1;
+  for (let i = state.day + dir; i >= 0 && i < DATA.days.length; i += dir)
+    if (DATA.days[i].slots.some(slotMatches)) return i;
+  return -1;
+}
+const vtShown = () => programDayShown() && state.orient === 'v' && !!document.querySelector('#agenda > .vt-day');
+// [can scroll left, can scroll right] for the grid's sideways scroll box
+const vtCanScroll = w => w ? [w.scrollLeft > 1, w.scrollLeft < w.scrollWidth - w.clientWidth - 1] : [false, false];
+// The time row near the top of the screen, to keep the same time of day in view.
+function vtAnchor(){
+  const main = document.getElementById('agenda');
+  const y = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 150) + 3 * remPx();
+  if (main.getBoundingClientRect().top > y) return null;
+  let best = null;
+  for (const el of main.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')){
+    const top = el.getBoundingClientRect().top;
+    if (top > y && best) break;
+    best = { m: +el.dataset.m, top };
+  }
+  return best;
+}
+let vtSlideEnd = null;
+function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
+  if (i < 0 || state.day === 'all' || i === state.day) return false;
+  if (vtSlideEnd) vtSlideEnd();
+  const main = document.getElementById('agenda'), dir = i > state.day ? 1 : -1;
+  const anchor = toTop ? null : vtAnchor(), top0 = main.getBoundingClientRect().top;
+  const oldWrap = main.querySelector('.vt-wrap.scroll'), oldLeft = oldWrap ? oldWrap.scrollLeft : 0;
+  let ghost = null;
+  if (!motionReduced() && main.querySelector(':scope > .vt-day')){
+    ghost = document.createElement('div');
+    ghost.className = 'vt-ghost';
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.inert = true;
+    main.style.minHeight = main.offsetHeight + 'px';   // the page keeps its height (and scroll) meanwhile
+    ghost.append(...main.childNodes);
+  }
+  state.day = i;
+  rerender();
+  main.style.minHeight = '';
+  // The new day opens at its start, or after a swipe or arrow key at the
+  // grid's edge, at the side the gesture came from.
+  const w = main.querySelector('.vt-wrap.scroll');
+  if (w) w.scrollLeft = edge && dir < 0 ? w.scrollWidth : 0;
+  if (toTop) scrollToProgramTop();
+  else if (anchor){
+    const marks = [...main.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')];
+    const to = marks.filter(el => +el.dataset.m <= anchor.m).pop() || marks[0];
+    if (to) window.scrollBy(0, to.getBoundingClientRect().top - anchor.top);
+  }
+  const view = main.querySelector(':scope > .vt-day');
+  if (focus === 'tab') document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll: true });
+  else if (focus && view)
+    (focus === 'nav' && (view.querySelector(`[data-vtgo="${dir}"]`) || view.querySelector('[data-vtgo]')) || view).focus({ preventScroll: true });
+  if (!ghost || !view) return true;
+  ghost.style.top = (top0 - main.getBoundingClientRect().top) + 'px';
+  main.classList.add('vt-sliding');
+  main.prepend(ghost);
+  const gw = ghost.querySelector('.vt-wrap.scroll');
+  if (gw) gw.scrollLeft = oldLeft;
+  const out = ghost.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 28}%)`, opacity: 0 }],
+    { duration: 220, easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' });
+  const into = view.animate([{ transform: `translateX(${dir * 28}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }],
+    { duration: 220, easing: 'cubic-bezier(.2,.6,.3,1)' });
+  const end = () => { if (vtSlideEnd !== end) return; vtSlideEnd = null; out.cancel(); into.cancel(); ghost.remove(); main.classList.remove('vt-sliding'); };
+  vtSlideEnd = end;
+  into.onfinish = end;
+  return true;
+}
+{
+  const main = document.getElementById('agenda');
+  // The heads bar follows the grid's sideways scroll.
+  main.addEventListener('scroll', e => {
+    const w = e.target, bar = w.matches?.('.vt-wrap.scroll') && w.previousElementSibling;
+    if (bar && bar.matches('.vt-hbar')) bar.scrollLeft = w.scrollLeft;
+  }, { capture: true, passive: true });
+  main.addEventListener('click', e => {
+    const b = e.target.closest('[data-vtgo]');
+    if (b) vtSlideTo(vtDayStep(+b.dataset.vtgo), { focus: 'nav' });
+  });
+  main.addEventListener('keydown', e => {
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented || !vtShown()) return;
+    if (e.target.closest('input, select, textarea, [contenteditable], .vt-picker')) return;
+    const dir = e.key === 'ArrowRight' ? 1 : -1;
+    if (vtCanScroll(e.target.closest('.vt-wrap.scroll'))[dir > 0 ? 1 : 0]) return;   // the grid scrolls first
+    const i = vtDayStep(dir);
+    if (i < 0) return;
+    e.preventDefault();
+    vtSlideTo(i, { focus: e.target.closest('[data-vtgo]') ? 'nav' : 'view', edge: true });
+  });
+  // Touch: a mostly sideways swipe of 60px or more (or a quick flick).
+  let touch = null;
+  main.addEventListener('touchstart', e => {
+    touch = null;
+    if (e.touches.length !== 1 || !vtShown() || e.target.closest('.vt-picker, input, select, textarea')) return;
+    const t = e.touches[0];
+    touch = { x: t.clientX, y: t.clientY, at: performance.now(), can: vtCanScroll(e.target.closest('.vt-wrap.scroll')) };
+  }, { passive: true });
+  main.addEventListener('touchmove', e => { if (e.touches.length > 1) touch = null; }, { passive: true });
+  main.addEventListener('touchcancel', () => { touch = null; });
+  main.addEventListener('touchend', e => {
+    const s = touch; touch = null;
+    if (!s || e.touches.length || !vtShown()) return;
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y, ax = Math.abs(dx);
+    const v = ax / Math.max(1, performance.now() - s.at);
+    if (ax < 1.5 * Math.abs(dy) || (ax < 60 && !(ax > 30 && v > 0.5))) return;
+    const dir = dx < 0 ? 1 : -1;
+    if (s.can[dir > 0 ? 1 : 0]) return;
+    vtSlideTo(vtDayStep(dir), { edge: true });
+  }, { passive: true });
+  // Trackpad: sideways wheel deltas add up within one gesture (events less than
+  // 250ms apart); past 90px the day turns once, and the rest of that gesture
+  // (its momentum) is swallowed.
+  const g = { acc: 0, last: -1e9, done: false, scrolled: false };
+  main.addEventListener('wheel', e => {
+    if (e.ctrlKey || !vtShown()) return;
+    const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerWidth : 1;
+    const dx = e.deltaX * k, dy = e.deltaY * k, now = performance.now();
+    if (now - g.last > 250){ g.acc = 0; g.done = false; g.scrolled = false; }
+    g.last = now;
+    if (Math.abs(dx) <= Math.abs(dy)) return;
+    if (g.done){ e.preventDefault(); return; }   // the rest of a swipe that turned the day
+    if (vtCanScroll(e.target.closest('.vt-wrap.scroll'))[dx > 0 ? 1 : 0]){ g.scrolled = true; g.acc = 0; return; }
+    e.preventDefault();   // no browser back/forward swipe here
+    if (g.scrolled) return;
+    g.acc += dx;
+    if (Math.abs(g.acc) < 90) return;
+    g.done = true;
+    vtSlideTo(vtDayStep(g.acc > 0 ? 1 : -1), { edge: true });
+  }, { passive: false });
+}
 
 function renderCalendar(){
   const favourites = state.scope === 'agenda';
