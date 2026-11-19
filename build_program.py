@@ -275,12 +275,14 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 .hl .hl-d{font-size:13px;color:var(--muted);margin:0}
 .hl .hl-d b{color:var(--ink);font-weight:600}
 
+.highlight-wrap:not([open])+#toolbarAnchor+.sticky-wrap{margin-top:0}
+.highlight-wrap:not([open])>summary{margin-bottom:4px}
 .highlight-wrap>summary{max-width:1180px;margin:10px auto;padding:4px 20px;cursor:pointer;font-weight:600}
 .session-option{display:block;margin:12px 0;font-size:14px}
 .calendar-hint{display:none;color:var(--muted);font-size:13px;margin:6px 0}
 @media(max-width:720px){.calendar-hint{display:block}}
 .week-scroll{max-height:70vh;overflow:auto;border:1px solid var(--line);background:var(--surface);border-radius:10px}
-#programLevel select{font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+#programLevel select{font:inherit;font-size:13.5px;height:40px;box-sizing:border-box;padding:8px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .week-scroll table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
 .week-scroll td,.week-scroll th{padding:5px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}
 .week-scroll td{min-width:9rem}
@@ -498,7 +500,8 @@ footer p{margin:4px 0}
 .ag-kind{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--cbg,#eef);color:var(--c,#555);margin-right:8px;vertical-align:1px}
 .ag-clash{display:block;margin-top:6px;font-size:12.5px;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:8px;padding:5px 10px}
 .ag-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
-@media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px}}
+@media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px;margin-top:-5px}}
+@media (min-width:1100px){.ag-actions{width:340px}}
 .ag-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
 .ag-btn:hover{background:var(--surface-3);color:var(--ink)}
 .ag-btn.rm:hover{background:var(--danger-bg);color:var(--now-text);border-color:var(--danger-line)}
@@ -532,6 +535,12 @@ footer p{margin:4px 0}
   .controls{position:relative}
   .filter-menu{position:static}
   .filter-panel{left:0;right:0;width:auto}
+  .controls:has(#programLevel:not([hidden])){flex-wrap:wrap}
+  .controls:has(#programLevel:not([hidden])) .searchbox{flex:1 1 0;min-width:150px}
+  #programLevel{flex:1 1 100%}
+  #programLevel select{width:100%}
+  .shared-banner .fb-actions{margin-left:0;width:100%}
+  .shared-banner .fb-actions button{min-height:36px}
   .card .star{min-width:44px;min-height:44px}
   .toolbar{padding-top:6px}
   .daytabs{padding-bottom:4px}
@@ -545,7 +554,7 @@ footer p{margin:4px 0}
   .talk-star{width:44px;height:44px;margin-right:2px}
   .searchbox input{font-size:16px}
 }
-@media (pointer:coarse){.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
+@media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .schedule-nav .agenda-views{margin:0}
 @media (max-width:720px){.schedule-nav{margin-bottom:4px}}
