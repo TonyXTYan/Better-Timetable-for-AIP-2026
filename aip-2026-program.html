@@ -1517,7 +1517,7 @@ function renderCalendar(){
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
   const fallback = !favourites && !selected.length && items.length > 0;
   const result = document.getElementById('resultLine');
-  main.classList.remove('wide');
+  main.classList.add('wide');
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekCalendar(items);
@@ -1529,7 +1529,7 @@ function renderCalendar(){
     main.innerHTML = !selected.length ? empty
       : state.day === 'all' ? weekCalendar(selected)
       : favourites ? dayCalendar(selected, DATA.days[state.day]) : programDayGrid(DATA.days[state.day]);
-    main.classList.toggle('wide', !favourites && state.day !== 'all');
+    main.classList.toggle('wide', true);
     result.textContent = selected.length + (favourites ? ' agenda events' : state.programTalks ? ' matching events' : ' matching sessions') + ' · All times AEDT';
   }
   document.getElementById('emptyNote').classList.remove('show');
