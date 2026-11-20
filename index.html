@@ -938,7 +938,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 #hzTip[hidden]{display:none}
 /* a cut card in full, over it (hzPopShow): its left edge and width (a narrow card widens
    to 11rem), growing down over the cards below; under the sticky head, it moves nothing */
-.hz-pop{--hzpd:calc(var(--motion-scale,1) * 150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) ease-out,height var(--hzpd) ease-out}
+.hz-pop{--hzpd:calc(var(--mo,1) * 150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) ease-out,height var(--hzpd) ease-out}
 .hz-pop[hidden]{display:none}
 .hz-pop.tk{background:var(--card);color:var(--ink);border-left-width:3px;border-radius:5px;padding:3px 6px 5px}
 .hz-pop.tk.dim{color:var(--bar-meta)}
@@ -1454,7 +1454,7 @@ button.bd-cxkey:hover{border-color:var(--clash-row-line)}
 .bd-hint{color:var(--ink-2);font-weight:600}
 .bd-check.on .bd-hint{color:var(--bar-ink)}
 .bd-tog{display:flex;align-items:center;gap:0;width:100%;margin-top:4px;border:0;border-top:1px solid var(--line);background:none;border-radius:0;padding:6px 0;font-size:0.7812rem;font-weight:650;color:var(--link);text-align:left}
-.bd-tog .caret{margin-left:6px;font-size:.7em;transition:transform .15s}
+.bd-tog .caret{margin-left:6px;font-size:.7em;transition:transform calc(var(--mo,1) * .15s)}
 .bd-tog[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .bd-tog[aria-expanded="true"] .bd-show,.bd-tog[aria-expanded="false"] .bd-hide{display:none}
 .bd-tcount{color:var(--starOn-ink)}
