@@ -563,30 +563,30 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
   .week-v .week-dayh.week-pastday::after{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
 /* View changes (withTransition): the main area cross-fades with a slight slide or zoom;
-   the toolbar swaps at once and stays above it. Only set while a transition runs. The
-   old and new main areas get different names, so each stays where it was on screen
-   when the change also scrolls the page. */
+   the toolbar and the page's header swap at once and stay put. Only set while a
+   transition runs. */
 /* The slide/fade runs on the page's root snapshot (viewport-sized), never on a named
    #main, which on a long program would be a page-tall snapshot. */
 /* (the toolbar drops its backdrop blur meanwhile: its group has an opaque background of
    the same colour, and a live blur over the moving page would be redone every frame) */
 html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) .sticky-wrap{view-transition-name:toolbar;backdrop-filter:none;-webkit-backdrop-filter:none}
+html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) header.hero{view-transition-name:hero}
 ::view-transition{pointer-events:none}
-::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar){animation:none}
-::view-transition-old(toolbar){display:none}
+::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar),::view-transition-group(hero),::view-transition-new(hero){animation:none}
+::view-transition-old(toolbar),::view-transition-old(hero){display:none}
 /* (the root's own group never moves; it only sets how long the transition lasts) */
-::view-transition-group(root){animation-duration:calc(200ms * var(--mo))}
+::view-transition-group(root){animation-duration:var(--dur-l)}
 ::view-transition-group(toolbar){z-index:4;background:linear-gradient(var(--sticky-bg),var(--sticky-bg)),var(--bg)}
 /* Shared-element morphs (mxBegin): each item moves and resizes from its old box to its
    new one; its old and new looks cross-fade at their own size, pinned to the top left
    and clipped to the moving box, so text never stretches. Sticky heads and label
    columns (mx-cover) stay above the items, and the toolbar above everything. */
-::view-transition-group(*.mx),::view-transition-group(*.mx-cover){animation-duration:calc(200ms * var(--mo));animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+::view-transition-group(*.mx),::view-transition-group(*.mx-cover){animation-duration:var(--dur-l);animation-timing-function:var(--ease-em)}
 ::view-transition-group(*.mx){z-index:2}
 ::view-transition-group(*.mx-under){z-index:1}
 ::view-transition-group(*.mx-cover){z-index:3}
 ::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
-::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(90ms * var(--mo))}
+::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(var(--dur-s) / 2);animation-timing-function:var(--ease)}
 ::view-transition-group(mx-pop){z-index:5}
 /* a vertical day scrolled sideways: its time column (the background the cards slide
    under) moves as a cover too, and the time labels stay over it, so neither the cards
@@ -595,24 +595,28 @@ html[data-view-tx="mx"] .vt-wrap.scroll .vt-tcol{view-transition-name:vt-tcol;vi
 html[data-view-tx="mx"] .vt-wrap.scroll .vt-t{view-transition-class:mx-cover!important}
 ::view-transition-group(vt-tcol){background:var(--bg)}
 ::view-transition-old(vt-tcol),::view-transition-new(vt-tcol){display:none}
-html[data-view-tx="dlg"]::view-transition-new(root){animation:calc(180ms * var(--mo)) ease both week-tx-fade}
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:calc(170ms * var(--mo)) cubic-bezier(.2,.7,.3,1) both week-tx-in}
+html[data-view-tx="dlg"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
+/* (the old view goes quickly, before the new one comes in, so the two never show
+   doubled for long) */
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both week-tx-in}
 html[data-view-tx="fwd"]::view-transition-new(root){animation-name:week-tx-in-r}
 html[data-view-tx="back"]::view-transition-new(root){animation-name:week-tx-in-l}
-html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom;animation-duration:calc(200ms * var(--mo))}
-html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(50ms * var(--mo))}
+html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom}
+html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(var(--dur-s) / 3)}
+/* A change whose morph is off (recent ones were slow): a short plain cross-fade */
+html[data-view-tx="xf"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-out}
+html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--ease) both week-tx-fade}
 /* A new theme, contrast or text size (displayFade): the whole page, toolbar and dialog
    included, cross-fades from the old look to the new one */
-html[data-view-tx="disp"]::view-transition-old(root){animation:calc(200ms * var(--mo)) ease-in both week-tx-out}
-html[data-view-tx="disp"]::view-transition-new(root){animation:calc(200ms * var(--mo)) ease-out both week-tx-fade}
+html[data-view-tx="disp"]::view-transition-old(root){animation:var(--dur-l) var(--ease) both week-tx-out}
+html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
 /* a new text size moves every line: the old look goes first and the new one follows
    (through the page's own background, dimmed under an open dialog), never both at once */
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition{background:var(--bg)}
 html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop,rgba(22,35,55,.53)),var(--backdrop,rgba(22,35,55,.53))),var(--bg)}
-html.tx-busy{cursor:progress}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -670,7 +674,7 @@ html.tx-busy{cursor:progress}
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
-.sticky-wrap.tb-anim{overflow:clip;transition:height calc(.16s * var(--mo)) ease,margin-bottom calc(.16s * var(--mo)) ease}
+.sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -767,6 +771,9 @@ html.tx-busy{cursor:progress}
 
 .people-intro{margin:0 0 6px;color:var(--muted);font-size:0.875rem}
 .pp-group{margin:18px 0 0}
+/* (a section off screen is not laid out: renderPeople guesses its height) */
+.pp-group,.pp-letter{content-visibility:auto;overflow-clip-margin:16px}
+@media print{.pp-group,.pp-letter{content-visibility:visible}}
 .pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 10px;padding:6px 0 8px;border-bottom:2px solid var(--day-rule);font-size:1.0625rem;font-weight:800;letter-spacing:.1px;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
 .pp-n{font-size:0.7812rem;font-weight:600;color:var(--muted)}
 .pp-none .pp-aff{color:var(--muted)}
@@ -1202,7 +1209,7 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 #hzTip[hidden]{display:none}
 /* a cut card in full, over it (hzPopShow): its left edge and width (a narrow card widens
    to 11rem), growing down over the cards below; under the sticky head, it moves nothing */
-.hz-pop{--hzpd:calc(var(--mo,1) * 150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) ease-out,height var(--hzpd) ease-out}
+.hz-pop{--hzpd:var(--dur-s,150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) var(--ease),height var(--hzpd) var(--ease)}
 .hz-pop[hidden]{display:none}
 .hz-pop.tk{background:var(--card);color:var(--ink);border-left-width:3px;border-radius:5px;padding:3px 6px 5px}
 .hz-pop.tk.dim{color:var(--bar-meta)}
@@ -1834,8 +1841,10 @@ button.bd-cxkey:hover{border-color:var(--clash-row-line)}
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
-/* Animation speed (Display settings): every duration is a base (Fast) times --mo. */
-html{--mo:1}
+/* Animation speed (Display settings): every duration is a base (Fast) times --mo.
+   Motion tokens: a short and a long duration, a standard ease-out and an emphasised one
+   for things that move (MO_S, MO_L, EASE, EASE_EM in the script). */
+html{--mo:1;--dur-s:calc(120ms * var(--mo));--dur-l:calc(200ms * var(--mo));--ease:cubic-bezier(.2,0,0,1);--ease-em:cubic-bezier(.3,.15,0,1)}
 html[data-speed="slow"]{--mo:2}
 html[data-speed="xslow"]{--mo:4}
 /* Dialogs (Display settings, Build my agenda, Move to another device, and the details
@@ -3292,9 +3301,13 @@ document.getElementById('daytabs').addEventListener('keydown', e => {
 });
 document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
-  // The Vertical day view slides between days itself.
-  if (b.dataset.day !== 'all' && vtShown() && vtSlideTo(+b.dataset.day, { focus: 'tab', toTop: true })) return;
   const day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
+  // The Vertical day view slides between days itself (the tab shows pressed first).
+  if (day !== 'all' && day !== state.day && vtShown()){
+    const slide = () => vtSlideTo(day, { focus: 'tab', toTop: true });
+    txPending(b, slide, slide);
+    return;
+  }
   const go = () => {
     state.day = day;
     rerender();
@@ -3302,7 +3315,8 @@ document.getElementById('daytabs').addEventListener('click', e => {
     dayScroll();
   };
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
-  if (vertical || day === state.day) go();
+  if (day === state.day) go();
+  else if (vertical) txPending(b, go, go);
   else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go, null, { to: { day }, press: b });
 });
 
@@ -4284,7 +4298,7 @@ function weekOpenDay(di, sid, from, tid = ''){
     t.box.classList.add('week-hit');
     setTimeout(() => t.box.classList.remove('week-hit'), 1400 * motionK() + 200);
     return t.box;
-  }, from, { to: { day: di } });
+  }, from, { to: { day: di }, press: document.querySelector(`#daytabs .daytab[data-day="${di}"]`) });
 }
 function weekTip(){
   let tip = document.getElementById('weekTip');
@@ -4515,21 +4529,25 @@ function renderBuilder(){
 // element turns into. Browsers without view transitions get a short fade. Nothing
 // animates when motion is reduced (system setting, unless Display settings say Full, or
 // Reduce there). A click, key press or input while a change is pending applies it first
-// and skips the animation, so the state is never stale.
+// and skips the animation, so the state is never stale. The button pressed for a change
+// (opts.press) shows its new state in the next frame, before any of that work.
 let viewTx = null;
-function motionReduced(){
-  const m = document.documentElement.dataset.motion;
-  return m === 'reduce' || (m !== 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches);
-}
 // Animation speed (Display settings): every duration here and in the CSS (--mo) is the
 // Fast one times this.
 const motionK = () => ({ slow: 2, xslow: 4 })[document.documentElement.dataset.speed] || 1;
-function settleTransition(){
+function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
+  // (another press in the same row of buttons, while a change still waits for its frame:
+  // that change gives way to the new one, rather than being drawn first)
+  if (tx.group && e && e.target instanceof Element && tx.group.contains(e.target) && e.target.closest('[aria-pressed]')
+    && (e.type === 'click' || e.type === 'pointerdown' || (e.type === 'keydown' && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)))){
+    if (e.type !== 'pointerdown') tx.drop();
+    return;
+  }
   viewTx = null;
-  tx.run();
-  try { tx.vt.skipTransition(); } catch (e) {}
+  try { tx.run(); }
+  finally { try { tx.vt?.skipTransition(); } catch (e) {} }
 }
 // While a transition shows, a pointer lands on the page root (the ::view-transition
 // overlay). Such a press settles the change, and its click goes on to whatever is under
@@ -4562,13 +4580,19 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 // above the moving items, as they do on the page. Names are set only while a
 // transition runs, only on elements near the viewport, never twice in one state, at
 // most MX_CAP of them, and are cleared afterwards.
-// Budget, so morphs never make the page feel stuck: fewer names on phones; no morph on
-// pages with too many items to measure cheaply; and none at all (a plain change, or the
-// usual fade) when changes come in quick succession or recent redraws were slow.
-const mxCap = () => PHONE_MQ.matches ? 36 : 72, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
+// Budget, so morphs never make the page feel stuck: fewer names on phones (and fewer
+// still for a change at one place, opts.near); no morph on pages with too many items to
+// measure cheaply; none at all (a plain change, or the usual fade) when changes come in
+// quick succession, recent redraws were slow or the view is slow to draw (txHeavy); and
+// a plain cross-fade while recent transitions were slow to start or janky (txWatch).
+const mxCap = () => PHONE_MQ.matches ? 28 : 56, mxNearCap = () => PHONE_MQ.matches ? 20 : 30, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
 const MX_NOOP = { after(){}, animate(){} };
 let txLast = -1e9, txSlow = 0;
-const MX_MS = 200, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
+// Motion tokens (as in the CSS: --dur-s, --dur-l, --ease, --ease-em): a short and a long
+// duration (Fast's; times the speed setting), a standard ease-out and an emphasised one
+// for things that move.
+const MO_S = 120, MO_L = 200, EASE = 'cubic-bezier(.2,0,0,1)', EASE_EM = 'cubic-bezier(.3,.15,0,1)';
+const MX_MS = MO_L, MX_EASE = EASE_EM;
 const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off), .week-tk:not([hidden])';
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
@@ -4588,35 +4612,44 @@ function mxName(el, key, cls){
 }
 const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key) + ')';
 // What is on screen now: items, grid marks (aux) and sticky covers by key, each with its
-// rect, its scroll box's rect (the part of it that shows) and its session's key.
-function mxScan(aux, far){
-  const vw = innerWidth, vh = innerHeight, m = far ? vh * 1.5 : Math.max(240, vh * .5);
-  const main = document.getElementById('main'), items = new Map(), list = [];
+// rect, its scroll box's rect (the part of it that shows) and its session's key. Near
+// the screen only, but for the keys in `keep` (the old state's, which may have moved
+// further): up to a screen and a half away.
+function mxScan(aux, keep){
+  const vw = innerWidth, vh = innerHeight, mn = Math.max(240, vh * .5), mf = vh * 1.5;
+  const main = document.getElementById('main'), items = new Map();
+  // (a day sliding away in Vertical is not on the page any more)
+  const ghost = main.querySelector('.vt-ghost'), boxes = new Map();
   const box = el => {
     const sc = el.closest(MX_SCROLL);
-    return sc ? sc.getBoundingClientRect() : null;
+    if (!sc) return null;
+    let r = boxes.get(sc);
+    if (!r) boxes.set(sc, r = sc.getBoundingClientRect());
+    return r;
   };
   // (a list's time blocks far from the screen are not laid out by the browser, and
   // measuring an item in one would make it lay that block out: such items are skipped)
-  const blockFar = new Map();
-  const off = el => {
+  const blocks = new Map();
+  const off = (el, m) => {
     const b = el.closest('.block, .ag-row');
     if (!b) return false;
-    let f = blockFar.get(b);
-    if (f === undefined){ const r = b.getBoundingClientRect(); blockFar.set(b, f = r.bottom < -m || r.top > vh + m); }
-    return f;
+    let r = blocks.get(b);
+    if (!r) blocks.set(b, r = b.getBoundingClientRect());
+    return r.bottom < -m || r.top > vh + m;
   };
   const add = (el, key, kind) => {
+    if (ghost && ghost.contains(el)) return;
     key = mxSafe(key);
-    if (kind === 'item' && off(el)) return;
+    const m = keep && keep.has(key) ? mf : mn;
+    if (kind === 'item' && off(el, m)) return;
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2) return;
     const c = box(el);
     if (c && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
     const was = items.get(key);
     if (was && was.r.width * was.r.height >= r.width * r.height) return;
-    const p = mxSafe(kind !== 'item' ? '' : el.dataset.inSid ? 's-' + el.dataset.inSid
-      : (el.parentElement.closest('[data-sid]') ? 's-' + el.parentElement.closest('[data-sid]').dataset.sid : ''));
+    const ps = kind === 'item' && !el.dataset.inSid && el.parentElement.closest('[data-sid]');
+    const p = mxSafe(kind !== 'item' ? '' : el.dataset.inSid ? 's-' + el.dataset.inSid : ps ? 's-' + ps.dataset.sid : '');
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
@@ -4649,9 +4682,17 @@ function mxBegin(kind, from, opts){
     old.set(fromKey, { key: fromKey, el: from, r: from.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
   }
   if (!pop){
-    const seen = [...mxScan(kind === 'mx' || opts.aux).values()].sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
+    let seen = [...mxScan(kind === 'mx' || opts.aux).values()];
+    // A change that starts at one place (opts.near: a card opening or closing, the page
+    // kept still around it): what is above it stays put and needs no name; the rest are
+    // named nearest first, and fewer of them (the others go with the page).
+    const y0 = opts.near && opts.near.isConnected ? opts.near.getBoundingClientRect().top : null;
+    if (y0 !== null) seen = seen.filter(it => it.kind === 'cover' || it.r.bottom > y0 - 2)
+      .sort((a, b) => (a.kind !== 'cover') - (b.kind !== 'cover') || Math.abs(a.r.top - y0) - Math.abs(b.r.top - y0));
+    else seen.sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
+    const cap = y0 !== null ? mxNearCap() : mxCap() * .75;
     for (const it of seen){
-      if (old.size >= mxCap() * .75) break;
+      if (old.size >= cap) break;
       if (!old.has(it.key) && it.el !== from) old.set(it.key, it);
     }
   }
@@ -4659,12 +4700,13 @@ function mxBegin(kind, from, opts){
   const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [] };
   return {
     after(target){
-      const now = pop || mxMany() ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
+      const now = pop || mxMany() ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()));
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
       let count = old.size;
+      const lim = opts.near ? mxNearCap() + 12 : mxCap();   // (room for the talks that unfold)
       for (const [key, o] of old){
         const n = now.get(key);
         if (n && !named.has(n.el)){ named.add(n.el); cand.push({ key, o, n }); }
@@ -4705,7 +4747,7 @@ function mxBegin(kind, from, opts){
           return false;
         });
         for (const [key, n] of now){
-          if (old.has(key) || named.has(n.el) || n.kind !== 'item' || !key.startsWith('s-') || count >= mxCap()) continue;
+          if (old.has(key) || named.has(n.el) || n.kind !== 'item' || !key.startsWith('s-') || count >= lim) continue;
           const from = rect(union([...old.values()].filter(o => o.p === key && alone(o)).map(o => o.r)));
           if (!from) continue;
           // (under the talks moving into it)
@@ -4714,7 +4756,7 @@ function mxBegin(kind, from, opts){
         }
       }
       for (const [key, n] of now){
-        if (old.has(key) || named.has(n.el) || !near(n) || count >= mxCap()) continue;
+        if (old.has(key) || named.has(n.el) || !near(n) || count >= lim) continue;
         if (n.kind === 'item' && n.p && old.has(n.p) && now.has(n.p) && plan.pairs.some(x => x.key === n.p)){
           mxName(n.el, key, 'mx'); named.add(n.el); count++;
           plan.grow.push({ key, n, po: old.get(n.p), pn: now.get(n.p) });
@@ -4749,31 +4791,31 @@ function mxBegin(kind, from, opts){
         // a block that changes shape: its new look comes in over the old one early, so
         // the two never show as doubled text for long
         if (Math.abs(o.r.width - n.r.width) > 6 || Math.abs(o.r.height - n.r.height) > 6){
-          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MX_MS * .4, easing: 'ease-out' });
+          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MX_MS * .4, easing: EASE });
           run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal', offset: .4 }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MX_MS * .55, easing: 'linear' });
         }
       }
       plan.grow.forEach(({ key, n, po, pn }, i) => {
         const from = map(n.r, pn.r, po.r);
         run(key, 'group', [{ ...box(from), clipPath: clip(from, po.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
-        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: 130, delay: 25 + Math.min(i, 5) * 12, easing: 'ease-out' });
+        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: MO_S, delay: 25 + Math.min(i, 5) * 12, easing: EASE });
       });
       for (const { key, o, po, pn } of plan.fold){
         const to = map(o.r, po.r, pn.r);
         run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, pn.c) }]);
-        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 110, easing: 'ease-in' });
+        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
       }
       for (const { key, o } of plan.fade){
         if (out(o)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
-        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 50, easing: 'linear' });
+        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S / 3, easing: 'linear' });
         if (opts.collapse && o.kind === 'item'){
           run(key, 'group', [box(o.r), box(o.r, 0)]);
-          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-in' });
+          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
         }
       }
       for (const { key, n } of plan.added){
         run(key, 'group', [box(n.r, 0), box(n.r)]);
-        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: 150, delay: 40, easing: 'ease-out' });
+        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S, delay: MO_S / 3, easing: EASE });
       }
       // the session's box grows from its talks' to its own, and its picture stays put on
       // the page as the box uncovers it (object-position makes up for the box's move);
@@ -4790,28 +4832,48 @@ function mxBegin(kind, from, opts){
     },
   };
 }
+// The pressed control (opts.press) shows its new state in the very next frame: the
+// change itself (redraw, snapshot, measuring) starts once that frame is painted.
 function withTransition(kind, fn, from, opts = {}){
   settleTransition();
-  const root = document.documentElement;
+  if (vtSlideEnd) vtSlideEnd();   // (a day sliding in Vertical lands first, its ghost gone)
   // No snapshot while a modal dialog is up, but for the details dialog's own opening and
   // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
   if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
+  if (opts.press){
+    const o = { ...opts, press: null };
+    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o));
+    return;
+  }
+  txStart(kind, fn, from, opts);
+}
+// fn, timed: its cost is the script and the layout it causes
+const txTimed = (fn, opts, after) => () => {
+  const t0 = performance.now();
+  fn();
+  void document.body.offsetHeight;
+  txNote(performance.now() - t0, opts.to);
+  if (after) after();
+};
+function txStart(kind, fn, from, opts){
+  const root = document.documentElement;
   // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
-  // only the short fade, and its pressed button shows before the redraw starts.
+  // only the short fade.
   const heavy = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
-  const timed = after => () => { const t0 = performance.now(); fn(); txNote(performance.now() - t0, opts.to); if (after) after(); };
-  if (motionReduced()){ if (heavy && opts.press) txPending(opts.press, timed()); else timed()(); return; }
+  if (motionReduced()){ txTimed(fn, opts)(); return; }
   // quick succession (another change under 450ms ago) or slow redraws: no morph; and
   // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
   const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
   txLast = t;
   if (heavy || busy){
-    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){
-      const go = timed(heavy && kind !== 'mx' ? viewEnter : null);
-      if (heavy && opts.press) txPending(opts.press, go); else go();
-      return;
-    }
+    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){ txTimed(fn, opts, heavy && kind !== 'mx' ? viewEnter : null)(); return; }
     opts = { ...opts, plain: true };
+  }
+  // Recent changes slow to show their first frame, or janky while they moved: no morph
+  // (a morph-only change cross-fades instead) until changes run smoothly again.
+  if (kind !== 'dlg' && (txFreeze > TX_FREEZE || txJank > TX_JANK)){
+    opts = { ...opts, plain: true };
+    if (kind === 'mx') kind = 'xf';
   }
   if (!document.startViewTransition){
     fn();
@@ -4831,6 +4893,7 @@ function withTransition(kind, fn, from, opts = {}){
     const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
     const t0 = performance.now(), y0 = window.scrollY;
     const out = fn();
+    void document.body.offsetHeight;
     txNote(performance.now() - t0, opts.to);
     // a page that jumped (to the top of a new view): the old picture goes at once, so the
     // two never show doubled
@@ -4838,68 +4901,89 @@ function withTransition(kind, fn, from, opts = {}){
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
     return done;
   };
+  const clear = () => { delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; };
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ run(); mxClear(); delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; return; }
+  catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
   const tx = viewTx = mxOwner = { vt, run };
-  vt.ready.then(() => mx.animate(), () => {});
+  vt.ready.then(() => { mx.animate(); txWatch(vt, t); }, () => {});
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
-    if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; }
+    if (!viewTx) clear();
   });
 }
-// The cheap way in for a new view: a short fade of the main area (no snapshot).
+// Each transition's wait for its first moving frame (txFreeze) and its slowest frame
+// while it moves (txJank); each later one halves what an earlier one left.
+const TX_FREEZE = 150, TX_JANK = 50;
+let txFreeze = 0, txJank = 0;
+function txWatch(vt, t){
+  const t1 = performance.now();
+  let last = t1, worst = 0, on = true;
+  txFreeze = Math.max(t1 - t, txFreeze / 2);
+  const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+  vt.finished.catch(() => {}).then(() => { on = false; txJank = Math.max(worst, txJank / 2); });
+}
+// The cheap way in for a new view (no snapshot): the main area comes up from half
+// faded, quickly; the old one stays on screen while the new one is drawn.
 function viewEnter(){
   const main = document.getElementById('main');
-  if (main.animate) main.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 * motionK(), easing: 'ease-out' });
+  if (main.animate) main.animate([{ opacity: .4 }, { opacity: 1 }], { duration: MO_S * motionK(), easing: EASE });
 }
 // A redraw over 250ms counts as slow (after two in a row, changes stop animating); a
 // quick one earns back trust. Each view's last redraw time is kept too (by txKey), so
-// going back to a view known to be slow is not animated.
+// going to a view known (or guessed) to take over TX_HEAVY to draw is not animated.
+const TX_HEAVY = 90;
 const txCost = new Map();
+let txAvg = 0;
 const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks].join('|'); };
 function txNote(ms, to){
   txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow;
+  txAvg = txAvg ? txAvg * .6 + ms * .4 : ms;
   if (to !== undefined) txCost.set(txKey(), ms);
 }
-// Slow to draw: a list of more than ~150 sessions or saved items (the Full program's
-// whole week), or a view whose last redraw took over 250ms.
+// A view's redraw time: as last time, or for one not drawn yet, guessed from this one's
+// (on this device), half as long again when a calendar day turns its sessions into
+// talks.
+function txGuess(to){
+  if (txCost.has(txKey(to))) return txCost.get(txKey(to));
+  const v = { ...state, ...to }, k = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
+  return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * k;
+}
+// Slow to draw: a guessed redraw over TX_HEAVY, the people list, or a list of more than
+// ~150 sessions or saved items (the Full program's whole week).
 function txHeavy(to){
   const v = { ...state, ...to };
-  if (txCost.get(txKey(to)) > 250) return true;
-  // a view not drawn yet: guessed from this one's last redraw (on this device), about
-  // three times as long when a calendar day turns its sessions into talks
-  if (!txCost.has(txKey(to)) && txCost.has(txKey()) && txCost.get(txKey()) * (v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 3 : 1) > 250) return true;
-  if (v.layout !== 'list' || v.scope === 'participants') return false;
+  if (txGuess(to) > TX_HEAVY || v.scope === 'participants') return true;
+  if (v.layout !== 'list') return false;
   if (v.scope === 'agenda') return agendaSaved().filter(it => v.day === 'all' || it.di === v.day).length > 150;
   const n = programCounts();
   return (v.day === 'all' ? n.reduce((a, b) => a + b, 0) : n[v.day]) > 150;
 }
-// The page as it is now: a long list, which a snapshot (and the morph's measuring)
-// would hold up.
+// The page as it is now: a long list (or the people), which a snapshot (and the morph's
+// measuring) would hold up.
 function pageHeavy(){
   const ag = document.getElementById('agenda'), bl = document.getElementById('builderList');
-  return (!ag.hidden && ag.getElementsByClassName('card').length > 150) || (!bl.hidden && bl.getElementsByTagName('li').length > 150);
+  return state.scope === 'participants' || (!ag.hidden && ag.getElementsByClassName('card').length > 150) || (!bl.hidden && bl.getElementsByTagName('li').length > 150);
 }
-// A slow change shows its pressed button (and a busy cursor) first and draws in the
-// next task, after that frame is painted; a click or key meanwhile applies it at once.
-function txPending(press, go){
+// The pressed button shows first; `go` runs in the next task, after that frame is painted
+// (no busy cursor: a class on the root restyles the whole page, which on a slow phone
+// costs as much as the frame itself). A click or key meanwhile applies the change at
+// once (`now`, unanimated); Back, Forward or a new address drops it.
+function txPending(press, go, now){
+  if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
-  document.documentElement.classList.add('tx-busy');
   let ran = false;
   const end = () => {
     ran = true;
     if (viewTx === tx) viewTx = null;
-    document.documentElement.classList.remove('tx-busy');
   };
-  const run = () => { if (!ran){ end(); go(); } };
-  // (Back, Forward or a new address meanwhile drops it: the address wins)
-  const tx = viewTx = { run, vt: null, drop: () => { if (!ran){ end(); paint(false); } } };
-  requestAnimationFrame(() => setTimeout(run, 0));
+  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
+  requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, 0));
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
@@ -6362,7 +6446,7 @@ document.getElementById('agenda').addEventListener('click', e => {
       renderCalendar();
       const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
       if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
-    });
+    }, null, { near: t.closest('.vt-card') || t, to: {} });   // (to: the day redraws; slow to draw, it changes at once)
     return;
   }
   const b = e.target.closest('[data-vtpick]');
@@ -6461,6 +6545,7 @@ function agendaRevealDay(box){
 }
 function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   if (i < 0 || state.day === 'all' || i === state.day) return false;
+  settleTransition();
   if (vtSlideEnd) vtSlideEnd();
   const main = document.getElementById('agenda'), dir = i > state.day ? 1 : -1;
   const anchor = toTop ? null : vtAnchor(), top0 = main.getBoundingClientRect().top;
@@ -6502,13 +6587,17 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   main.prepend(ghost);
   const gw = ghost.querySelector('.vt-wrap.scroll');
   if (gw) gw.scrollLeft = oldLeft;
-  const out = ghost.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 28}%)`, opacity: 0 }],
-    { duration: 180 * motionK(), easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' });
-  const into = view.animate([{ transform: `translateX(${dir * 28}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }],
-    { duration: 180 * motionK(), easing: 'cubic-bezier(.2,.6,.3,1)' });
-  const end = () => { if (vtSlideEnd !== end) return; vtSlideEnd = null; out.cancel(); into.cancel(); ghost.remove(); main.classList.remove('vt-sliding'); };
+  // the old day is gone (faded) before the new one shows, so the two days' headings
+  // never show over each other; both slide the whole time
+  const k = motionK(), anims = [
+    ghost.animate([{ transform: 'none' }, { transform: `translateX(${-dir * 28}%)` }], { duration: MO_L * k, easing: EASE, fill: 'forwards' }),
+    ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: MO_S / 2 * k, easing: EASE, fill: 'forwards' }),
+    view.animate([{ transform: `translateX(${dir * 28}%)` }, { transform: 'none' }], { duration: MO_L * k, easing: EASE_EM }),
+    view.animate([{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, delay: MO_S / 2 * k, easing: EASE, fill: 'backwards' }),
+  ];
+  const end = () => { if (vtSlideEnd !== end) return; vtSlideEnd = null; for (const a of anims) a.cancel(); ghost.remove(); main.classList.remove('vt-sliding'); };
   vtSlideEnd = end;
-  into.onfinish = end;
+  anims[2].onfinish = end;
   return true;
 }
 {
@@ -6719,7 +6808,7 @@ document.getElementById('programLevel').addEventListener('click', e => {
     state.programTalks = b.dataset.level === 'talks';
     paintLevel();
     renderCalendar();
-  }, null, { to: { programTalks: b.dataset.level === 'talks' } });
+  }, null, { to: { programTalks: b.dataset.level === 'talks' }, press: b });
 });
 function savedOrient(){
   try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
@@ -6736,7 +6825,7 @@ document.getElementById('programOrient').addEventListener('click', e => {
     paintOrient();
     renderCalendar();
     revealCalendar();
-  }, null, { to: { orient: b.dataset.orient } });
+  }, null, { to: { orient: b.dataset.orient }, press: b });
 });
 // A switch in the toolbar whose result is out of sight below it (a phone's tall toolbar
 // over All week): bring the calendar's top up under the toolbar, so the change shows.
@@ -7995,7 +8084,14 @@ function renderPeople(){
     r.items.push(item);
   };
   const plural = (n, one, many) => n === 1 ? one : many;
-  let html = '', nPeople = 0, nGroups = 0, nNone = 0;
+  // Sections off screen are not laid out until they come near it (content-visibility in
+  // the CSS); each starts at a guess of its height, from its cards and the columns.
+  const pw = document.getElementById('peopleList').clientWidth || document.getElementById('main').clientWidth - 70;
+  const cols = Math.max(1, Math.floor((pw + 10) / 310));
+  const guess = (list, named) => Math.round(60 + list.reduce((h, p) => h + 50 + (named ? 18 : 0) + 38 * p.roles.length, 0) / cols);
+  // (each section's markup is made when it goes in: ppMore)
+  const parts = [], part = (list, named, make) => { const h = guess(list, named); parts.push({ n: list.length, h, html: () => make(`style="contain-intrinsic-size:auto ${h}px"`) }); };
+  let nPeople = 0, nGroups = 0, nNone = 0;
   if (state.psort === 'aff'){
     groups.forEach((grp, gi) => {
       const list = grp.people.filter(shown);
@@ -8004,7 +8100,7 @@ function renderPeople(){
       if (grp.g) nGroups++; else nNone = list.length;
       const n = list.length === grp.people.length ? `${list.length}` : `${list.length} of ${grp.people.length}`;
       if (grp.g) toRail(grp.letter, `ppg${gi}`, { label: grp.label, n: list.length, id: `ppg${gi}` });
-      html += `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}"><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${plural(grp.people.length, 'person', 'people')}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label, false)).join('')}</ul></section>`;
+      part(list, false, st => `<section class="pp-group${grp.g ? '' : ' pp-none'}" aria-labelledby="ppg${gi}" ${st}><h3 class="pp-aff" id="ppg${gi}" tabindex="-1"><span>${hlWith(grp.label, q)}</span><span class="pp-n">${n} ${plural(grp.people.length, 'person', 'people')}</span></h3><ul class="pp-people">${list.map(p => personHtml(p, grp.label, false)).join('')}</ul></section>`);
     });
   } else {
     const byFirst = state.psort === 'first';
@@ -8018,8 +8114,8 @@ function renderPeople(){
     let cur = null, run = [];
     const flush = () => {
       if (!run.length) return;
-      const id = 'ppl-' + (cur === '#' ? 'num' : cur);
-      html += `<section class="pp-letter" aria-labelledby="${id}"><h3 class="pp-aff pp-lh" id="${id}" tabindex="-1"><span>${cur}</span><span class="pp-n">${run.length} ${plural(run.length, 'person', 'people')}</span></h3><ul class="pp-people">${run.map(p => personHtml(p, groupLabel(p.g), true)).join('')}</ul></section>`;
+      const id = 'ppl-' + (cur === '#' ? 'num' : cur), L = cur, those = run;
+      part(those, true, st => `<section class="pp-letter" aria-labelledby="${id}" ${st}><h3 class="pp-aff pp-lh" id="${id}" tabindex="-1"><span>${L}</span><span class="pp-n">${those.length} ${plural(those.length, 'person', 'people')}</span></h3><ul class="pp-people">${those.map(p => personHtml(p, groupLabel(p.g), true)).join('')}</ul></section>`);
     };
     for (const p of list){
       const L = letterOf(p);
@@ -8034,7 +8130,13 @@ function renderPeople(){
   }
   const el = document.getElementById('peopleList');
   const catName = cat ? DATA.cats[cat] : '';
-  el.innerHTML = html || `<div class="ag-empty"><h3>${q ? `No one${cat ? ' in ' + esc(catName) : ''} matches &ldquo;${esc(q)}&rdquo;` : `No one in ${esc(catName)}`}</h3>` +
+  PP.rest = parts;
+  if (parts.length){
+    // the first screens' worth now; a stand-in of the rest's guessed height keeps the
+    // page as long as it will be
+    el.innerHTML = '<div class="pp-rest" aria-hidden="true"></div>';
+    ppMore(60);
+  } else el.innerHTML = `<div class="ag-empty"><h3>${q ? `No one${cat ? ' in ' + esc(catName) : ''} matches &ldquo;${esc(q)}&rdquo;` : `No one in ${esc(catName)}`}</h3>` +
     (q ? `<p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button> ` : '') +
     (cat ? `<button type="button" class="toggle" data-people-allcats>Show all categories</button>` : '') + `</div>`;
   renderRail(rail, state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people']);
@@ -8048,13 +8150,33 @@ function renderPeople(){
     : `<b>${total}</b> people · <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none + ` · speakers and conveners`;
 }
 
+// The people list's sections go in a few at a time (renderPeople puts in the first
+// screens' worth): `n` more people now, the next lot after the next frame; ppMore(Infinity)
+// puts in all the rest at once (a jump or a link to someone not in yet).
+const PP = { rest: [], gen: 0 };
+function ppMore(n){
+  const g = ++PP.gen, ph = document.querySelector('#peopleList > .pp-rest');
+  if (!ph){ PP.rest = []; return; }   // (a list since drawn without it)
+  let html = '';
+  for (let k = 0; PP.rest.length && k < n;){ const pt = PP.rest.shift(); html += pt.html(); k += pt.n; }
+  ph.insertAdjacentHTML('beforebegin', html);
+  if (!PP.rest.length){ ph.remove(); return; }
+  ph.style.height = PP.rest.reduce((h, pt) => h + pt.h + 18, 0) + 'px';
+  requestAnimationFrame(() => setTimeout(() => { if (g === PP.gen) ppMore(120); }, 0));
+}
 // Scroll a heading or person to just below the sticky toolbar.
 function ppJump(id, smooth, focus){
+  if (!document.getElementById(id) && PP.rest.length) ppMore(Infinity);
   const el = document.getElementById(id);
   if (!el) return;
   const top = el.getBoundingClientRect().top + window.scrollY - stickyWrap.getBoundingClientRect().height - 10;
-  window.scrollTo({ top: Math.max(0, top), behavior: smooth && !motionReduced() ? 'smooth' : 'instant' });
+  smooth = smooth && !motionReduced();
+  const y0 = window.scrollY;
+  window.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'instant' });
   if (focus) el.focus({ preventScroll: true });
+  // (the sections passed on the way were drawn, so their real heights replaced guessed
+  // ones: once there, put it in place again)
+  if (smooth) scrollSettle(el, null, y0, () => ppJump(id, false, false));
 }
 
 // ---------- participants: alphabet rail ----------
@@ -8356,6 +8478,7 @@ function paintNow(){
 document.getElementById('nowBtn').addEventListener('click', () => {
   const ti = todayIdx();
   if (ti < 0) return;
+  if (vtSlideEnd) vtSlideEnd();
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
   paintNow();
   // The timeline scrolls its canvas to now; then go to the topmost item on now (or next).
@@ -8367,18 +8490,25 @@ document.getElementById('nowBtn').addEventListener('click', () => {
       || topmost('#agenda .hz-bar.is-now, #agenda .vt-card.is-now') || topmost('#agenda .hz-bar.is-next, #agenda .vt-card.is-next')
     : document.querySelector('#agenda .block.is-now:not(.hidden), #agenda .block.is-next');
   if (hzOn && target) return hzReveal(target);
-  if (target){ const o = { block: target.matches('.vt-nowl') ? 'center' : 'start' }; target.scrollIntoView(o); scrollSettle(target, o); }
+  if (target){ const o = { block: target.matches('.vt-nowl') ? 'center' : 'start' }, y0 = window.scrollY; target.scrollIntoView(o); scrollSettle(target, o, y0); }
   else toast(viewQ() || (state.scope !== 'agenda' && state.group) || viewCats().size !== Object.keys(DATA.cats).length
     ? 'Nothing on now matches your search or filters' : 'Nothing more on today’s program');
 });
 
 // A long smooth scroll passes list blocks whose heights were only estimated (.block in
 // the CSS) and are drawn on the way: once it ends, the target is put in place again.
-function scrollSettle(el, o){
-  let t = 0;
-  const fix = () => { clearTimeout(t); window.removeEventListener('scrollend', fix); if (el.isConnected) el.scrollIntoView({ ...o, behavior: 'instant' }); };
+// Only a scroll that moved arms it, and the reader's own wheel, touch, key or press
+// meanwhile drops it, so it never takes the page back from them.
+function scrollSettle(el, o, y0, redo){
+  let t = 0, armed = true;
+  const ins = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+  const drop = () => { armed = false; clearTimeout(t); window.removeEventListener('scrollend', fix); for (const k of ins) window.removeEventListener(k, drop, true); };
+  const fix = () => { const go = armed; drop(); if (go && el.isConnected){ if (redo) redo(); else el.scrollIntoView({ ...o, behavior: 'instant' }); } };
   window.addEventListener('scrollend', fix);
+  for (const k of ins) window.addEventListener(k, drop, { capture: true, passive: true });
   t = setTimeout(fix, 1500);
+  // (already in place: no scroll, so no scrollend either)
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (armed && Math.abs(window.scrollY - y0) < 1) drop(); }));
 }
 
 // ---------- links: the address keeps the view, and items can be shared ----------
@@ -8610,7 +8740,7 @@ window.addEventListener('popstate', e => {
   // the side follows the order of the views and days, as it does for a click
   if (a[0] !== b[0]) dir = SCOPE_ORDER.indexOf(b[0]) > SCOPE_ORDER.indexOf(a[0]) ? 'fwd' : 'back';
   else if (a[1] !== b[1]) dir = b[1] === 'all' || (a[1] !== 'all' && +b[1] < +a[1]) ? 'back' : 'fwd';
-  if (toNav === fromNav) apply();
+  if (toNav === fromNav){ settleTransition(); apply(); }
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
     : a[4] !== b[4] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3] && state.day !== 'all' ? 'mx' : 'fade', apply, null, { to: {} });
@@ -9204,7 +9334,8 @@ function syncToolbarHeight(){
 // the reader's own scrolling (wheel, touch, keys, scrollbar) folds or unfolds it, so jumps
 // made by the page (deep links, the A–Z rail, View in program) land under the bar as it is.
 // While folded, a bottom margin makes up the height it lost, so nothing below it moves.
-const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, timer: 0 };
+// (tbCompact: the fold and unfold move a clip, not the height)
+const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null };
 const searchMini = document.getElementById('searchMini');
 function tbPaintMini(){
   const q = state[searchKey()] || '';
@@ -9213,11 +9344,24 @@ function tbPaintMini(){
 }
 function tbCompact(on){
   if (on === TB.on) return;
-  const h0 = stickyWrap.offsetHeight, m0 = parseFloat(stickyWrap.style.marginBottom) || 0;
-  if (on){ TB.full = h0 + m0; TB.fullPx = stickyWrap.getBoundingClientRect().height; }
-  clearTimeout(TB.timer);
+  // Mid-way through a fold or unfold: the edge it had reached (the new one starts there).
+  const run = TB.anim;
+  let vis = null;
+  if (run){
+    const p = run.a.effect.getComputedTiming().progress;
+    vis = p === null ? run.to : run.from + (run.to - run.from) * p;
+    run.a.cancel();
+    TB.anim = null;
+  }
   stickyWrap.classList.remove('tb-anim');
   stickyWrap.style.height = '';
+  if (run) stickyWrap.style.marginBottom = '';
+  const h0 = vis ?? stickyWrap.offsetHeight;
+  if (on){
+    const m0 = parseFloat(stickyWrap.style.marginBottom) || 0;
+    TB.full = stickyWrap.offsetHeight + m0;
+    TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
+  }
   TB.on = on;
   if (on){
     const tabs = document.getElementById('daytabs');
@@ -9232,24 +9376,26 @@ function tbCompact(on){
     if (t) tabs.scrollLeft = Math.max(0, t.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2);
   }
   const done = () => {
+    TB.anim = null;
     stickyWrap.classList.remove('tb-anim');
     stickyWrap.style.height = '';
+    stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
     syncToolbarHeight();
   };
-  if (!motionReduced() && Math.abs(h1 - h0) > 1){
-    // height and bottom margin change together, so the space the toolbar takes in the
-    // page stays the same throughout
-    stickyWrap.style.height = h0 + 'px';
-    stickyWrap.style.marginBottom = m0 + 'px';
-    void stickyWrap.offsetHeight;
+  if (!motionReduced() && Math.abs(h1 - h0) > 1 && stickyWrap.animate){
+    // While it moves, the bar keeps its full height in the page (folding, the slim row at
+    // its top) and only the part of it that shows changes (a clip: no layout per frame);
+    // the bottom margin takes over the height it lost when it has folded. The space it
+    // takes in the page stays the same throughout.
+    const full = on ? TB.full : h1;
+    if (on) stickyWrap.style.height = full + 'px';
+    stickyWrap.style.marginBottom = '';
     stickyWrap.classList.add('tb-anim');
-    stickyWrap.style.height = h1 + 'px';
-    stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
-    TB.timer = setTimeout(done, 160 * motionK() + 50);
-  } else {
-    stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
-    done();
-  }
+    const a = stickyWrap.animate([{ clipPath: `inset(0 0 ${full - h0}px 0)` }, { clipPath: `inset(0 0 ${full - h1}px 0)` }],
+      { duration: MO_S * motionK(), easing: EASE });
+    TB.anim = { a, from: h0, to: h1 };
+    a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
+  } else done();
 }
 // The toolbar stays whole while a menu is open, while it holds the keyboard focus, and
 // above the point where it has scrolled fully past its own place in the page.
@@ -9338,7 +9484,8 @@ function start(){
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   const t0 = performance.now();
   showView(state.layout, state.scope);
-  txCost.set(txKey(), performance.now() - t0);   // (a first guess at this view's cost: txHeavy)
+  void document.body.offsetHeight;
+  txCost.set(txKey(), txAvg = performance.now() - t0);   // (a first guess at this view's cost: txHeavy)
   followHashTargets(r);
   if (st && typeof st.y === 'number' && !r.session && !r.talk){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
   // reloaded with a panel or the details open: open them again
