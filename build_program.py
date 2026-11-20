@@ -601,7 +601,6 @@ html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--
    included, cross-fades from the old look to the new one */
 html[data-view-tx="disp"]::view-transition-old(root){animation:var(--dur-l) var(--ease) both week-tx-out}
 html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
-html.tx-busy{cursor:progress}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -4736,9 +4735,7 @@ function withTransition(kind, fn, from, opts = {}){
   if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
   if (opts.press){
     const o = { ...opts, press: null };
-    // (a busy cursor meanwhile, for a view slow to draw)
-    const slow = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
-    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o), slow);
+    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o));
     return;
   }
   txStart(kind, fn, from, opts);
@@ -4864,20 +4861,19 @@ function pageHeavy(){
   const ag = document.getElementById('agenda'), bl = document.getElementById('builderList');
   return state.scope === 'participants' || (!ag.hidden && ag.getElementsByClassName('card').length > 150) || (!bl.hidden && bl.getElementsByTagName('li').length > 150);
 }
-// The pressed button (and, for a slow change, a busy cursor) shows first; `go` runs in
-// the next task, after that frame is painted. A click or key meanwhile applies the change
-// at once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slow){
+// The pressed button shows first; `go` runs in the next task, after that frame is painted
+// (no busy cursor: a class on the root restyles the whole page, which on a slow phone
+// costs as much as the frame itself). A click or key meanwhile applies the change at
+// once (`now`, unanimated); Back, Forward or a new address drops it.
+function txPending(press, go, now){
   if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
-  if (slow) document.documentElement.classList.add('tx-busy');
   let ran = false;
   const end = () => {
     ran = true;
     if (viewTx === tx) viewTx = null;
-    document.documentElement.classList.remove('tx-busy');
   };
   const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
   requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, 0));
@@ -6319,7 +6315,7 @@ document.getElementById('agenda').addEventListener('click', e => {
       renderCalendar();
       const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
       if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
-    }, null, { near: t.closest('.vt-card') || t });
+    }, null, { near: t.closest('.vt-card') || t, to: {} });   // (to: the day redraws; slow to draw, it changes at once)
     return;
   }
   const b = e.target.closest('[data-vtpick]');
