@@ -82,7 +82,7 @@ window.applyDisplay = function(d){
   --special:#c8ea4c; --special-bg:#2a330f;
   --business:#a5b9d4; --business-bg:#232a34;
   --social:#cdb598; --social-bg:#312c26;
-  --star:#fbbf24;
+  --star:#fbbf24; --cx-mark:#f97316;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
@@ -105,7 +105,7 @@ window.applyDisplay = function(d){
   --special:#c8ea4c; --special-bg:#2a330f;
   --business:#a5b9d4; --business-bg:#232a34;
   --social:#cdb598; --social-bg:#312c26;
-  --star:#fbbf24;
+  --star:#fbbf24; --cx-mark:#f97316;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
   --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
@@ -339,6 +339,13 @@ html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) .sticky-
 ::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
 ::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(90ms * var(--mo))}
 ::view-transition-group(mx-pop){z-index:5}
+/* a vertical day scrolled sideways: its time column (the background the cards slide
+   under) moves as a cover too, and the time labels stay over it, so neither the cards
+   nor the bare labels show in the column while items move */
+html[data-view-tx="mx"] .vt-wrap.scroll .vt-tcol{view-transition-name:vt-tcol;view-transition-class:mx-cover}
+html[data-view-tx="mx"] .vt-wrap.scroll .vt-t{view-transition-class:mx-cover!important}
+::view-transition-group(vt-tcol){background:var(--bg)}
+::view-transition-old(vt-tcol),::view-transition-new(vt-tcol){display:none}
 html[data-view-tx="dlg"]::view-transition-new(root){animation:calc(180ms * var(--mo)) ease both week-tx-fade}
 html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:calc(170ms * var(--mo)) cubic-bezier(.2,.7,.3,1) both week-tx-in}
@@ -350,6 +357,12 @@ html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(50ms
    included, cross-fades from the old look to the new one */
 html[data-view-tx="disp"]::view-transition-old(root){animation:calc(200ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"]::view-transition-new(root){animation:calc(200ms * var(--mo)) ease-out both week-tx-fade}
+/* a new text size moves every line: the old look goes first and the new one follows
+   (through the page's own background, dimmed under an open dialog), never both at once */
+html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
+html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
+html[data-view-tx="disp"][data-view-tx-seq]::view-transition{background:var(--bg)}
+html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop,rgba(22,35,55,.53)),var(--backdrop,rgba(22,35,55,.53))),var(--bg)}
 html.tx-busy{cursor:progress}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
@@ -912,8 +925,10 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
    split at the colon) and the start of its title on one line under it */
 .hz-talk.hz-thin .hz-tt{font-size:.5rem;letter-spacing:-.03em;overflow:hidden;text-overflow:clip}
 .hz-day:not(.hz-tick) .hz-talk.hz-thin .hz-tl,.hz-agenda.hz-tick .hz-talk.hz-thin>.hz-tl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.5625rem;letter-spacing:-.01em;flex:none}
-.hz-talk.hz-thin .hz-star,.hz-talk.hz-mm .hz-hh{display:none}
-.hz-talk.hz-mm .hz-tt{font-size:.5625rem;letter-spacing:0}
+.hz-talk.hz-thin .hz-star{display:none}
+/* thinner still: the hour over the minutes ("11" / ":30") */
+.hz-talk.hz-mm .hz-tt{font-size:.5625rem;letter-spacing:0;line-height:1.15;flex:none}
+.hz-talk.hz-mm .hz-hh{display:block}
 .hz-talk.hz-thin .k-ic,.hz-talk.hz-noic .k-ic,.hz-talk.hz-sliver>*{display:none!important}
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.6875rem}
@@ -942,6 +957,9 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-pop[hidden]{display:none}
 .hz-pop.tk{background:var(--card);color:var(--ink);border-left-width:3px;border-radius:5px;padding:3px 6px 5px}
 .hz-pop.tk.dim{color:var(--bar-meta)}
+/* a session's other talk, and a session shown only for its starred talks, stay dashed */
+.hz-pop.tk.dim{border:1px dashed color-mix(in srgb,var(--c) 55%,var(--line));outline:0}
+.hz-pop.ctx{background:var(--card);border:1px dashed var(--c);border-left:4px dashed var(--c);outline:0}
 .hz-pop.dim .hz-ptt{color:var(--bar-meta)}
 .hz-pop.dim .hz-ptl{font-weight:500}
 .hz-pop .hz-title,.hz-pop .hz-of{display:block;-webkit-line-clamp:none;overflow:visible}
@@ -1024,6 +1042,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* a clamped title in full, over its card (vtPopShow) */
 #vtPop{position:absolute;z-index:45;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:5px 7px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;box-shadow:0 6px 18px var(--pop-shadow);pointer-events:none}
 #vtPop.tk{background:var(--card);color:var(--ink);padding:3px 6px 5px}
+/* (dashed, as the card it copies: a session's other talk, a session not saved) */
+#vtPop.tk.dim{border:1px dashed color-mix(in srgb,var(--c) 55%,var(--line));color:var(--bar-meta)}
+#vtPop.ctx{background:var(--card);border-style:dashed}
 #vtPop[hidden]{display:none}
 #vtPop .vt-title,#vtPop .vt-ttl{display:block;-webkit-line-clamp:none;overflow:visible}
 #vtPop .vt-tsp{white-space:normal}
@@ -1416,9 +1437,10 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
 .bd-tick.has{width:4px;height:7px;border-radius:2px;background:var(--star)}
 .bd-tick.day.has{height:9px}
-/* a slot where saved items overlap (bdClashes): an orange triangle under the track */
-.bd-tick.has.cx{width:9px;height:8px;border-radius:0;background:var(--warn-ink);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.bd-cxtri{display:inline-block;width:9px;height:8px;background:var(--warn-ink);clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
+/* a slot where saved items overlap (bdClashes): an orange triangle under the track, wider
+   than a saved slot's amber bar and (in dark) a redder orange than it */
+.bd-tick.has.cx{width:11px;height:9px;border-radius:0;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%)}
+.bd-cxtri{display:inline-block;width:11px;height:9px;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
 .bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--clash-line);border-radius:999px;background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
 button.bd-cxkey:hover{border-color:var(--clash-row-line)}
 .bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
@@ -1587,8 +1609,15 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .ag-btn{min-height:36px}
   /* Remove (labelled) sits at the card's top right, by the time, so the other two
      keep the row to themselves at 320px */
-  .ag-time{min-height:2.75rem;padding:0 6.5rem 0 0;display:flex;align-items:center;flex-wrap:wrap}
+  .ag-time{min-height:2.75rem;padding:0 8.75rem 0 0;display:flex;align-items:center;flex-wrap:wrap}
   .ag-btn.rm{position:absolute;top:8px;right:10px;min-height:2.75rem;min-width:2.75rem}
+}
+/* (the largest text on the narrowest phones: just "Remove", so the time keeps its line) */
+@media (max-width:359px){
+  html[data-text="xl"] .ag-time{padding-right:6.5rem}
+  html[data-text="xl"] .rm-kind{display:none}
+}
+@media (max-width:720px){
   .builder{padding-top:8px}
   .ag-bar{gap:6px}
   .ag-bar h2{font-size:1.125rem}
@@ -1876,8 +1905,18 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
   .schedule-nav .agenda-views button{padding:5px 9px}
   .daytab{padding-top:4px;padding-bottom:4px}
-  /* My agenda's one stream column needs no sticky head: it would cover the cards under it */
+  /* My agenda's one stream column needs no sticky head: it would cover the cards under it
+     (so an item scrolled to, by a jump or Now, lands just under the toolbar) */
   .favourites-calendar .vt-grid>.vt-head{position:relative;top:auto}
+  .favourites-calendar .vt-wrap:not(.scroll) .vt-card,.favourites-calendar .vt-wrap:not(.scroll) .vt-t{scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
+}
+/* ...and on a narrower one (667-800px wide) the calendar's four switches stay on one row:
+   smaller type and padding, so the toolbar keeps its two rows */
+@media (max-height:500px) and (orientation:landscape) and (max-width:800px){
+  .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{gap:4px}
+  .schedule-nav .agenda-views{padding:2px;gap:1px}
+  .schedule-nav .agenda-views button{padding:5px 6px;font-size:.8125rem}
+  #starCount{font-size:.75em}
 }
 </style>
 </head>
@@ -2264,23 +2303,28 @@ function renderTabs(counts = programCounts(), totals = null){
     `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
   el.innerHTML = tab('all', 'All week', total, allOn, false, totals && sum(totals)) +
     DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti, totals && totals[i])).join('');
-  revealDayTab();
+  // (only a new choice of day moves the strip: a redraw for new counts leaves it where
+  // the user scrolled it)
+  if (revealDayTab.day !== state.day){ revealDayTab(revealDayTab.day === undefined); revealDayTab.day = state.day; }
   const day = allOn ? '' : DATA.days[state.day].label;
   if (state.scope !== 'participants') fitPlaceholder(state.scope === 'agenda' ? [day && `Search my agenda, ${day}…`, 'Search my agenda…', 'Search agenda…']
     : allOn ? ['Search talks, speakers, abstracts…', 'Search talks, speakers…', 'Search talks…'] : [`Search ${day}…`, 'Search talks…']);
 }
-// The chosen day stays in view in the sideways-scrolling tabs (a phone), whatever the
-// tabs' counts do (a search with no matches, a new view). Measured in the next frame,
-// with the layout it needs anyway, and only moved when the tab is out of view.
-let dayTabFrame = 0;
-function revealDayTab(){
+// A newly chosen day is brought into the sideways-scrolling tabs (a phone). Measured in
+// the next frame, with the layout it needs anyway, and only moved when the tab is wholly
+// out of view (one partly in view stays put, as the user left the strip); on the first
+// drawing (whole), whenever it is not wholly in view.
+let dayTabFrame = 0, dayTabWhole = false;
+function revealDayTab(whole){
+  dayTabWhole = dayTabWhole || whole;
   if (dayTabFrame) return;
   dayTabFrame = requestAnimationFrame(() => {
     dayTabFrame = 0;
-    const el = document.getElementById('daytabs'), t = el.querySelector('.daytab.on');
+    const el = document.getElementById('daytabs'), t = el.querySelector('.daytab.on'), whole = dayTabWhole;
+    dayTabWhole = false;
     if (!t || el.scrollWidth <= el.clientWidth + 1) return;
     const a = t.offsetLeft - el.offsetLeft, w = t.offsetWidth;
-    if (a >= el.scrollLeft && a + w <= el.scrollLeft + el.clientWidth) return;
+    if (whole ? a >= el.scrollLeft && a + w <= el.scrollLeft + el.clientWidth : a + w > el.scrollLeft && a < el.scrollLeft + el.clientWidth) return;
     el.scrollLeft = Math.max(0, a - (el.clientWidth - w) / 2);
   });
 }
@@ -3419,7 +3463,7 @@ function agRow(it){
     <div class="ag-actions">
       <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
       <button class="ag-btn" ${programJumpAttrs(it)}>View in program</button>
-      <button class="ag-btn rm"${tid} aria-label="Remove ${kindLabel(it).toLowerCase()} from My agenda: ${esc(itemTitle(it))}" title="Remove from My agenda${nIn ? ` (its saved ${word}${nIn === 1 ? ' stays' : 's stay'})` : ''}"><span aria-hidden="true">&#10005;</span><span class="rm-word"> Remove</span></button>
+      <button class="ag-btn rm"${tid} aria-label="Remove ${kindLabel(it).toLowerCase()} from My agenda: ${esc(itemTitle(it))}" title="Remove from My agenda${nIn ? ` (its saved ${word}${nIn === 1 ? ' stays' : 's stay'})` : ''}"><span aria-hidden="true">&#10005;</span><span class="rm-word"> Remove<span class="rm-kind"> ${kindLabel(it).toLowerCase()}</span></span></button>
     </div>
   </li>`;
 }
@@ -3808,9 +3852,15 @@ function weekFold(ov){
     }
   }
 }
+// A band's label, then shorter names for it, longest first.
+function weekBandNames(t){
+  const short = /^Plenary/.test(t) ? ['Plen.'] : /Tea$/.test(t) ? ['Tea'] : /^Lunch/.test(t) ? ['Lunch'] : /^Registration/.test(t) ? ['Registration', 'Reg.'] : /Breakfast$/.test(t) ? ['Breakfast'] : [];
+  return [t, ...short.filter(x => x.length < t.length)];
+}
 // Band labels (Plenary, Lunch break) sit above the blocks, at the first place inside
 // the band that no session block, later band or other label covers; failing that, at
-// the band's top right on their own background.
+// the band's top right on their own background. A label with no room in full gives way
+// to its short name ("Lunch", "Plen."), and one with no room for that is left out.
 // (All the columns at once, in steps: every place read, then every label added, then
 // their widths read, then every label placed: a few layouts in all, not two a label.)
 function weekBandLabels(cols, shown, lh){
@@ -3835,34 +3885,50 @@ function weekBandLabels(cols, shown, lh){
     job.col.appendChild(lab);
     job.labs.push({ lab, i, r });
   });
-  for (const job of jobs) for (const l of job.labs) l.want = Math.ceil(l.lab.getBoundingClientRect().width) + 1;
+  // each label in full, or else a short name ("Lunch break", "Lunch"), never a cut word
+  // ("Ple…"): the names' widths from the full one's (same padding) and the text's
+  const pen = weekBandLabels.pen = weekBandLabels.pen || document.createElement('canvas').getContext('2d');
+  let font = '';
+  for (const job of jobs) for (const l of job.labs){
+    const want = Math.ceil(l.lab.getBoundingClientRect().width) + 1, full = l.lab.textContent;
+    // (every label has the same type)
+    if (!font){ font = getComputedStyle(l.lab).font; if (pen.font !== font) pen.font = font; }
+    const pad = want - pen.measureText(full).width;
+    l.names = weekBandNames(full).map(t => ({ t, w: t === full ? want : Math.ceil(pen.measureText(t).width + pad) }));
+  }
   for (const { col, items, rs, labs } of jobs){
     const placed = [];
-    for (const { lab, i, r, want } of labs){
+    for (const { lab, i, r, names } of labs){
       const b = items[i];
       // what covers this band: session blocks, bands painted over it, labels so far
       const obst = rs.filter((o, j) => items[j] !== b && !items[j].classList.contains('week-off') && (!items[j].classList.contains('week-band') || j > i)).concat(placed);
-      let spot = null;
-      for (let y = r.y0; y + lH <= r.y1 + 1 && !spot; y += 3){
+      // (one pass down the band: the first place for each name, until the full one fits)
+      const found = [];
+      for (let y = r.y0; y + lH <= r.y1 + 1 && !found[0]; y += 3){
         const cut = obst.filter(o => o.y0 < y + lH && o.y1 > y && o.x1 > r.x0 && o.x0 < r.x1).sort((a, c) => a.x0 - c.x0);
         let x = r.x0 + 3;
         for (const o of cut.concat([{ x0: r.x1, x1: r.x1 }])){
-          if (o.x0 - x >= Math.min(want, 44)){ spot = { x, y, w: Math.min(want, o.x0 - x) }; break; }
+          names.forEach((nm, k) => { if (!found[k] && o.x0 - x >= nm.w) found[k] = { x, y, w: nm.w, t: nm.t }; });
           x = Math.max(x, o.x1 + 2);
         }
       }
+      let spot = found.find(Boolean) || null;
       if (!spot){
         // nowhere free: at the band's top right (or bottom right), clear of the blocks'
         // left-aligned labels; in the vertical overview not over a block at all (its
-        // letters would hide), so a band covered from top to bottom keeps its colour alone
-        const w = Math.min(want, r.x1 - r.x0 - 4);
+        // letters would hide), so a band covered from top to bottom keeps its colour alone,
+        // as does a band too narrow for even its short name
+        const nm = names.find(n => n.w <= r.x1 - r.x0 - 4);
+        if (!nm){ lab.remove(); continue; }
+        const w = nm.w;
         const blk = rs.filter((o, j) => !items[j].classList.contains('week-band') && !items[j].classList.contains('week-off') && !items[j].classList.contains('week-hid'));
         const hits = c => blk.some(o => o.y0 < c.y + lH && o.y1 > c.y && o.x1 > c.x && o.x0 < c.x + c.w);
-        const cands = [r.y0, r.y1 - lH].map(y => ({ x: r.x1 - w - 2, y, w }));
+        const cands = [r.y0, r.y1 - lH].map(y => ({ x: r.x1 - w - 2, y, w, t: nm.t }));
         spot = cands.find(c => !hits(c)) || (col.closest('.week-v') ? null : cands[0]);
         if (!spot){ lab.remove(); continue; }
         lab.classList.add('week-blab-over');
       }
+      if (spot.t !== lab.textContent) lab.textContent = spot.t;
       Object.assign(lab.style, { left: spot.x + 'px', top: spot.y + 'px', width: spot.w + 'px' });
       placed.push({ x0: spot.x, x1: spot.x + spot.w, y0: spot.y, y1: spot.y + lH });
     }
@@ -3924,7 +3990,7 @@ function weekOpenDay(di, sid, from, tid = ''){
     else t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
     if (hz) t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
     const bar = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
-    const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
+    const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : vtStick(t.box);
     const top = t.box.getBoundingClientRect().top - bar - stick - 12;
     if (top < 0) window.scrollBy({ top, behavior:'instant' });
     t.button.focus({ preventScroll:true });
@@ -5311,6 +5377,29 @@ function hzWords(words, w, n, font, lead = ''){
   }
   return [...lines, cur];
 }
+// A title set as lines (hzWords: each a piece of it, in order) with its search marks:
+// marked as a whole and then cut at the line breaks, so a phrase that runs from one line
+// onto the next ("dark | matter") keeps its mark on both.
+function hlLines(full, lines){
+  const html = hl(full);
+  if (!html.includes('<mark')) return lines.map(esc);
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  const segs = [...tpl.content.childNodes].map(n => [n.textContent.length, n.nodeType === 1]);
+  let pos = 0;
+  return lines.map(l => {
+    if (!l) return '';
+    const a = Math.max(pos, full.indexOf(l, pos)), b = a + l.length;
+    pos = b;
+    let out = '', o = 0;
+    for (const [len, m] of segs){
+      const x = Math.max(a, o), y = Math.min(b, o + len);
+      if (y > x) out += m ? '<mark class="hlm">' + esc(full.slice(x, y)) + '</mark>' : esc(full.slice(x, y));
+      o += len;
+    }
+    return out;
+  });
+}
 // Titles wrap at whole words only: a bar (or talk) whose title has a word wider than
 // the bar shows just its stream badge (a talk: its title on one line with an ellipsis, or
 // only its time when thinner still); the title is in its tooltip and details. A badge that does not fit either is set tighter (hz-nar0) and
@@ -5347,9 +5436,10 @@ function hzFitText(h){
   // (hz-thin). My agenda leaves out a kind pill (SESSION, TALK) wider than its bar.
   // (thin: narrower than 30px, or than its time at the usual size; hz-noic: no room for
   // the time and its kind icon both; hz-mm: thinner than its time even when small, so it
-  // shows the minutes alone, ":30", under the hour on the ruler)
-  const ttw = talks.length ? hzMeasure(getComputedStyle(talks[0].querySelector('.hz-tt')).font, '00:00') : 0;
-  const tfit = talks.map(t => { const w = t.clientWidth; return [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), w < 30 || w - 8 < ttw, w < 18, w - 8 < ttw + 10, w - 3 < ttw * .8]; });
+  // shows the hour over the minutes, "11" / ":30", never the minutes alone)
+  const ttf = talks.length ? getComputedStyle(talks[0].querySelector('.hz-tt')).font : '';
+  const ttw = ttf ? hzMeasure(ttf, '00:00') : 0, ttw0 = ttf ? hzMeasure(ttf.replace(/[\d.]+px/, remPx() * .5 + 'px'), '00:00') : 0;
+  const tfit = talks.map(t => { const w = t.clientWidth; return [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), w < 30 || w - 8 < ttw, w < 18, w - 8 < ttw + 10, w - 4 < ttw0]; });
   // (it needs room beside it for the start of the time)
   const nokind = bars.filter(b => { const k = b.querySelector('.hz-meta .kind'), m = k && k.parentElement; return k && k.offsetLeft + k.offsetWidth + 28 > m.offsetLeft + m.clientWidth; });
   for (const b of nar){
@@ -5431,7 +5521,7 @@ function hzFitText(h){
     const star = tl.querySelector('.hz-star');
     const words = [...tl.childNodes].filter(x => x !== star).map(x => x.textContent).join('').trim().split(/\s+/);
     // (each line marked again for My agenda's search)
-    tl.innerHTML = hzWords(words, w, n, font, star ? '★ ' : '').map(l => `<span class="hz-ln">${hl(l)}</span>`).join(' ');
+    tl.innerHTML = hlLines(words.join(' '), hzWords(words, w, n, font, star ? '★ ' : '')).map(l => `<span class="hz-ln">${l}</span>`).join(' ');
     if (star) tl.firstChild.prepend(star, ' ');
     tl.classList.add('hz-fit');
   }
@@ -5606,7 +5696,7 @@ function hzPopShow(el, h, mouse){
     p.setAttribute('aria-hidden', 'true');
     h.appendChild(p);
   }
-  p.className = 'hz-pop' + (isTalk ? ' tk' + (el.classList.contains('mine') ? ' mine' : el.classList.contains('dim') ? ' dim' : '') : '');
+  p.className = 'hz-pop' + (isTalk ? ' tk' + (el.classList.contains('mine') ? ' mine' : el.classList.contains('dim') ? ' dim' : '') : el.closest('.hz-bar').classList.contains('ctx') ? ' ctx' : '');
   const cs = getComputedStyle(isTalk ? el : el.closest('.hz-bar'));
   for (const k of ['--c', '--cbg']) p.style.setProperty(k, cs.getPropertyValue(k));
   const rem = remPx(), left0 = Math.max(r.left, L);
@@ -6054,7 +6144,7 @@ function vtPopShow(el){
   let p = document.getElementById('vtPop');
   if (!p){ p = document.createElement('div'); p.id = 'vtPop'; p.setAttribute('aria-hidden', 'true'); document.body.appendChild(p); }
   const card = el.closest('.vt-card'), r = el.getBoundingClientRect();
-  p.className = el.classList.contains('vt-tk') ? 'tk' : '';
+  p.className = el.classList.contains('vt-tk') ? 'tk' + (el.classList.contains('dim') ? ' dim' : '') : card.classList.contains('ctx') ? 'ctx' : '';
   p.innerHTML = el.innerHTML + (el.matches('.vt-open') && card.querySelector('.vt-conv') ? `<span class="vt-pfoot">${card.querySelector('.vt-conv').innerHTML}</span>` : '');
   for (const k of ['--c', '--cbg']) p.style.setProperty(k, card.style.getPropertyValue(k));
   const w = Math.max(r.width, Math.min(14 * remPx(), innerWidth - 16));
@@ -7325,6 +7415,13 @@ function revealInCard(card, summary){
   if (summary && y(summary) + summary.offsetHeight - top - bar > room * 0.7) top = y(summary) - bar - room * 0.25;
   window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
 }
+// What a vertical day keeps stuck under the toolbar over an item: its column heads, in
+// their own bar (a grid that scrolls sideways) or atop the grid, unless a short screen
+// lets them scroll away (My agenda's one column on a phone on its side).
+function vtStick(el){
+  const h = el.closest('.vt-sx')?.querySelector('.vt-hbar') || el.closest('.vt-grid')?.querySelector(':scope > .vt-head');
+  return h && getComputedStyle(h).position === 'sticky' ? h.offsetHeight : 0;
+}
 // The same in a day calendar: the session (or talk) scrolled into view and focused.
 function calendarJump(s, tid){
   const t = weekTarget(s.id, tid || '');
@@ -7333,7 +7430,7 @@ function calendarJump(s, tid){
   if (hz) hzScrollTo(hz, toMin(s.start) - (PHONE_MQ.matches ? 15 : 30), 0, 'instant');
   t.box.scrollIntoView({ block:'center', inline:'nearest', behavior:'instant' });
   const bar = stickyWrap.getBoundingClientRect().bottom;
-  const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : t.box.closest('.vt-grid')?.querySelector('.vt-head')?.offsetHeight || 0;
+  const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : vtStick(t.box);
   const top = t.box.getBoundingClientRect().top - bar - stick - 12;
   if (top < 0) window.scrollBy({ top, behavior:'instant' });
   t.button.focus({ preventScroll:true });
@@ -8458,28 +8555,30 @@ function setDisplay(key, value){
     fitPlaceholder();
   };
   // a new look fades in; the motion settings themselves apply at once
-  if (key === 'motion' || key === 'speed') go(); else displayFade(go);
+  if (key === 'motion' || key === 'speed') go(); else displayFade(go, key === 'text');
 }
 // A new theme, contrast or text size cross-fades the whole page (this dialog too) from
 // the old look to the new one, so nothing flashes and a new text size never jumps. Not
 // while motion is reduced, and never on load (the inline script in <head> applies the
 // stored settings before the first paint).
-function displayFade(fn){
+function displayFade(fn, seq){
   settleTransition();
   const root = document.documentElement;
   if (motionReduced() || !document.startViewTransition){ fn(); return; }
   let ran = false;
   const run = () => { if (!ran){ ran = true; fn(); } };
   root.dataset.viewTx = 'disp';
+  // (a new text size: the old look fades out before the new one fades in)
+  if (seq) root.dataset.viewTxSeq = ''; else delete root.dataset.viewTxSeq;
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ delete root.dataset.viewTx; run(); return; }
+  catch (e){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; run(); return; }
   const tx = viewTx = { vt, run };
   vt.ready.catch(() => {});   // (a skipped fade: a newer change took over)
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
-    if (!viewTx) delete root.dataset.viewTx;
+    if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; }
   });
 }
 // A new speed: the preview card slides in at it, to show how it feels.
@@ -8516,7 +8615,7 @@ displayDialog.addEventListener('click', e => {
       saveDisplay();
       syncDisplayForm();
       fitPlaceholder();
-    });
+    }, !!display.text);
     toast('Display settings reset');
   }
 });
