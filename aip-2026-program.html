@@ -5401,6 +5401,7 @@ function hzDraw(root, left){
   const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
   const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
+  const rs = remPx() / 16;   // (read before the writes below, which would make it recalculate styles)
   const trackW = Math.max(120, vp.clientWidth - lw);
   const span = hzSpan(key, trackW, d0, d1), ppm = trackW / span, W = Math.floor(full * ppm + 1e-6); // floor: Fit day fits exactly
   const X = m => ((m - d0) * ppm).toFixed(1);
@@ -5437,7 +5438,7 @@ function hzDraw(root, left){
   h.querySelector('.hz-lines').innerHTML = gl;
   h.querySelector('.hz-inner').style.width = `calc(var(--lw) + ${W}px)`;
   // lane heights: talks mode lets the bar grow with the text it must show
-  const rs = remPx() / 16, lineH = 16.5 * rs;
+  const lineH = 16.5 * rs;
   const estLines = (len, w, cw) => Math.max(1, Math.ceil(len * cw * rs / Math.max(24, w)));
   // whole-word wrapping, for narrow talk columns where long words take a line each
   const wrapLines = (text, w, cw) => {
@@ -5598,10 +5599,17 @@ function hzDraw(root, left){
     }
   }
   h.querySelector('.hz-rows').innerHTML = rows;
-  hzFitText(h);
-  hlUnclip(h);
+  // the minute the canvas scrolls to: the one asked for, the kept one, else now on a
+  // congress day, else the first session
+  if (left === undefined) left = HZ.left[key];
+  if (left === undefined){
+    const n = aedtNow();
+    left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...ents.map(e => toMin(e.start))) - 10;
+  }
+  // (the ruler and minimap are measured before the fit writes, in the same layout)
   h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
   hzMapLabels(h);
+  hzFitFirst(h, Math.max(0, (left - d0) * ppm), trackW);
   // bars that can start off to the left: hzSync pads their text into view
   // (My agenda's bars pad their header strip, which carries the padding there)
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
@@ -5617,12 +5625,7 @@ function hzDraw(root, left){
     b.hidden = b.dataset.hzzoom !== 'fit' && v >= full;
   });
   h.querySelectorAll('[data-hzstep]').forEach(b => { b.disabled = +b.dataset.hzstep > 0 ? span >= full - 0.5 : span <= 30.5; });
-  // scroll: the minute asked for, the kept one, else now on a congress day, else the first session
-  if (left === undefined) left = HZ.left[key];
-  if (left === undefined){
-    const n = aedtNow();
-    left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...ents.map(e => toMin(e.start))) - 10;
-  }
+  // scroll to that minute
   vp.scrollLeft = Math.max(0, (left - d0) * ppm);
   hzSync(h);
   paintNow();
@@ -5703,11 +5706,12 @@ function hlLines(full, lines){
 // A search match cut off whole by a calendar card's clamped title loses its highlight:
 // hidden, it would only leave a gap in the text the card shows (which screen readers and
 // checkers compare with the card's name). Read every position first, then unwrap.
-function hlUnclip(root){
+function hlUnclip(root, pick){
   const ms = root.querySelectorAll('mark.hlm');
   if (!ms.length) return;
   const gone = [];
   for (const m of ms){
+    if (pick){ const bar = m.closest('.hz-bar'); if (bar && !pick(bar)) continue; }
     const r = m.getBoundingClientRect();
     if (!r.width && !r.height) continue;
     for (let a = m.parentElement; a && a !== root; a = a.parentElement){
@@ -5721,10 +5725,13 @@ function hlUnclip(root){
   }
   for (const m of gone) m.replaceWith(m.textContent);
 }
-function hzFitText(h){
+// `pick(bar)` limits the fit to some bars (and their talks): hzDraw fits those near what
+// shows first, the rest follow in idle time (hzFitLater) or on scroll (hzFitNear).
+function hzFitText(h, pick){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
-  const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')].filter(b => b.querySelector('.hz-title')), nar = bars.filter(b => over(b.querySelector('.hz-title')));
-  const talks = [...h.querySelectorAll('.hz-talk')];
+  const inPick = el => !pick || pick(el.classList.contains('hz-head') || el.classList.contains('hz-talk') ? el.closest('.hz-bar') : el);
+  const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')].filter(b => b.querySelector('.hz-title') && inPick(b)), nar = bars.filter(b => over(b.querySelector('.hz-title')));
+  const talks = [...h.querySelectorAll('.hz-talk')].filter(inPick);
   // Measure everything first and write after, so the canvas is laid out a few times in
   // all rather than once per bar or talk. A talk too narrow for whole words shows its
   // title on one line with an ellipsis (hz-nar); one too thin for that shows its time only
@@ -5843,11 +5850,53 @@ function hzFitText(h){
     t.style.webkitLineClamp = Math.max(1, Math.min(lines, Math.floor((avail + 1) / lh)));
   }
 }
+// Fit the bars near the first view (a screen to the left of it, two to the right) now and
+// the others later: a bar off the screen need not be laid out and measured before the
+// first frame. They are fitted in small batches in idle time, nearest first, and any that
+// scroll into view before then are fitted at once (hzFitNear, from hzSync, so before the
+// frame that shows them).
+function hzFitFirst(h, sl, tw){
+  const pos = new Map(), at = b => { let p = pos.get(b); if (!p) pos.set(b, p = [parseFloat(b.style.left), parseFloat(b.style.width)]); return p; };
+  const near = b => { const [x, w] = at(b); return x + w > sl - tw && x < sl + 2 * tw; };
+  hzFitText(h, near);
+  const pend = [...h.querySelectorAll('.hz-rows .hz-bar')].filter(b => !near(b));
+  pend.sort((a, b) => Math.abs(at(a)[0] - sl) - Math.abs(at(b)[0] - sl));
+  h._fitPend = pend;
+  h._fitMarks = !!h.querySelector('mark.hlm');
+  hlUnclip(h, near);
+  const gen = h._fitGen = (h._fitGen || 0) + 1;
+  if (pend.length) hzFitLater(h, gen);
+}
+function hzFitBatch(h, bars){
+  if (!bars.length) return;
+  const set = new Set(bars);
+  hzFitText(h, b => set.has(b));
+  if (h._fitMarks) hlUnclip(h, b => set.has(b));
+}
+function hzFitLater(h, gen){
+  const run = () => {
+    if (h._fitGen !== gen || !h.isConnected) return;
+    hzFitBatch(h, h._fitPend.splice(0, 6));
+    if (h._fitPend.length) hzFitLater(h, gen);
+  };
+  if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 400 }); else setTimeout(run, 60);
+}
+function hzFitNear(h){
+  const pend = h._fitPend;
+  if (!pend || !pend.length) return;
+  const sl = h.querySelector('.hz-vp').scrollLeft, tw = +h.dataset.tw;
+  const hit = [], keep = [];
+  for (const b of pend) (parseFloat(b.style.left) + parseFloat(b.style.width) > sl - tw / 2 && parseFloat(b.style.left) < sl + tw * 1.5 ? hit : keep).push(b);
+  if (!hit.length) return;
+  h._fitPend = keep;
+  hzFitBatch(h, hit);
+}
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
 function hzSync(h){
   const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm, tw = +h.dataset.tw;
   if (!ppm) return;
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0, sl = vp.scrollLeft;
+  hzFitNear(h);
   h.querySelector('.hz-ticks').style.transform = `translateX(${-sl}px)`;
   // a ruler label cut by the left edge would read as a stray digit
   for (const t of h._ticks || []){
