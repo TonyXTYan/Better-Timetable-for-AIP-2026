@@ -1574,6 +1574,18 @@ button.bd-cxkey:hover{border-color:var(--clash-row-line)}
   .bd-abs{min-height:40px}
   .bd-ttime{padding-top:2px}
 }
+/* Large text on the narrowest phones: the talks toggle goes under the title, the header
+   and footer stay on one line each. */
+@media (max-width:360px){
+  html[data-text="xl"] #bdProgress{white-space:nowrap}
+  html[data-text="xl"] .bd-opt-x{display:none}
+  html[data-text="xl"] .bd-foot{grid-template-columns:auto auto 1fr;gap:6px}
+  html[data-text="xl"] .bd-foot .toggle{white-space:nowrap;padding:8px 8px}
+  html[data-text="xl"] .bd-card-top{flex-wrap:wrap;row-gap:0}
+  html[data-text="xl"] .bd-when{white-space:nowrap}
+  html[data-text="xl"] .bd-tog{grid-column:2 / -1;grid-row:3;min-height:40px;padding:4px 0;border-left:0;border-top:1px solid var(--line);justify-content:flex-start}
+  html[data-text="xl"] .bd-sess input{grid-row:1 / 4}
+}
 @media (max-height:520px){
   #buildDialog{--thumb:24px;width:100vw;height:100vh;height:100dvh;max-height:none;margin:0;border:0;border-radius:0}
   .bd-top{padding:4px 14px 0}
@@ -2198,7 +2210,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       </div>
       <div class="bd-opts">
         <span id="bdProgress"></span>
-        <label><input type="checkbox" id="bdAdmin"> Include breaks and meetings</label>
+        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"> Include breaks<span class="bd-opt-x"> and meetings</span></label>
       </div>
       <button type="button" class="toggle" id="bdClose">Close</button>
     </div>
@@ -6969,10 +6981,12 @@ function replaceStars(ids, message){
 }
 // Removes ids from the agenda and offers Undo.
 function removeStars(ids, message){
-  const before = new Set(state.starred);
+  let before = new Set(state.starred), merged = false;
+  // removals made while Undo is still offered join it: one tap puts them all back
+  if (undoSnapshot && !undoBar.hidden && [...before].every(id => undoSnapshot.ids.includes(id))){ before = new Set(undoSnapshot.ids); merged = true; }
   ids.forEach(id => state.starred.delete(id));
   afterStarChange();
-  offerUndo(before, message || removedMessage(before));
+  offerUndo(before, merged ? removedMessage(before) : message || removedMessage(before));
 }
 document.getElementById('clearAgenda').addEventListener('click', () => {
   closeExportMenu();
