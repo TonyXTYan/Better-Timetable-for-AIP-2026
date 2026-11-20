@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#1d4ed8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)">
 <script>
-// Display settings (text size, theme, contrast, motion) go on <html> before the first
+// Display settings (text size, theme, contrast, motion, animation speed) go on <html> before the first
 // paint, so the page never flashes the wrong theme. Only overrides are stored.
 window.applyDisplay = function(d){
   var r = document.documentElement;
@@ -21,6 +21,7 @@ window.applyDisplay = function(d){
   set('data-theme', d.theme, ['light','dark']);
   set('data-contrast', d.contrast, ['high']);
   set('data-motion', d.motion, ['reduce','full']);
+  set('data-speed', d.speed, ['slow','xslow']);
   var metas = document.querySelectorAll('meta[name="theme-color"]');
   for (var i = 0; i < metas.length; i++){
     var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
@@ -275,7 +276,7 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
 #weekTip{position:fixed;z-index:90;max-width:18rem;padding:6px 9px;border-radius:8px;background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;box-shadow:0 4px 14px var(--pop-shadow);pointer-events:none}
 #weekTip b{display:block;font-weight:650}
 #weekTip[hidden]{display:none}
-.week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit 1.4s ease-out}
+.week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit calc(1.4s * var(--mo)) ease-out}
 @keyframes week-hit{0%{box-shadow:0 0 0 8px var(--focus-ring)}100%{box-shadow:0 0 0 0 transparent}}
 /* Vertical on a wide screen: about 1.75px a minute, and columns wide enough that the
    busiest cluster's blocks keep at least their stream code */
@@ -318,28 +319,37 @@ header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100
    when the change also scrolls the page. */
 /* The slide/fade runs on the page's root snapshot (viewport-sized), never on a named
    #main, which on a long program would be a page-tall snapshot. */
-html[data-view-tx]:not([data-view-tx="dlg"]) .sticky-wrap{view-transition-name:toolbar}
+/* (the toolbar drops its backdrop blur meanwhile: its group has an opaque background of
+   the same colour, and a live blur over the moving page would be redone every frame) */
+html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) .sticky-wrap{view-transition-name:toolbar;backdrop-filter:none;-webkit-backdrop-filter:none}
 ::view-transition{pointer-events:none}
 ::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar){animation:none}
 ::view-transition-old(toolbar){display:none}
+/* (the root's own group never moves; it only sets how long the transition lasts) */
+::view-transition-group(root){animation-duration:calc(200ms * var(--mo))}
 ::view-transition-group(toolbar){z-index:4;background:linear-gradient(var(--sticky-bg),var(--sticky-bg)),var(--bg)}
 /* Shared-element morphs (mxBegin): each item moves and resizes from its old box to its
    new one; its old and new looks cross-fade at their own size, pinned to the top left
    and clipped to the moving box, so text never stretches. Sticky heads and label
    columns (mx-cover) stay above the items, and the toolbar above everything. */
-::view-transition-group(*.mx),::view-transition-group(*.mx-cover){animation-duration:300ms;animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+::view-transition-group(*.mx),::view-transition-group(*.mx-cover){animation-duration:calc(200ms * var(--mo));animation-timing-function:cubic-bezier(.3,.7,.2,1)}
 ::view-transition-group(*.mx){z-index:2}
+::view-transition-group(*.mx-under){z-index:1}
 ::view-transition-group(*.mx-cover){z-index:3}
 ::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
-::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:120ms}
+::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(90ms * var(--mo))}
 ::view-transition-group(mx-pop){z-index:5}
-html[data-view-tx="dlg"]::view-transition-new(root){animation:240ms ease both week-tx-fade}
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:120ms ease-in both week-tx-out}
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:210ms cubic-bezier(.2,.7,.3,1) both week-tx-in}
+html[data-view-tx="dlg"]::view-transition-new(root){animation:calc(180ms * var(--mo)) ease both week-tx-fade}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:calc(170ms * var(--mo)) cubic-bezier(.2,.7,.3,1) both week-tx-in}
 html[data-view-tx="fwd"]::view-transition-new(root){animation-name:week-tx-in-r}
 html[data-view-tx="back"]::view-transition-new(root){animation-name:week-tx-in-l}
-html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom;animation-duration:300ms}
-html[data-view-tx-quick]::view-transition-old(root){animation-duration:60ms}
+html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom;animation-duration:calc(200ms * var(--mo))}
+html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(50ms * var(--mo))}
+/* A new theme, contrast or text size (displayFade): the whole page, toolbar and dialog
+   included, cross-fades from the old look to the new one */
+html[data-view-tx="disp"]::view-transition-old(root){animation:calc(200ms * var(--mo)) ease-in both week-tx-out}
+html[data-view-tx="disp"]::view-transition-new(root){animation:calc(200ms * var(--mo)) ease-out both week-tx-fade}
 html.tx-busy{cursor:progress}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
@@ -398,7 +408,7 @@ html.tx-busy{cursor:progress}
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
-.sticky-wrap.tb-anim{overflow:clip;transition:height .18s ease,margin-bottom .18s ease}
+.sticky-wrap.tb-anim{overflow:clip;transition:height calc(.16s * var(--mo)) ease,margin-bottom calc(.16s * var(--mo)) ease}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -551,7 +561,7 @@ html.tx-busy{cursor:progress}
 .participants-view #nowBtn{display:none}
 #nowBtn{color:var(--now-text);border-color:var(--now-line);background:var(--now-bg)}
 #nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
-.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:999px;font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100vw - 32px)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:999px;font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity calc(.2s * var(--mo)),transform calc(.2s * var(--mo));max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 /* Share without a clipboard: the link in a selected field to copy, never a blocking prompt */
 .share-box{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:210;width:min(560px,calc(100vw - 24px));padding:10px 12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 32px var(--pop-shadow);font-size:.875rem}
@@ -634,7 +644,7 @@ details.talk-d summary:hover{background:var(--surface-2)}
 .t-main{flex:1;min-width:0}
 .t-title{display:block;font-size:.8625rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
 .t-sp{display:block;font-size:.75rem;color:var(--muted);margin-top:2px}
-.t-caret{flex:0 0 auto;color:var(--caret);font-size:.625rem;transition:transform .15s}
+.t-caret{flex:0 0 auto;color:var(--caret);font-size:.625rem;transition:transform calc(.15s * var(--mo))}
 details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body{padding:0 16px 13px 65px;font-size:.8438rem;color:var(--ink-2)}
 .t-body .abstract{margin:0 0 10px;overflow-wrap:anywhere}
@@ -726,7 +736,7 @@ footer p{margin:4px 0}
 .ag-clash-ind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:999px;padding:3px 11px;font-size:.8125rem;font-weight:700;white-space:nowrap}
 .ag-clash-ind:hover{border-color:var(--clash-row-line)}
 .ag-clash-ind.quiet{border-color:var(--line);background:var(--surface);color:var(--ink-2);font-weight:600}
-.ag-clash-ind .caret{font-size:.7em;transition:transform .15s}
+.ag-clash-ind .caret{font-size:.7em;transition:transform calc(.15s * var(--mo))}
 .ag-clash-ind[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .ag-ok{color:var(--ok-ink);font-weight:700}
 .ag-warn{color:var(--warn-ink);font-weight:700}
@@ -798,7 +808,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 /* sticky head: [corner | minimap] over [corner | ruler]; the minimap shrinks to a
    slim strip once stuck, and the head's bottom margin grows by the same amount so
    nothing below it moves */
-.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 1.875rem;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow);transition:margin-bottom .2s ease}
+.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 1.875rem;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow);transition:margin-bottom calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-top{margin-bottom:var(--hzd);border-radius:0}
 .hz-corner{grid-row:1 / 3;grid-column:1;min-height:0;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:2px 6px 4px 10px;min-width:0;overflow:hidden}
 .hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
@@ -811,15 +821,15 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .hz-zb button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .hz-read{font-size:.6875rem;line-height:1.15;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:6px 10px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:height .2s ease,margin .2s ease}
+.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:6px 10px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-map{height:14px;margin:1px 10px 1px}
-.hz-mt{position:absolute;left:0;right:0;top:3px;bottom:15px;transition:top .2s ease,bottom .2s ease,opacity .2s ease}
+.hz-mt{position:absolute;left:0;right:0;top:3px;bottom:15px;transition:top calc(.2s * var(--mo)) ease,bottom calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 /* a label near the right edge moves in so it is never cut (its left is capped in hzDayView);
    one under an edge of the window takes a background (hzSync) so the outline never runs through it */
-.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:2px;padding:1px 2px;border-radius:3px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity .2s ease}
+.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:2px;padding:1px 2px;border-radius:3px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity calc(.2s * var(--mo)) ease}
 .hz-mlab.on-edge{background:color-mix(in srgb,var(--card) 60%,var(--surface-2))}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
@@ -853,7 +863,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-grp .hz-label{background:var(--surface-3);flex-direction:row;align-items:center;padding:0}
 button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 6px 0 7px;font-size:.75rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--c);white-space:nowrap;overflow:hidden}
 button.hz-gl:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.hz-car{display:inline-block;width:.7em;transition:transform .15s;font-size:.8em}
+.hz-car{display:inline-block;width:.7em;transition:transform calc(.15s * var(--mo));font-size:.8em}
 button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
 .hz-cnt{margin-left:auto;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--card);border-radius:999px;padding:0 6px;font-size:.6875rem}
 .hz-lane.sole .hz-label{padding:0}
@@ -976,7 +986,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* sideways scrollers (vertical day grid, horizontal week timeline): a shade on the edge
    with more off that way, and a More button in the sticky bar above */
 .sx-box{position:relative}
-.sx-fade{position:absolute;top:0;bottom:0;z-index:5;width:1.75rem;pointer-events:none;opacity:0;transition:opacity .15s}
+.sx-fade{position:absolute;top:0;bottom:0;z-index:5;width:1.75rem;pointer-events:none;opacity:0;transition:opacity calc(.15s * var(--mo))}
 .sx-fade.l{left:var(--sx-l,0px);background:linear-gradient(to right,var(--sx-shade),transparent)}
 .sx-fade.r{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
 .sx-l>.sx-fade.l,.sx-r>.sx-fade.r{opacity:1}
@@ -988,7 +998,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-sx{--sx-l:calc(3.1rem + 1px);margin:0 0 14px}
 .vt-sx .vt-wrap{margin:0}
 .vt-hsc{overflow:hidden}
-.vt-hbar::before,.vt-hbar::after{content:"";position:absolute;top:0;bottom:0;z-index:7;width:1.75rem;pointer-events:none;opacity:0;transition:opacity .15s}
+.vt-hbar::before,.vt-hbar::after{content:"";position:absolute;top:0;bottom:0;z-index:7;width:1.75rem;pointer-events:none;opacity:0;transition:opacity calc(.15s * var(--mo))}
 .vt-hbar::before{left:var(--sx-l);background:linear-gradient(to right,var(--sx-shade),transparent)}
 .vt-hbar::after{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
 .sx-l .vt-hbar::before,.sx-r .vt-hbar::after{opacity:1}
@@ -1517,7 +1527,11 @@ html:has(#buildDialog[open]){overflow:hidden}
   .bd-foot .toggle{min-height:38px;padding:4px 12px}
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
-.card.flash{animation:cardflash 1.4s ease-out}
+.card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
+/* Animation speed (Display settings): every duration is a base (Fast) times --mo. */
+html{--mo:1}
+html[data-speed="slow"]{--mo:2}
+html[data-speed="xslow"]{--mo:4}
 /* Reduced motion: the system setting unless turned off in Display settings, or turned on there. */
 @media (prefers-reduced-motion:reduce){
   html:not([data-motion="full"]){scroll-behavior:auto}
@@ -1673,7 +1687,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .seg label{position:relative;display:block;min-width:0}
 .seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
 .seg label>span{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:42px;height:100%;padding:5px 4px;border:1px solid transparent;border-radius:9px;color:var(--ink-2);font-size:.8125rem;font-weight:650;line-height:1.2;text-align:center;overflow-wrap:anywhere}
-.seg small{font-size:.6875rem;font-weight:500;color:var(--muted)}
+.seg small{font-size:.6875rem;font-weight:500;color:var(--ink-2)}
 .seg label:hover>span{color:var(--ink)}
 .seg input:checked+span{background:var(--surface);border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
 .seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
@@ -1684,10 +1698,14 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .dd-switch:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .dd-switch b{display:block;font-size:.875rem}
 .dd-switch small{display:block;color:var(--muted);font-size:.75rem;line-height:1.35;margin-top:1px}
-.sw-track{flex:0 0 auto;position:relative;width:2.6rem;height:1.5rem;border-radius:999px;background:var(--switch-off);transition:background .15s}
-.sw-track::after{content:"";position:absolute;top:.1875rem;left:.1875rem;width:1.125rem;height:1.125rem;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px var(--pop-shadow);transition:transform .15s}
+.sw-track{flex:0 0 auto;position:relative;width:2.6rem;height:1.5rem;border-radius:999px;background:var(--switch-off);transition:background calc(.15s * var(--mo))}
+.sw-track::after{content:"";position:absolute;top:.1875rem;left:.1875rem;width:1.125rem;height:1.125rem;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px var(--pop-shadow);transition:transform calc(.15s * var(--mo))}
 .dd-switch[aria-pressed="true"] .sw-track{background:var(--accent)}
 .dd-switch[aria-pressed="true"] .sw-track::after{transform:translateX(1.1rem)}
+#dsSpeedGroup{margin-top:16px}
+#dsSpeedGroup:disabled .seg{opacity:.55}
+#dsSpeedGroup:disabled .seg input{cursor:default}
+.dd-note{margin:6px 0 0;font-size:.75rem;color:var(--muted)}
 .dd-preview{margin:4px 0 16px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--aip);border-radius:10px;background:var(--bg)}
 .dd-preview .badge{cursor:default;margin:0 0 4px;display:inline-block}
 .dd-preview .pv-title{display:block;font-weight:650;font-size:.9375rem;line-height:1.35}
@@ -2006,6 +2024,15 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     </fieldset>
     <button type="button" class="dd-switch" id="dsContrast" aria-pressed="false"><span><b>High-contrast text</b><small>Stronger text and lines, in both themes</small></span><span class="sw-track" aria-hidden="true"></span></button>
     <button type="button" class="dd-switch" id="dsMotion" aria-pressed="false"><span><b>Reduce motion</b><small id="dsMotionNote">Follows your device setting</small></span><span class="sw-track" aria-hidden="true"></span></button>
+    <fieldset class="dd-group" id="dsSpeedGroup" aria-describedby="dsSpeedNote">
+      <legend>Animation speed</legend>
+      <div class="seg">
+        <label><input type="radio" name="dsSpeed" value=""><span>Fast<small>Default</small></span></label>
+        <label><input type="radio" name="dsSpeed" value="slow"><span>Slow</span></label>
+        <label><input type="radio" name="dsSpeed" value="xslow"><span>Extra slow</span></label>
+      </div>
+      <p class="dd-note" id="dsSpeedNote" hidden>Nothing moves while Reduce motion is on.</p>
+    </fieldset>
     <div class="dd-preview" aria-hidden="true"><span class="badge" style="--c:var(--aip);--cbg:var(--aip-bg)">QST</span><span class="pv-title">Preview: silicon spin qubits at scale</span><span class="pv-meta">Tue 8 Dec · 10:30–12:30 AEDT · Room 2.01</span></div>
     <div class="dd-foot">
       <button type="button" class="linkish" id="dsReset">Reset display settings</button>
@@ -2552,7 +2579,8 @@ function blockHeightsSoon(){
   let i = 0;
   const step = dl => {
     if (gen !== heightsGen) return;
-    if (performance.now() - lastScrollAt < 500){ heightsJob = setTimeout(() => idle(step), 500); return; }
+    // (never while the page scrolls or a view change animates)
+    if (performance.now() - lastScrollAt < 500 || viewTx){ heightsJob = setTimeout(() => idle(step), 500); return; }
     do {
       const b = blocks[i++];
       if (!b || b._drawn || !b.isConnected || !b.getClientRects().length) continue;
@@ -3360,28 +3388,28 @@ function calendarDetailAttrs(it){
 // One render asks for these several times (tabs, each view, its key): they are kept until the
 // current task ends, and only while the stars, filters and options they depend on are unchanged.
 const acMemo = new Map();
-function agendaCalendarItems(all = false){
-  const sig = [all, [...state.starred].join(), state.aq, [...state.acats].join(), document.getElementById('includeParents').checked, state.hideClashes].join('|');
+function agendaCalendarItems(all = false, full = document.getElementById('includeParents').checked){
+  const sig = [all, [...state.starred].join(), state.aq, [...state.acats].join(), full, state.hideClashes].join('|');
   if (acMemo.has(sig)) return acMemo.get(sig);
   if (!acMemo.size) queueMicrotask(() => acMemo.clear());
-  const out = agendaCalendarItemsNow(all);
+  const out = agendaCalendarItemsNow(all, full);
   acMemo.set(sig, out);
   return out;
 }
-function agendaCalendarItemsNow(all){
+function agendaCalendarItemsNow(all, full){
   const items = agendaItems();
   markClashes(items);
   const shown = all ? items : agendaFilter(items);
   if (state.hideClashes) items.forEach(it => it.clashes = []);
   // counts go by the merged items (out.merged: shown; out.whole: the whole agenda), as
   // the badge and the list count them, not by the blocks grouping draws
-  const out = groupFavourites(shown);
+  const out = groupFavourites(shown, full);
   return Object.assign(out === shown ? [...out] : out, { merged: shown, whole: items });
 }
 // Without full sessions, posters starred from one poster session (which all share its
 // time slot) still show together in it, not as separate blocks stacked in one slot.
-function groupFavourites(items){
-  const all = document.getElementById('includeParents').checked, nPost = new Map();
+function groupFavourites(items, all = document.getElementById('includeParents').checked){
+  const nPost = new Map();
   for (const it of items) if (it.kind === 'talk' && it.s.cat === 'poster') nPost.set(it.s, (nPost.get(it.s) || 0) + 1);
   const grouped = it => it.kind === 'talk' && (all || nPost.get(it.s) > 1);
   if (!items.some(grouped)) return items;
@@ -3390,7 +3418,9 @@ function groupFavourites(items){
     if (!grouped(it)){ out.push(it); continue; }
     let h = hosts.get(it.s);
     if (!h){
-      h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, inner:[], clashes:[] };
+      // (as, ae: where its first saved talk sits, so the session drawn around the talk
+      // keeps the talk's place among the items: see packLanes)
+      h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, as:it.start, ae:it.end, inner:[], clashes:[] };
       hosts.set(it.s, h);
       out.push(h);
     }
@@ -3404,7 +3434,7 @@ function groupFavourites(items){
     if (h) for (const x of it.clashes){ const y = shown(x); if (y !== h && !h.clashes.includes(y)) h.clashes.push(y); }
   }
   for (const it of out) if (!it.ctx) it.clashes = [...new Set(it.clashes.map(shown))];
-  return out.sort((a,b) => a.di-b.di || a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
+  return out.sort((a,b) => a.di-b.di || (a.as || a.start).localeCompare(b.as || b.start) || (a.ae || a.end).localeCompare(b.ae || b.end));
 }
 
 // All week overview (Full program > Calendar > All week): the whole congress on one
@@ -3486,29 +3516,25 @@ function weekOverview(){
   const counts = [], lanes = [];
   const isBand = s => !agenda && WEEK_BANDS.includes(s.cat);
   const cols = DATA.days.map((d, di) => {
-    const slots = [...days[di]].sort((a, b) => a.start.localeCompare(b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
-      || ((a.s || a).grp || '').localeCompare((b.s || b).grp || '') || a.end.localeCompare(b.end) || a.title.localeCompare(b.title));
+    // (My agenda's items by place: a session drawn around a saved talk has the talk's, it.as)
+    const sorted = list => [...list].sort((a, b) => (a.as || a.start).localeCompare(b.as || b.start) || order.indexOf(a.cat) - order.indexOf(b.cat)
+      || ((a.s || a).grp || '').localeCompare((b.s || b).grp || '') || (a.ae || a.end).localeCompare(b.ae || b.end) || (a.at || a.title).localeCompare(b.at || b.title));
+    const slots = sorted(days[di]);
     counts.push(agenda ? entCount(slots) : slots.filter(slotMatches).length);
     let html = '';
     // longer bands first, so a short break paints over an all-day one
     const bands = slots.filter(isBand).sort((x, y) => (toMin(y.end) - toMin(y.start)) - (toMin(x.end) - toMin(x.start)));
     for (const s of bands) html += block(s, di, 0, 100, true);
     // clusters of overlapping sessions, greedy lanes inside each
-    const clusters = [];
-    let cl = null;
-    for (const s of slots.filter(s => !isBand(s))){
-      const a = toMin(s.start), b = toMin(s.end);
-      if (!cl || a >= cl.end){ cl = { end:b, lanes:[], items:[] }; clusters.push(cl); }
-      let lane = cl.lanes.findIndex(e => e <= a);
-      if (lane < 0){ lane = cl.lanes.length; cl.lanes.push(0); }
-      cl.lanes[lane] = b; cl.end = Math.max(cl.end, b);
-      cl.items.push({ s, lane });
-    }
-    lanes.push(Math.max(1, ...clusters.map(c => c.lanes.length)));
+    const at = s => toMin(s.start), to = s => toMin(s.end);
+    // (My agenda: lanes kept in their order with "Show full sessions" off, dvOffRank)
+    const rank = agenda ? dvOffRank(d, off => laneMap(packLanes(sorted(off), at, to))) : null;
+    const clusters = packLanes(slots.filter(s => !isBand(s)), at, to, rank);
+    lanes.push(Math.max(1, ...clusters.map(c => c.lanes)));
     for (const c of clusters){
-      const n = c.lanes.length;
+      const n = c.lanes;
       // (weekFit folds lanes too narrow for their column into a "+N" chip)
-      for (const it of c.items) html += block(it.s, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false, ` data-cl="${clusters.indexOf(c)}" data-ln="${it.lane}" data-nl="${n}"`);
+      for (const it of c.items) html += block(it.x, di, +(it.lane * 100 / n).toFixed(3), +(100 / n).toFixed(3), false, ` data-cl="${clusters.indexOf(c)}" data-ln="${it.lane}" data-nl="${n}"`);
     }
     const isToday = d.date === today;
     return `<div class="week-col${isToday ? ' today' : ''}" data-day="${di}" style="--lanes:${lanes[di]}" role="group" aria-label="${esc(d.label)}">${html}${isToday ? '<div class="week-now" hidden></div>' : ''}</div>`;
@@ -3856,7 +3882,7 @@ function weekOpenDay(di, sid, from, tid = ''){
     if (top < 0) window.scrollBy({ top, behavior:'instant' });
     t.button.focus({ preventScroll:true });
     t.box.classList.add('week-hit');
-    setTimeout(() => t.box.classList.remove('week-hit'), 1600);
+    setTimeout(() => t.box.classList.remove('week-hit'), 1400 * motionK() + 200);
     return t.box;
   }, from, { to: { day: di } });
 }
@@ -4095,6 +4121,9 @@ function motionReduced(){
   const m = document.documentElement.dataset.motion;
   return m === 'reduce' || (m !== 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
+// Animation speed (Display settings): every duration here and in the CSS (--mo) is the
+// Fast one times this.
+const motionK = () => ({ slow: 2, xslow: 4 })[document.documentElement.dataset.speed] || 1;
 function settleTransition(){
   const tx = viewTx;
   if (!tx) return;
@@ -4139,7 +4168,7 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 const mxCap = () => PHONE_MQ.matches ? 36 : 72, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
 const MX_NOOP = { after(){}, animate(){} };
 let txLast = -1e9, txSlow = 0;
-const MX_MS = 300, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
+const MX_MS = 200, MX_EASE = 'cubic-bezier(.2,.7,.25,1)';
 const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off), .week-tk:not([hidden])';
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
@@ -4227,7 +4256,7 @@ function mxBegin(kind, from, opts){
     }
   }
   for (const [key, it] of old) mxName(it.el, key, it.kind === 'cover' ? 'mx-cover' : 'mx');
-  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [] };
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [] };
   return {
     after(target){
       const now = pop || mxMany() ? new Map() : mxScan(kind === 'mx' || opts.aux, true);
@@ -4246,7 +4275,8 @@ function mxBegin(kind, from, opts){
       // morph but the clicked item's; the rest fade where they were, with the page
       const ratio = (a, b) => Math.max(a.width / (b.width || 1), b.width / (a.width || 1), a.height / (b.height || 1), b.height / (a.height || 1));
       const its = cand.filter(x => x.o.kind === 'item' && x.key !== fromKey);
-      const wild = its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
+      // (opts.reshape: the change is meant to reshape items, as "Show full sessions" does)
+      const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
       for (const x of cand){
         if (wild && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
         mxName(x.n.el, x.key, x.o.kind === 'cover' ? 'mx-cover' : 'mx');
@@ -4258,6 +4288,30 @@ function mxBegin(kind, from, opts){
         // (the old picture goes quickly: the two pages are too unlike to show together)
         plan.quick = true;
         document.documentElement.dataset.viewTxQuick = '';
+      }
+      // A session that comes or goes around saved talks shown on their own (My agenda's
+      // "Show full sessions", or saving or removing the session): it grows out of those
+      // talks (emerge) or shrinks back into them (sink), while each talk moves between
+      // its own block and its place inside the session.
+      const alone = it => it.kind === 'item' && it.el.dataset.inSid;
+      const union = rs => rs.reduce((u, r) => u ? { left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) } : { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, null);
+      const rect = u => u && { left: u.left, top: u.top, right: u.right, bottom: u.bottom, width: u.right - u.left, height: u.bottom - u.top };
+      if (!wild && !pop){
+        plan.fade = plan.fade.filter(({ key, o }) => {
+          if (o.kind !== 'item' || !key.startsWith('s-')) return true;
+          const to = rect(union([...now.values()].filter(n => n.p === key && alone(n)).map(n => n.r)));
+          if (!to) return true;
+          plan.sink.push({ key, o, to });
+          return false;
+        });
+        for (const [key, n] of now){
+          if (old.has(key) || named.has(n.el) || n.kind !== 'item' || !key.startsWith('s-') || count >= mxCap()) continue;
+          const from = rect(union([...old.values()].filter(o => o.p === key && alone(o)).map(o => o.r)));
+          if (!from) continue;
+          // (under the talks moving into it)
+          mxName(n.el, key, 'mx mx-under'); named.add(n.el); count++;
+          plan.emerge.push({ key, n, from });
+        }
       }
       for (const [key, n] of now){
         if (old.has(key) || named.has(n.el) || !near(n) || count >= mxCap()) continue;
@@ -4271,9 +4325,10 @@ function mxBegin(kind, from, opts){
       }
     },
     animate(){
-      const root = document.documentElement;
+      const root = document.documentElement, k = motionK();
+      // durations and delays are Fast's, times the speed setting
       const run = (key, part, frames, o = {}) => {
-        try { root.animate(frames, { duration: MX_MS, easing: MX_EASE, fill: 'both', ...o, pseudoElement: mxPart(part, key) }); } catch (e) {}
+        try { root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MX_MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) }); } catch (e) {}
       };
       const box = (r, s = 1) => ({ transform: `translate(${r.left}px,${r.top}px)`, width: r.width + 'px', height: Math.max(0, r.height * s) + 'px' });
       // a rect inside `a` taken to the same place inside `b`
@@ -4284,7 +4339,10 @@ function mxBegin(kind, from, opts){
       // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
       // canvas do not spill past its edges while they move)
       const clip = (r, c) => c ? `inset(${Math.max(0, c.top - r.top)}px ${Math.max(0, r.right - c.right)}px ${Math.max(0, r.bottom - c.bottom)}px ${Math.max(0, c.left - r.left)}px)` : 'inset(0px 0px 0px 0px)';
-      const clipped = (...xs) => xs.some(x => x.c);
+      // (only an item that reaches past its box at either end needs the clip: each
+      // animation costs a style pass, and a grid in a scroll box has dozens of items)
+      const out = x => x.c && (x.r.left < x.c.left - 1 || x.r.right > x.c.right + 1 || x.r.top < x.c.top - 1 || x.r.bottom > x.c.bottom + 1);
+      const clipped = (...xs) => xs.some(out);
       for (const { key, o, n } of plan.pairs){
         if (clipped(o, n)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(n.r, n.c) }]);
         // a block that changes shape: its new look comes in over the old one early, so
@@ -4297,24 +4355,36 @@ function mxBegin(kind, from, opts){
       plan.grow.forEach(({ key, n, po, pn }, i) => {
         const from = map(n.r, pn.r, po.r);
         run(key, 'group', [{ ...box(from), clipPath: clip(from, po.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
-        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: 180, delay: 40 + Math.min(i, 5) * 18, easing: 'ease-out' });
+        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: 130, delay: 25 + Math.min(i, 5) * 12, easing: 'ease-out' });
       });
       for (const { key, o, po, pn } of plan.fold){
         const to = map(o.r, po.r, pn.r);
         run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, pn.c) }]);
-        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'ease-in' });
+        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 110, easing: 'ease-in' });
       }
       for (const { key, o } of plan.fade){
-        if (o.c) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
-        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 60, easing: 'linear' });
+        if (out(o)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
+        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 50, easing: 'linear' });
         if (opts.collapse && o.kind === 'item'){
           run(key, 'group', [box(o.r), box(o.r, 0)]);
-          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in' });
+          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-in' });
         }
       }
       for (const { key, n } of plan.added){
         run(key, 'group', [box(n.r, 0), box(n.r)]);
-        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 60, easing: 'ease-out' });
+        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: 150, delay: 40, easing: 'ease-out' });
+      }
+      // the session's box grows from its talks' to its own, and its picture stays put on
+      // the page as the box uncovers it (object-position makes up for the box's move);
+      // shrinking, the reverse, fading out at the end
+      const at = (r, b) => `${Math.round(r.left - b.left)}px ${Math.round(r.top - b.top)}px`;
+      for (const { key, n, from } of plan.emerge){
+        run(key, 'group', [{ ...box(from), clipPath: clip(from, n.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
+        run(key, 'new', [{ objectPosition: at(n.r, from), opacity: 0 }, { opacity: 1, offset: .35 }, { objectPosition: '0px 0px', opacity: 1 }]);
+      }
+      for (const { key, o, to } of plan.sink){
+        run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, o.c) }]);
+        run(key, 'old', [{ objectPosition: '0px 0px', opacity: 1 }, { opacity: 1, offset: .55 }, { objectPosition: at(o.r, to), opacity: 0 }]);
       }
     },
   };
@@ -4382,7 +4452,7 @@ function withTransition(kind, fn, from, opts = {}){
 // The cheap way in for a new view: a short fade of the main area (no snapshot).
 function viewEnter(){
   const main = document.getElementById('main');
-  if (main.animate) main.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+  if (main.animate) main.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 * motionK(), easing: 'ease-out' });
 }
 // A redraw over 250ms counts as slow (after two in a row, changes stop animating); a
 // quick one earns back trust. Each view's last redraw time is kept too (by txKey), so
@@ -4398,6 +4468,9 @@ function txNote(ms, to){
 function txHeavy(to){
   const v = { ...state, ...to };
   if (txCost.get(txKey(to)) > 250) return true;
+  // a view not drawn yet: guessed from this one's last redraw (on this device), about
+  // three times as long when a calendar day turns its sessions into talks
+  if (!txCost.has(txKey(to)) && txCost.has(txKey()) && txCost.get(txKey()) * (v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 3 : 1) > 250) return true;
   if (v.layout !== 'list' || v.scope === 'participants') return false;
   if (v.scope === 'agenda') return agendaSaved().filter(it => v.day === 'all' || it.di === v.day).length > 150;
   const n = programCounts();
@@ -4691,16 +4764,27 @@ function hzBounds(slots){
 // item overlaps, empty when clash warnings are hidden), hits (ids of the talks that carry
 // a search match in a saved session; the day views open the session on its talks) }.
 const dvAgenda = () => state.scope === 'agenda';
-function dayEntries(day){
+function dayEntries(day, full){
   if (!dvAgenda()) return programDaySlots(day).map(s => ({ s, t:null, start:s.start, end:s.end, title:s.title, cat:s.cat, star:state.starred.has(s.id) }));
   const di = DATA.days.indexOf(day);
-  return agendaCalendarItems().filter(it => it.di === di).map(it => ({
-    s: it.s, t: it.t, start: it.start, end: it.end, title: itemTitle(it), cat: it.s.cat, star: !it.ctx, ctx: !!it.ctx,
+  return agendaCalendarItems(false, full).filter(it => it.di === di).map(it => ({
+    s: it.s, t: it.t, start: it.start, end: it.end, as: it.as || it.start, ae: it.ae || it.end, at: it.ctx ? it.inner[0].t : undefined, title: itemTitle(it), cat: it.s.cat, star: !it.ctx, ctx: !!it.ctx,
     inner: new Set((it.inner || []).map(t => t.id)), clash: it.clashes,
     hits: new Set((it.hits || []).map(t => t.id)), // talks My agenda's search matched in a saved session
   }));
 }
 const dvTid = e => e.t ? e.t.id : '';
+// My agenda with "Show full sessions": where each of the day's items sits with the option
+// off (its lane or row there, from pack(entries) -> Map), as a function of an entry, so
+// the packers (packLanes, hzPack) keep that order and a session drawn around a saved
+// talk takes the talk's place; null when the option is off.
+function dvOffRank(day, pack){
+  if (!dvAgenda() || !document.getElementById('includeParents').checked) return null;
+  const off = dayEntries(day, false), lane = pack(off), at = new Map();
+  for (const e of off) at.set(e.t ? 't' + e.t.id : 's' + e.s.id, lane.get(e));
+  const of = k => at.has(k) ? at.get(k) : Infinity;
+  return e => e.t ? of('t' + e.t.id) : at.has('s' + e.s.id) ? at.get('s' + e.s.id) : Math.min(Infinity, ...[...e.inner].map(id => of('t' + id)));
+}
 // Entries counted as My agenda counts items (the tabs, the bar, the badge): a saved
 // session with its saved talks is one, a saved talk on its own is one, and a session
 // drawn only around saved talks (ctx) is not an item of its own: its talks are.
@@ -4772,10 +4856,11 @@ function dvClashSpans(ents){
 function dvTimeRows(ents){
   const rows = [];
   for (const e of ents){
-    const a = toMin(e.start);
-    let r = rows.find(x => x.end <= a);
+    const a = toMin(e.start), b = toMin(e.end);
+    // (free when nothing in the row overlaps, as hzPack: the items are in place order)
+    let r = rows.find(x => x.items.every(o => toMin(o.end) <= a || b <= toMin(o.start)));
     if (!r){ r = { end: 0, items: [] }; rows.push(r); }
-    r.end = Math.max(r.end, toMin(e.end)); r.items.push(e);
+    r.end = Math.max(r.end, b); r.items.push(e);
   }
   return rows.map(r => r.items);
 }
@@ -4790,16 +4875,62 @@ function hzSpan(key, trackW, d0, d1){
   if (z === undefined && state.programTalks && !key.startsWith('a:')) span = Math.min(span, trackW / (PHONE_MQ.matches ? 6 * remPx() / 15 : 5.2));
   return Math.max(20, Math.min(d1 - d0, span));
 }
-function hzPack(items, ppm){
+function hzPack(items, ppm, rank){
   const subs = [];
-  for (const it of items){
+  // (with a rank, dvOffRank: in that order, each below every row it overlaps an item in)
+  const order = rank ? items.map((it, i) => ({ it, i, r: rank(it) })).sort((p, q) => (p.r - q.r) || p.i - q.i) : items.map((it, i) => ({ it, i }));
+  for (const { it, i } of order){
     const a = it.a, b = Math.max(it.b, a + 8 / ppm);
-    let sub = subs.find(x => x.end <= a + 1e-6);
-    if (!sub){ sub = { end: 0, items: [] }; subs.push(sub); }
-    sub.end = b; sub.items.push(it);
+    const free = x => x.spans.every(([p, q]) => q <= a + 1e-6 || b <= p + 1e-6);
+    let sub = rank ? subs[subs.reduce((k, x, j) => free(x) ? k : j + 1, 0)] : subs.find(free);
+    if (!sub){ sub = { end: 0, items: [], spans: [], at: [] }; subs.push(sub); }
+    sub.end = Math.max(sub.end, b); sub.spans.push([a, b]); sub.items.push(it); sub.at.push(i);
   }
+  // each row's items in time order, as they read
+  if (rank) for (const sub of subs){ const k = sub.at.map((i, j) => [i, sub.items[j]]).sort((p, q) => p[0] - q[0]); sub.items = k.map(x => x[1]); }
   return subs;
 }
+// Lanes for items that overlap, as the calendars pack them: clusters of items running at
+// once, and in each the first lane free for the item's whole time, taking the items in
+// the order given. That is by start time, or in My agenda by place: a saved talk's
+// session drawn around it ("Show full sessions") takes the talk's place (it.as), so
+// turning the option on or off never reorders the items in a time slot.
+// Returns [{ start, end, items: [{ x, lane }], lanes }] in time order.
+function packLanes(list, a, b, rank){
+  const its = list.map((x, i) => ({ x, i, a: a(x), b: b(x), lane: 0 }));
+  const clusters = [];
+  let cl = null;
+  for (const it of [...its].sort((p, q) => p.a - q.a || p.i - q.i)){
+    if (!cl || it.a >= cl.end){ cl = { start: it.a, end: it.b, items: [], lanes: 0 }; clusters.push(cl); }
+    cl.end = Math.max(cl.end, it.b);
+    cl.items.push(it);
+  }
+  for (const c of clusters){
+    c.items.sort((p, q) => p.i - q.i);
+    if (rank){
+      // (with a rank, dvOffRank: in that order, each right of every item it overlaps; with
+      // no session drawn around a talk this is the very layout the greedy lanes give)
+      const done = [];
+      for (const it of [...c.items].sort((p, q) => (rank(p.x) - rank(q.x)) || p.i - q.i)){
+        it.lane = done.reduce((l, o) => o.a < it.b && it.a < o.b ? Math.max(l, o.lane + 1) : l, 0);
+        done.push(it);
+      }
+      c.lanes = 1 + Math.max(0, ...c.items.map(it => it.lane));
+      continue;
+    }
+    const lanes = [];
+    for (const it of c.items){
+      let l = lanes.findIndex(L => L.every(o => o.b <= it.a || it.b <= o.a));
+      if (l < 0){ l = lanes.length; lanes.push([]); }
+      lanes[l].push(it);
+      it.lane = l;
+    }
+    c.lanes = lanes.length;
+  }
+  return clusters;
+}
+// packLanes' lanes as a Map from item to lane (dvOffRank)
+const laneMap = clusters => new Map(clusters.flatMap(c => c.items.map(it => [it.x, it.lane])));
 // Scroll targets at the current zoom (start minute), or null where the day has none.
 function hzTargets(d0, d1, date){
   const n = aedtNow();
@@ -4943,8 +5074,8 @@ function hzDraw(root, left){
   };
   // One lane's bars, packed into rows where they overlap. `col` is the lane's
   // colour (program), else each bar takes its stream's.
-  const laneBars = (models, col, shownOf) => {
-    const subs = hzPack(models.map(m => ({ m, a: m.a, b: m.b })), ppm);
+  const laneBars = (models, col, shownOf, rank) => {
+    const subs = hzPack(models.map(m => ({ m, a: m.a, b: m.b })), ppm, rank && (x => rank(x.m.e)));
     let yy = 5, bars = '';
     for (const sub of subs){
       const hh = Math.max(...sub.items.map(x => x.m.h));
@@ -5005,7 +5136,13 @@ function hzDraw(root, left){
   let rows = '';
   if (agenda){
     // My agenda: one lane in time order; items that overlap take rows of their own
-    const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null);
+    // (rows kept in their order with "Show full sessions" off, dvOffRank)
+    const rank = dvOffRank(day, off => {
+      const m = new Map();
+      hzPack(off.map(e => ({ e, a: toMin(e.start), b: toMin(e.end) })), ppm).forEach((sub, i) => sub.items.forEach(x => m.set(x.e, i)));
+      return m;
+    });
+    const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null, rank);
     const nClash = ents.filter(e => e.clash.length).length;
     rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">&#9888; ${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
   }
@@ -5590,15 +5727,12 @@ function vtDayView(day){
 
   // Clusters of overlapping sessions per column, with greedy lanes.
   const cells = [];
+  const at = s => toMin(s.start), to = s => toMin(s.end);
+  // (My agenda: lanes kept in their order with "Show full sessions" off, dvOffRank)
+  const rank = agenda ? dvOffRank(day, off => laneMap(packLanes(off, at, to))) : null;
   for (const c of cols){
-    let cur = null;
-    for (const s of colSlots[c.key]){
-      if (!cur || toMin(s.start) >= cur.end){ cur = { col:c, slots:[], start:toMin(s.start), end:toMin(s.end), lanes:[], lane:new Map() }; cells.push(cur); }
-      let lane = cur.lanes.findIndex(e => e <= toMin(s.start));
-      if (lane < 0){ lane = cur.lanes.length; cur.lanes.push(0); }
-      cur.lanes[lane] = toMin(s.end); cur.lane.set(s, lane);
-      cur.slots.push(s); cur.end = Math.max(cur.end, toMin(s.end));
-    }
+    for (const cl of packLanes(colSlots[c.key], at, to, rank))
+      cells.push({ col:c, slots: cl.items.map(it => it.x), start: cl.start, end: cl.end, lanes: { length: cl.lanes }, lane: new Map(cl.items.map(it => [it.x, it.lane])) });
     c.demand = Math.max(1, ...cells.filter(x => x.col === c).map(x => x.lanes.length));
   }
   // Share the width: each stream gets one sub-column per session running side
@@ -5833,9 +5967,9 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   const gw = ghost.querySelector('.vt-wrap.scroll');
   if (gw) gw.scrollLeft = oldLeft;
   const out = ghost.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 28}%)`, opacity: 0 }],
-    { duration: 220, easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' });
+    { duration: 180 * motionK(), easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' });
   const into = view.animate([{ transform: `translateX(${dir * 28}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }],
-    { duration: 220, easing: 'cubic-bezier(.2,.6,.3,1)' });
+    { duration: 180 * motionK(), easing: 'cubic-bezier(.2,.6,.3,1)' });
   const end = () => { if (vtSlideEnd !== end) return; vtSlideEnd = null; out.cancel(); into.cancel(); ghost.remove(); main.classList.remove('vt-sliding'); };
   vtSlideEnd = end;
   into.onfinish = end;
@@ -6100,7 +6234,8 @@ function savedFull(){
 document.getElementById('includeParents').checked = savedFull();
 document.getElementById('includeParents').addEventListener('change', e => {
   try { localStorage.setItem('aip2026-full-sessions', e.target.checked ? '1' : '0'); } catch (err) {}
-  renderCalendar();
+  // each saved talk's session grows out of it (or shrinks back into it); the rest move
+  withTransition('mx', () => renderCalendar(), null, { to: {}, reshape: true });
 });
 
 const eventDialog = document.getElementById('eventDialog');
@@ -6968,7 +7103,7 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
       target.focus({ preventScroll: true });
       revealInCard(card, talk && talk.querySelector('summary'));
       card.classList.add('flash');
-      setTimeout(() => card.classList.remove('flash'), 1500);
+      setTimeout(() => card.classList.remove('flash'), 1400 * motionK() + 100);
       return;
     }
   }
@@ -6996,7 +7131,7 @@ function calendarJump(s, tid){
   if (top < 0) window.scrollBy({ top, behavior:'instant' });
   t.button.focus({ preventScroll:true });
   t.box.classList.add('week-hit');
-  setTimeout(() => t.box.classList.remove('week-hit'), 1600);
+  setTimeout(() => t.box.classList.remove('week-hit'), 1400 * motionK() + 200);
   return true;
 }
 
@@ -8077,7 +8212,7 @@ const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], theme:['light','dark'], contrast:['high'], motion:['reduce','full'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], theme:['light','dark'], contrast:['high'], motion:['reduce','full'], speed:['slow','xslow'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
@@ -8096,6 +8231,10 @@ function motionReduced(){ return display.motion ? display.motion === 'reduce' : 
 function syncDisplayForm(){
   displayDialog.querySelectorAll('input[name="dsText"]').forEach(r => r.checked = r.value === (display.text || ''));
   displayDialog.querySelectorAll('input[name="dsTheme"]').forEach(r => r.checked = r.value === (display.theme || ''));
+  displayDialog.querySelectorAll('input[name="dsSpeed"]').forEach(r => r.checked = r.value === (display.speed || ''));
+  // (no speed to choose while nothing moves)
+  document.getElementById('dsSpeedGroup').disabled = motionReduced();
+  document.getElementById('dsSpeedNote').hidden = !motionReduced();
   document.getElementById('dsSystemNote').textContent = 'Now ' + (darkQuery.matches ? 'dark' : 'light');
   document.getElementById('dsContrast').setAttribute('aria-pressed', display.contrast === 'high');
   document.getElementById('dsMotion').setAttribute('aria-pressed', motionReduced());
@@ -8105,10 +8244,41 @@ function syncDisplayForm(){
 }
 function setDisplay(key, value){
   if (value) display[key] = value; else delete display[key];
-  window.applyDisplay(display);
-  saveDisplay();
-  syncDisplayForm();
-  fitPlaceholder();
+  const go = () => {
+    window.applyDisplay(display);
+    saveDisplay();
+    syncDisplayForm();
+    fitPlaceholder();
+  };
+  // a new look fades in; the motion settings themselves apply at once
+  if (key === 'motion' || key === 'speed') go(); else displayFade(go);
+}
+// A new theme, contrast or text size cross-fades the whole page (this dialog too) from
+// the old look to the new one, so nothing flashes and a new text size never jumps. Not
+// while motion is reduced, and never on load (the inline script in <head> applies the
+// stored settings before the first paint).
+function displayFade(fn){
+  settleTransition();
+  const root = document.documentElement;
+  if (motionReduced() || !document.startViewTransition){ fn(); return; }
+  let ran = false;
+  const run = () => { if (!ran){ ran = true; fn(); } };
+  root.dataset.viewTx = 'disp';
+  let vt;
+  try { vt = document.startViewTransition(run); }
+  catch (e){ delete root.dataset.viewTx; run(); return; }
+  const tx = viewTx = { vt, run };
+  vt.updateCallbackDone.catch(e => console.error(e));
+  vt.finished.catch(() => {}).then(() => {
+    if (viewTx === tx) viewTx = null;
+    if (!viewTx) delete root.dataset.viewTx;
+  });
+}
+// A new speed: the preview card slides in at it, to show how it feels.
+function speedDemo(){
+  const pv = displayDialog.querySelector('.dd-preview');
+  if (motionReduced() || !pv.animate) return;
+  pv.animate([{ opacity: 0, transform: 'translateX(-16px)' }, { opacity: 1, transform: 'none' }], { duration: MX_MS * motionK(), easing: MX_EASE });
 }
 function openDisplay(fromHistory){
   syncDisplayForm();
@@ -8120,6 +8290,7 @@ displayBtn.addEventListener('click', () => openDisplay());
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
   else if (e.target.name === 'dsTheme') setDisplay('theme', e.target.value);
+  else if (e.target.name === 'dsSpeed'){ setDisplay('speed', e.target.value); speedDemo(); }
 });
 lightDismiss(displayDialog, () => displayDialog.close());
 displayDialog.addEventListener('click', e => {
@@ -8130,10 +8301,14 @@ displayDialog.addEventListener('click', e => {
     const want = !motionReduced();
     setDisplay('motion', want === motionQuery.matches ? '' : (want ? 'reduce' : 'full'));
   } else if (e.target.closest('#dsReset')){
-    display = {};
-    window.applyDisplay(display);
-    saveDisplay();
-    syncDisplayForm();
+    // (motion and speed go back too, so the fade is decided by the settings being left)
+    displayFade(() => {
+      display = {};
+      window.applyDisplay(display);
+      saveDisplay();
+      syncDisplayForm();
+      fitPlaceholder();
+    });
     toast('Display settings reset');
   }
 });
@@ -8417,7 +8592,7 @@ function tbCompact(on){
     stickyWrap.classList.add('tb-anim');
     stickyWrap.style.height = h1 + 'px';
     stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
-    TB.timer = setTimeout(done, 230);
+    TB.timer = setTimeout(done, 160 * motionK() + 50);
   } else {
     stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
     done();
@@ -8508,7 +8683,9 @@ function start(){
   hashReady = true;
   // the app puts the scroll back itself, after drawing the view
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  const t0 = performance.now();
   showView(state.layout, state.scope);
+  txCost.set(txKey(), performance.now() - t0);   // (a first guess at this view's cost: txHeavy)
   followHashTargets(r);
   if (st && typeof st.y === 'number' && !r.session && !r.talk){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
   // reloaded with a panel or the details open: open them again
