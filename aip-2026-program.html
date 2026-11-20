@@ -2739,6 +2739,18 @@ function listFill(sid){
   }
   if (!sid) listLazyDone(L);
 }
+// Fills the blocks showing on the screen (and a screen's height either side) now: the
+// page was just scrolled somewhere the list's first fill did not look at (Back).
+function listFillView(){
+  const L = document.getElementById('agenda')._list;
+  if (!L || !L.phs || !L.phs.size) return;
+  const vh = innerHeight;
+  for (const p of [...L.phs]){
+    if (p.classList.contains('hidden')) continue;
+    const r = p.getBoundingClientRect();
+    if (r.bottom > -vh && r.top < vh * 2) fillPh(p, L);
+  }
+}
 // The blocks nearest the screen now, then the rest in short turns (a turn of about 12 ms,
 // waiting while a view change animates, up to 700 ms).
 function listLazyRun(L, sync){
@@ -6950,7 +6962,7 @@ eventDialog.addEventListener('click', e => {
     delete eventDialog.dataset.changed;
     dlgNow(eventDialog);
     dlgHistoryClose();
-    if (buildDialog.open){ bd.nav = true; buildDialog.close(); pnlHistoryClose(); }
+    if (buildDialog.open){ bd.nav = true; dlgNow(buildDialog); pnlHistoryClose(); }
     openInProgram(jump);
     return;
   }
@@ -7144,7 +7156,8 @@ function agKeepStill(find, top){
     return false;
   };
   fix();
-  const again = () => { if (++n < 12 && !fix() && calm < 2) requestAnimationFrame(again); };
+  // (the neighbours' own heights settle a moment after the redraw: keep watching a while)
+  const again = () => { if (++n < 40 && !fix() && calm < 20) requestAnimationFrame(again); };
   const vt = viewTx && viewTx.vt;
   if (vt) vt.finished.then(() => requestAnimationFrame(again), () => requestAnimationFrame(again));
   else requestAnimationFrame(again);
@@ -7784,7 +7797,7 @@ bdEl('bdBody').addEventListener('click', e => {
   if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
   if (!e.target.closest('[data-bd-view]')) return;
   bd.nav = true;
-  buildDialog.close();
+  dlgNow(buildDialog);
   pnlHistoryClose();
   showView('list', 'agenda');
   scrollToProgramTop();
@@ -8559,12 +8572,28 @@ function scrollSettle(el, o, y0, redo){
   let t = 0, armed = true;
   const ins = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
   const drop = () => { armed = false; clearTimeout(t); window.removeEventListener('scrollend', fix); for (const k of ins) window.removeEventListener(k, drop, true); };
-  const fix = () => { const go = armed; drop(); if (go && el.isConnected){ if (redo) redo(); else el.scrollIntoView({ ...o, behavior: 'instant' }); } };
+  const fix = () => { const go = armed; drop(); if (go && el.isConnected){ if (redo) redo(); else { el.scrollIntoView({ ...o, behavior: 'instant' }); recheck(); } } };
+  // (heights are still being learned as blocks are drawn: look again a few times, until
+  // the target stays put, and drop out when the reader takes over)
+  const recheck = () => {
+    let n = 0, calm = 0, live = true;
+    const stop = () => { live = false; for (const k of ins) window.removeEventListener(k, stop, true); };
+    for (const k of ins) window.addEventListener(k, stop, { capture: true, passive: true });
+    const look = () => {
+      if (!live || !el.isConnected){ stop(); return; }
+      const y = window.scrollY;
+      el.scrollIntoView({ ...o, behavior: 'instant' });
+      if (Math.abs(window.scrollY - y) > 2) calm = 0; else calm++;
+      if (++n < 30 && calm < 4) setTimeout(look, 150); else stop();
+    };
+    setTimeout(look, 150);
+  };
   window.addEventListener('scrollend', fix);
   for (const k of ins) window.addEventListener(k, drop, { capture: true, passive: true });
   t = setTimeout(fix, 1500);
-  // (already in place: no scroll, so no scrollend either)
-  requestAnimationFrame(() => requestAnimationFrame(() => { if (armed && Math.abs(window.scrollY - y0) < 1) drop(); }));
+  // (already in place: no scroll, so no scrollend either; a far target whose scroll has
+  // not started yet, on a slow device, still counts)
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (armed && Math.abs(window.scrollY - y0) < 1 && Math.abs(el.getBoundingClientRect().top) < innerHeight) drop(); }));
 }
 
 // ---------- links: the address keeps the view, and items can be shared ----------
@@ -8661,7 +8690,7 @@ function dlgHistoryClose(){
 }
 // The panels: their open/close functions and the close events call these.
 const PANELS = { display: () => displayDialog, move: () => moveDialog, build: () => buildDialog };
-function openPanelName(){ return Object.keys(PANELS).find(k => PANELS[k]().open) || ''; }
+function openPanelName(){ return Object.keys(PANELS).find(k => PANELS[k]().open && !PANELS[k]().__closing) || ''; }
 function pnlHistoryOpen(name){
   if (!hashReady || pnlEntry || dlgEntry || dlgPopping || !history.state || history.state.nav === undefined) return;
   try {
@@ -8801,7 +8830,7 @@ window.addEventListener('popstate', e => {
     // (the focused item was redrawn: focus goes to the pressed day, not the top of the page)
     const fa = document.activeElement;
     if (!fa || fa === document.body || !fa.isConnected) document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll: true });
-    if (typeof st.y === 'number'){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
+    if (typeof st.y === 'number'){ window.scrollTo({ top: st.y, behavior: 'instant' }); listFillView(); anchorBack(st.ya, st.y); }
     else if (window.scrollY > programTop()) scrollToProgramTop();
     if (reopenPnl) openPanel(reopenPnl);
     if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
@@ -9093,6 +9122,16 @@ function syncDisplayForm(){
     ? 'Set here (your device setting is ' + (motionQuery.matches ? 'on' : 'off') + ')'
     : 'Follows your device setting (' + (motionQuery.matches ? 'on' : 'off') + ')';
 }
+// (a new rem: the calendars fit again at once, as a reload would)
+function refitCalendars(){
+  const main = document.getElementById('agenda');
+  if (main.querySelector('.hz-day')) hzDraw(main);
+  weekFit();
+  // (the list's blocks and rows remember their heights at the old size: forget them,
+  // so the page is as tall as a reload would make it)
+  document.querySelectorAll('#agenda .block, #builderList .ag-row').forEach(b => { b._drawn = false; b.style.removeProperty('--cih'); });
+  blockHeightsSoon();
+}
 function setDisplay(key, value){
   if (value) display[key] = value; else delete display[key];
   const go = () => {
@@ -9100,11 +9139,7 @@ function setDisplay(key, value){
     saveDisplay();
     syncDisplayForm();
     fitPlaceholder();
-    if (key === 'text'){   // (a new rem: the calendars fit again at once, as a reload would)
-      const main = document.getElementById('agenda');
-      if (main.querySelector('.hz-day')) hzDraw(main);
-      weekFit();
-    }
+    if (key === 'text') refitCalendars();
   };
   // a new look fades in; the motion settings themselves apply at once
   if (key === 'motion' || key === 'speed') go(); else displayFade(go, key === 'text');
@@ -9161,13 +9196,15 @@ displayDialog.addEventListener('click', e => {
     setDisplay('motion', want === motionQuery.matches ? '' : (want ? 'reduce' : 'full'));
   } else if (e.target.closest('#dsReset')){
     // (motion and speed go back too, so the fade is decided by the settings being left)
+    const hadText = !!display.text;
     displayFade(() => {
       display = {};
       window.applyDisplay(display);
       saveDisplay();
       syncDisplayForm();
       fitPlaceholder();
-    }, !!display.text);
+      if (hadText) refitCalendars();
+    }, hadText);
     toast('Display settings reset');
   }
 });
