@@ -3047,16 +3047,19 @@ function dayScroll(){
 // ---------- events ----------
 document.getElementById('daytabs').addEventListener('keydown', e => {
   const tabs = [...e.currentTarget.querySelectorAll('.daytab')];
-  const index = tabs.indexOf(e.target);
+  const index = tabs.findIndex(t => t === e.target || (e.target.dataset && t.dataset.day === e.target.dataset.day));   // (the tab may have been redrawn)
   const destination = {ArrowRight:(index+1)%tabs.length, ArrowLeft:(index+tabs.length-1)%tabs.length,
                        Home:0, End:tabs.length-1}[e.key];
   if (destination === undefined || index < 0) return;
   e.preventDefault();
+  tabs[destination].focus({ preventScroll: true });   // (a held key: the next press starts from this tab)
   tabs[destination].click();
 });
+let tabIntent = '';
 document.getElementById('daytabs').addEventListener('click', e => {
   const b = e.target.closest('.daytab'); if (!b) return;
   const day = b.dataset.day === 'all' ? 'all' : +b.dataset.day;
+  tabIntent = b.dataset.day;
   // The Vertical day view slides between days itself (the tab shows pressed first).
   if (day !== 'all' && day !== state.day && vtShown()){
     const slide = () => vtSlideTo(day, { focus: 'tab', toTop: true });
@@ -3066,7 +3069,8 @@ document.getElementById('daytabs').addEventListener('click', e => {
   const go = () => {
     state.day = day;
     rerender();
-    document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
+    // (focus follows the latest tab pressed: a held arrow key's earlier days land after it)
+    (document.querySelector(`#daytabs [data-day="${tabIntent}"]`) || document.querySelector('#daytabs [aria-pressed="true"]')).focus({preventScroll:true});
     dayScroll();
   };
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
@@ -4475,7 +4479,7 @@ function mxBegin(kind, from, opts){
       // (opts.reshape: the change is meant to reshape items, as "Show full sessions" does)
       const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
       for (const x of cand){
-        if (wild && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
+        if (wild && x.o.kind === 'item' && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
         mxName(x.n.el, x.key, x.o.kind === 'cover' ? 'mx-cover' : 'mx');
         plan.pairs.push(x);
       }
@@ -4615,13 +4619,14 @@ function txStart(kind, fn, from, opts){
   // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
   // only the short fade.
   const heavy = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
+  const noTx = () => { if (!viewTx?.vt){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; } };
   if (motionReduced()){ txTimed(fn, opts)(); return; }
   // quick succession (another change under 450ms ago) or slow redraws: no morph; and
   // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
   const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
   txLast = t;
   if (heavy || busy){
-    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){ txTimed(fn, opts, heavy && kind !== 'mx' ? viewEnter : null)(); return; }
+    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){ noTx(); txTimed(fn, opts, heavy && kind !== 'mx' ? viewEnter : null)(); return; }
     opts = { ...opts, plain: true };
   }
   // Recent changes slow to show their first frame, or janky while they moved: no morph
@@ -4666,7 +4671,7 @@ function txStart(kind, fn, from, opts){
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
-    if (!viewTx) clear();
+    if (!viewTx || !viewTx.vt) clear();
   });
 }
 // Each transition's wait for its first moving frame (txFreeze) and its slowest frame
@@ -8423,6 +8428,12 @@ window.addEventListener('click', () => { if (hashReady) pageA = pageAnchor(); },
 function pageAnchor(){
   const top = stickyWrap.getBoundingClientRect().bottom + 24;
   if (top >= innerHeight) return null;
+  if (state.scope === 'participants'){   // the people: the section heading in view (or the last one above)
+    const hs = [...document.querySelectorAll('#peopleList .pp-aff[id]')];
+    let h = null;
+    for (const e of hs){ if (e.getBoundingClientRect().top > top) break; h = e; }
+    return h ? { sel: '#' + h.id, d: Math.round(h.getBoundingClientRect().top), y: pageY } : null;
+  }
   for (const x of [.5, .25, .75]){
     const it = document.elementFromPoint(innerWidth * x, top)?.closest('#agenda .card[data-sid], #builderList .ag-row');
     if (it) return { sel: it.matches('.card') ? `#agenda .card[data-sid="${it.dataset.sid}"]` : `#builderList .ag-row[data-${it.dataset.tid ? 'tid' : 'sid'}="${it.dataset.tid || it.dataset.sid}"]`,
@@ -8436,6 +8447,7 @@ function pageAnchor(){
 function anchorBack(a, y){
   if (!a || a.y !== y) return;
   const go = () => {
+    if (a.sel[0] === '#' && PP.rest.length && !document.querySelector(a.sel)) ppMore(Infinity);   // (a heading not drawn yet)
     const el = document.querySelector(a.sel);
     if (!el || !el.getClientRects().length) return;
     const d = el.getBoundingClientRect().top - a.d;
@@ -8444,8 +8456,10 @@ function anchorBack(a, y){
   go();
   requestAnimationFrame(() => requestAnimationFrame(go));
 }
+let ownPop = false;
 window.addEventListener('popstate', e => {
-  viewTx?.drop?.();
+  ownPop = dlgPopping;   // (a step the app itself left: a press made meanwhile stays)
+  if (!ownPop) viewTx?.drop?.();
   const st = e.state;
   lastPushAt = -1e9;
   if (!st || st.nav === undefined){ if (dlgPopping) dlgPopped(); return; }   // an address typed or followed: hashchange takes it
@@ -8487,6 +8501,9 @@ window.addEventListener('popstate', e => {
   const apply = () => {
     showView(state.layout, state.scope);
     if (r.session || r.talk || r.agenda) followHashTargets(r);
+    // (the focused item was redrawn: focus goes to the pressed day, not the top of the page)
+    const fa = document.activeElement;
+    if (!fa || fa === document.body || !fa.isConnected) document.querySelector('#daytabs [aria-pressed="true"]')?.focus({ preventScroll: true });
     if (typeof st.y === 'number'){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
     else if (window.scrollY > programTop()) scrollToProgramTop();
     if (reopenPnl) openPanel(reopenPnl);
@@ -8529,6 +8546,8 @@ function readHash(){
   state.pq = (p.get('pq') || '').trim().slice(0, 200);
   state.psort = ['first', 'last'].includes(p.get('psort')) ? p.get('psort') : 'aff';
   state.pcat = Object.hasOwn(DATA.cats, p.get('pcat') || '') ? p.get('pcat') : '';
+  // the people's address carries no layout or day: the program keeps its own for the way back
+  if (state.scope === 'participants') return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: false };
   // Horizontal | Vertical only applies to the calendar, so orient=v alone asks for it
   state.layout = p.get('layout') === 'calendar' || (!p.get('layout') && p.get('orient') === 'v') ? 'calendar' : 'list';
   const di = DATA.days.findIndex(d => d.date === p.get('day'));
@@ -8784,6 +8803,11 @@ function setDisplay(key, value){
     saveDisplay();
     syncDisplayForm();
     fitPlaceholder();
+    if (key === 'text'){   // (a new rem: the calendars fit again at once, as a reload would)
+      const main = document.getElementById('agenda');
+      if (main.querySelector('.hz-day')) hzDraw(main);
+      weekFit();
+    }
   };
   // a new look fades in; the motion settings themselves apply at once
   if (key === 'motion' || key === 'speed') go(); else displayFade(go, key === 'text');
@@ -9248,7 +9272,8 @@ function start(){
   if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true, true);
 }
 window.addEventListener('hashchange', e => {
-  viewTx?.drop?.();
+  if (!ownPop) viewTx?.drop?.();
+  ownPop = false;
   // Back or Forward did it (the step may have been rewritten since)
   if (popHash !== null && new URL(e.newURL).hash === popHash){ popHash = null; return; }
   if (!history.state) histIdx++;   // a new step
