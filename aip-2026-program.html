@@ -622,6 +622,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
 .block{display:grid;grid-template-columns:86px 1fr;gap:14px;margin:0 0 22px}
 .block.hidden{display:none}
+.blk-ph{margin:0 0 22px}
+.blk-ph.hidden{display:none}
 /* The browser lays out and paints only the time blocks near the screen (All week is
    thousands of elements): a block away from it keeps the height it last had, or one
    estimated from its cards (--cih, set by blocksHtml), and its cards' shadows are not cut. */
@@ -2658,6 +2660,91 @@ function blocksHtml(slots, date){
   return inner;
 }
 
+// All week is drawn lazily: each time block is first an empty placeholder of its estimated
+// height (the scrollbar and the scroll position are as for the finished page), and the
+// blocks near the screen are filled at once, the rest a few at a time in the moments after,
+// nearest first. What needs the whole page (a link to a session, Now, printing) fills what
+// it needs first (listFill).
+function blockPhHtml(slots, date, groups){
+  const blocks = {};
+  slots.forEach(s => { (blocks[s.start] = blocks[s.start] || []).push(s); });
+  return Object.keys(blocks).sort().map(st => {
+    groups.push(blocks[st]);
+    return `<div class="blk-ph" data-date="${date}" style="height:${blockEst(blocks[st])}px" aria-hidden="true"></div>`;
+  }).join('');
+}
+// the placeholders to fill: those showing, the nearest to the screen first
+function listPending(L){
+  const vh = innerHeight, out = [];
+  for (const p of L.phs){
+    if (p.classList.contains('hidden')) continue;
+    let d = 1e9;
+    if (p.isConnected){ const r = p.getBoundingClientRect(); d = Math.max(0, -r.bottom, r.top - vh); }
+    out.push([d, p]);
+  }
+  return out.sort((a, b) => a[0] - b[0]);
+}
+function fillPh(p, L){
+  if (!L.phs.delete(p)) return;
+  const g = p._g, tpl = document.createElement('template');
+  tpl.innerHTML = blocksHtml(g, p.dataset.date);
+  const b = tpl.content.firstElementChild, q = viewQ();
+  let any = false;
+  for (const card of b.querySelectorAll('.card[data-sid]')){
+    const s = slotById(card.dataset.sid), ok = slotMatches(s);
+    card._q = q;
+    card.classList.toggle('hidden', !ok);
+    if (ok){ any = true; filterCard(card, s, filterAuto); }
+  }
+  b.classList.toggle('hidden', !any);
+  if (L.expanded) b.querySelectorAll('details').forEach(d => { d.open = true; });
+  p.replaceWith(b);
+}
+function listLazyDone(L){
+  paintNow();
+  blockHeightsSoon();
+}
+// Fills the block of one session, or (no id) every block showing, now.
+function listFill(sid){
+  const L = document.getElementById('agenda')._list;
+  if (!L || !L.phs || !L.phs.size) return;
+  for (const p of [...L.phs]){
+    if (sid ? p._g.some(s => s.id === sid) : !p.classList.contains('hidden')) fillPh(p, L);
+  }
+  if (!sid) listLazyDone(L);
+}
+// The blocks nearest the screen now, then the rest in short turns (a turn of about 12 ms,
+// waiting while a view change animates, up to 700 ms).
+function listLazyRun(L, sync){
+  const main = document.getElementById('agenda');
+  if (main._list !== L || L.job || !L.phs.size || main._stash) return;
+  const vh = innerHeight;
+  if (sync){
+    // (the top of the list counts too: a day tab takes the page to the program's top)
+    const top = main.getBoundingClientRect().top;
+    for (const [d, p] of listPending(L)){
+      if (p.getBoundingClientRect().top - top > vh * .8 && d > vh * .3) continue;
+      fillPh(p, L);
+    }
+    paintNow();
+  }
+  L.t0 = performance.now();
+  const step = () => {
+    L.job = 0;
+    if (main._list !== L || main._stash) return;
+    if (viewTx && performance.now() - L.t0 < 700){ L.job = setTimeout(step, 40); return; }
+    const t0 = performance.now(), todo = listPending(L);
+    let n = 0;
+    for (const [, p] of todo){
+      fillPh(p, L);
+      n++;
+      if (performance.now() - t0 > 12) break;
+    }
+    if (n < todo.length) L.job = setTimeout(step, 0); else listLazyDone(L);
+  };
+  if (listPending(L).length) L.job = setTimeout(step, 0); else listLazyDone(L);
+}
+
 function renderAgenda(){
   if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
@@ -2679,19 +2766,24 @@ function renderAgenda(){
   const searching = curTerms().length > 0;
   // every view has an h2 above the session cards (h3): a day heading, hidden on a single day
   let html = all ? '' : `<h2 class="visually-hidden">${esc(DATA.days[state.day].label)} 2026</h2>`;
+  const groups = [];
   for (const [d,i] of days){
-    let inner = blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
+    let inner = all ? blockPhHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date, groups)
+      : blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
     if (all){
       inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day &#8594;</button></div>` + inner;
       html += `<div class="day-section" data-dayi="${i}">${inner}</div>`;
     } else html += inner;
   }
   main.innerHTML = html;
+  if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
   main.classList.remove('wide');
-  main._list = { day: state.day, first: main.firstElementChild };
+  const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0 };
+  if (all) main.querySelectorAll('.blk-ph').forEach((p, i) => { p._g = groups[i]; L.phs.add(p); });
   remarkStop();
   document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
   applyFilters();
+  if (L.phs.size) listLazyRun(L, true);
 }
 
 // In idle time after a list is drawn (or its cards change), each time block (My
@@ -2701,6 +2793,7 @@ function renderAgenda(){
 // as the blocks on the way are drawn. (A block once drawn keeps its height by itself.)
 // One block at a time while the browser is idle, and none while the page scrolls.
 let heightsJob = 0, heightsGen = 0, lastScrollAt = -1e9;
+let xaJob = null;   // Expand all / Collapse all still being applied (see its button)
 window.addEventListener('scroll', () => { lastScrollAt = performance.now(); }, { passive: true });
 document.addEventListener('contentvisibilityautostatechange', e => { if (!e.skipped) e.target._drawn = true; }, true);
 function blockHeightsSoon(){
@@ -2712,6 +2805,7 @@ function blockHeightsSoon(){
     if (gen !== heightsGen) return;
     // (never while the page scrolls or a view change animates)
     if (performance.now() - lastScrollAt < 500 || viewTx){ heightsJob = setTimeout(() => idle(step), 500); return; }
+    const t0 = performance.now();
     do {
       const b = blocks[i++];
       if (!b || b._drawn || !b.isConnected || !b.getClientRects().length) continue;
@@ -2719,7 +2813,7 @@ function blockHeightsSoon(){
       const h = b.offsetHeight;
       b.style.contentVisibility = '';
       if (h) b.style.setProperty('--cih', h + 'px');
-    } while (i < blocks.length && dl.timeRemaining() > 6);
+    } while (i < blocks.length && dl.timeRemaining() > 6 && performance.now() - t0 < 12);
     if (i < blocks.length) idle(step);
   };
   heightsJob = setTimeout(() => idle(step), 1000);
@@ -2903,9 +2997,9 @@ function applyFilters(){
     const any = [...b.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
     b.classList.toggle('hidden', !any);
   });
+  for (const p of document.querySelectorAll('#agenda .blk-ph')) p.classList.toggle('hidden', !p._g.some(slotMatches));
   document.querySelectorAll('#agenda > .day-section').forEach(sec => {
-    const cards = [...sec.querySelectorAll('.card')];
-    const vis = cards.filter(c => !c.classList.contains('hidden')).length;
+    const vis = DATA.days[+sec.dataset.dayi].slots.filter(slotMatches).length;
     sec.classList.toggle('hidden', vis === 0);
     const sub = sec.querySelector('.dh-sub');
     if (sub && sec.dataset.dayi !== undefined){
@@ -2954,6 +3048,8 @@ function applyFilters(){
   paintStarCount();
   if (state.scope === 'program') renderTabs(programCounts());
   blockHeightsSoon();
+  const L = main._list;
+  if (L && L.phs && L.phs.size && !L.job && L.t0 !== undefined) listLazyRun(L);
 }
 
 // A shown card's talks: those the search finds, opened when few are found.
@@ -7553,6 +7649,7 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
   showView(layout, 'program');
   if (s && layout === 'calendar' && calendarJump(s, jumpTalk)) return;
   if (jump){
+    listFill(jump);
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
       const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
@@ -7624,9 +7721,32 @@ document.getElementById('agenda').addEventListener('click', e => {
   a.onfinish = () => { if (d.dataset.folding === undefined) return; delete d.dataset.folding; d.open = false; a.cancel(); };
 });
 document.getElementById('expandAll').addEventListener('click', e => {
-  const ds = document.querySelectorAll('.card:not(.hidden) details');
-  const anyClosed = [...ds].some(d => !d.open);
-  ds.forEach(d => d.open = anyClosed);
+  const ds = [...document.querySelectorAll('.card:not(.hidden) details')];
+  // (blocks of All week not drawn yet follow the choice as they are drawn)
+  const L = document.getElementById('agenda')._list, later = L && L.phs && [...L.phs].some(p => !p.classList.contains('hidden'));
+  // (while a choice is still being applied, a press reverses it)
+  const anyClosed = xaJob ? !xaJob.open : ds.some(d => !d.open) || (later && !L.expanded);
+  if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
+  if (later) L.expanded = anyClosed;
+  // a long list: the abstracts near the screen at once, the rest in short turns
+  let far = [];
+  if (ds.length > 120){
+    const vh = innerHeight, at = new Map();
+    for (const d of ds){
+      if (d.open === anyClosed) continue;
+      const b = d.closest('.block');
+      if (!at.has(b)){ const r = b.getBoundingClientRect(); at.set(b, r.bottom > 0 && r.top < vh); }
+      if (at.get(b)) d.open = anyClosed; else far.push(d);
+    }
+  } else ds.forEach(d => d.open = anyClosed);
+  if (far.length){
+    const job = xaJob = { open: anyClosed, t: 0 }, step = () => {
+      const t0 = performance.now();
+      while (far.length && performance.now() - t0 < 10){ const d = far.shift(); if (d.isConnected) d.open = anyClosed; }
+      if (far.length) job.t = setTimeout(step, 0); else { xaJob = null; blockHeightsSoon(); }
+    };
+    job.t = setTimeout(step, 0);
+  }
   e.currentTarget.innerHTML = (anyClosed ? 'Collapse all' : 'Expand all') + '<span class="xa-word"> abstracts</span>';
   blockHeightsSoon();
 });
@@ -7640,6 +7760,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.activeElement === qEl){ e.preventDefault(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
+  if (state.layout === 'list' && state.scope === 'program') listFill();
   if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
 });
 
@@ -8235,6 +8356,7 @@ document.getElementById('nowBtn').addEventListener('click', () => {
   if (ti < 0) return;
   if (vtSlideEnd) vtSlideEnd();
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
+  if (state.layout === 'list' && state.scope === 'program') listFill();
   paintNow();
   // The timeline scrolls its canvas to now; then go to the topmost item on now (or next).
   const hzOn = state.layout === 'calendar' && document.querySelector('#agenda .hz-day');
@@ -8436,7 +8558,8 @@ function pageAnchor(){
 function anchorBack(a, y){
   if (!a || a.y !== y) return;
   const go = () => {
-    const el = document.querySelector(a.sel);
+    let el = document.querySelector(a.sel);
+    if (!el){ const m = /data-sid="([^"]+)"/.exec(a.sel); if (m){ listFill(m[1]); el = document.querySelector(a.sel); } }
     if (!el || !el.getClientRects().length) return;
     const d = el.getBoundingClientRect().top - a.d;
     if (Math.abs(d) > 1) window.scrollBy({ top: d, behavior: 'instant' });
