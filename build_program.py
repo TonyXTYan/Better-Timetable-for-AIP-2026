@@ -276,6 +276,7 @@ DARK_TOKENS = """\
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
   --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
   --tk-mix:13%;
+  --press:brightness(1.22);
 """
 DARK_HC_TOKENS = """\
   --ink:#ffffff; --muted:#cbd2dd; --line:#5b6578; --hover-line:#8a93a3; --ink-2:#e2e8f0; --ink-3:#f1f5f9; --faint:#b4bccb; --caret:#8a93a3;"""
@@ -344,6 +345,8 @@ window.applyDisplay = function(d){
   --bar-ink:#1e2433; --bar-meta:#4b5563; --sx-shade:rgba(16,24,40,.2); --past-ink:#374151;
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
+  /* a pressed control's tint (lighter in the dark theme) */
+  --press:brightness(.92);
   /* solid fills for selected chips: white text on these in both modes */
   --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#047857; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#906100; --poster-fill:#5b21b6; --events-fill:#b5179e; --special-fill:#5b7500; --business-fill:#475569; --social-fill:#57534e;
 }
@@ -1835,6 +1838,44 @@ button.bd-cxkey:hover{border-color:var(--clash-row-line)}
 html{--mo:1}
 html[data-speed="slow"]{--mo:2}
 html[data-speed="xslow"]{--mo:4}
+/* Dialogs (Display settings, Build my agenda, Move to another device, and the details
+   when they do not grow out of their block) fade in rising 8px and fade out sinking, their
+   backdrops fading too; a closing one lets clicks through at once. The details' own grow
+   and shrink (a view transition, data-view-tx="dlg") replaces this. */
+dialog{--dlg-t:calc(var(--mo,1) * 140ms);opacity:0;translate:0 8px;transition:opacity calc(var(--mo,1) * 110ms) ease-in,translate calc(var(--mo,1) * 110ms) ease-in,overlay calc(var(--mo,1) * 110ms) allow-discrete,display calc(var(--mo,1) * 110ms) allow-discrete}
+dialog[open]{opacity:1;translate:none;transition-duration:var(--dlg-t);transition-timing-function:cubic-bezier(.2,.7,.3,1)}
+@starting-style{dialog[open]{opacity:0;translate:0 8px}}
+dialog:not([open]){pointer-events:none}
+dialog::backdrop{opacity:0;transition:opacity calc(var(--mo,1) * 110ms) ease-in,overlay calc(var(--mo,1) * 110ms) allow-discrete,display calc(var(--mo,1) * 110ms) allow-discrete}
+dialog[open]::backdrop{opacity:1;transition-duration:calc(var(--mo,1) * 140ms);transition-timing-function:ease-out}
+@starting-style{dialog[open]::backdrop{opacity:0}}
+html[data-view-tx="dlg"] #eventDialog,html[data-view-tx="dlg"] #eventDialog::backdrop{transition:none}
+/* The Undo bar rises in from the foot and sinks away; the Streams panel and the Export
+   menu drop in and fade out. A hiding one takes no clicks. */
+.undo-bar,.filter-panel,.ag-menu-list{transition:opacity calc(var(--mo,1) * 140ms) cubic-bezier(.2,.7,.3,1),translate calc(var(--mo,1) * 140ms) cubic-bezier(.2,.7,.3,1),display calc(var(--mo,1) * 140ms) allow-discrete}
+.undo-bar[hidden],.filter-panel[hidden],.ag-menu-list[hidden]{opacity:0;pointer-events:none;transition-duration:calc(var(--mo,1) * 110ms);transition-timing-function:ease-in}
+.undo-bar[hidden]{translate:0 10px}
+.filter-panel[hidden],.ag-menu-list[hidden]{translate:0 -6px}
+@starting-style{.undo-bar{opacity:0;translate:0 10px}.filter-panel,.ag-menu-list{opacity:0;translate:0 -6px}}
+/* Pressed: buttons, tabs, chips and stars press in a little, calendar blocks and cards
+   tint; at once on press, eased on release. No square tap highlight from the browser.
+   Focus rings are not touched. With motion reduced, only the tint. */
+html{-webkit-tap-highlight-color:transparent}
+:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,#clr,#grpclr,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,details.talk-d>summary,.linkish){transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
+:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,#clr,#grpclr,.seg label):not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
+.agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
+.dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
+:is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
+.vt-card:has(>.vt-hd .vt-open:active){filter:var(--press)}
+.vt-card:has(>.vt-hd .vt-open:active) .vt-open{filter:none}
+details.talk-d>summary:active{filter:var(--press);background:var(--surface-2);transition-duration:0s}
+.linkish:active{opacity:.6;transition-duration:0s}
+@media (prefers-reduced-motion:reduce){
+  html:not([data-motion="full"]) :active{scale:none!important}
+  html:not([data-motion="full"]) dialog::backdrop{transition:none}
+}
+html[data-motion="reduce"] :active{scale:none!important}
+html[data-motion="reduce"] dialog::backdrop{transition:none}
 /* Reduced motion: the system setting unless turned off in Display settings, or turned on there. */
 @media (prefers-reduced-motion:reduce){
   html:not([data-motion="full"]){scroll-behavior:auto}
@@ -6986,6 +7027,30 @@ document.getElementById('printAgenda').addEventListener('click', () => {
 // ordinary star change, Dismiss, or a while without attention. Ctrl/Cmd+Z undoes too.
 let undoSnapshot = null, undoTimer = 0;
 const undoBar = document.getElementById('undoBar');
+// Focus that follows a change made inside a transition (Remove, Keep this, Undo, Clear
+// all): the browser's own scroll to a focused control, run in a view transition's
+// update, can throw the page hundreds of pixels; so the focus never scrolls, and only a
+// control really out of sight (above the screen, under the sticky toolbar, or under the
+// Undo bar) is brought back into view, by the least scroll.
+function focusQuiet(el){
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  // measured once the change has settled: in the update, rows off screen still have
+  // their estimated heights (content-visibility), and a scroll would not show yet
+  const check = () => {
+    if (document.activeElement !== el || !el.isConnected) return;
+    const r = el.getBoundingClientRect();
+    if (!r.height || getComputedStyle(el).position === 'fixed') return;
+    const top = stickyWrap.getBoundingClientRect().bottom + 8;
+    const ub = undoBar.hidden ? null : undoBar.getBoundingClientRect();
+    const bottom = (ub && ub.height ? ub.top : innerHeight) - 8;
+    const d = r.top < top ? r.top - top : r.bottom > bottom ? Math.min(r.bottom - bottom, r.top - top) : 0;
+    if (Math.abs(d) > 1) window.scrollBy({ top: d, behavior: 'instant' });
+  };
+  const vt = viewTx && viewTx.vt;
+  if (vt) vt.finished.then(check, check);
+  else requestAnimationFrame(() => requestAnimationFrame(check));
+}
 function dropUndo(){
   clearInterval(undoTimer);
   if (!undoSnapshot && undoBar.hidden) return;
@@ -7005,8 +7070,15 @@ function undoArm(){
 // before: the stars to go back to; message: what happened, e.g. Removed “Title”.
 function offerUndo(before, message){
   undoSnapshot = { ids: [...before], message };
-  const msg = document.getElementById('undoMsg');
+  const msg = document.getElementById('undoMsg'), fresh = undoBar.hidden;
   undoBar.hidden = false;
+  // (it rises in by CSS; under a transition's snapshot that would not show, so it rises
+  // in once the change has settled)
+  const vt = fresh && viewTx && viewTx.vt;
+  if (vt) vt.finished.then(() => {
+    if (!undoBar.hidden && !motionReduced() && undoBar.animate)
+      undoBar.animate([{ opacity: 0, translate: '0 10px' }, { opacity: 1, translate: '0 0' }], { duration: 140 * motionK(), easing: 'cubic-bezier(.2,.7,.3,1)' });
+  }, () => {});
   msg.textContent = '';
   // set after the bar shows, so screen readers announce it
   requestAnimationFrame(() => { if (undoSnapshot && undoSnapshot.message === message) msg.textContent = message; });
@@ -7058,7 +7130,7 @@ document.getElementById('clearAgenda').addEventListener('click', () => {
   if (!state.starred.size) return;
   const n = agendaItems().length;
   replaceStars([], `Agenda cleared (${countWord(n, 'item')})`);
-  document.getElementById('undoBtn').focus();
+  document.getElementById('undoBtn').focus({ preventScroll: true });
 });
 function undoNow(){
   if (!undoSnapshot) return false;
@@ -7075,7 +7147,7 @@ function undoNow(){
     // back to what came back, or the top of My agenda
     const back = removed.flatMap(id => [...document.querySelectorAll(`#builder [data-sstar="${id}"], #builder [data-tstar="${id}"], #agenda [data-talk-detail="${id}"], #agenda [data-session-detail="${id}"][data-talk-detail=""]`)])
       .find(el => el.getClientRects().length);
-    (back || document.getElementById('builderTitle')).focus({ preventScroll: !back });
+    if (back) focusQuiet(back); else document.getElementById('builderTitle').focus({ preventScroll: true });
   }, null, { grow: true });
   return true;
 }
@@ -7168,8 +7240,7 @@ document.getElementById('builder').addEventListener('click', e => {
     withTransition('mx', () => {
       afterStarChange();
       offerUndo(before, `Kept ${quoteTitle(kept ? itemTitle(kept) : '')}, removed ${countWord(n, 'item')}`);
-      const next = document.querySelector('#clashBox [data-keep]') || document.getElementById('clashToggle') || document.getElementById('builderTitle');
-      next.focus({ preventScroll: true });
+      focusQuiet(document.querySelector('#clashBox [data-keep]') || document.getElementById('clashToggle') || document.getElementById('builderTitle'));
     }, null, { collapse: true });
   }
 });
@@ -7192,10 +7263,10 @@ document.getElementById('builder').addEventListener('click', e => {
       removeStars([id]);
       // a talk unstarred inside its saved session: stay on that session
       const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
-      if (host){ host.focus(); return; }
+      if (host){ focusQuiet(host); return; }
       const remaining = document.querySelectorAll('#builder .rm');
       const next = remaining[Math.min(removedIndex, remaining.length - 1)];
-      (next || document.querySelector('#builderBody [data-goprogram]') || document.getElementById('builderTitle')).focus();
+      focusQuiet(next || document.querySelector('#builderBody [data-goprogram]') || document.getElementById('builderTitle'));
     }, null, { collapse: true });
     return;
   }
@@ -7685,6 +7756,29 @@ function calendarJump(s, tid){
   return true;
 }
 
+// A talk's abstract opened or closed with its title unfolds or folds over a moment
+// (height and fade). Expand all, find in page and links that open one stay instant.
+document.getElementById('agenda').addEventListener('click', e => {
+  const sm = e.target.closest('details.talk-d > summary');
+  if (!sm || motionReduced()) return;
+  const d = sm.parentElement, body = d.querySelector(':scope > .t-body');
+  if (!body || !body.animate) return;
+  e.preventDefault();
+  body.getAnimations().forEach(a => a.cancel());
+  const opening = !d.open || d.dataset.folding !== undefined;
+  delete d.dataset.folding;
+  d.open = true;
+  const cs = getComputedStyle(body), h = body.getBoundingClientRect().height, pb = cs.paddingBottom;
+  const shut = { height: '0px', paddingBottom: '0px', opacity: 0, overflow: 'hidden', boxSizing: 'border-box' };
+  const full = { height: h + 'px', paddingBottom: pb, opacity: 1, overflow: 'hidden', boxSizing: 'border-box' };
+  if (opening){
+    body.animate([shut, full], { duration: 170 * motionK(), easing: 'cubic-bezier(.2,.7,.3,1)' });
+    return;
+  }
+  d.dataset.folding = '';
+  const a = body.animate([full, shut], { duration: 120 * motionK(), easing: 'ease-in', fill: 'forwards' });
+  a.onfinish = () => { if (d.dataset.folding === undefined) return; delete d.dataset.folding; d.open = false; a.cancel(); };
+});
 document.getElementById('expandAll').addEventListener('click', e => {
   const ds = document.querySelectorAll('.card:not(.hidden) details');
   const anyClosed = [...ds].some(d => !d.open);
@@ -8525,12 +8619,18 @@ window.addEventListener('popstate', e => {
 // that selects text inside it and ends outside does not).
 function lightDismiss(dialog, close){
   let downOutside = false;
-  const outside = e => {
-    if (e.target !== dialog) return false;
+  const off = e => {
     const r = dialog.getBoundingClientRect();
     return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
   };
+  const outside = e => e.target === dialog && off(e);
   dialog.addEventListener('pointerdown', e => { downOutside = outside(e); });
+  // While the dialog grows open (a view transition), a press lands on the page root (the
+  // transition's overlay), not on the dialog: one outside the dialog's box (already in
+  // its final place) counts as outside, so the click that ends it closes the dialog.
+  document.addEventListener('pointerdown', e => {
+    if (dialog.open && e.target === document.documentElement) downOutside = off(e);
+  }, true);
   dialog.addEventListener('click', e => {
     const was = downOutside;
     downOutside = false;
