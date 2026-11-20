@@ -4597,7 +4597,7 @@ function withTransition(kind, fn, from, opts = {}){
   if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
   if (opts.press){
     const o = { ...opts, press: null };
-    txPending(opts.press, early => txStart(kind, fn, from, o, early), txTimed(fn, o));
+    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o));
     return;
   }
   txStart(kind, fn, from, opts);
@@ -4610,20 +4610,15 @@ const txTimed = (fn, opts, after) => () => {
   txNote(performance.now() - t0, opts.to);
   if (after) after();
 };
-// `early`: called in the frame that paints the pressed button (txPending): a change that
-// starts a view transition then has that frame as its old picture, a frame sooner than
-// after another; any other (a plain redraw, no animation) is declined, with nothing done,
-// and comes again once the pressed state has been painted. Returns true when it started.
-function txStart(kind, fn, from, opts, early){
+function txStart(kind, fn, from, opts){
   const root = document.documentElement;
   // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
   // only the short fade.
   const heavy = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
-  if (motionReduced()){ if (early) return false; txTimed(fn, opts)(); return; }
+  if (motionReduced()){ txTimed(fn, opts)(); return; }
   // quick succession (another change under 450ms ago) or slow redraws: no morph; and
   // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
   const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
-  if (early && (heavy || busy || !document.startViewTransition)) return false;
   txLast = t;
   if (heavy || busy){
     if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){ txTimed(fn, opts, heavy && kind !== 'mx' ? viewEnter : null)(); return; }
@@ -4664,7 +4659,7 @@ function txStart(kind, fn, from, opts, early){
   const clear = () => { delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; };
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ try { run(); } finally { mxClear(); clear(); } return true; }
+  catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
   const tx = viewTx = mxOwner = { vt, run };
   vt.ready.then(() => { mx.animate(); txWatch(vt, t); }, () => {});
   vt.updateCallbackDone.catch(e => console.error(e));
@@ -4673,7 +4668,6 @@ function txStart(kind, fn, from, opts, early){
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
     if (!viewTx) clear();
   });
-  return true;
 }
 // Each transition's wait for its first moving frame (txFreeze) and its slowest frame
 // while it moves (txJank); each later one halves what an earlier one left.
@@ -4729,12 +4723,10 @@ function pageHeavy(){
   const ag = document.getElementById('agenda'), bl = document.getElementById('builderList');
   return state.scope === 'participants' || (!ag.hidden && ag.getElementsByClassName('card').length > 150) || (!bl.hidden && bl.getElementsByTagName('li').length > 150);
 }
-// The pressed button shows first. A change that starts a view transition does so in that
-// very frame (`go(true)`: the frame, pressed button in it, is the old picture); any other
-// runs in the next task, after that frame is painted (no busy cursor: a class on the root
-// restyles the whole page, which on a slow phone costs as much as the frame itself). A
-// click or key meanwhile applies the change at once (`now`, unanimated); Back, Forward or
-// a new address drops it.
+// The pressed button shows first; `go` runs in the next task, after that frame is painted
+// (no busy cursor: a class on the root restyles the whole page, which on a slow phone
+// costs as much as the frame itself). A click or key meanwhile applies the change at
+// once (`now`, unanimated); Back, Forward or a new address drops it.
 function txPending(press, go, now){
   if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
@@ -4746,11 +4738,7 @@ function txPending(press, go, now){
     if (viewTx === tx) viewTx = null;
   };
   const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
-  requestAnimationFrame(() => {
-    if (ran) return;
-    if (go(true)){ ran = true; return; }
-    setTimeout(() => { if (!ran){ end(); go(); } }, 0);
-  });
+  requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, 0));
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
