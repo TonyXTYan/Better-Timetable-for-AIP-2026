@@ -1059,6 +1059,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 9px;font:inherit;font-weight:700;color:var(--bar-ink);cursor:pointer;border-radius:999px;white-space:nowrap}
 @media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}}
 .vt-tog:hover,.vt-tog:focus-visible{border-color:var(--c);outline:1px solid var(--c)}
+/* a closed card's footer (convener, "N talks") sits at its bottom, so the buttons of
+   sessions that start and end together line up across the row */
+.vt-card:not(.open):not(.band)>.vt-hd{flex:1 1 auto}
+.vt-card:not(.open):not(.band)>.vt-hd>.vt-foot{margin-top:auto}
 .vt-tog::after{content:" \25B8"}
 .vt-tog[aria-expanded="true"]::after{content:" \25BE"}
 .vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.75rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
@@ -2141,6 +2145,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
         <li><a href="https://www.aip.org.au/congress/speakers" target="_blank" rel="noopener">Speakers</a></li>
         <li><a href="https://www.aip.org.au/congress/workshops" target="_blank" rel="noopener">Workshops</a></li>
         <li><a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Source timetable (Indico)</a></li>
+        <li><a href="https://github.com/TonyXTYan/Better-Timetable-for-AIP-2026" target="_blank" rel="noopener">This page on GitHub (code, issues)</a></li>
       </ul>
       <p>Public lectures, the Welcome Reception, the Congress Dinner, Teachers Day and the Career Fair: <a href="#streams=events" data-show-stream="events">show the Congress events stream</a>.</p>
     </div>
@@ -2932,6 +2937,17 @@ function rerender(){
 // The toolbar's static position: offsetTop of a stuck sticky element is the scroll position.
 function programTop(){ return document.getElementById('toolbarAnchor').getBoundingClientRect().top + window.scrollY; }
 function scrollToProgramTop(){ window.scrollTo({ top: programTop() }); }
+// A day tab keeps the page still where it can: above the program nothing moves (no
+// scroll down to it); in a day's calendar the scroll, and with it the folded toolbar,
+// stays, unless the new day ends above the view; a list (another day's sessions, or
+// the week) starts at the program's top.
+function dayScroll(){
+  if (window.scrollY <= programTop() + 1) return;
+  const cal = state.layout === 'calendar' && state.day !== 'all' && document.querySelector('#agenda .hz-day, #agenda .vt-day');
+  if (!cal){ scrollToProgramTop(); return; }
+  const r = cal.getBoundingClientRect(), bar = document.querySelector('.sticky-wrap').getBoundingClientRect().bottom;
+  if (r.bottom < bar + 120) scrollToProgramTop();
+}
 
 // ---------- events ----------
 document.getElementById('daytabs').addEventListener('keydown', e => {
@@ -2952,7 +2968,7 @@ document.getElementById('daytabs').addEventListener('click', e => {
     state.day = day;
     rerender();
     document.querySelector('#daytabs [aria-pressed="true"]').focus({preventScroll:true});
-    scrollToProgramTop();
+    dayScroll();
   };
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
   if (vertical || day === state.day) go();
@@ -6090,7 +6106,7 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
   // grid's edge, at the side the gesture came from.
   const w = main.querySelector('.vt-wrap.scroll');
   if (w) w.scrollLeft = edge && dir < 0 ? w.scrollWidth : 0;
-  if (toTop) scrollToProgramTop();
+  if (toTop) dayScroll();
   else if (anchor){
     const marks = [...main.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')];
     const to = marks.filter(el => +el.dataset.m <= anchor.m).pop() || marks[0];
