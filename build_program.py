@@ -5731,7 +5731,18 @@ function hzPopShow(el, h, mouse){
   if (mouse) for (const x of [el, el.classList.contains('hz-head') ? el.parentElement : null])
     if (x && x.getAttribute('title')){ hzPop.titled.push([x, x.getAttribute('title')]); x.removeAttribute('title'); }
 }
-window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopHide(); }, { passive: true });
+// A keyboard-focused card keeps its copy: the focus scroll moves it, so it is shown
+// again where the card lands once the scrolling stops.
+let hzPopRe = 0, hzPopGap = 0;
+function hzPopScrolled(){
+  const src = hzPop.src;
+  if (!src) return;
+  const keyed = src.matches(':focus-visible'), h = src.closest('.hz-day');
+  hzPopHide();
+  clearTimeout(hzPopRe);
+  if (keyed && h) hzPopRe = setTimeout(() => { if (document.activeElement === src && src.isConnected) hzPopShow(src, h, false); }, 140);
+}
+window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopScrolled(); }, { passive: true });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hzPopHide(); });
 function hzInit(root){
   const h = root.querySelector('.hz-day');
@@ -5817,7 +5828,11 @@ function hzInit(root){
   const showTip = e => {
     // a mouse or keyboard focus opens the card in full (hzPopShow); a touch keeps the tip
     const card = e.target.closest && e.target.closest('.hz-talk, button.hz-bar, .hz-head');
+    clearTimeout(hzPopGap);
     if (card && (e.type === 'focusin' ? card.matches(':focus-visible') : e.pointerType === 'mouse')){ tip.hidden = true; hzPopShow(card, h, e.type !== 'focusin'); return; }
+    // the gap between two cards: keep the copy a moment, so a move along a row
+    // goes from one card's copy to the next without a blank
+    if (e.pointerType === 'mouse' && hzPop.src && !hzPop.src.matches(':focus-visible')){ tip.hidden = true; hzPopGap = setTimeout(hzPopHide, 220); return; }
     hzPopHide();
     const t = e.target.closest && e.target.closest('.hz-talk');
     // every talk card in My agenda; in the program, those whose text is cut
@@ -5830,9 +5845,9 @@ function hzInit(root){
   };
   vp.addEventListener('pointerover', showTip);
   vp.addEventListener('focusin', showTip);
-  vp.addEventListener('pointerleave', () => { tip.hidden = true; if (!(hzPop.src && hzPop.src.matches(':focus-visible'))) hzPopHide(); });
+  vp.addEventListener('pointerleave', () => { tip.hidden = true; clearTimeout(hzPopGap); if (!(hzPop.src && hzPop.src.matches(':focus-visible'))) hzPopHide(); });
   vp.addEventListener('focusout', e => { tip.hidden = true; if (hzPop.src && hzPop.src.contains(e.target)) hzPopHide(); });
-  vp.addEventListener('scroll', () => { tip.hidden = true; hzPopHide(); }, { passive: true });
+  vp.addEventListener('scroll', () => { tip.hidden = true; hzPopScrolled(); }, { passive: true });
   vp.addEventListener('click', hzPopHide);
   hzStuck();
   hzDraw(root);
