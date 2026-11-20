@@ -1172,6 +1172,25 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-talk.is-now .hz-tt{color:var(--now-text)}
 #hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:8px;font-size:.75rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px var(--pop-shadow)}
 #hzTip[hidden]{display:none}
+/* a cut card in full, over it (hzPopShow): its left edge and width (a narrow card widens
+   to 11rem), growing down over the cards below; under the sticky head, it moves nothing */
+.hz-pop{--hzpd:calc(var(--motion-scale,1) * 150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) ease-out,height var(--hzpd) ease-out}
+.hz-pop[hidden]{display:none}
+.hz-pop.tk{background:var(--card);color:var(--ink);border-left-width:3px;border-radius:5px;padding:3px 6px 5px}
+.hz-pop.tk.dim{color:var(--bar-meta)}
+.hz-pop.dim .hz-ptt{color:var(--bar-meta)}
+.hz-pop.dim .hz-ptl{font-weight:500}
+.hz-pop .hz-title,.hz-pop .hz-of{display:block;-webkit-line-clamp:none;overflow:visible}
+.hz-pop .hz-meta,.hz-pop .hz-sp,.hz-pop .hz-inl,.hz-pop .hz-mtx{white-space:normal;overflow:visible;max-width:none}
+.hz-pop .hz-bdg{display:none}
+.hz-ptt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem}
+.hz-ptl{font-weight:650;font-size:.8125rem;line-height:1.25}
+.hz-pop.mine .hz-ptl{font-weight:700}
+.hz-pts,.hz-pconv{color:var(--bar-meta);font-size:.6875rem}
+.hz-pop.tk .hz-pts{color:var(--muted)}
+.hz-pnote{color:var(--clash-ink);font-weight:700;font-size:.6875rem}
+@media (prefers-reduced-motion:reduce){.hz-pop{transition:none}}
+@media print{.hz-pop{display:none!important}}
 @media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}}
 @media (max-width:720px){
 .hz-day{--lw:4.75rem}
@@ -1629,6 +1648,15 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
 .bd-tick.has{width:4px;height:7px;border-radius:2px;background:var(--star)}
 .bd-tick.day.has{height:9px}
+/* a slot where saved items overlap (bdClashes): an orange triangle under the track */
+.bd-tick.has.cx{width:9px;height:8px;border-radius:0;background:var(--warn-ink);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.bd-cxtri{display:inline-block;width:9px;height:8px;background:var(--warn-ink);clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
+.bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--clash-line);border-radius:999px;background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
+button.bd-cxkey:hover{border-color:var(--clash-row-line)}
+.bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
+.bd-cxnote{flex:1 1 100%;margin:4px 0 0;font-size:.75rem;color:var(--clash-ink);font-weight:600}
+.bd-card.cx{outline:2px solid var(--warn-ink);outline-offset:1px}
+.bd-cxp{font-size:.6875rem;font-weight:800;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 7px;white-space:nowrap}
 .bd-days{height:22px}
 .bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:6px;font-size:0.75rem;font-weight:750;color:var(--ink);white-space:nowrap;line-height:1.5}
 .bd-day:hover{background:var(--surface-3)}
@@ -1717,6 +1745,9 @@ html:has(#buildDialog[open]){overflow:hidden}
   .bd-bubble-row,.bd-times{display:none}
   .bd-chips{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;margin:2px -14px 6px;padding:0 14px}
   .bd-chips::-webkit-scrollbar{display:none}
+  .bd-cxkey{min-height:26px;padding:0 9px;font-size:.6875rem}
+  .bd-cxnote{margin-top:2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:.6875rem}
+  .bd-cxp{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .bd-chip{min-height:34px}
   .bd-body{padding:0 12px 14px}
   .bd-slot-head{position:sticky;top:0;z-index:1;margin:0 -12px 6px;padding:7px 12px 6px;background:var(--card);border-bottom:1px solid var(--line);gap:0 10px}
@@ -5103,6 +5134,7 @@ function hzDayView(day){
 function hzDraw(root, left){
   const h = root.querySelector('.hz-day');
   if (!h) return;
+  hzPopHide();
   const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
   const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
@@ -5611,6 +5643,96 @@ function hzZoom(root, span, m, at){
   hzDraw(root, m - at * s);
 }
 
+// A horizontal card whose text is cut (a clamped or one-line title, speakers left out, a
+// narrow card showing only its code) opens in full on hover (a mouse) or keyboard focus,
+// like the vertical view's: a copy over the card at its left edge and width (a narrow one
+// widens to 11rem) that grows down over the cards below (up, near the bottom of the
+// screen), adding the convenors and any clash note. It moves nothing, sits inside the
+// day (not the side-scrolling canvas, so nothing clips it) under the sticky head, and goes
+// on leaving, scrolling, a click or Escape. Touch keeps a tap for the details.
+const hzPop = { el: null, src: null, y: 0, titled: [] };
+function hzPopHide(){
+  const p = hzPop.el;
+  if (p && !p.hidden){ p.hidden = true; p.textContent = ''; }
+  for (const [x, t] of hzPop.titled) x.setAttribute('title', t);
+  hzPop.titled = []; hzPop.src = null;
+}
+function hzPopHtml(el){
+  if (el.classList.contains('hz-talk')){
+    const hit = talkById(el.dataset.tid);
+    if (!hit) return '';
+    const t = hit.t, sp = t.sp.map(p => p.n).join(', ');
+    return `<span class="hz-ptt">${esc(t.s)}–${esc(t.e)}</span><span class="hz-ptl">${state.starred.has(t.id) ? '<span class="hz-star">★</span> ' : ''}${hl(t.t)}</span>${sp ? `<span class="hz-pts">${hl(sp)}</span>` : ''}`;
+  }
+  const bar = el.closest('.hz-bar'), hit = bar.dataset.tid && talkById(bar.dataset.tid), s = hit ? hit.s : slotById(bar.dataset.sid);
+  const inn = el.querySelector('.hz-in');
+  let html = '';
+  if (inn){
+    // the card's own text, without the sizes, cuts and ids its fitting gave it
+    const c = inn.cloneNode(true);
+    for (const x of [c, ...c.querySelectorAll('*')]) for (const a of [...x.attributes]) if (a.name === 'style' || a.name === 'hidden' || a.name === 'id' || a.name.startsWith('data-')) x.removeAttribute(a.name);
+    html = [...c.children].map(x => x.outerHTML).join(' ');
+  } else if (s){
+    const t = hit && hit.t;
+    html = `<span class="hz-title">${hl(t ? t.t : s.title)}</span><span class="hz-meta">${t ? esc(t.s + '–' + t.e) : esc(s.start + '–' + s.end) + (s.room ? ' · ' + hl(s.room) : '')}</span>`;
+  }
+  if (s && !hit && s.conv.length) html += `<span class="hz-pconv">Convened by ${hl(s.conv.join(', '))}</span>`;
+  for (const n of (bar.getAttribute('title') || '').split('\n').slice(1)) html += `<span class="${/^Clash/.test(n) ? 'hz-pnote' : 'hz-pconv'}">${esc(n)}</span>`;
+  return html;
+}
+function hzPopShow(el, h, mouse){
+  if (hzPop.src === el && hzPop.el && !hzPop.el.hidden) return;
+  hzPopHide();
+  const isTalk = el.classList.contains('hz-talk');
+  const r = el.getBoundingClientRect(), vr = h.querySelector('.hz-vp').getBoundingClientRect();
+  const L = vr.left + h.querySelector('.hz-corner').offsetWidth, R = vr.right;
+  if (r.right < L + 4 || r.left > R - 4 || !r.height) return;
+  const cut = el.classList.contains('hz-nar') || !el.querySelector('.hz-in, .hz-tl') || [...el.querySelectorAll('.hz-title, .hz-tl, .hz-ts, .hz-meta, .hz-sp, .hz-of, .hz-inl')]
+    .some(x => x.hidden || x.scrollHeight > x.clientHeight + 1 || x.scrollWidth > x.clientWidth + 1 || getComputedStyle(x).display === 'none');
+  const html = hzPopHtml(el);
+  if (!html) return;
+  let p = hzPop.el;
+  if (!p || p.parentElement !== h){
+    if (p) p.remove();
+    p = hzPop.el = document.createElement('div');
+    p.setAttribute('aria-hidden', 'true');
+    h.appendChild(p);
+  }
+  p.className = 'hz-pop' + (isTalk ? ' tk' + (el.classList.contains('mine') ? ' mine' : el.classList.contains('dim') ? ' dim' : '') : '');
+  const cs = getComputedStyle(isTalk ? el : el.closest('.hz-bar'));
+  for (const k of ['--c', '--cbg']) p.style.setProperty(k, cs.getPropertyValue(k));
+  const rem = remPx(), left0 = Math.max(r.left, L);
+  const w = Math.min(R - L, Math.max(Math.min(r.right, R) - left0, 11 * rem)), left = Math.max(L, Math.min(left0, R - w));
+  // (measured at the day's top, so it never lengthens the page)
+  p.style.transition = 'none';
+  p.style.top = '0px';
+  p.style.width = w + 'px';
+  p.style.height = 'auto';
+  p.innerHTML = html;
+  p.hidden = false;
+  const nh = Math.max(p.offsetHeight, r.height);
+  if (!cut && nh <= r.height + 2){ p.hidden = true; p.textContent = ''; return; }
+  hzPop.src = el; hzPop.y = scrollY;
+  // under the sticky head; near the bottom of the screen it grows up instead
+  const lim = Math.max(h.querySelector('.hz-top').getBoundingClientRect().bottom + 2, 8), bot = innerHeight - 8;
+  const top0 = Math.max(r.top, lim), hh = Math.min(nh, Math.max(bot - lim, r.height)), top = top0 + hh > bot ? Math.max(lim, bot - hh) : top0;
+  const hd = h.getBoundingClientRect(), ox = hd.left + h.clientLeft, oy = hd.top + h.clientTop;
+  p.style.left = (left - ox) + 'px';
+  if (motionReduced()){ p.style.top = (top - oy) + 'px'; p.style.height = hh + 'px'; p.style.transition = ''; }
+  else {
+    p.style.top = (top0 - oy) + 'px';
+    p.style.height = Math.max(1, r.bottom - top0) + 'px';
+    p.offsetHeight;
+    p.style.transition = '';
+    p.style.top = (top - oy) + 'px';
+    p.style.height = hh + 'px';
+  }
+  // the card's own tooltip would only repeat it
+  if (mouse) for (const x of [el, el.classList.contains('hz-head') ? el.parentElement : null])
+    if (x && x.getAttribute('title')){ hzPop.titled.push([x, x.getAttribute('title')]); x.removeAttribute('title'); }
+}
+window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopHide(); }, { passive: true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hzPopHide(); });
 function hzInit(root){
   const h = root.querySelector('.hz-day');
   if (!h) return;
@@ -5693,6 +5815,10 @@ function hzInit(root){
   let tip = document.getElementById('hzTip');
   if (!tip){ tip = document.createElement('div'); tip.id = 'hzTip'; tip.hidden = true; document.body.appendChild(tip); }
   const showTip = e => {
+    // a mouse or keyboard focus opens the card in full (hzPopShow); a touch keeps the tip
+    const card = e.target.closest && e.target.closest('.hz-talk, button.hz-bar, .hz-head');
+    if (card && (e.type === 'focusin' ? card.matches(':focus-visible') : e.pointerType === 'mouse')){ tip.hidden = true; hzPopShow(card, h, e.type !== 'focusin'); return; }
+    hzPopHide();
     const t = e.target.closest && e.target.closest('.hz-talk');
     // every talk card in My agenda; in the program, those whose text is cut
     const cut = t && (h.classList.contains('hz-agenda') || h.classList.contains('hz-tick') || h.classList.contains('hz-mid') || t.classList.contains('hz-nar') || !!t.querySelector('.hz-clamp, [hidden]'));
@@ -5704,9 +5830,10 @@ function hzInit(root){
   };
   vp.addEventListener('pointerover', showTip);
   vp.addEventListener('focusin', showTip);
-  vp.addEventListener('pointerleave', () => { tip.hidden = true; });
-  vp.addEventListener('focusout', () => { tip.hidden = true; });
-  vp.addEventListener('scroll', () => { tip.hidden = true; }, { passive: true });
+  vp.addEventListener('pointerleave', () => { tip.hidden = true; if (!(hzPop.src && hzPop.src.matches(':focus-visible'))) hzPopHide(); });
+  vp.addEventListener('focusout', e => { tip.hidden = true; if (hzPop.src && hzPop.src.contains(e.target)) hzPopHide(); });
+  vp.addEventListener('scroll', () => { tip.hidden = true; hzPopHide(); }, { passive: true });
+  vp.addEventListener('click', hzPopHide);
   hzStuck();
   hzDraw(root);
 }
@@ -6930,7 +7057,7 @@ function bdCard(s, parallel){
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
   return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
-      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden>&#9888; Clash</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
@@ -6970,15 +7097,35 @@ function bdRenderSlot(){
   const sessions = bdSessions(slot);
   const [a, b] = bdSpan(slot);
   body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)} · ${a}–${b}</h3>
-    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''} · <span id="bdSlotSaved"></span></p></div>
+    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''} · <span id="bdSlotSaved"></span></p>
+    <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p></div>
     <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
   body.scrollTop = 0;
 }
 
 // Ticks follow the saved stars, so a change made anywhere (the details dialog too) shows here.
+// The agenda's clashes, by slot (each item under the slot its session is shown in): marks
+// on the slider, its value text, the slot's note and its cards.
+function bdClashes(){
+  const key = [...state.starred].join() + '|' + bd.admin + '|' + [...bd.cats].join() + '|' + bd.slots.map(sl => sl.key).join();
+  if (bdClashes.key === key) return bdClashes.v;
+  const items = agendaItems(), at = new Map(), by = new Map();
+  markClashes(items);
+  bd.slots.forEach((sl, i) => { for (const s of bdSessions(sl)) at.set(s, i); });
+  for (const it of items) if (it.clashes.length && at.has(it.s)){
+    const i = at.get(it.s);
+    if (!by.has(i)) by.set(i, []);
+    by.get(i).push(it);
+  }
+  bdClashes.key = key;
+  return bdClashes.v = by;
+}
 function bdPaintChecks(){
   paintStarCount();
-  [...bdEl('bdTicks').children].forEach((tick, i) => tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0));
+  const cx = bdClashes(), range = bdEl('bdRange');
+  [...bdEl('bdTicks').children].forEach((tick, i) => { tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0); tick.classList.toggle('cx', cx.has(i)); });
+  const vt = (range.getAttribute('aria-valuetext') || '').replace(/, this slot has a clash$/, '');
+  range.setAttribute('aria-valuetext', vt + (!bd.done && cx.has(bd.i) ? ', this slot has a clash' : ''));
   if (bd.done) return;
   const body = bdEl('bdBody');
   body.querySelectorAll('[data-bd-id]').forEach(cb => {
@@ -6991,20 +7138,45 @@ function bdPaintChecks(){
     cb.closest('.bd-check').classList.toggle('on', cb.checked);
     cb.closest('.bd-check').classList.toggle('inc', included);
   });
+  const mine = cx.get(bd.i) || [];
   body.querySelectorAll('[data-bd-card]').forEach(card => {
     const s = slotById(card.dataset.bdCard);
     card.classList.toggle('on', state.starred.has(s.id));
+    card.classList.toggle('cx', !(card.querySelector('.bd-cxp').hidden = !mine.some(it => it.s === s)));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
     if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">· all included</span><span class="bd-tc-s">&#9733; all</span>'
       : n ? `<span class="bd-tc-l">· ${n} saved</span><span class="bd-tc-s">&#9733;${n}</span>` : '';
   });
   const items = mergeSaved(bdSlotItems(bd.slots[bd.i]));
-  markClashes(items);
-  const clashing = items.filter(x => x.clashes.length).length;
-  bdEl('bdSlotSaved').innerHTML = (items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet') +
-    (clashing ? ` · <span class="ag-warn">&#9888;&#65039; ${clashing} ${clashing === 1 ? 'overlaps' : 'overlap'}</span>` : '');
+  bdEl('bdSlotSaved').innerHTML = items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet';
+  // what overlaps what (the other item may be in another slot, or hidden by the streams picked)
+  const pairs = [];
+  for (const a of mine) for (const o of a.clashes) if (!pairs.some(([x, y]) => x === o && y === a)) pairs.push([a, o]);
+  const nm = it => `“${esc(itemTitle(it))}” ${it.start}–${it.end}`;
+  const note = bdEl('bdSlotCx');
+  note.hidden = !pairs.length;
+  note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
+  note.innerHTML = pairs.length ? '&#9888;&#65039; Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
+  // the key to the slider's marks, which steps to the next slot with a clash
+  const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
+  const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
+  key.hidden = !all.length;
+  if (all.length){
+    const sl = next === undefined ? null : bd.slots[next];
+    key.disabled = !sl;
+    key.dataset.next = sl ? next : '';
+    key.title = 'Orange triangles under the slider mark the slots where saved items overlap';
+    key.innerHTML = `<i class="bd-cxtri" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
+      + (sl ? ` · next<span class="visually-hidden">: ${esc(sl.d.label)}, ${bdSpan(sl)[0]}</span> &#8250;` : '');
+  }
 }
+bdEl('bdBody').addEventListener('click', e => {
+  const k = e.target.closest('#bdCxKey');
+  if (!k || k.dataset.next === '') return;
+  bdGo(+k.dataset.next);
+  bdEl('bdCxKey').focus();
+});
 
 // The slider: one step per slot, a day label at each day's first slot, and the
 // start times underneath, thinned out wherever they would collide.
