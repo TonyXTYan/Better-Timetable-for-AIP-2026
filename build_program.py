@@ -276,9 +276,10 @@ DARK_TOKENS = """\
   color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
   --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
   --tk-mix:13%;
-  --press:brightness(1.22);
+  --press:brightness(1.75); --press-sum:var(--surface-3);
 """
 DARK_HC_TOKENS = """\
+  --press:brightness(2.1); --press-sum:#2c3444;
   --ink:#ffffff; --muted:#cbd2dd; --line:#5b6578; --hover-line:#8a93a3; --ink-2:#e2e8f0; --ink-3:#f1f5f9; --faint:#b4bccb; --caret:#8a93a3;"""
 
 HTML = r'''<!DOCTYPE html>
@@ -346,7 +347,7 @@ window.applyDisplay = function(d){
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* a pressed control's tint (lighter in the dark theme) */
-  --press:brightness(.92);
+  --press:brightness(.92); --press-sum:var(--surface-2);
   /* solid fills for selected chips: white text on these in both modes */
   --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#047857; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#906100; --poster-fill:#5b21b6; --events-fill:#b5179e; --special-fill:#5b7500; --business-fill:#475569; --social-fill:#57534e;
 }
@@ -674,7 +675,9 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
-.sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none}
+.sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent}
+/* the clip would hide the bar's own bottom edge: a line that rides the clip's edge stands in (tbCompact) */
+.sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -1857,6 +1860,7 @@ dialog{--dlg-t:calc(var(--mo,1) * 140ms);opacity:0;translate:0 8px;transition:op
 dialog[open]{opacity:1;translate:none;transition-duration:var(--dlg-t);transition-timing-function:cubic-bezier(.2,.7,.3,1)}
 @starting-style{dialog[open]{opacity:0;translate:0 8px}}
 dialog:not([open]){pointer-events:none}
+html.dlg-js dialog:not([open]),html.dlg-js dialog:not([open])::backdrop{transition:none}   /* the close is animated in script (DLG_JS) */
 dialog::backdrop{opacity:0;transition:opacity calc(var(--mo,1) * 110ms) ease-in,overlay calc(var(--mo,1) * 110ms) allow-discrete,display calc(var(--mo,1) * 110ms) allow-discrete}
 dialog[open]::backdrop{opacity:1;transition-duration:calc(var(--mo,1) * 140ms);transition-timing-function:ease-out}
 @starting-style{dialog[open]::backdrop{opacity:0}}
@@ -1879,7 +1883,7 @@ html{-webkit-tap-highlight-color:transparent}
 :is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
 .vt-card:has(>.vt-hd .vt-open:active){filter:var(--press)}
 .vt-card:has(>.vt-hd .vt-open:active) .vt-open{filter:none}
-details.talk-d>summary:active{filter:var(--press);background:var(--surface-2);transition-duration:0s}
+details.talk-d>summary:active{filter:var(--press);background:var(--press-sum);transition-duration:0s}
 .linkish:active{opacity:.6;transition-duration:0s}
 @media (prefers-reduced-motion:reduce){
   html:not([data-motion="full"]) :active{scale:none!important}
@@ -2215,6 +2219,15 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .schedule-nav .agenda-views{padding:2px;gap:1px}
   .schedule-nav .agenda-views button{padding:5px 6px;font-size:.8125rem}
   #starCount{font-size:.75em}
+}
+/* ...and under 700px (640x360, 667x375): the four switches of the calendar still share one
+   row (side padding and the gaps come in; the labels stay) */
+@media (max-height:500px) and (orientation:landscape) and (max-width:700px){
+  .sticky-wrap:not(.tb-compact) .toolbar{padding-left:10px;padding-right:10px;gap:5px 6px}
+  .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{gap:3px}
+  .schedule-nav .agenda-views button{padding:5px 4px;font-size:.78125rem}
+  .schedule-nav .agenda-views{padding:2px 1px}
+  .sticky-wrap.tb-compact .toolbar{padding-left:10px;padding-right:10px}
 }
 </style>
 </head>
@@ -3850,7 +3863,7 @@ function agRow(it){
     return `<li data-tid="${t.id}"${hit.has(t) ? ' class="ag-ihit"' : ''}><span class="ag-itime"><i class="k-ic" aria-hidden="true"></i>${t.s}&#8211;${t.e}</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>${sp ? `<span class="ag-isp">${hl(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Remove ${word} from My agenda: ${esc(t.t)}" title="Saved. Remove this ${word} from My agenda (the session stays)"><span aria-hidden="true">&#9733;</span></button></li>`;
   }).join('')}</ul>` : '';
   const ids = itemIdAttrs(it);
-  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}">
+  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
     <span class="ag-time">${it.start}&#8211;${it.end}<span class="ag-ended">Ended</span></span>
     <div class="ag-main">
       <span class="ag-title"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${hl(itemTitle(it))}</span>
@@ -4689,6 +4702,46 @@ let txLast = -1e9, txSlow = 0;
 // for things that move.
 const MO_S = 120, MO_L = 200, EASE = 'cubic-bezier(.2,0,0,1)', EASE_EM = 'cubic-bezier(.3,.15,0,1)';
 const MX_MS = MO_L, MX_EASE = EASE_EM;
+// Dialogs in a browser that cannot animate a closing dialog by CSS (no allow-discrete on
+// display and overlay: Firefox, Safari): close() runs Web Animations on the dialog and its
+// backdrop (the short duration), then closes. Chromium keeps its CSS transitions; DLG_JS
+// is off there (window.__forceDlgJs, set before the page loads, turns it on for testing).
+// dlgNow closes at once. Inside a view transition (inVT) the dialog closes at once too.
+const DLG_JS = !!window.HTMLDialogElement && (window.__forceDlgJs === true
+  || !(CSS.supports('transition-behavior', 'allow-discrete') && CSS.supports('overlay', 'auto')));
+let inVT = false;
+const dlgNativeClose = HTMLDialogElement.prototype.close, dlgNativeShow = HTMLDialogElement.prototype.showModal;
+function dlgAbortClose(d){
+  const a = d.__closing;
+  if (!a) return false;
+  d.__closing = null;
+  a.forEach(x => x.cancel());
+  return true;
+}
+const dlgNow = d => { dlgAbortClose(d); dlgNativeClose.call(d); };
+if (DLG_JS){
+  document.documentElement.classList.add('dlg-js');
+  HTMLDialogElement.prototype.close = function(rv){
+    const d = this;
+    if (d.__closing) return;
+    if (!d.open || inVT || motionReduced() || !d.animate) return dlgNativeClose.call(d, rv);
+    const opt = { duration: MO_S * motionK(), easing: 'ease-in', fill: 'forwards' };
+    const a = [d.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 8px' }], opt)];
+    try { a.push(d.animate([{ opacity: 1 }, { opacity: 0 }], { ...opt, pseudoElement: '::backdrop' })); } catch (_) {}
+    d.__closing = a;
+    Promise.all(a.map(x => x.finished)).then(() => {
+      if (d.__closing !== a) return;
+      d.__closing = null;
+      dlgNativeClose.call(d, rv);
+      a.forEach(x => x.cancel());
+    }, () => {});
+  };
+  // opening again while it closes: it stays open
+  HTMLDialogElement.prototype.showModal = function(){
+    if (dlgAbortClose(this)) return;
+    return dlgNativeShow.call(this);
+  };
+}
 const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid], .hz-bar, .hz-talk, .vt-card, .vt-tk, .week-blk:not(.week-off), .week-tk:not([hidden])';
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
@@ -4988,7 +5041,9 @@ function txStart(kind, fn, from, opts){
     mxClear();
     const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
     const t0 = performance.now(), y0 = window.scrollY;
-    const out = fn();
+    inVT = true;
+    let out;
+    try { out = fn(); } finally { inVT = false; }
     void document.body.offsetHeight;
     txNote(performance.now() - t0, opts.to);
     // a page that jumped (to the top of a new view): the old picture goes at once, so the
@@ -7018,10 +7073,13 @@ function fillEventDialog(sid, tid){
 // (null when only the history knows what was open).
 let dlgSeq = 0, dlgDoneSeq = 0;
 function openEventDialog(button, sid, tid, fromHistory, still){
+  // opened again while it closes (DLG_JS): that closing is over, the dialog stays open
+  const again = dlgAbortClose(eventDialog);
+  if (again) eventDialogDone();
   fillEventDialog(sid, tid);
   dialogTrigger = button;
   dialogBefore = new Set(state.starred);
-  if (!eventDialog.open){ dlgSeq++; dlgClosing = false; if (!fromHistory) dlgHistoryOpen(sid, tid); }
+  if (!eventDialog.open || again){ dlgSeq++; dlgClosing = false; if (!fromHistory) dlgHistoryOpen(sid, tid); }
   const open = () => { hideToast(); if (!eventDialog.open) eventDialog.showModal(); eventDialog.scrollTop = 0; };
   // the dialog grows out of the block that opened it (not from inside another dialog)
   if (still || !button || button.closest('dialog') || !button.getClientRects().length) open();
@@ -7068,7 +7126,7 @@ eventDialog.addEventListener('click', e => {
   const jump = e.target.closest('[data-goprogram]');
   if (jump){
     delete eventDialog.dataset.changed;
-    eventDialog.close();
+    dlgNow(eventDialog);
     dlgHistoryClose();
     if (buildDialog.open){ bd.nav = true; buildDialog.close(); pnlHistoryClose(); }
     openInProgram(jump);
@@ -7236,6 +7294,39 @@ function focusQuiet(el){
   if (vt) vt.finished.then(check, check);
   else requestAnimationFrame(() => requestAnimationFrame(check));
 }
+// My agenda's rows (content-visibility) have only estimated heights until they have been
+// on screen, and a redraw replaces them all: the rows above shift, and with them the page.
+// A removal or an Undo names a row that should stay where it is (or land where the removed
+// one stood); this puts it there, by scrolling, once the redraw has been laid out, and
+// again as rows scrolled to meet the screen take their true heights.
+// ...and the rows keep the heights they had (a redraw made for a removal or an Undo draws
+// them with these as their estimates: nothing above the change moves)
+let agHeights = null;
+function agRemember(){
+  agHeights = new Map();
+  for (const r of document.querySelectorAll('#builderList .ag-row')){
+    const b = r.querySelector('.rm'), cs = getComputedStyle(r);   // (the estimate is of the content box)
+    const h = Math.round(r.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth));
+    if (b && h > 0) agHeights.set(b.dataset.sstar || b.dataset.tstar, h);
+  }
+}
+const agRowBtn = id => document.querySelector(`#builderList [data-sstar="${CSS.escape(id)}"], #builderList [data-tstar="${CSS.escape(id)}"]`);
+const agRowTop = el => { const r = el && (el.closest('.ag-row') || el); return r && r.getClientRects().length ? r.getBoundingClientRect().top : null; };
+function agKeepStill(find, top){
+  let calm = 0, n = 0;
+  const fix = () => {
+    const t = agRowTop(find());
+    if (t === null) return true;
+    const d = t - top;
+    if (Math.abs(d) > 1){ window.scrollBy({ top: d, behavior: 'instant' }); calm = 0; } else calm++;
+    return false;
+  };
+  fix();
+  const again = () => { if (++n < 12 && !fix() && calm < 2) requestAnimationFrame(again); };
+  const vt = viewTx && viewTx.vt;
+  if (vt) vt.finished.then(() => requestAnimationFrame(again), () => requestAnimationFrame(again));
+  else requestAnimationFrame(again);
+}
 function dropUndo(){
   clearInterval(undoTimer);
   if (!undoSnapshot && undoBar.hidden) return;
@@ -7319,15 +7410,20 @@ document.getElementById('clearAgenda').addEventListener('click', () => {
 });
 function undoNow(){
   if (!undoSnapshot) return false;
-  const restore = undoSnapshot.ids, removed = restore.filter(id => !state.starred.has(id));
+  const restore = undoSnapshot.ids, removed = restore.filter(id => !state.starred.has(id)), snapStill = undoSnapshot.still;
   undoSnapshot = null;
   dropUndo();
+  // the row that was next to the removal stays, or the one that comes back lands in its place
+  const still = snapStill && removed.length === 1 && removed[0] === snapStill.id ? snapStill : null,
+    refTop = still && agRowTop(agRowBtn(still.key));
   state.starred = new Set(restore);
   persistStars();
   paintStarCount();
+  agRemember();
   // what comes back opens out, the rest make room
   withTransition('mx', () => {
-    rerender();
+    try { rerender(); } finally { agHeights = null; }
+    if (still && refTop !== null) agKeepStill(() => agRowBtn(still.at ? still.id : still.key), refTop);
     toast('Agenda restored');
     // back to what came back, or the top of My agenda
     const back = removed.flatMap(id => [...document.querySelectorAll(`#builder [data-sstar="${id}"], #builder [data-tstar="${id}"], #agenda [data-talk-detail="${id}"], #agenda [data-session-detail="${id}"][data-talk-detail=""]`)])
@@ -7443,9 +7539,23 @@ document.getElementById('builder').addEventListener('click', e => {
   if (rm){
     const id = rm.dataset.sstar || rm.dataset.tstar;
     const removedIndex = [...document.querySelectorAll('#builder .rm')].indexOf(rm);
+    // the row that stays put: the one before, if it shows on screen (the removed row folds
+    // away under the next, which closes up to its place); else the next one lands where the
+    // removed one stood (not when saved talks of a removed session take its place)
+    const rmRow = rm.closest('.ag-row'), rms = [...document.querySelectorAll('#builderList .ag-row .rm')];
+    const onScreen = b => { const r = b.closest('.ag-row').getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+    const prev = rms.filter(b => b.compareDocumentPosition(rm) & Node.DOCUMENT_POSITION_FOLLOWING && !rmRow.contains(b)).pop(),
+      next = rms.find(b => b.compareDocumentPosition(rm) & Node.DOCUMENT_POSITION_PRECEDING && !rmRow.contains(b)),
+      key = b => b.dataset.sstar || b.dataset.tstar,
+      still = rm.dataset.inSession || !rmRow ? null
+        : prev && onScreen(prev) ? { id, key: key(prev), top: agRowTop(prev), at: false }
+        : next && !rmRow.classList.contains('has-inner') ? { id, key: key(next), top: agRowTop(rm), at: true } : null;
+    agRemember();
     // the row folds away and the rest close up
     withTransition('mx', () => {
-      removeStars([id]);
+      try { removeStars([id]); } finally { agHeights = null; }
+      if (still && undoSnapshot) undoSnapshot.still = still;
+      if (still) agKeepStill(() => agRowBtn(still.key), still.top);
       // a talk unstarred inside its saved session: stay on that session
       const host = rm.dataset.inSession && document.querySelector(`#builder [data-sstar="${rm.dataset.inSession}"]`);
       if (host){ focusQuiet(host); return; }
@@ -8829,20 +8939,20 @@ window.addEventListener('popstate', e => {
   const op = openPanelName(), shut = op && st.pnl !== op;
   if (eventDialog.open && !st.dlg){
     dlgEntry = false;
-    if (same && !shut) closeEventDialog(); else { eventDialog.close(); eventDialogDone(); }
+    if (same && !shut) closeEventDialog(); else { dlgNow(eventDialog); eventDialogDone(); }
   }
   if (shut){ pnlEntry = ''; PANELS[op]().close(); }
   dlgEntry = !!st.dlg;
   pnlEntry = st.pnl && PANELS[st.pnl] ? st.pnl : '';
   // Forward (or Back) onto an open panel or details step opens them again
   const reopenPnl = pnlEntry && !PANELS[pnlEntry]().open ? pnlEntry : '';
-  const reopen = st.dlg && !eventDialog.open && (talkById(st.dlg.t) || slotById(st.dlg.s)) ? st.dlg : null;
+  const reopen = st.dlg && (!eventDialog.open || eventDialog.__closing) && (talkById(st.dlg.t) || slotById(st.dlg.s)) ? st.dlg : null;
   if (same){
     if (reopenPnl) openPanel(reopenPnl);
     if (reopen) openEventDialog(detailButton(reopen.s, reopen.t), reopen.s, reopen.t, true);
     return;
   }
-  for (const d of [displayDialog, moveDialog, buildDialog]) if (d.open) d.close();
+  for (const d of [displayDialog, moveDialog, buildDialog]) if (d.open) dlgNow(d);
   clearTimeout(qTimer); qPending = null;
   const r = readHash();
   if (st.o === 'h' || st.o === 'v'){
@@ -9474,6 +9584,7 @@ function tbCompact(on){
     const p = run.a.effect.getComputedTiming().progress;
     vis = p === null ? run.to : run.from + (run.to - run.from) * p;
     run.a.cancel();
+    if (run.e) run.e.cancel();
     TB.anim = null;
   }
   stickyWrap.classList.remove('tb-anim');
@@ -9516,7 +9627,11 @@ function tbCompact(on){
     stickyWrap.classList.add('tb-anim');
     const a = stickyWrap.animate([{ clipPath: `inset(0 0 ${full - h0}px 0)` }, { clipPath: `inset(0 0 ${full - h1}px 0)` }],
       { duration: MO_S * motionK(), easing: EASE });
-    TB.anim = { a, from: h0, to: h1 };
+    // the edge: the bar's own border sits at the bottom of its full box, under the clip
+    let e = null;
+    try { e = stickyWrap.animate([{ transform: `translateY(${h0 - 1}px)` }, { transform: `translateY(${h1 - 1}px)` }],
+      { duration: MO_S * motionK(), easing: EASE, pseudoElement: '::after' }); } catch (_) {}
+    TB.anim = { a, e, from: h0, to: h1 };
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
 }
@@ -9622,8 +9737,8 @@ window.addEventListener('hashchange', e => {
   if (!history.state) histIdx++;   // a new step
   // a new address closes the details and panels (their step stays behind it, for Back)
   dlgEntry = false; pnlEntry = '';
-  if (eventDialog.open){ eventDialog.close(); eventDialogDone(); }
-  for (const d of [displayDialog, moveDialog, buildDialog]) if (d.open) d.close();
+  if (eventDialog.open){ dlgNow(eventDialog); eventDialogDone(); }
+  for (const d of [displayDialog, moveDialog, buildDialog]) if (d.open) dlgNow(d);
   clearTimeout(qTimer); qPending = null; // the address wins over a search still being typed
   const r = readHash();
   showView(state.layout, state.scope);
@@ -9633,6 +9748,15 @@ setInterval(paintNow, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) paintNow(); });
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+// DLG_JS: Escape and the Close buttons go through close() too, to be animated
+if (DLG_JS) for (const d of document.querySelectorAll('dialog')){
+  d.addEventListener('cancel', e => { if (e.cancelable && !e.defaultPrevented){ e.preventDefault(); d.close(); } });
+  d.addEventListener('submit', e => {
+    if (e.defaultPrevented || !e.target.matches('form[method="dialog"]')) return;
+    e.preventDefault();
+    d.close(e.submitter && e.submitter.value || undefined);
+  });
 }
 start();
 </script>
