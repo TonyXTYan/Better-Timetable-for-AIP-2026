@@ -4611,7 +4611,8 @@ function mxBegin(kind, from, opts){
       // a rect inside `a` taken to the same place inside `b`
       const map = (r, a, b) => {
         const sx = b.width / (a.width || 1), sy = b.height / (a.height || 1);
-        return { left: b.left + (r.left - a.left) * sx, top: b.top + (r.top - a.top) * sy, width: r.width * sx, height: r.height * sy };
+        const left = b.left + (r.left - a.left) * sx, top = b.top + (r.top - a.top) * sy, width = r.width * sx, height = r.height * sy;
+        return { left, top, width, height, right: left + width, bottom: top + height };
       };
       // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
       // canvas do not spill past its edges while they move)
@@ -6623,7 +6624,10 @@ document.getElementById('includeParents').checked = savedFull();
 document.getElementById('includeParents').addEventListener('change', e => {
   try { localStorage.setItem('aip2026-full-sessions', e.target.checked ? '1' : '0'); } catch (err) {}
   // each saved talk's session grows out of it (or shrinks back into it); the rest move
-  withTransition('mx', () => renderCalendar(), null, { to: {}, reshape: true });
+  // the page stays where it was (quick toggles redraw while a morph is still running,
+  // and a redraw can briefly shorten the page and pull the scroll up)
+  const y = window.scrollY;
+  withTransition('mx', () => { renderCalendar(); if (Math.abs(window.scrollY - y) > 1) window.scrollTo({ top: y, behavior: 'instant' }); }, null, { to: {}, reshape: true });
 });
 
 const eventDialog = document.getElementById('eventDialog');
@@ -8701,6 +8705,7 @@ function displayFade(fn){
   try { vt = document.startViewTransition(run); }
   catch (e){ delete root.dataset.viewTx; run(); return; }
   const tx = viewTx = { vt, run };
+  vt.ready.catch(() => {});   // (a skipped fade: a newer change took over)
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
