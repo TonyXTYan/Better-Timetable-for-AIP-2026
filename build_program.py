@@ -6158,17 +6158,28 @@ function mxBegin(kind, from, opts){
         return { left, top, width, height, right: left + width, bottom: top + height };
       };
       // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
-      // canvas do not spill past its edges while they move). An edge inside the box gives a
-      // negative inset, not none: the item and its clip then move alike all the way (an
-      // inset held at 0 while the item comes inside would cut it short of the box's edge).
-      const clip = (r, c) => c ? `inset(${(c.top - r.top).toFixed(1)}px ${(r.right - c.right).toFixed(1)}px ${(r.bottom - c.bottom).toFixed(1)}px ${(c.left - r.left).toFixed(1)}px)` : 'inset(0px 0px 0px 0px)';
+      // canvas do not spill past its edges while they move)
+      const ins = (r, c) => c ? [c.top - r.top, r.right - c.right, r.bottom - c.bottom, c.left - r.left] : [0, 0, 0, 0];
+      const inset = v => `inset(${v.map(x => Math.max(0, x).toFixed(1) + 'px').join(' ')})`;
+      const clip = (r, c) => inset(ins(r, c));
+      // ...and from one rect to another (with the box moving between them: boxes): each
+      // side's inset moves on a straight line with the item, held at 0 once that edge is
+      // inside its box, with a keyframe where it gets there (between two keyframes only,
+      // the inset would reach 0 late and cut the item short of the box's edge; and a
+      // negative inset, which would not need the keyframe, makes every frame repaint)
+      const lerp = (a, b, q) => ({ left: a.left + (b.left - a.left) * q, top: a.top + (b.top - a.top) * q, width: a.width + (b.width - a.width) * q, height: a.height + (b.height - a.height) * q });
+      const clipKeys = (ra, ca, rb, cb, boxes) => {
+        const a = ins(ra, ca), b = ins(rb, cb), at = new Set([0, 1]);
+        for (let i = 0; i < 4; i++) if ((a[i] > 0) !== (b[i] > 0)){ const q = a[i] / (a[i] - b[i]); if (q > .002 && q < .998) at.add(q); }
+        return [...at].sort((x, y) => x - y).map(q => ({ offset: q, clipPath: inset(a.map((x, i) => x + (b[i] - x) * q)), ...(boxes ? box(lerp(ra, rb, q)) : {}) }));
+      };
       // (only an item that reaches past its box at either end needs the clip: each
       // animation costs a style pass, and a grid in a scroll box has dozens of items)
       const out = x => x.c && (x.r.left < x.c.left - 1 || x.r.right > x.c.right + 1 || x.r.top < x.c.top - 1 || x.r.bottom > x.c.bottom + 1);
       const clipped = (...xs) => xs.some(out);
       const same = (a, b) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2;
       for (const { key, o, n } of plan.pairs){
-        if (clipped(o, n)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(n.r, n.c) }]);
+        if (clipped(o, n)) run(key, 'group', clipKeys(o.r, o.c, n.r, n.c));
         // a cover that stays where it is but whose contents change (the ruler and minimap
         // at another zoom, with Now somewhere else): the new one replaces the old quickly,
         // rather than the two showing over each other all the way
@@ -6186,14 +6197,14 @@ function mxBegin(kind, from, opts){
       }
       plan.grow.forEach(({ key, n, po, pn }, i) => {
         const from = map(n.r, pn.r, po.r);
-        run(key, 'group', [{ ...box(from), clipPath: clip(from, po.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
+        run(key, 'group', clipKeys(from, po.c, n.r, n.c, true));
         run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: MO_S, delay: 25 + Math.min(i, 5) * 12, easing: EASE });
       });
       // folding is unfolding run backwards: each talk shrinks into its place in the
       // session and only then fades (and lifts), the first to unfold the last to go
       plan.fold.forEach(({ key, o, po, pn }, i) => {
         const to = map(o.r, po.r, pn.r);
-        run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, pn.c) }]);
+        run(key, 'group', clipKeys(o.r, o.c, to, pn.c, true));
         run(key, 'old', [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-4px)' }], { duration: MO_S, delay: Math.max(0, MX_MS - MO_S - 25 - Math.min(i, 5) * 12), easing: 'cubic-bezier(1,0,.8,1)' });
       });
       for (const { key, o } of plan.fade){
@@ -6221,11 +6232,11 @@ function mxBegin(kind, from, opts){
       // shrinking, the reverse, fading out at the end
       const at = (r, b) => `${Math.round(r.left - b.left)}px ${Math.round(r.top - b.top)}px`;
       for (const { key, n, from } of plan.emerge){
-        run(key, 'group', [{ ...box(from), clipPath: clip(from, n.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
+        run(key, 'group', clipKeys(from, n.c, n.r, n.c, true));
         run(key, 'new', [{ objectPosition: at(n.r, from), opacity: 0 }, { opacity: 1, offset: .35 }, { objectPosition: '0px 0px', opacity: 1 }]);
       }
       for (const { key, o, to } of plan.sink){
-        run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, o.c) }]);
+        run(key, 'group', clipKeys(o.r, o.c, to, o.c, true));
         run(key, 'old', [{ objectPosition: '0px 0px', opacity: 1 }, { opacity: 1, offset: .55 }, { objectPosition: at(o.r, to), opacity: 0 }]);
       }
     },
@@ -6540,15 +6551,15 @@ function txNote(ms, to){
 // A view's redraw time: as last time, or for one not drawn yet, guessed from this one's
 // (on this device), half as long again when a calendar day turns its sessions into
 // talks, and for All week from a day, as many times as it has the day's sessions (up to
-// three times: the first All week is drawn from cold, and its first change is the one
-// the guess sets the level of).
+// twice: the first All week is drawn from cold, and its first change is the one the
+// guess sets the level of).
 function txGuess(to){
   if (txCost.has(txKey(to))) return txCost.get(txKey(to));
   const v = { ...state, ...to };
   let k = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
   if (v.day === 'all' && state.day !== 'all' && v.scope === 'program'){
     const n = programCounts();
-    k = Math.min(3, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
+    k = Math.min(2, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
   }
   return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * k;
 }
