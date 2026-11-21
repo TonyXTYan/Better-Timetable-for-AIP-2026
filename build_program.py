@@ -1104,6 +1104,8 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .vt-list .vt-card.is-now{box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--cbg),inset 6px 0 var(--na)}
 /* the week overview on a phone: today keeps its doublet glyph, over the date */
 @media (max-width:720px){.week-dayh.today .na-glyph{display:block;margin:0 0 2px}}
+/* print has no sodium: no notches on bars and cards, no doublet edge on the phone list */
+@media print{.hz-day .hz-bar.is-now.hz-now-in::before{display:none}.vt-grid div.vt-card.now-in,.vt-agenda div.vt-card.now-in>.vt-hd{background-image:none!important}.vt-list .vt-card.is-now{box-shadow:none}}
 
 /* ---------- agenda ---------- */
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
