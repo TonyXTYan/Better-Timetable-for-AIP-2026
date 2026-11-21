@@ -2508,8 +2508,10 @@ html[data-view-tx="dlg"] #eventDialog,html[data-view-tx="dlg"] #eventDialog::bac
    tint; at once on press, eased on release. No square tap highlight from the browser.
    Focus rings are not touched. With motion reduced, only the tint. */
 html{-webkit-tap-highlight-color:transparent}
-:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,#clr,#grpclr,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,details.talk-d>summary,.linkish){transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
-:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,#clr,#grpclr,.seg label):not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
+/* (the two ids have rules of their own: an id inside :is() would lend the whole list its
+   weight, and this rule would then override the segmented controls' colour cross-fade) */
+:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,details.talk-d>summary,.linkish),#clr,#grpclr{transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
+:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,.seg label):not(:disabled):active,#clr:not(:disabled):active,#grpclr:not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
 .agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
 .dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
 :is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
@@ -2773,7 +2775,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
    tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
 .agenda-views>button[aria-disabled="true"],.agenda-views>button[aria-disabled="true"]:hover{background:transparent;color:var(--faint);cursor:not-allowed}
 .agenda-views>button[aria-disabled="true"]:active{scale:none;filter:none}
-@media (forced-colors:active){.agenda-views>button[aria-disabled="true"]{color:GrayText}}
+@media (forced-colors:active){.agenda-views>button[aria-disabled="true"],.agenda-views>button[aria-disabled="true"]:hover{color:GrayText}}
 .dd-switch{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;margin:0 0 8px;padding:10px 12px 10px 14px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);color:var(--ink);text-align:left;min-height:52px}
 .dd-switch:hover{border-color:var(--hover-line)}
 .dd-switch:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -11515,8 +11517,10 @@ function tbCompact(on){
   const run = TB.anim, follow = tbFollowers();
   let vis = null;
   if (run){
+    // (no progress yet: it was made this frame and has not started, so the bar still shows
+    // where it started from, the value set inline; a finished one holds its end, at 1)
     const p = run.a.effect.getComputedTiming().progress;
-    vis = p === null ? run.to : run.from + (run.to - run.from) * p;
+    vis = p === null ? run.from : run.from + (run.to - run.from) * p;
     tbAnimEnd(run);
   }
   stickyWrap.classList.remove('tb-anim');
