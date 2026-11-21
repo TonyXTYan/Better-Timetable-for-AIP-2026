@@ -1295,7 +1295,7 @@ footer .colophon p{max-width:80ch}
 .ag-menu-list .danger:not(:disabled){color:var(--danger-ink)}
 .ag-menu-list .danger:not(:disabled):hover,.ag-menu-list .danger:focus-visible{background:var(--danger-bg)}
 .ag-menu-sep{height:1px;margin:6px -6px;background:var(--line)}
-.toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
+.toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink)}
 /* Undo after a removal: a bar at the foot of the screen, wherever the list is scrolled */
 .undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:var(--r-plate);box-shadow:inset 0 0 0 1px var(--toast-ring),0 12px 28px -8px var(--pop-shadow);font-size:0.875rem}
 .undo-bar[hidden]{display:none}
@@ -1390,7 +1390,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
 .hz-sl{left:0}.hz-sr{right:0}
-.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:1.5px solid var(--ink);border-radius:4px;background:color-mix(in srgb,var(--ink) 6%,transparent);cursor:grab}
+.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:1.5px solid var(--ink);border-radius:5px;background:color-mix(in srgb,var(--ink) 6%,transparent);cursor:grab}
 .hz-brush:active{cursor:grabbing}
 .hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .hz-day.stuck .hz-brush{border-radius:3px}
@@ -1601,7 +1601,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-grid .vt-nowl{z-index:1}
 /* inside a card it crosses, the doublet shows in the card's margins and between its talks
    (drawn on the card's own background, so under its text) */
-.vt-grid .vt-card.now-in{background-image:linear-gradient(180deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));background-size:100% var(--doublet-w);background-repeat:no-repeat;background-position:0 calc(var(--nowy) - var(--doublet-w) / 2)}
+/* inside a card the doublet sits behind the text at reduced strength, so it never reads as a strike-through */
+.vt-grid .vt-card.now-in{--na-in:color-mix(in srgb,var(--na) 42%,transparent);background-image:linear-gradient(180deg,var(--na-in) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na-in) 0 var(--doublet-w));background-size:100% var(--doublet-w);background-repeat:no-repeat;background-position:0 calc(var(--nowy) - var(--doublet-w) / 2)}
 .vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:var(--r-tag);background:var(--na-fill);color:var(--na-ink);box-shadow:0 0 0 1px var(--na);font-size:.6875rem;font-weight:750;line-height:1.35;text-align:center;z-index:4;pointer-events:none;animation:vt-pill calc(120ms * var(--mo,1)) ease-out both}
 @keyframes vt-pill{from{opacity:0}}
 .vt-agenda .vt-card.now-in .vt-tk.dim{background:var(--body)}
@@ -1672,7 +1673,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-style:italic;font-weight:480}
 .vt-conv.rm{font-style:normal;font-weight:520}
 .vt-count{flex:0 0 auto;white-space:nowrap}
-.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 8px;font:inherit;font-weight:650;color:var(--bar-ink);cursor:pointer;border-radius:4px;white-space:nowrap;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 8px;font:inherit;font-weight:650;color:var(--bar-ink);cursor:pointer;border-radius:5px;white-space:nowrap;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 @media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}.vt-go,.vt-picker button,.dv-keyb{min-height:40px}}
 .vt-tog:hover{border-color:var(--ink)}
 .vt-tog:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -1715,7 +1716,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
    times: starred talks solid, the session's other talks quiet. A starred talk on its own
    is a talk card (white, stream outline, speakers, "in <session>"); with Show full
    sessions it sits in a dashed ghost of its session. A clash keeps the stream colours:
-   an orange outline and a hatched orange band along the top, plus its badge, and each
+   a fine ink outline and ink fringes along the top, plus its badge, and each
    clash is marked on the time axis. */
 .pv-list{margin:6px 0 0;padding-left:1.1rem}
 .pv-list li{margin:3px 0}
@@ -1727,7 +1728,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ak-sw{display:inline-block;flex:none;width:1.5rem;height:.875rem;border-radius:3px;box-sizing:border-box;position:relative;overflow:hidden}
 .ak-dim{border:1px dashed var(--ink-2)}
 .ak-cx{outline:2px solid var(--warn-ink);outline-offset:-2px;background:var(--surface-2)}
-.ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+.ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
 .vt-agenda .ag-key{margin-top:-4px}
 /* the key as a popover from a Key button (phones and short landscape screens) */
 .dv-keyb{display:none;align-items:center;justify-content:center;flex:none;min-height:28px;padding:0 8px;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);color:var(--ink);font:inherit;font-size:.75rem;font-weight:650;line-height:1;cursor:pointer}
@@ -1777,8 +1778,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:1px 4px}
 .k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
 :root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
-.has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);box-shadow:inset 0 1px 0 var(--warn-ink)}
-.hz-bar.has-clash,.vt-card.has-clash{outline:2px solid var(--warn-ink);outline-offset:1px}
+/* a clash: interference fringes (fine ink lines) along the top edge, as in the list, and a fine ink ring */
+.has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);box-shadow:inset 0 1px 0 var(--warn-ink)}
+.hz-bar.has-clash,.vt-card.has-clash{outline:1.5px solid var(--warn-ink);outline-offset:1px}
 .vt-card{position:relative}
 .vt-card.has-clash .vt-hd{padding-top:3px}
 .hz-agenda .hz-bar{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c);border-radius:5px}
@@ -1871,7 +1873,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .week-h .week-tk{top:calc(var(--bs) + (100% - var(--bs)) * (var(--l) + var(--w)) / 100 - 13px);height:11px;left:calc(var(--a) * 1% + 1px + (var(--h) * 1% - 2px) * var(--ta) / 100);width:calc((var(--h) * 1% - 2px) * var(--tw) / 100);min-width:12px}
 .week-h .week-tk::before{top:0;height:calc(100% - 1px)}
 .week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
-.week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
+.week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
 /* a clash's stripe keeps clear of the label (weekFit counts the extra 2px) */
 .week-blk.has-clash span,.week-blk.has-clash.week-ab::before{padding-top:4px}
 .week-blk.has-clash.week-up::before{padding-top:6px}
@@ -1965,7 +1967,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--faint))}
 /* the list speaks as the calendars do: a session row is tinted (its saved talks nested in
    it as white talk cards), a talk row is a white card outlined in its stream colour; a
-   clash adds an orange outline and a hatched band, keeping the stream colours */
+   clash adds ink fringes beside the stream line, keeping the stream colours */
 /* a clash: fringes (fine ink lines) beside the stream line, on the clash ground */
 .ag-row.has-clash{background:var(--clash-row-bg)}
 .ag-row.has-clash::after{content:"";position:absolute;left:5px;top:0;bottom:0;width:7px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);pointer-events:none}
@@ -2392,7 +2394,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .pp-sort.agenda-views button{flex:1;min-height:40px;padding:6px 6px}
   .pp-body{grid-template-columns:minmax(0,1fr) 20px;gap:0 6px;margin-right:-10px}
   .pp-letters{width:20px;padding:2px 0}
-  .pp-letters button{font-size:.625rem;border-radius:4px}
+  .pp-letters button{font-size:.625rem;border-radius:var(--r-tag)}
   .pp-rail-in{height:min(calc(var(--n,26) * 1.25rem),100%)}
 }
 @media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
@@ -2579,7 +2581,7 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 /* Mouse and keyboard wording versus touch wording */
 .on-touch{display:none}
 @media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
-.hero kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
+.hero kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
 @media (hover:none),(pointer:coarse){.kbd-hint{display:none!important}}
 /* Result line: a quick "Search all week" and what a short form matched */
 .result-line{overflow-wrap:anywhere}
