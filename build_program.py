@@ -1088,12 +1088,20 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .hz-bar>.hz-head{border-bottom-color:var(--line)}
 .hz-agenda :is(div,button).hz-bar{border-color:var(--line);border-left-color:var(--c)}
 .vt-agenda div.vt-card{border-color:var(--line);border-left-color:var(--c)}
-#vtPop:not(.tk,.ctx){border-color:var(--line);border-left-color:var(--c)}
 div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
+/* a cut bar's or card's pop-over stands in for it while it is pointed at or focused: drawn
+   as the hovered bar (its hairline in the stream colour), with the ink ring while a bar in
+   that day has keyboard focus */
+.hz-day>.hz-pop:not(.tk,.ctx){border-color:var(--c);outline:0}
+.hz-day:has(:is(button.hz-bar,.hz-head,.hz-talk):focus-visible)>.hz-pop{outline:2px solid var(--ink);outline-offset:-2px}
+#vtPop:not(.tk,.ctx){border-color:var(--c)}
 .vt-card .vt-open:hover{outline:0}
 /* a talk on now nested in a My agenda card: the card's notches mark now (no doublet bracket
    down the talk's rounded edge) */
 .vt-agenda .vt-tk.is-now{box-shadow:none;padding-left:6px}
+/* the phone's vertical view is a list by start time (no now line): a card on now takes the
+   list's mark, the doublet down its left edge, just inside its stream line */
+.vt-list .vt-card.is-now{box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--cbg),inset 6px 0 var(--na)}
 /* the week overview on a phone: today keeps its doublet glyph, over the date */
 @media (max-width:720px){.week-dayh.today .na-glyph{display:block;margin:0 0 2px}}
 
