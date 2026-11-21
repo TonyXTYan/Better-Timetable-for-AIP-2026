@@ -505,29 +505,34 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
    group code and shortened title (plenaries and breaks are bands behind them); a click
    opens that day. The ruler (horizontal) or day heads (vertical) stick under the toolbar
    and follow the sideways scroller, which only scrolls across, never down. */
-.week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-full,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:10px 12px 12px;box-shadow:var(--shadow)}
-.week-hint{margin:0 0 8px;font-size:.8125rem;color:var(--muted)}
+/* The whole week as a spectrogram: each session a solid line segment in its stream's
+   colour, on day columns of the palest grey; now is the sodium doublet. A plate, set
+   condensed and tabular. */
+.week-ov{--wh:clamp(30rem, calc(100vh - var(--toolbar-full,150px) - 10rem), 52rem);--wgap:6px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);padding:14px 16px 16px;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
+.week-hint{margin:0 0 12px;font-size:.8125rem;font-stretch:100%;color:var(--muted);max-width:72ch}
 .week-rul{position:sticky;top:var(--toolbar-h,150px);z-index:7;overflow:hidden;overflow:clip visible;background:var(--card);padding-bottom:6px}
 .week-sc{overflow:auto hidden;overscroll-behavior-x:contain}
 .week-head,.week-v .week-body{display:grid;grid-template-columns:2.6rem var(--week-cols);column-gap:var(--wgap)}
-.week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;text-align:left;cursor:pointer}
-.week-dayh small{font-size:.6875rem;font-weight:500;color:var(--muted)}
+.week-dayh{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);color:var(--ink);font:inherit;font-size:.8125rem;font-weight:700;line-height:1.25;text-align:left;cursor:pointer;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.week-dayh small{font-size:.75rem;font-weight:500;color:var(--muted)}
+.week-dayh:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.week-dayh .na-glyph{margin-right:5px}
 .week-dayh.week-dnar{flex-wrap:nowrap;white-space:nowrap}
 .week-dnar .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
-.week-dayh.today{background:var(--today-bg);border-color:var(--danger-line);color:var(--today-ink)}
-.week-dayh.today small{color:inherit}
+.week-dayh.today{background:var(--na-bg);border-color:var(--na);color:var(--ink)}
+.week-dayh.today small{color:var(--na-text)}
 .week-v .week-body{height:var(--wh)}
 .week-axis{position:relative}
-.week-axis span{position:absolute;font-size:.6875rem;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.week-axis span{position:absolute;font-size:.6875rem;font-weight:550;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .week-v .week-axis span{top:calc(var(--p) * 1%);right:2px;transform:translateY(-50%)}
 .week-v .week-sc{padding-top:.4rem}
 .week-v .week-axis{position:sticky;left:0;z-index:3;background:var(--card)}
-.week-col{position:relative;border-radius:6px;background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
-.week-col.today{box-shadow:0 0 0 1px var(--danger-line)}
-.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:3px;background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
+.week-col{position:relative;border-radius:var(--r-tag);background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
+.week-col.today{box-shadow:0 0 0 1px color-mix(in srgb,var(--na) 45%,transparent)}
+.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:var(--r-line);background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
 .week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual;pointer-events:none}
-.week-blk b{font-weight:800;letter-spacing:.02em}
+.week-blk b{font-weight:720}
 .week-n::after{content:attr(data-n)}
 .week-blk em{font-style:normal}
 .week-blk.week-bdg em{display:none}
@@ -545,48 +550,57 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-h .week-blk.has-tk.week-up::before{max-height:calc(100% - 13px)}
 .week-blk.week-tiny span{padding:2px 1px 0;font-size:.82em;letter-spacing:-.02em}
 /* parallel items beyond what a vertical column has room for, folded into one chip */
-.week-blk.week-nmore{justify-content:center;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink-2);border-radius:5px;font-weight:800;letter-spacing:-.02em}
+.week-blk.week-nmore{justify-content:center;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-2);border-radius:var(--r-tag);font-weight:720}
 .week-blk.week-nmore span{display:block;padding:3px 0 0;white-space:nowrap}
 /* a tall block too narrow for any label across shows its stream code, letters upright
    one under another (never sideways text); the full name is in its tooltip and name */
 .week-blk.week-up{justify-content:center}
 .week-blk.week-up span{display:none}
-.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;text-transform:uppercase;padding-top:4px;font-size:var(--upf,.6875rem);font-weight:800;line-height:1.05;letter-spacing:-.22em;pointer-events:none;box-sizing:border-box;max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.week-blk.week-up::before{content:attr(data-code);writing-mode:vertical-lr;text-orientation:upright;padding-top:4px;font-size:var(--upf,.6875rem);font-weight:720;line-height:1.05;letter-spacing:-.22em;pointer-events:none;box-sizing:border-box;max-height:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .week-blk.week-ab{justify-content:center}
 .week-blk.week-ab span{display:none}
-.week-blk.week-ab::before{content:attr(data-ab);padding-top:2px;font-weight:800;line-height:1.12;white-space:nowrap;overflow:hidden;pointer-events:none}
-.week-upm{position:absolute;left:0;top:0;visibility:hidden;writing-mode:vertical-lr;text-orientation:upright;font-size:var(--upf,.6875rem);font-style:normal;font-weight:800;line-height:1.05;letter-spacing:-.22em;white-space:nowrap;pointer-events:none}
+.week-blk.week-ab::before{content:attr(data-ab);padding-top:2px;font-weight:720;line-height:1.12;white-space:nowrap;overflow:hidden;pointer-events:none}
+.week-upm{position:absolute;left:0;top:0;visibility:hidden;writing-mode:vertical-lr;text-orientation:upright;font-size:var(--upf,.6875rem);font-style:normal;font-weight:720;line-height:1.05;letter-spacing:-.22em;white-space:nowrap;pointer-events:none}
 .week-blk:hover,.week-blk:focus-visible{outline:2px solid var(--ink);outline-offset:1px;z-index:4}
-.week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:2px;background:var(--cbg);color:var(--c);z-index:1}
+.week-blk:focus-visible{box-shadow:0 0 0 1px var(--card)}
+.week-blk.week-band{left:0;width:100%;border-left:3px solid var(--c);border-radius:var(--r-line);background:var(--cbg);color:var(--bar-ink);z-index:1}
 .week-band span{display:block;padding:2px 4px 0;white-space:nowrap;text-overflow:ellipsis;font-weight:650}
-.week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:3px;background:var(--cbg);color:var(--c);font-size:.6875rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-.week-blab-over{box-shadow:0 1px 3px var(--pop-shadow)}
+.week-blab{position:absolute;z-index:3;box-sizing:border-box;padding:1px 3px;border-radius:var(--r-line);background:var(--cbg);color:var(--bar-ink);font-size:.6875rem;font-weight:650;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.week-blab-over{box-shadow:0 0 0 1px var(--card)}
 /* past: the stream tint with dark text (light text in dark mode) and a thin stream-colour
    outline, instead of a dimmed solid block */
 .week-blab.week-past{color:var(--past-ink)}
 .week-blk.week-past:not(.week-band){background:var(--cbg);color:var(--past-ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent)}
 .week-blk.week-band.week-past{border-left-color:color-mix(in srgb,var(--c) 45%,var(--line))}
-.week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.6875rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.week-dayh.week-pastday::after{content:"Past";width:100%;font-size:.75rem;font-weight:500;color:var(--muted)}
 /* a head on one line keeps "Past" for screen readers only, and is muted instead */
 .week-dayh.week-dnar.week-pastday{color:var(--muted)}
 .week-dayh.week-dnar.week-pastday::after{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.week-title{margin:0 0 2px;font-size:1rem;font-weight:800;line-height:1.3}
-.week-title small{margin-left:6px;font-size:.8125rem;font-weight:600;color:var(--muted)}
+.week-title{margin:0 0 2px;font-size:1.125rem;font-weight:700;font-stretch:100%;line-height:1.3}
+.week-title small{margin-left:8px;font-size:.8125rem;font-weight:500;font-stretch:var(--stretch-cond);color:var(--muted)}
 .wh-tch{display:none}
 @media (hover:none),(pointer:coarse){.wh-ptr{display:none}.wh-tch{display:inline}}
 .week-sx{--sx-l:calc(2.6rem + var(--wgap))}
 .week-h .week-sx{--sx-l:calc(var(--dl) + var(--wgap))}
 /* the pagers hang just under the day heads (or ruler), over the faded edge of the days,
    so they never cover a head's date or count */
-.week-rul .sx-more{top:calc(100% + 2px);min-height:24px;transform:none;padding:0 8px;font-size:.6875rem;box-shadow:0 1px 4px var(--pop-shadow)}
+.week-rul .sx-more{top:calc(100% + 4px);min-height:28px;transform:none;gap:4px;padding:0 10px;border:1px solid var(--hover-line);border-radius:var(--r-ctl);background:var(--card);color:var(--ink);font-size:.75rem;font-weight:650;box-shadow:none}
+.week-rul .sx-more.l{padding-left:6px}
+.week-rul .sx-more.r{padding-right:6px}
+.week-rul .sx-more:hover{background:var(--surface-3)}
+.week-rul .sx-more svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+@media (pointer:coarse){.week-rul .sx-more{min-height:36px}}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
-.week-now{position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:2px;margin-top:-1px;border-radius:2px;background:var(--live-ink);z-index:1;pointer-events:none}
-.week-now::before{content:"";position:absolute;left:-2px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--live-ink)}
+.week-now{--dw:var(--doublet-w);--dl:calc((var(--dw) - 2px) / 2);position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:var(--dw);margin-top:calc(var(--dw) / -2);z-index:1;pointer-events:none}
+.week-now::before,.week-now::after{content:"";position:absolute;left:0;right:0;height:var(--dl);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
+.week-now::before{top:0;--na-from:0 calc(var(--dw) / 4 + .5px)}
+.week-now::after{bottom:0;--na-from:0 calc(var(--dw) / -4 - .5px)}
 .week-now[hidden]{display:none}
-.week-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 0 0 calc(2.6rem + var(--wgap));padding:0;list-style:none;font-size:.75rem;color:var(--ink-2)}
+.week-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:12px 0 0 calc(2.6rem + var(--wgap));padding:0;list-style:none;font-size:.75rem;font-weight:550;color:var(--ink-2)}
 .week-legend li{display:flex;align-items:center;gap:6px}
-.week-legend i{flex:none;width:.75rem;height:.75rem;border-radius:3px;background:var(--c)}
+.week-legend i{flex:none;position:relative;width:3px;height:12px;border-radius:1px;background:var(--c)}
+.week-legend .wk-k i,.week-legend .week-lcx i{width:.75rem;height:.75rem;border-radius:var(--r-line)}
 .week-legend li.week-off{opacity:.45;text-decoration:line-through}
 /* Horizontal: one row per day (label pinned on the left), time across on a shared axis
    that fits the width where it can; each day row is as tall as its busiest cluster,
@@ -599,11 +613,11 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-h .week-rul{padding-bottom:4px}
 .week-h .week-rul::before{content:"";position:absolute;z-index:1;left:0;top:0;bottom:0;width:calc(var(--dl) + var(--wgap));background:var(--card);opacity:0}
 .week-h.week-scrolled .week-rul::before{opacity:1}
-.week-h .week-axis{height:1.25rem;border-bottom:1px solid var(--line)}
-.week-h .week-axis span{left:calc(var(--p) * 1%);bottom:4px;transform:translateX(-50%)}
+.week-h .week-axis{height:1.375rem;border-bottom:1px solid var(--hover-line)}
+.week-h .week-axis span{left:calc(var(--p) * 1%);bottom:9px;transform:translateX(-50%)}
 .week-h .week-axis span:first-child{transform:none}
 .week-h .week-axis span:last-child{transform:translateX(-100%)}
-.week-h .week-axis span::after{content:"";position:absolute;left:50%;bottom:-4px;height:3px;border-left:1px solid var(--line-strong,var(--line))}
+.week-h .week-axis span::after{content:"";position:absolute;left:50%;bottom:-9px;height:6px;border-left:1px solid var(--ink-2)}
 .week-h .week-axis span:first-child::after{left:0}
 .week-h .week-axis span:last-child::after{left:100%}
 .week-h .week-body{display:grid;row-gap:5px;padding:4px 0 2px}
@@ -612,11 +626,13 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-h .week-blk{left:calc(var(--a) * 1% + 1px);width:calc(var(--h) * 1% - 2px);top:calc(var(--bs) + (100% - var(--bs)) * var(--l) / 100 + 1px);height:calc((100% - var(--bs)) * var(--w) / 100 - 2px);min-height:0;min-width:3px}
 .week-h .week-blk.week-band{top:0;height:100%;left:calc(var(--a) * 1%);width:calc(var(--h) * 1%)}
 .week-h .week-band span{padding:1px 4px 0;font-size:.6875rem;line-height:calc(var(--bs) - 1px)}
-.week-h .week-now{top:-3px;bottom:-3px;left:calc(var(--np) * 1%);right:auto;width:2px;height:auto;margin:0 0 0 -1px}
-.week-h .week-now::before{left:-3px;top:-2px}
+.week-h .week-now{top:-3px;bottom:-3px;left:calc(var(--np) * 1%);right:auto;width:var(--dw);height:auto;margin:0 0 0 calc(var(--dw) / -2)}
+.week-h .week-now::before,.week-h .week-now::after{top:0;bottom:0;width:var(--dl);height:auto}
+.week-h .week-now::before{left:0;right:auto;--na-from:calc(var(--dw) / 4 + .5px) 0}
+.week-h .week-now::after{right:0;left:auto;--na-from:calc(var(--dw) / -4 - .5px) 0}
 .week-h .week-legend{margin-left:calc(var(--dl) + var(--wgap))}
-#weekTip{position:fixed;z-index:90;max-width:18rem;padding:6px 9px;border-radius:8px;background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;box-shadow:0 4px 14px var(--pop-shadow);pointer-events:none}
-#weekTip b{display:block;font-weight:650}
+#weekTip{position:fixed;z-index:90;max-width:18rem;padding:7px 10px 8px;border-radius:var(--r-seg);background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;line-height:1.4;box-shadow:0 12px 28px -8px var(--pop-shadow);pointer-events:none}
+#weekTip b{display:block;font-weight:650;font-stretch:100%}
 #weekTip[hidden]{display:none}
 .week-hit{outline:3px solid var(--accent)!important;outline-offset:2px;animation:week-hit calc(1.4s * var(--mo)) ease-out}
 @keyframes week-hit{0%{box-shadow:0 0 0 8px var(--focus-ring)}100%{box-shadow:0 0 0 0 transparent}}
@@ -632,6 +648,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
   .week-head,.week-v .week-body{grid-template-columns:2.1rem var(--week-cols-sm)}
   .week-v .week-axis span{font-size:.6875rem}
   .week-dayh{flex-direction:column;align-items:center;gap:0;padding:4px 1px;font-size:.75rem;line-height:1.2;text-align:center}
+  .week-dayh .na-glyph{display:none}
   .week-v .week-axis .week-odd{display:none}
   .week-dayh .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .week-v .week-blk{font-size:.6875rem;--upf:.6875rem}
@@ -639,7 +656,8 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
   .week-ov.week-v{--wh:clamp(30rem, calc(var(--dur) * .045rem), 46rem)}
   .week-v .week-blk span{padding:2px 2px 0}
   .week-blk:hover{outline:0}
-  .week-legend,.week-h .week-legend{margin-left:0;gap:4px 10px}
+  .week-now{--dw:4.5px;--dl:1.5px}
+  .week-legend,.week-h .week-legend{margin-left:0;gap:4px 12px}
   .week-h{--dl:3.1rem;--hppm:.07rem}
   .week-h .week-dayh{align-items:flex-start;padding:4px 5px}
 }
@@ -1192,109 +1210,142 @@ html:has(dialog[open]) .undo-bar{display:none}
 .cal-days button{flex:none;padding:6px 10px}
 .agenda.wide{max-width:none}
 /* Full program day view: Horizontal (hz-, one sideways-scrolling canvas) or Vertical (vt-, stream columns) */
-.hz-ctl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 8px}
-.hz-pre{display:flex;gap:4px;flex-wrap:wrap}
-.hz-pre button{min-height:32px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.8125rem;font-weight:650}
-.hz-pre button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+/* Horizontal day view. The day is one plate; its head is a spectrometer: the whole day's
+   trace (minimap) over a scale of hanging ticks. Everything inside is set condensed and
+   tabular; colour marks streams only; the sodium doublet marks now. */
+.hz-ctl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:0 0 10px}
+/* zoom and "go to": segmented controls (a container of segments, the chosen one in ink) */
+.hz-pre{display:inline-flex;gap:2px;flex-wrap:wrap;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
+.hz-pre button{min-height:32px;padding:4px 11px;border-radius:var(--r-seg);border:0;background:transparent;color:var(--ink-2);font-size:.8125rem;font-weight:650;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
+.hz-pre button:hover{background:var(--surface-3);color:var(--ink)}
+.hz-pre button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .hz-pre button[hidden]{display:none}
-.hz-pre button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.hz-day{--lw:9.25rem;--hzd:50px;position:relative;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);margin:0 0 14px}
+.hz-pre button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;position:relative;z-index:1}
+.hz-pre button[data-hzgo="now"]{display:inline-flex;align-items:center;gap:6px}
+.hz-pre button[data-hzgo="now"]::before{content:"";flex:none;width:var(--doublet-w);height:.75rem;background:var(--doublet-x)}
+@media (pointer:coarse){.hz-pre button{min-height:40px}}
+.hz-day{--lw:9.25rem;--hzd:50px;position:relative;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);margin:0 0 14px;font-stretch:var(--stretch-cond)}
 /* sticky head: [corner | minimap] over [corner | ruler]; the minimap shrinks to a
    slim strip once stuck, and the head's bottom margin grows by the same amount so
    nothing below it moves */
-.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 1.875rem;background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-bottom:1px solid var(--line);box-shadow:0 5px 6px -6px var(--pop-shadow);transition:margin-bottom calc(.2s * var(--mo)) ease}
+.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 2rem;background:var(--card);border-radius:var(--r-plate) var(--r-plate) 0 0;border-bottom:1px solid var(--hover-line);transition:margin-bottom calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-top{margin-bottom:var(--hzd);border-radius:0}
-.hz-corner{grid-row:1 / 3;grid-column:1;min-height:0;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:1px;padding:2px 6px 4px 10px;min-width:0;overflow:hidden}
-.hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:700;color:var(--muted);letter-spacing:.06em}
-.hz-zb{display:inline-flex;gap:3px;margin-left:auto}
-.hz-zb button{width:max(2rem,32px);height:max(2rem,32px);display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font-size:.875rem;font-weight:800;line-height:1}
-.hz-zb button:disabled{opacity:.35}
-@media (pointer:coarse){.hz-zb button{width:44px;height:44px}}
+.hz-corner{grid-row:1 / 3;grid-column:1;min-height:0;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;padding:2px 8px 6px 12px;min-width:0;overflow:hidden}
+.hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:650;color:var(--muted)}
+.hz-zb{display:inline-flex;gap:2px;margin-left:auto;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl)}
+.hz-zb button{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink);line-height:0;transition:background-color var(--dur-s) var(--ease)}
+.hz-zb button:hover:not(:disabled){background:var(--surface-3)}
+.hz-zb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.hz-zb button:disabled{color:var(--faint);cursor:default}
+@media (pointer:coarse){.hz-zb button{width:40px;height:40px}}
 .hz-day.stuck .hz-corner{flex-direction:row;align-items:center;padding-top:1px;padding-bottom:1px}
 .hz-day.stuck .hz-tz{flex:1 1 auto}
 .hz-day.stuck .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-.hz-zb button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.hz-read{font-size:.6875rem;line-height:1.15;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:6px 10px 4px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
-.hz-day.stuck .hz-map{height:14px;margin:1px 10px 1px}
-.hz-mt{position:absolute;left:0;right:0;top:3px;bottom:15px;transition:top calc(.2s * var(--mo)) ease,bottom calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
+.hz-zb button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.hz-read{font-size:.75rem;line-height:1.15;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:8px 12px 6px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-seg);overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
+.hz-day.stuck .hz-map{height:14px;margin:1px 12px 1px}
+.hz-mt{position:absolute;left:0;right:0;top:4px;bottom:16px;transition:top calc(.2s * var(--mo)) ease,bottom calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 /* a label near the right edge moves in so it is never cut (its left is capped in hzDayView);
    one under an edge of the window takes a background (hzSync) so the outline never runs through it */
-.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:2px;padding:1px 2px;border-radius:3px;font-size:.6875rem;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity calc(.2s * var(--mo)) ease}
+.hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:3px;padding:1px 2px;border-radius:var(--r-tag);font-size:.6875rem;font-weight:550;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity calc(.2s * var(--mo)) ease}
 .hz-mlab.on-edge{background:color-mix(in srgb,var(--card) 60%,var(--surface-2))}
 .hz-day.stuck .hz-mlab{opacity:0}
 .hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
 .hz-sl{left:0}.hz-sr{right:0}
-.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:2px solid var(--accent);border-radius:4px;background:color-mix(in srgb,var(--accent) 12%,transparent);cursor:grab}
+.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:1.5px solid var(--ink);border-radius:4px;background:color-mix(in srgb,var(--ink) 6%,transparent);cursor:grab}
 .hz-brush:active{cursor:grabbing}
 .hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
-.hz-day.stuck .hz-brush{border-width:1.5px;border-radius:3px}
-.hz-ovnow{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--live-ink);pointer-events:none}
+.hz-day.stuck .hz-brush{border-radius:3px}
+/* now in the minimap: a compact doublet (1.5px lines, 1.5px apart) */
+.hz-ovnow{position:absolute;top:0;bottom:0;width:4.5px;margin-left:-2.25px;background:linear-gradient(90deg,var(--na) 0 1.5px,transparent 0 3px,var(--na) 0 4.5px);pointer-events:none}
 .hz-ovnow[hidden]{display:none}
+/* the ruler: a spectrometer scale. A baseline (the head's bottom edge) with ticks standing
+   on it, hours 8px in ink, quarters 4px; each label beside its tick */
 .hz-ruler{grid-row:2;grid-column:2;position:relative;overflow:hidden;min-width:0}
 .hz-ticks{position:absolute;left:0;top:0;bottom:0;will-change:transform}
-.hz-ticks span.t{position:absolute;top:0;height:100%;box-sizing:border-box;padding:7px 0 0 5px;border-left:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hz-ticks span.t.m{border-left-color:transparent;font-weight:500;color:var(--muted)}
+.hz-ticks span.t{position:absolute;top:0;height:100%;box-sizing:border-box;display:flex;align-items:flex-end;padding:0 0 6px 5px;font-size:.75rem;font-weight:650;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hz-ticks span.t::before{content:"";position:absolute;left:0;bottom:0;width:1px;height:8px;background:var(--ink-2)}
+.hz-ticks span.t.m{padding-bottom:5px;font-size:.6875rem;font-weight:500;color:var(--muted)}
+.hz-ticks span.t.m::before{height:4px;background:var(--hover-line)}
 .hz-ticks span.t.cut{color:transparent}
-.hz-nowpill{position:absolute;top:6px;transform:translateX(-50%);background:var(--live-ink);color:var(--card);font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;z-index:2}
+/* now on the ruler: the sodium tag, standing on the doublet that runs down the day */
+.hz-nowpill{position:absolute;bottom:4px;transform:translateX(-50%);z-index:2;padding:2px 5px 1px;border-radius:var(--r-tag);background:var(--na-fill);box-shadow:0 0 0 1px var(--na);color:var(--na-ink);font-size:.6875rem;font-weight:750;line-height:1.2;white-space:nowrap;animation:hz-fade var(--dur-s) var(--ease) calc(80ms * var(--mo)) both}
+.hz-nowpill::after{content:"";position:absolute;left:50%;top:calc(100% + 1px);height:8px;width:var(--doublet-w);margin-left:calc(var(--doublet-w) / -2);background:var(--doublet-x)}
+@keyframes hz-fade{from{opacity:0}}
 .hz-nowpill[hidden],.hz-nowl[hidden]{display:none}
 /* the canvas: sideways only; its height is its content's height */
-.hz-vp{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:0 0 var(--radius) var(--radius)}
+.hz-vp{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;border-radius:0 0 var(--r-plate) var(--r-plate)}
 .hz-inner{position:relative;min-width:100%}
 .hz-lines{position:absolute;left:var(--lw);top:0;bottom:0;pointer-events:none;z-index:1}
 .hz-lines i{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
 .hz-lines i.m{border-left-color:color-mix(in srgb,var(--line) 45%,transparent)}
-.hz-nowl{position:absolute;top:0;bottom:0;width:0;z-index:1;pointer-events:none;border-left:2px solid color-mix(in srgb,var(--live-ink) 80%,transparent)}
+/* now: the sodium D doublet down every lane (never catching a click). It runs between the
+   bars, and each bar on now draws its stretch on its own fill, under its text (hzPaintNow),
+   so the doublet crosses the whole day without striking through a title. Its two lines
+   start fused at the centre and part to their gap as it appears. */
+.hz-nowl{position:absolute;top:0;bottom:0;width:var(--doublet-w);margin-left:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none}
+.hz-nowl::before,.hz-nowl::after{content:"";position:absolute;top:0;bottom:0;width:calc((var(--doublet-w) - 2px) / 2);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
+.hz-nowl::before{left:0;--na-from:calc(var(--doublet-w) / 4 + .5px) 0}
+.hz-nowl::after{right:0;--na-from:calc(var(--doublet-w) / -4 - .5px) 0}
 .hz-lane,.hz-grp{display:flex;border-bottom:1px solid var(--line)}
 .hz-rows>:last-child{border-bottom:0}
 .hz-grp{background:var(--surface-3);height:30px}
-.hz-label{position:sticky;left:0;z-index:6;flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:4px solid var(--c);padding:7px 8px;display:flex;flex-direction:column;gap:2px;font-size:.8125rem;line-height:1.25;overflow:hidden}
-.hz-label b{font-weight:750;color:var(--ink)}
-.hz-label small{color:var(--muted);font-size:.6875rem;line-height:1.25}
+/* a lane's label: its stream's line on the left, the name in ink, what it is in muted */
+.hz-label{position:sticky;left:0;z-index:6;flex:0 0 var(--lw);box-sizing:border-box;background:var(--card);border-right:1px solid var(--line);border-left:3px solid var(--c);padding:8px 8px 8px 9px;display:flex;flex-direction:column;gap:2px;font-size:.8125rem;line-height:1.25;overflow:hidden}
+.hz-label b{font-weight:700;color:var(--ink)}
+.hz-label small{color:var(--muted);font-size:.6875rem;font-weight:500;line-height:1.3}
 .hz-grp .hz-label{background:var(--surface-3);flex-direction:row;align-items:center;padding:0}
-button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 6px 0 7px;font-size:.75rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--c);white-space:nowrap;overflow:hidden}
-button.hz-gl:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.hz-car{display:inline-block;width:.7em;transition:transform calc(.15s * var(--mo));font-size:.8em}
+button.hz-gl{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;height:100%;padding:0 8px 0 6px;font-size:.8125rem;font-weight:720;color:var(--c);white-space:nowrap;overflow:hidden}
+button.hz-gl:hover .hz-full,button.hz-gl:hover .hz-ab{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
+button.hz-gl:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.hz-car{display:inline-flex;flex:none;width:12px;height:12px;transition:transform var(--dur-s) var(--ease)}
+.hz-car svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
-.hz-cnt{margin-left:auto;font-weight:700;letter-spacing:0;color:var(--muted);background:var(--card);border-radius:999px;padding:0 6px;font-size:.6875rem}
+.hz-cnt{margin-left:auto;font-weight:600;color:var(--muted);font-size:.75rem;font-variant-numeric:tabular-nums}
 .hz-lane.sole .hz-label{padding:0}
-.hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 7px;text-transform:none;letter-spacing:0;font-size:.8125rem;color:var(--ink)}
+.hz-lane.sole button.hz-gl{align-items:flex-start;padding:8px 6px 0 6px;font-size:.8125rem;font-weight:700;color:var(--ink)}
 .hz-lane.sole button.hz-gl .hz-cnt{display:none}
 .hz-lane.sole.col{height:30px}
-.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0;text-transform:uppercase;letter-spacing:.04em;font-size:.75rem;color:var(--c)}
+.hz-lane.sole.col button.hz-gl{align-items:center;padding-top:0;font-weight:720;color:var(--c)}
 .hz-ab{display:none}
 .hz-track{position:relative;flex:0 0 auto}
-.hz-colt{position:absolute;top:10px;height:10px;border-radius:2px;background:var(--c);opacity:.85;min-width:2px;z-index:2}
+/* a collapsed group: its sessions as line segments in the stream colour */
+.hz-colt{position:absolute;top:13px;height:4px;border-radius:1px;background:var(--c);opacity:.8;min-width:2px;z-index:2}
 .hz-empty{padding:26px 16px;color:var(--muted);font-size:.9rem;text-align:center}
-.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px}
-button.hz-bar{padding:4px 7px 4px 6px;display:flex;align-items:flex-start;justify-content:flex-start}
+/* a bar: the stream's tint with its line down the left */
+.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px;transition:background-color var(--dur-s) var(--ease)}
+button.hz-bar{padding:5px 7px 4px 7px;display:flex;align-items:flex-start;justify-content:flex-start}
 button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
-.hz-in{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:100%;box-sizing:border-box}
-.hz-title{font-weight:650;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual}
+.hz-in{display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;box-sizing:border-box}
+.hz-title{font-weight:640;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual}
 /* a bar too narrow for whole words shows its stream badge only (title in its tooltip and details) */
-.hz-bdg{display:none;font-size:.6875rem;font-weight:800;letter-spacing:.03em;color:var(--bar-ink);white-space:nowrap}
+.hz-bdg{display:none;font-size:.6875rem;font-weight:720;color:var(--bar-ink);white-space:nowrap}
 .hz-nar>.hz-in>:not(.hz-bdg):not(.hz-meta){display:none}
 .hz-nar0>.hz-in>.hz-meta{display:none}
 .hz-nar>.hz-in>.hz-bdg{display:block}
 .hz-nar0{padding-left:2px!important;padding-right:1px!important}
-.hz-nar0>.hz-in>.hz-bdg{font-size:.6875rem;letter-spacing:0}
+.hz-nar0>.hz-in>.hz-bdg{font-size:.6875rem}
 .hz-nar1>.hz-in{visibility:hidden}
-.hz-meta{color:var(--bar-meta);font-size:.6875rem;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hz-meta{color:var(--bar-meta);font-size:.6875rem;font-weight:520;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* the meta line's parts are set apart by space, not dots (a comma for screen readers) */
+.hz-sep{display:inline-block;width:.75em}
 .hz-star{color:var(--star)}
 .hz-split{display:flex;flex-direction:column}
-.hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:4px 7px 3px 6px;background:transparent;color:var(--bar-ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 40%,transparent);overflow:clip;box-sizing:border-box}
+.hz-head{display:flex;justify-content:flex-start;text-align:left;width:100%;flex:0 0 auto;padding:5px 7px 3px 7px;background:transparent;color:var(--bar-ink);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 28%,transparent);overflow:clip;box-sizing:border-box}
 .hz-head .hz-title{-webkit-line-clamp:2;font-size:.8125rem}
 .hz-segs{position:relative;flex:1 1 auto;min-height:0}
 /* every bar and talk has a set size: each is laid out on its own, so fitting their text
    (hzFitText) never lays out the whole page again */
 .hz-bar,.hz-talk{contain:size layout}
-.hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,var(--line));border-radius:4px;padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
-.hz-tt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem;white-space:nowrap}
+/* a talk inside its session: a white cell on the tint, its time in the stream colour */
+.hz-talk{position:absolute;top:2px;bottom:2px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;text-align:left;background:var(--card);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 30%,var(--line));border-radius:var(--r-tag);padding:2px 4px;overflow:hidden;font-size:.6875rem;line-height:1.22;min-width:2px}
+.hz-tt{font-weight:720;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem;white-space:nowrap}
 .hz-tl{font-weight:600;overflow-wrap:normal;hyphens:manual;-webkit-hyphens:manual;font-size:.75rem}
-.hz-ts{color:var(--bar-meta);font-size:.6875rem;overflow-wrap:normal}
+.hz-ts{color:var(--bar-meta);font-size:.6875rem;font-style:italic;font-weight:480;overflow-wrap:normal}
 .hz-talk.hz-nar .hz-ts{display:none}
 .hz-talk.hz-notl .hz-tl{display:none!important}
 /* a talk too narrow for whole words: its title on one line, ending in an ellipsis */
@@ -1314,61 +1365,70 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.6875rem}
 .hz-mid .hz-ts{display:none}
-.hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:2px}
+.hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:var(--r-line)}
 .hz-tick .hz-talk>*{display:none}
-.hz-mark{position:absolute;bottom:0;height:12px;box-sizing:border-box;border-left:1.5px solid color-mix(in srgb,var(--c) 75%,transparent);pointer-events:none}
+/* talk marks along a session's foot: 1.5px lines in the stream colour; the talk on now is
+   a 1.5px doublet in sodium, with a sodium rule along its span */
+.hz-mark{position:absolute;bottom:0;height:12px;box-sizing:border-box;border-left:1.5px solid var(--c);pointer-events:none}
 .hz-mark.first{border-left-color:transparent}
-.hz-mark.is-now{border-left:2.5px solid var(--live-ink);height:17px;background:linear-gradient(var(--live-ink),var(--live-ink)) left bottom/100% 3px no-repeat}
-.hz-mark.first.is-now{border-left-color:transparent}
+.hz-mark.is-now{border-left:0;height:14px;background:linear-gradient(90deg,var(--na) 0 1.5px,transparent 0 3px,var(--na) 0 4.5px) left top/4.5px 100% no-repeat,linear-gradient(var(--na),var(--na)) left bottom/100% 2px no-repeat}
+.hz-mark.first.is-now{background:linear-gradient(var(--na),var(--na)) left bottom/100% 2px no-repeat}
 .hz-bar.marked{padding-bottom:15px}
 .hz-bar.marked .hz-in{max-height:100%;overflow:hidden}
 .hz-bar.marked .hz-title{flex-shrink:0}
 /* past: a paler tint and softer text, still at least 4.5:1 (no opacity) */
-.hz-bar.past{background:color-mix(in srgb,var(--cbg) 50%,var(--card));border-color:color-mix(in srgb,var(--c) 45%,var(--line))}
-.hz-bar.past .hz-title,.hz-bar.past .hz-tl{color:var(--bar-meta)}
-.hz-bar.is-now{border-color:var(--live-ink);border-left-color:var(--c);box-shadow:inset 0 0 0 1px var(--live-ink)}
-.hz-talk.is-now{background:var(--now-bg);border-color:var(--now-line)}
-.hz-tick .hz-talk.is-now{background:var(--live-ink)}
-.hz-talk.is-now .hz-tt{color:var(--now-text)}
-#hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:8px;font-size:.75rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px var(--pop-shadow)}
+.hz-bar.past{background:color-mix(in srgb,var(--cbg) 45%,var(--card));border-color:color-mix(in srgb,var(--c) 22%,transparent);border-left-color:color-mix(in srgb,var(--c) 55%,var(--card))}
+.hz-bar.past .hz-title,.hz-bar.past .hz-tl,.hz-bar.past .hz-bdg{color:var(--bar-meta)}
+/* on now: the same fill, the title a step bolder; the doublet passing through is the cue */
+.hz-bar.is-now .hz-title{font-weight:720}
+.hz-talk.is-now{background:var(--na-bg);border-color:var(--na);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--na-bg),inset 6px 0 var(--na);padding-left:9px}
+.hz-tick .hz-talk.is-now{background:var(--na);box-shadow:none;padding-left:0}
+/* (My agenda's bars carry an opaque body, so there the doublet runs over them) */
+.hz-agenda .hz-nowl{z-index:4}
+.hz-day .hz-bar.hz-now-in,.hz-day .hz-talk.hz-now-in{background-image:var(--doublet-x);background-repeat:no-repeat;background-size:var(--doublet-w) 100%;background-position:calc(var(--nowx,-99px) - var(--doublet-w) / 2) 0}
+.hz-day.hz-tick .hz-talk.hz-now-in{background-image:none}
+.hz-talk.is-now .hz-tt{color:var(--na-text)}
+.hz-talk.is-now.hz-thin{padding-left:7px}
+#hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:var(--r-seg);font-size:.75rem;line-height:1.4;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;pointer-events:none;white-space:pre-line;box-shadow:0 12px 28px -8px var(--pop-shadow)}
 #hzTip[hidden]{display:none}
 /* a cut card in full, over it (hzPopShow): its left edge and width (a narrow card widens
    to 11rem), growing down over the cards below; under the sticky head, it moves nothing */
-.hz-pop{--hzpd:var(--dur-s,150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:4px 7px 6px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:7px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 8px 20px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) var(--ease),height var(--hzpd) var(--ease)}
+.hz-pop{--hzpd:var(--dur-s,150ms);position:absolute;z-index:15;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow:hidden;padding:5px 8px 7px 7px;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;font-stretch:var(--stretch-cond);line-height:1.3;outline:2px solid var(--c);outline-offset:-1px;box-shadow:0 12px 28px -8px var(--pop-shadow);pointer-events:none;overflow-wrap:break-word;transition:top var(--hzpd) var(--ease),height var(--hzpd) var(--ease)}
 .hz-pop[hidden]{display:none}
-.hz-pop.tk{background:var(--card);color:var(--ink);border-left-width:3px;border-radius:5px;padding:3px 6px 5px}
+.hz-pop.tk{background:var(--card);color:var(--ink);border-radius:var(--r-tag);padding:3px 6px 5px}
 .hz-pop.tk.dim{color:var(--bar-meta)}
 /* a session's other talk, and a session shown only for its starred talks, stay dashed */
 .hz-pop.tk.dim{border:1px dashed color-mix(in srgb,var(--c) 55%,var(--line));outline:0}
-.hz-pop.ctx{background:var(--card);border:1px dashed var(--c);border-left:4px dashed var(--c);outline:0}
+.hz-pop.ctx{background:var(--card);border:1px dashed var(--c);border-left:3px dashed var(--c);outline:0}
 .hz-pop.dim .hz-ptt{color:var(--bar-meta)}
 .hz-pop.dim .hz-ptl{font-weight:500}
 .hz-pop .hz-title,.hz-pop .hz-of{display:block;-webkit-line-clamp:none;overflow:visible}
 .hz-pop .hz-meta,.hz-pop .hz-sp,.hz-pop .hz-inl,.hz-pop .hz-mtx{white-space:normal;overflow:visible;max-width:none}
 .hz-pop .hz-bdg{display:none}
-.hz-ptt{font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem}
-.hz-ptl{font-weight:650;font-size:.8125rem;line-height:1.25}
+.hz-ptt{font-weight:720;color:var(--c);font-variant-numeric:tabular-nums;font-size:.6875rem}
+.hz-ptl{font-weight:640;font-size:.8125rem;line-height:1.25}
 .hz-pop.mine .hz-ptl{font-weight:700}
 .hz-pts,.hz-pconv{color:var(--bar-meta);font-size:.6875rem}
+.hz-pts{font-style:italic;font-weight:480}
 .hz-pop.tk .hz-pts{color:var(--muted)}
 .hz-pnote{color:var(--clash-ink);font-weight:700;font-size:.6875rem}
 @media (prefers-reduced-motion:reduce){.hz-pop{transition:none}}
 @media print{.hz-pop{display:none!important}}
-@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}}
+@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill,.hz-mark.is-now{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-bar,.hz-talk{background:none}}
 @media (max-width:720px){
 .hz-day{--lw:4.75rem}
 .hz-full{display:none}.hz-ab{display:inline}
-.hz-corner{padding:4px 3px 6px 5px;align-items:flex-start}
+.hz-corner{padding:4px 3px 6px 7px;align-items:flex-start}
 .hz-zb,.hz-read{display:none}
-.hz-tz{font-size:.6875rem;letter-spacing:.02em}
+.hz-tz{font-size:.6875rem}
 .hz-map{margin:6px 8px 4px}
 .hz-day.stuck .hz-map{margin:1px 8px 1px}
 .hz-label{padding:6px 3px 6px 4px;font-size:.6875rem;align-items:flex-start;overflow-wrap:normal}
 .hz-label small{display:none}
 .hz-cnt{display:none}
-button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;text-transform:none}
-.hz-lane.sole button.hz-gl{font-size:.6875rem;padding:8px 2px 0 3px;font-weight:800}
-.hz-lane.sole.col button.hz-gl{font-size:.6875rem;text-transform:none;letter-spacing:0}
+button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
+.hz-lane.sole button.hz-gl{font-size:.75rem;padding:8px 2px 0 3px;font-weight:700}
+.hz-lane.sole.col button.hz-gl{font-size:.75rem}
 .hz-pre button{padding:4px 10px}
 .hz-ctl{gap:6px}
 }
@@ -4122,7 +4182,7 @@ function weekBounds(slots = DATA.days.flatMap(d => d.slots)){
   return [Math.floor(Math.min(...slots.map(s => toMin(s.start))) / 60) * 60,
           Math.ceil(Math.max(...slots.map(s => toMin(s.end))) / 60) * 60];
 }
-// "AIP QST: Quantum sensing, estimation & entanglement" -> QST · Quantum sensing, …
+// "AIP QST: Quantum sensing, estimation & entanglement" -> QST (bold) Quantum sensing, …
 // Returns [code, rest]: the block shows <b>code</b> and the rest, or the code alone
 // (its badge) when too narrow for whole words (weekFit).
 function weekLabelParts(s){
@@ -4130,11 +4190,11 @@ function weekLabelParts(s){
   const r = s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '');
   const q = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (s.cat === 'focus' ? '(?: Session)?' : '');
   let m = r.match(new RegExp('^' + q + '\\s*[:\\-–]\\s*(.+)$'));
-  if (m) return [code, ' · ' + m[1]];
+  if (m) return [code, ' ' + m[1], true];
   m = r.match(new RegExp('^' + q + '(\\s+\\d+)?$'));
   if (m) return [code, m[1] || ''];
   if (new RegExp('^' + q + '\\b').test(r)) return [code, r.slice(code.length)];
-  return [code, ' · ' + r];
+  return [code, ' ' + r, true];
 }
 function weekLabel(s){
   const [code, rest] = weekLabelParts(s);
@@ -4165,7 +4225,7 @@ function weekOverview(){
     const label = band ? esc(bandText)
       : agenda && x.t ? `<i class="k-ic" aria-hidden="true"></i><b class="wk-tc">${esc(parts[0])}</b><em>${esc(x.t.t)}</em>` : weekLabel(s) + (agenda && x.inner.size ? ` <b class="week-n" data-n="${x.inner.size}" aria-hidden="true">★</b>` : '');
     // the accessible name starts with the text shown (the full label; CSS may clamp it)
-    const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + parts[1];
+    const shown = band ? bandText : agenda && x.t ? x.t.t : parts[0] + (parts[2] ? ',' : '') + parts[1];
     const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
     // (a narrow talk shows its session's code instead of its title: both are in its name)
     const kind = agenda ? (x.t ? `${parts[0]} talk, ` : x.ctx ? 'session not saved, ' : 'session, ') : '';
@@ -4216,7 +4276,7 @@ function weekOverview(){
     const [wd, dd, ...mon] = d.label.split(' ');
     const what = agenda ? 'item' : 'session';
     return `<button type="button" class="week-dayh${d.date === today ? ' today' : ''}${!horiz && quiet(di) ? ' week-dnar' : ''}" data-week-day="${di}" data-date="${d.date}" title="Open ${esc(d.label)}">
-      <span>${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}<span class="visually-hidden"> ${what}${counts[di] === 1 ? '' : 's'}</span></small></button>`;
+      <span>${d.date === today ? '<i class="na-glyph na-resolve" aria-hidden="true"></i>' : ''}${esc(wd)} ${esc(dd)}<span class="week-mon"> ${esc(mon.join(' '))}</span></span><small>${counts[di]}<span class="visually-hidden"> ${what}${counts[di] === 1 ? '' : 's'}</span></small></button>`;
   });
   const cats = order.filter(k => days.some(d => d.some(s => s.cat === k)));
   const nClash = agenda ? days.flat().filter(x => x.clash.length).length : 0;
@@ -4265,7 +4325,7 @@ function weekOverview(){
     ${tail}
   </div>`;
 }
-const weekMore = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← Earlier' : 'Later →'}</button>`;
+const weekMore = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '<svg viewBox="0 0 12 12"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg>Earlier' : 'Later<svg viewBox="0 0 12 12"><path d="M4.5 2.5 8 6 4.5 9.5"/></svg>'}</button>`;
 // After rendering: fit each label to its block, across, wrapping at whole words onto as
 // many lines as the block holds, never mid-word. A block too narrow for its words, or
 // whose title would show none of its first word, shows its badge instead: the stream
@@ -4597,12 +4657,12 @@ function weekShowTip(b, mark){
     tip.innerHTML = `<b>${hid.length} more on ${esc(d.label)}</b>${hid.join('')}`;
     return weekPlaceTip(tip, b);
   }
-  const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(' · ');
+  const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(', ');
   // My agenda: the starred talks in a saved session, and what an item clashes with
   const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
   const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
-  tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)} · ${t.s}–${t.e}<br>in ${esc(s.title)}${mark ? '' : extra}`
-    : `<b>${esc(s.title)}</b>${esc(d.label)} · ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
+  tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)}, ${t.s}–${t.e}<br>in ${esc(s.title)}${mark ? '' : extra}`
+    : `<b>${esc(s.title)}</b>${esc(d.label)}, ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
   weekPlaceTip(tip, mark || b);
 }
 function weekPlaceTip(tip, b){
@@ -5555,6 +5615,8 @@ const HZ_CAT_AB = { edu:'Edu', events:'Events', special:'Forums', business:'Meet
 const dvCode = s => s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat];
 // a narrow break bar's badge: which break it is, so two in one lane read apart
 const hzAb = s => { const t = s.cat === 'social' ? s.title : '', ab = /regist/i.test(t) ? 'Reg' : /tea\b/i.test(t) ? 'Tea' : /lunch/i.test(t) ? 'Lunch' : /breakfast/i.test(t) ? 'Bfast' : ''; return ab ? ` data-ab="${ab}"` : ''; };
+// between the parts of a bar's meta line: a space (a comma to a screen reader)
+const HZ_SEP = '<span class="hz-sep"><span class="visually-hidden">, </span></span>';
 const HZ_ZOOMS = [['fit', 'Fit day'], [240, '4 h'], [120, '2 h'], [60, '1 h']];
 const hzHM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
 const hzDur = m => m >= 60 ? (Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + Math.round(m % 60) + ' min' : '')) : Math.round(m) + ' min';
@@ -5780,7 +5842,7 @@ function hzDayView(day){
     </div></div>
     ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
-        <div class="hz-corner">${agenda ? DV_KEY_BTN : ''}<span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out">&minus;</button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in">+</button></span></span><span class="hz-read" aria-live="polite"></span></div>
+        <div class="hz-corner">${agenda ? DV_KEY_BTN : ''}<span class="hz-tz">AEDT<span class="hz-zb"><button type="button" data-hzstep="1" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7h9"/></svg></button><button type="button" data-hzstep="-1" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7h9M7 2.5v9"/></svg></button></span></span><span class="hz-read" aria-live="polite"></span></div>
         <div class="hz-map" role="group" aria-label="Whole day. Drag the window or click to move through the day.">
           <div class="hz-mt" aria-hidden="true">${mt}</div><div aria-hidden="true">${mh}</div><div class="hz-shade hz-sl"></div><div class="hz-shade hz-sr"></div><div class="hz-ovnow" hidden></div>
           <div class="hz-brush" tabindex="0" role="slider" aria-label="Visible time window" aria-valuemin="${d0}" aria-valuemax="${d1}"></div>
@@ -5823,7 +5885,9 @@ function hzDraw(root, left){
     const major = m % lstep === 0;
     // the closing line sits just inside the canvas, so Fit day leaves no sideways overflow
     gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px${m === d1 ? ';margin-left:-1px' : ''}"></i>`;
-    if (m < d1 && (major || px60 >= 96)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
+    // (quarter-hour labels only once an hour is wide, as at 1 h; elsewhere a bare tick)
+    if (m < d1 && (major || px60 >= 900)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
+    else if (m < d1 && m > d0) tk += `<span class="t m" style="left:${X(m)}px" data-m="${m}"></span>`;
   }
   // My agenda: each clash marked on the time axis and hatched down the canvas
   if (agenda) for (const [a, b] of dvClashSpans(ents)){
@@ -5894,8 +5958,8 @@ function hzDraw(root, left){
         const word = s.cat === 'poster' ? 'poster' : 'talk';
         const meta = (e.t ? [`${e.start}–${e.end}`, agenda ? '' : 'in ' + s.title]
           : [`${s.start}–${s.end}`, n ? `${e.inner && e.inner.size ? `★${e.inner.size}<span class="visually-hidden"> starred</span> of ` : ''}${n} ${word}${n > 1 ? 's' : ''}` : '',
-            s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(' · ');
-        const conv = !e.t && s.conv.length ? ' · Convened by ' + s.conv.join(', ') : '';
+            s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(HZ_SEP);
+        const conv = !e.t && s.conv.length ? '; convened by ' + s.conv.join(', ') : '';
         const tip = esc(e.t ? `${e.title} (${e.start}–${e.end}, in ${s.title})${clash ? '\n' + clash : ''}`
           : `${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})${e.ctx ? '\nShown for your starred talks; the session is not in My agenda' : ''}${clash ? '\n' + clash : ''}`);
         const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
@@ -5918,8 +5982,8 @@ function hzDraw(root, left){
               const ta = Math.max(toMin(t.s), m.a), tb = Math.min(toMin(t.e), m.b);
               if (tb <= ta) continue;
               const fa = (ta - m.a) / (m.b - m.a), fw = (tb - ta) / (m.b - m.a);
-              // left/width are of the bar's padding box (4px left border, 1px right)
-              marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" data-tid="${t.id}" style="left:calc((100% + 5px) * ${fa.toFixed(4)} - 4px);width:calc((100% + 5px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
+              // left/width are of the bar's padding box (3px left border, 1px right)
+              marks += `<i class="hz-mark${toMin(t.s) < m.a + 1 ? ' first' : ''}" data-tid="${t.id}" style="left:calc((100% + 4px) * ${fa.toFixed(4)} - 3px);width:calc((100% + 4px) * ${fw.toFixed(4)})" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}"></i>`;
             }
           }
           bars += `<button type="button" class="hz-bar${marks ? ' marked' : ''}${cls}${e.t ? ' is-talk' : ''}" style="${pos}" ${attrs} ${ids} title="${tip}" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}">${inner}${marks}</button>`;
@@ -5972,7 +6036,7 @@ function hzDraw(root, left){
       const s = e.s, a = toMin(s.start), b = toMin(s.end), [c] = CAT_COLORS[s.cat];
       return `<i class="hz-colt" style="--c:${c};left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px" title="${esc(s.title + ' (' + s.start + '–' + s.end + ')')}"></i>`;
     }).join('');
-    const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car">▾</span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
+    const gbtn = `<button type="button" class="hz-gl" data-hzgrp="${g.k}" aria-expanded="${!collapsed}" title="${collapsed ? 'Expand' : 'Collapse'} ${esc(g.name)}"><span class="hz-car" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></span><span class="hz-full">${esc(g.name)}</span><span class="hz-ab">${g.ab}</span><span class="hz-cnt">${gs.length}</span></button>`;
     if (collapsed){
       rows += `<div class="hz-${multi ? 'grp' : 'lane sole col'}" role="group" aria-label="${esc(g.name)}" style="--c:${col[0]}"><div class="hz-label" style="--c:${col[0]}">${gbtn}</div><div class="hz-track" style="width:${W}px">${ticks()}</div></div>`;
       continue;
@@ -6338,6 +6402,15 @@ function hzPaintNow(h){
   pill.style.left = x + 'px';
   ov.style.left = (n.min - d0) / (d1 - d0) * 100 + '%';
   h.querySelectorAll('.hz-ticks .t').forEach(t => { const tx = (+t.dataset.m - d0) * ppm; t.style.visibility = show && tx > x - 62 && tx < x + 18 ? 'hidden' : ''; });
+  // The doublet runs under the bars; a bar (or talk) on now draws its stretch of it on its
+  // own fill, under its text (--nowx: where the line's centre crosses its padding box).
+  const on = show ? h.querySelectorAll('.hz-bar.is-now, .hz-talk.is-now') : [];
+  const cx = on.length ? line.getBoundingClientRect().left + line.offsetWidth / 2 : 0;
+  for (const el of h.querySelectorAll('.hz-now-in')) el.classList.remove('hz-now-in');
+  for (const el of on){
+    el.style.setProperty('--nowx', (cx - el.getBoundingClientRect().left - el.clientLeft).toFixed(1) + 'px');
+    el.classList.add('hz-now-in');
+  }
 }
 
 // Full minimap at the top of the view, slim once its head sticks under the toolbar.
@@ -6414,7 +6487,7 @@ function hzPopHtml(el){
     html = [...c.children].map(x => x.outerHTML).join(' ');
   } else if (s){
     const t = hit && hit.t;
-    html = `<span class="hz-title">${hl(t ? t.t : s.title)}</span><span class="hz-meta">${t ? esc(t.s + '–' + t.e) : esc(s.start + '–' + s.end) + (s.room ? ' · ' + hl(s.room) : '')}</span>`;
+    html = `<span class="hz-title">${hl(t ? t.t : s.title)}</span><span class="hz-meta">${t ? esc(t.s + '–' + t.e) : esc(s.start + '–' + s.end) + (s.room ? HZ_SEP + hl(s.room) : '')}</span>`;
   }
   if (s && !hit && s.conv.length) html += `<span class="hz-pconv">Convened by ${hl(s.conv.join(', '))}</span>`;
   for (const n of (bar.getAttribute('title') || '').split('\n').slice(1)) html += `<span class="${/^Clash/.test(n) ? 'hz-pnote' : 'hz-pconv'}">${esc(n)}</span>`;
