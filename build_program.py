@@ -6046,16 +6046,33 @@ function mxBegin(kind, from, opts){
     // kept still around it): what is above it stays put and needs no name; the rest are
     // named nearest first, and fewer of them (the others go with the page).
     const y0 = opts.near && opts.near.isConnected ? opts.near.getBoundingClientRect().top : null;
+    // (Vertical's hour labels count as covers: they sit over its time column, which hides
+    // whatever is under it while items move; its hour lines come after the items)
+    const coverish = it => it.kind === 'cover' || (it.kind === 'grid' && !it.el.classList.contains('vt-line'));
+    const line = it => it.kind === 'grid' && !coverish(it);
     if (y0 !== null) seen = seen.filter(it => it.kind === 'cover' || it.r.bottom > y0 - 2)
       .sort((a, b) => (a.kind !== 'cover') - (b.kind !== 'cover') || Math.abs(a.r.top - y0) - Math.abs(b.r.top - y0));
-    else seen.sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
+    else seen.sort((a, b) => a.d - b.d || !coverish(a) - !coverish(b) || line(a) - line(b));
     // Sessions <-> talks (opts.nest): sessions are named before talks, and a talk only
     // once its session has a name (else it could not fold into it, only fade), out of
     // the whole budget, as the talks unfolding the other way get it (so folding and
-    // unfolding move as many talks).
+    // unfolding move as many talks). Hour lines come after the sessions, so they never
+    // take a session's place.
+    const keys = new Set(seen.map(it => it.key)), nested = it => it.kind === 'item' && !!it.p && keys.has(it.p);
     if (opts.nest){
-      const rank = it => it.kind !== 'item' ? 0 : it.key.startsWith('s-') ? 1 : 2;
+      const rank = it => coverish(it) ? 0 : it.kind !== 'item' ? 2 : it.key.startsWith('s-') ? 1 : 3;
       seen.sort((a, b) => rank(a) - rank(b) || a.d - b.d);
+    }
+    // (opts.lite, on a device slow to draw or move these: what is on screen only, and no
+    // hour lines; the covers and every session (or item on its own) in sight first, then
+    // what is inside them, up to half the budget)
+    let must = 0, all = -1;
+    if (opts.lite && y0 === null && opts.band === undefined){
+      all = seen.length;
+      seen = seen.filter(it => coverish(it) || (it.kind === 'item' && it.d === 0));
+      const rank = it => coverish(it) ? 0 : nested(it) ? 2 : 1;
+      seen.sort((a, b) => rank(a) - rank(b) || a.d - b.d);
+      must = seen.filter(it => rank(it) < 2).length;
     }
     // All week <-> a day (opts.band, the day): only that day's sessions (and talks shown on
     // their own) are named, each moving between its week block and its bar or card; the
@@ -6063,9 +6080,10 @@ function mxBegin(kind, from, opts){
     // go inside its picture.
     if (opts.band !== undefined) seen = seen.filter(it => it.kind === 'item' && (it.key.startsWith('s-') || it.el.dataset.inSid)
       && (!it.el.closest('.week-ov') || it.el.closest('.week-col')?.dataset.day === String(opts.band)));
-    // (opts.lite: half as many as it would name, on a device slow to draw or move these)
+    // (opts.lite: half as many as it would name, but never fewer than the covers and the
+    // sessions in sight)
     let cap = y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75;
-    if (opts.lite) cap = Math.ceil(Math.min(cap, seen.length) / 2);
+    if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
     for (const it of seen){
       if (old.size >= cap) break;
       if (opts.nest && it.p && !old.has(it.p)) continue;
@@ -6427,9 +6445,10 @@ function txWatch(vt, t, done){
 // TX_PAIR_DOWN[0] after the redraw, or a frame took over TX_PAIR_DOWN[1] while it
 // moved; one step up when both were well within (TX_FREEZE, TX_JANK) twice in a row.
 // Whichever way comes next gets the level that leaves, so the two ways never take turns.
-// Some never go below a floor (TX_PAIR_FLOOR): Sessions <-> Talks always folds and
-// unfolds, if with half the names, since a cross-fade there shows nothing of what changed.
-const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1 };
+// Some never go below a floor (TX_PAIR_FLOOR): Sessions <-> Talks and My agenda's Show
+// full sessions always fold and unfold, if lighter, since a cross-fade there shows
+// nothing of what changed.
+const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 };
 const txPairs = new Map();
 const txPairKey = o => [o.pair, state.scope, state.layout, state.orient].join('|');
 function txPairRec(o){
