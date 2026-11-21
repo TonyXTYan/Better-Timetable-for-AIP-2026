@@ -1092,6 +1092,20 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .card.iv .meta .room{border-color:var(--hover-line);color:var(--muted)}
 .card.iv .star{position:static;order:3;margin-left:auto;width:32px;height:32px;min-width:0;min-height:0}
 .block.past .card.iv h3{color:var(--muted)}
+/* print: plain plates, no tints, no sodium (the page prints as a timetable) */
+@media print{
+  .cards,.card,.ag-list,.ag-row,.talk.is-now,.ag-row.is-now,.ag-row.has-clash{background:none!important}
+  .talk.is-now::before,.talk.is-now::after,.ag-row.has-clash::after,.block-time .live,.ag-now,.t-caret{display:none!important}
+  .talk.is-now .t-time,.ag-row.is-now .ag-t0{color:var(--ink)}
+  .talk.is-now .t-time::after{content:none}
+  .ag-row.is-now::before{width:3px;background:var(--c)}
+  .block-time{position:static}
+}
+/* touch: every control in the list and My agenda is at least 40px tall */
+@media (pointer:coarse){
+  .card.iv .star{width:44px;height:44px;margin:-4px 0}
+  .ag-btn,.cp-keep,.fb-actions button,.ag-clash-ind{min-height:40px}
+}
 mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;padding:0 1px;box-shadow:inset 0 -2px 0 var(--ink);box-decoration-break:clone;-webkit-box-decoration-break:clone}
 /* in the calendars' tight, clamped titles a match keeps to its own letters */
 :is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
@@ -1832,7 +1846,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-kind{margin-right:8px;vertical-align:.125rem}
 .ag-clash{display:flex;align-items:baseline;margin-top:10px;font-size:.8125rem;line-height:1.45;color:var(--clash-ink);background:var(--card);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:6px 10px}
 .ag-clash .cx-fr{flex:none;margin-right:8px;vertical-align:0}
-.ag-clash>.cx-fr{align-self:center}
 .ag-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 @media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px;margin-top:-5px}}
 @media (min-width:1100px){.ag-actions{width:340px}}
@@ -2311,7 +2324,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:var(--card)}
-  .card,.ag-row{box-shadow:none;break-inside:avoid}
+  .card,.ag-row{break-inside:avoid}
   .na-glyph,#nowBtn::before,.hero-when .na-glyph,.sp-na{display:none!important}
   /* My agenda prints from its own list (#printDoc), not from the page */
   body.print-agenda>*:not(#printDoc){display:none!important}
