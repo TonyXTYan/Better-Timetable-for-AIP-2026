@@ -889,38 +889,40 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .people-title{margin:0;font-size:1.5rem;letter-spacing:-.02em}
 
 .people-intro{margin:0 0 6px;color:var(--muted);font-size:0.875rem}
-.pp-group{margin:18px 0 0}
+.pp-group{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* (a section off screen is not laid out: renderPeople guesses its height) */
 .pp-group,.pp-letter{content-visibility:auto;overflow-clip-margin:16px}
 @media print{.pp-group,.pp-letter{content-visibility:visible}}
-.pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0 0 10px;padding:6px 0 8px;border-bottom:2px solid var(--day-rule);font-size:1.0625rem;font-weight:800;letter-spacing:.1px;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
-.pp-n{font-size:0.7812rem;font-weight:600;color:var(--muted)}
+.pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0;padding:12px 16px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:1.0625rem;font-weight:700;line-height:1.3;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
+.pp-n{font-size:.8125rem;font-weight:500;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
 .pp-none .pp-aff{color:var(--muted)}
 /* columns, so a short card leaves no hole under it; the order runs down each column */
-.pp-people{list-style:none;margin:0;padding:0;columns:300px auto;column-gap:10px}
-.pp-person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;min-width:0;box-shadow:var(--shadow);break-inside:avoid;margin:0 0 10px}
-.pp-name{font-weight:700;font-size:0.9375rem;line-height:1.35;overflow-wrap:anywhere}
+.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip}
+.pp-person{background:var(--card);border:0;border-radius:0;padding:12px 14px 8px;min-width:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);margin:0}
+.pp-name{font-weight:680;font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
 .pp-raw{margin-top:1px;font-size:0.75rem;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .pp-roles{list-style:none;margin:6px -6px 0;padding:0}
-.pp-role{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;border:0;border-radius:8px;background:transparent;color:var(--ink);padding:5px 6px;font-size:0.8125rem;line-height:1.35;overflow-wrap:anywhere}
+.pp-role{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink);padding:5px 6px;font-size:0.8125rem;line-height:1.35;overflow-wrap:anywhere}
 .pp-role:hover{background:var(--surface-3)}
 .pp-role:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.pp-when{font-size:0.7188rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-.pp-what{color:var(--link);font-weight:600}
-.pp-conv .pp-what{font-weight:500}
-.pp-star{color:var(--starOn-ink)}
+.pp-when{font-size:.75rem;font-weight:600;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
+.pp-what{color:var(--ink);font-weight:560;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:.2em}
+.pp-role:hover .pp-what{text-decoration-color:currentColor}
+.pp-conv .pp-what{font-weight:480;font-style:italic}
+.pp-star{background:var(--starOn-bg);color:var(--starOn-ink);padding:0 4px;border-radius:var(--r-tag)}
 /* control row: Sort | Category | Jump */
 .pp-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:4px 0 2px}
 .pp-ctl{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:0.8438rem;font-weight:600;color:var(--muted);min-width:0;max-width:100%}
-.pp-ctl select{min-height:36px;min-width:0;max-width:min(300px,100%);flex:1 1 auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-weight:500;padding:4px 8px}
+.pp-ctl select{min-height:36px;min-width:0;max-width:min(300px,100%);flex:1 1 auto;border:1px solid var(--field-line);border-radius:var(--r-ctl);background:var(--card);color:var(--ink);font:inherit;font-weight:500;padding:4px 8px}
 .pp-ctl[hidden]{display:none}
-.pp-ctl select.pp-on{border-color:var(--accent);background:var(--active-bg);color:var(--active-ink)}
+.pp-ctl select.pp-on{border-color:var(--ink);background:var(--active-bg);color:var(--active-ink)}
 .pp-sort.agenda-views{margin:0}
 .pp-sort.agenda-views button{padding:5px 12px;font-size:.8125rem;min-height:34px}
 .pp-affl{margin-top:1px;font-size:0.8125rem;line-height:1.4;font-weight:600;color:var(--ink-2);overflow-wrap:anywhere}
 .pp-affl.pp-nil{font-weight:500;font-style:italic;color:var(--muted)}
+.pp-person .pp-name :is(.pp-given){font-style:normal}
 .pp-given{font-weight:500}
-.pp-letter{margin:18px 0 0}
+.pp-letter{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 .pp-lh{font-size:1.25rem}
 /* the list and its alphabet rail */
 .pp-body{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:0 10px;align-items:start}
@@ -928,23 +930,24 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-rail{position:sticky;top:calc(var(--toolbar-h,150px) + 6px);height:calc(100vh - var(--toolbar-h,150px) - 12px);height:calc(100dvh - var(--toolbar-h,150px) - 12px);display:flex;align-items:center;justify-content:center;z-index:30;pointer-events:none}
 .pp-rail[hidden]{display:none}
 .pp-rail-in{position:relative;pointer-events:auto;height:min(calc(var(--n,26) * 1.375rem),100%);display:flex}
-.pp-letters{list-style:none;margin:0;padding:4px 0;display:flex;flex-direction:column;width:28px;border-radius:999px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none}
+.pp-letters{list-style:none;margin:0;padding:4px 0;display:flex;flex-direction:column;width:28px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none}
 .pp-letters li{flex:1 1 0;min-height:0;display:flex}
 .pp-letters button{flex:1;min-height:0;width:100%;border:0;background:transparent;padding:0;border-radius:6px;font-size:.6875rem;font-weight:800;line-height:1;color:var(--link);display:flex;align-items:center;justify-content:center;cursor:pointer;font-variant-numeric:tabular-nums}
-.pp-letters button:hover,.pp-letters button.pp-hot{background:var(--active-bg);color:var(--active-ink)}
+.pp-letters button:hover{background:var(--surface-3)}
+.pp-letters button.pp-hot{background:var(--active-bg);color:var(--active-ink)}
 .pp-letters button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.pp-letters button[aria-disabled="true"]{color:var(--faint);opacity:.55;cursor:default;font-weight:600}
-.pp-letters button[aria-disabled="true"]:hover{background:transparent;color:var(--faint)}
-.pp-panel{position:absolute;right:calc(100% + 8px);width:min(320px,calc(100vw - 80px));max-height:min(60vh,440px);overflow:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px var(--pop-shadow);padding:6px}
+.pp-letters button[aria-disabled="true"]{color:var(--muted);cursor:default;font-weight:450}
+.pp-letters button[aria-disabled="true"]:hover{background:transparent;color:var(--muted)}
+.pp-panel{position:absolute;right:calc(100% + 8px);width:min(320px,calc(100vw - 80px));max-height:min(60vh,440px);overflow:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:var(--r-dialog);box-shadow:var(--dlg-shadow);padding:6px}
 .pp-panel[hidden]{display:none}
 .pp-ph{display:flex;align-items:baseline;gap:8px;padding:4px 8px 6px;border-bottom:1px solid var(--line);margin-bottom:4px;font-weight:800;font-size:1rem}
 .pp-ph small{font-size:.75rem;font-weight:600;color:var(--muted)}
-.pp-pi{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;text-align:left;border:0;border-radius:8px;background:transparent;color:var(--ink);padding:5px 8px;font-size:.8125rem;line-height:1.3}
+.pp-pi{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;text-align:left;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink);padding:5px 8px;font-size:.8125rem;line-height:1.3}
 .pp-pi:hover,.pp-pi:focus-visible{background:var(--surface-3);outline:none}
 .pp-pi span{min-width:0;overflow-wrap:anywhere}
 .pp-pi small{display:block;font-size:.7188rem;color:var(--muted);font-weight:500}
 .pp-pi b{flex:0 0 auto;font-size:.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
-.pp-bubble{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:5.5rem;height:5.5rem;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;background:var(--toast-bg);color:var(--toast-ink);box-shadow:0 10px 30px var(--pop-shadow);pointer-events:none}
+.pp-bubble{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:5.5rem;height:5.5rem;border-radius:var(--r-dialog);display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;font-stretch:var(--stretch-cond);background:var(--toast-bg);color:var(--toast-ink);box-shadow:var(--dlg-shadow);pointer-events:none}
 .pp-bubble[hidden]{display:none}
 .participants-view #nowBtn{display:none}
 #nowBtn{color:var(--na-text);border-color:var(--na);background:var(--na-bg)}
@@ -1060,6 +1063,15 @@ footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;let
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
 footer .colophon .na-glyph{margin-left:2px}
+footer{padding:28px 0 56px}
+footer h2{font-weight:700;color:var(--ink)}
+footer .cols{gap:24px 32px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+footer p{line-height:1.6;max-width:62ch}
+footer a{color:var(--ink)}
+footer .colophon{grid-column:1/-1}
+footer .colophon p{max-width:80ch}
+::selection{background:var(--mark-bg);color:var(--ink)}
+:root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
 .foot-links li{margin:2px 0}
 @media(max-width:720px){.foot-links a{display:inline-block;padding:4px 0}}
@@ -2107,9 +2119,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .people{padding:10px 16px 50px}
   .people-title{font-size:1.3125rem}
   .people-intro{font-size:0.8438rem}
-  .pp-people{columns:1}
-  .pp-person{padding:8px 10px 4px;margin-bottom:8px}
-  .pp-aff{font-size:16px}
+  .pp-people{grid-template-columns:minmax(0,1fr)}
+  .pp-person{padding:10px 12px 4px}
+  .pp-aff{font-size:16px;padding:10px 12px 8px}
   .pp-role{min-height:44px;justify-content:center;padding:6px}
   .pp-controls{gap:8px}
   .pp-ctl{flex:1 1 100%}
@@ -2117,7 +2129,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .pp-sort.agenda-views{flex:1 1 100%;width:auto}
   .pp-sort.agenda-views button{flex:1;min-height:40px;padding:6px 6px}
   .pp-body{grid-template-columns:minmax(0,1fr) 20px;gap:0 6px;margin-right:-10px}
-  .pp-letters{width:20px;padding:2px 0;box-shadow:none}
+  .pp-letters{width:20px;padding:2px 0}
   .pp-letters button{font-size:.625rem;border-radius:4px}
   .pp-rail-in{height:min(calc(var(--n,26) * 1.25rem),100%)}
 }
@@ -2254,7 +2266,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
 .print-doc .pd-foot{margin-top:14pt;color:var(--muted);font-size:8.5pt}
 /* ---------- page-wide: skip link, focus ring, hit areas, compact header ---------- */
-.skip-link{position:absolute;left:12px;top:-200px;z-index:300;padding:10px 16px;border-radius:var(--r-ctl);background:var(--card);color:var(--link);font-weight:700;text-decoration:underline;box-shadow:0 8px 24px -6px var(--pop-shadow)}
+.skip-link{position:absolute;left:12px;top:-200px;z-index:300;padding:10px 16px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--ink);color:var(--ink);font-weight:700;text-decoration:underline}
 .skip-link:focus{top:12px}
 #main:focus{outline:none}
 /* One focus ring for every control outside the calendars (they draw their own): solid ink,
@@ -2626,7 +2638,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     <div>
       <h2>About this page</h2>
       <p>An independent, mobile-friendly view of the AIP Congress 2026 program, built from the official Indico timetable (event 16926), retrieved @@RETRIEVED@@. Session and talk titles are as published; a few obvious typos were corrected.</p>
-      <p>Times, rooms and abstracts can still change — always confirm on the official pages close to the event.</p>
+      <p>Times, rooms and abstracts can still change, so always confirm on the official pages close to the event.</p>
     </div>
     <div>
       <h2>Links</h2>
@@ -8478,7 +8490,7 @@ function aliasGroupFor(q){
 function roleHtml(p, r){
   const saved = state.starred.has(r.t ? r.t.id : r.s.id);
   const what = r.t ? esc(r.t.t) : 'Convener of ' + esc(r.s.title);
-  return `<li><button type="button" class="pp-role${r.t ? '' : ' pp-conv'}" data-pi="${p.i}" data-session-detail="${r.s.id}" data-talk-detail="${r.t ? r.t.id : ''}"><span class="pp-when">${esc(r.d.label)} · ${r.start}${saved ? ' · <span class="pp-star">★ in my agenda</span>' : ''}</span><span class="pp-what">${what}</span></button></li>`;
+  return `<li><button type="button" class="pp-role${r.t ? '' : ' pp-conv'}" data-pi="${p.i}" data-session-detail="${r.s.id}" data-talk-detail="${r.t ? r.t.id : ''}"><span class="pp-when">${esc(r.d.label)}, ${r.start}${saved ? ' <span class="pp-star">★ in my agenda</span>' : ''}</span><span class="pp-what">${what}</span></button></li>`;
 }
 
 function nameHtml(p, q){
@@ -8498,11 +8510,11 @@ function personHtml(p, label, named){
   // Indore") stands in for it.
   let aff = '';
   if (named && p.g && raw.length && raw.every(a => key(a).startsWith(key(label)))){
-    aff = `<div class="pp-affl">${hlWith(raw.join(' · '), q)}</div>`;
+    aff = `<div class="pp-affl">${hlWith(raw.join('; '), q)}</div>`;
     raw.length = 0;
   } else if (named) aff = p.g ? `<div class="pp-affl">${hlWith(label, q)}</div>` : raw.length ? '' : `<div class="pp-affl pp-nil">${NO_AFF}</div>`;
   return `<li class="pp-person" id="ppp${p.i}" tabindex="-1"><div class="pp-name">${nameHtml(p, q)}</div>` + aff +
-    (raw.length ? `<div class="pp-raw" title="${esc(raw.join(' · '))}">${hlWith(raw.join(' · '), q)}</div>` : '') +
+    (raw.length ? `<div class="pp-raw" title="${esc(raw.join('; '))}">${hlWith(raw.join('; '), q)}</div>` : '') +
     `<ul class="pp-roles">${p.roles.map(r => roleHtml(p, r)).join('')}</ul></li>`;
 }
 
