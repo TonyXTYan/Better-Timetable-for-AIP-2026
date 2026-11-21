@@ -90,9 +90,14 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
 - **Display settings** (the **Aa** button): text size (Smaller 90 %, Default, Larger 115 %,
-  Largest 130 %), theme (System, Light or Dark), high-contrast text and reduce motion (follows
-  the device by default). Saved on the device (`aip2026-display`, only the changed settings) and
-  applied before the page paints; printing is always light.
+  Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
+  colour to thin lines and faint tints; Vivid fills each session head, calendar bar and lane
+  label with its stream's tint and turns the stream tags solid), high-contrast text and reduce
+  motion (follows the device by default). Beside Colour sits the colour key: the spectral rule,
+  400 to 700 nm, with each stream's line at its wavelength (point at it or touch it to name a
+  line) and a legend of every stream and its source. Saved on the device (`aip2026-display`,
+  only the changed settings) and applied before the page paints; printing is always light and
+  ink-only.
 - Installable, and works offline once loaded (`sw.js`, network first with a 4 s fallback to the
   saved copy for slow conference wifi).
 
@@ -103,8 +108,9 @@ user site's `404.html` that keeps `?query` and `#hash`).
 "Line List": the program set like a spectroscopist's line list. The interface is ink on a
 neutral grey, and colour appears only where it is data. Each stream takes its hue from a real
 spectral line (ANZCOP the 632.8 nm helium–neon laser, COMMAD a 455 nm blue LED, the AIP groups
-hydrogen Hβ, and so on), and the header's spectral rule, 400 to 700 nm, is the legend; the
-footer's Colour key tells the story. Amber is kept for the sodium doublet that marks now. Each
+hydrogen Hβ, and so on); the colour key in Display settings draws them on a spectral rule,
+400 to 700 nm, and the footer's Colour key tells the story. Display settings also offer a Vivid
+colour mode, where the stream colours fill the sessions instead of only marking them. Amber is kept for the sodium doublet that marks now. Each
 time slot is a white plate on the grey page, divided by hairlines, with no drop shadows. The
 one typeface is Archivo, whose width axis does the work of a second face: expanded for the
 wordmark, condensed and tabular for times. Light, dark, high-contrast and forced-colour modes
