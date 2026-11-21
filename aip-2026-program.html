@@ -781,6 +781,11 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-ctl select{min-height:36px;min-width:0;max-width:min(300px,100%);flex:1 1 auto;border:1px solid var(--field-line);border-radius:var(--r-ctl);background:var(--card);color:var(--ink);font:inherit;font-weight:500;padding:4px 8px}
 .pp-ctl[hidden]{display:none}
 .pp-ctl select.pp-on{border-color:var(--ink);background:var(--active-bg);color:var(--active-ink)}
+/* (no native arrow: the toolbar's 1.5px chevron, the same on every browser) */
+.pp-sel{position:relative;display:flex;flex:1 1 auto;min-width:0;max-width:min(300px,100%)}
+.pp-sel select{width:100%;max-width:none;-webkit-appearance:none;appearance:none;padding:4px 30px 4px 10px;cursor:pointer}
+.pp-chev{position:absolute;top:50%;right:11px;margin-top:-6px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;color:var(--ink-2);pointer-events:none}
+.pp-sel select:hover{border-color:var(--ink-2)}
 .pp-sort.agenda-views{margin:0}
 .pp-sort.agenda-views button{padding:5px 12px;font-size:.8125rem;min-height:34px}
 .pp-affl{margin-top:1px;font-size:0.8125rem;line-height:1.4;font-weight:600;color:var(--ink-2);overflow-wrap:anywhere}
@@ -1507,6 +1512,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:.6875rem;font-weight:720;color:var(--c);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-badge::before{content:"";flex:none;width:3px;height:.95em;border-radius:1px;background:var(--c)}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
+.vt-grid .vt-card[data-col="phys"]:not(.band) .vt-badge{flex-basis:100%}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
 .vt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 6px;padding:0 7px 4px;color:var(--bar-meta);font-size:.75rem;line-height:1.3;min-height:1.1rem}
 .vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-style:italic;font-weight:480}
@@ -2248,7 +2254,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .searchbox input{font-size:max(1rem,16px)}
   .chip-wrap .chip,.chip-only{min-height:40px}
   .fp-actions .fp-all{min-height:40px}
-  .people{padding:10px 16px 50px}
+  .people{padding:10px 20px 50px}
   .people-title{font-size:1.3125rem}
   .people-intro{font-size:0.8438rem}
   .pp-people{grid-template-columns:minmax(0,1fr)}
@@ -2258,6 +2264,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .pp-controls{gap:8px}
   .pp-ctl{flex:1 1 100%}
   .pp-ctl select{min-height:42px;font-size:16px;max-width:none}
+  .pp-sel{max-width:none}
   .pp-sort.agenda-views{flex:1 1 100%;width:auto}
   .pp-sort.agenda-views button{flex:1;padding:6px 6px}
   .pp-body{grid-template-columns:minmax(0,1fr) 20px;gap:0 6px;margin-right:-10px}
@@ -2807,7 +2814,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <button type="button" data-psort="first" aria-pressed="false">First name</button>
         <button type="button" data-psort="last" aria-pressed="false">Last name</button>
       </span></span>
-    <label class="pp-ctl">Category <select id="peopleCat"></select></label>
+    <label class="pp-ctl">Category <span class="pp-sel"><select id="peopleCat"></select><svg class="pp-chev" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></span></label>
   </div>
   <div class="pp-body">
     <div id="peopleList"></div>
