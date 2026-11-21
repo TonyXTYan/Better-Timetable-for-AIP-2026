@@ -9959,10 +9959,19 @@ function renderPeople(){
   };
   const plural = (n, one, many) => n === 1 ? one : many;
   // Sections off screen are not laid out until they come near it (content-visibility in
-  // the CSS); each starts at a guess of its height, from its cards and the columns.
+  // the CSS); each starts at a guess of its height, from its cards and the columns: its
+  // heading, then each row of cards as tall as its tallest (a card about 52px and 63px a
+  // role, 18px more with its affiliation; a row of several a little more, as the longest
+  // titles there wrap). Close guesses keep a jump down the list (the A–Z rail) on target
+  // as the sections it passes are drawn.
   const pw = document.getElementById('peopleList').clientWidth || document.getElementById('main').clientWidth - 70;
-  const cols = Math.max(1, Math.floor((pw + 10) / 310));
-  const guess = (list, named) => Math.round(60 + list.reduce((h, p) => h + 50 + (named ? 18 : 0) + 38 * p.roles.length, 0) / cols);
+  const cols = Math.max(1, Math.floor(pw / 290));
+  const card = (p, named) => 52 + (named ? 18 : 0) + 63 * p.roles.length;
+  const guess = (list, named) => {
+    let h = 46;
+    for (let i = 0; i < list.length; i += cols) h += list.slice(i, i + cols).reduce((m, p) => Math.max(m, card(p, named)), 0) + (cols > 1 ? 12 : 0);
+    return Math.round(h);
+  };
   // (each section's markup is made when it goes in: ppMore)
   const parts = [], part = (list, named, make) => { const h = guess(list, named); parts.push({ n: list.length, h, html: () => make(`style="contain-intrinsic-size:auto ${h}px"`) }); };
   let nPeople = 0, nGroups = 0, nNone = 0;
