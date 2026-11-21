@@ -2711,6 +2711,33 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 }
 /* the largest text on the narrowest phones: the three sort buttons share the row without widening the page */
 @media (max-width:720px){.pp-sort.agenda-views{min-width:0}.pp-sort.agenda-views button{min-width:0;padding-left:4px;padding-right:4px;overflow-wrap:anywhere;line-height:1.15}}
+/* Print (A13): the list flows as plain cards (a slot is not one unbreakable plate), the stream
+   edge is a real border (it prints without backgrounds), nothing is tinted, grey or sodium. */
+@media print{
+  /* paper type: about 9.5pt, whatever the screen's text size (the list is long: abstracts open) */
+  html,html[data-text]{font-size:12.5px!important}
+  header.hero{background:none}
+  /* the colour key describes the spectral rule, and the tips describe the screen: neither belongs on paper */
+  .spectral,footer .colophon,footer .cols>div:nth-child(3){display:none}
+  footer{padding:10px 0 0;margin-top:0}
+  .cards{display:block!important;overflow:visible!important;border:0!important}
+  .card{break-inside:auto!important;border-left:3px solid var(--c,var(--ink-2));box-shadow:none!important}
+  .cards>.card+.card{border-top:1px solid #000}
+  .talk,.ag-row{break-inside:avoid}
+  .block-time{break-after:avoid}
+  .card::before,.badge::before{display:none}
+  .block.past .card h3,.block.past .card.iv h3,.block.past .t-title,.block.past .block-time .bt,.block.past .block-time .bd{color:var(--ink)}
+  .talk.is-now,.ag-row.is-now{background:none}
+  .talk.is-now::before,.talk.is-now::after{display:none}
+  /* the week: outlined blocks (no fill), a stream edge at the left */
+  .week-blk:not(.week-band){background:none!important;color:var(--ink)!important;border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:none}
+  /* the horizontal calendar is drawn about 1000px wide for print; on a narrower page it shrinks to fit */
+  .hz-day.hz-printing{zoom:min(1,tan(atan2(100vw,1000px)))}
+  .week-dayh.today{background:none;border-color:var(--line)}
+  .week-dayh.today small{color:var(--muted)}
+  .week-tk.ctx{background:var(--card)!important;box-shadow:none}
+  .week-tk.ctx::before{background:var(--c)}
+}
 @media (max-width:359px){.filter-panel .fp-actions{gap:4px}.filter-panel .fp-all{padding-left:7px;padding-right:7px}}
 </style>
 </head>
@@ -8731,6 +8758,35 @@ document.addEventListener('keydown', e => {
 window.addEventListener('beforeprint', () => {
   if (state.layout === 'list' && state.scope === 'program') listFill();
   if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
+});
+// Print: a horizontal day calendar on screen is drawn "Fit day" (the whole day across the page, the
+// same code as the Fit day button) at a page-like width, and put back as it was afterwards.
+// (The print CSS shrinks it further to a narrower page.)
+const PRINT_HZ_W = 1000;
+let printHz = null;
+window.addEventListener('beforeprint', () => {
+  printHz = null;
+  if (document.body.classList.contains('print-agenda')) return;   // My agenda prints from its own list
+  const h = document.querySelector('.hz-day');
+  if (!h || !h.getClientRects().length) return;
+  const key = hzKey(h), zk = hzZoomKey(key), vp = h.querySelector('.hz-vp');
+  printHz = { root: h.parentElement, key, zk, had: zk in HZ.zoom, zoom: HZ.zoom[zk], left: HZ.left[key], sx: vp.scrollLeft, sy: scrollY, w: h.style.width };
+  h.style.width = PRINT_HZ_W + 'px';
+  h.classList.add('hz-printing');
+  hzZoom(printHz.root, 'fit');
+});
+window.addEventListener('afterprint', () => {
+  if (!printHz) return;
+  const q = printHz; printHz = null;
+  const h = q.root.querySelector('.hz-day');
+  if (!h) return;
+  h.style.width = q.w;
+  h.classList.remove('hz-printing');
+  if (q.had) HZ.zoom[q.zk] = q.zoom; else delete HZ.zoom[q.zk];
+  hzDraw(q.root, q.left);
+  const vp = h.querySelector('.hz-vp');
+  if (vp) vp.scrollLeft = q.sx;
+  window.scrollTo({ top: q.sy, behavior: 'instant' });
 });
 
 // ---------- streams filter menu ----------
