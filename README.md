@@ -112,6 +112,13 @@ The build normalises the data (stray HTML and markdown, simple inline LaTeX such
 hard line wraps, all-caps names) and rewrites `aip2026-data.json` if anything changed.
 Pushing to `main` runs `.github/workflows/pages.yml`, which rebuilds and deploys to GitHub Pages.
 
+The page's one typeface, Archivo (variable: weight and width axes, roman and italic, SIL Open Font
+License, `fonts/OFL.txt`), is inlined as base64 so the page works offline. `fonts/*.woff2` are subsets cut from
+`@fontsource-variable/archivo@5.3.0` by `fonts/make_fonts.py` (fontTools: axes limited, then only the
+characters the page and the data use); `fonts/fonts.json` lists them with their unicode ranges, and
+the build only reads those files, so it needs nothing beyond the Python standard library. Re-run
+`make_fonts.py` (instructions in its docstring) only if new characters need the face.
+
 `shots.js` and `shots2.js` take screenshots with Playwright (`node shots.js`).
 
 The QR code uses [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 by

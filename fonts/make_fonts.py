@@ -10,9 +10,9 @@ needs:
     python3 fonts/make_fonts.py /tmp/archivo/package/files
 
 Needs fontTools and brotli (pip install fonttools brotli). For each style it limits the axes
-(roman: wght 400-800, wdth 62-125; italic: wght 400-700 at wdth 100), then keeps only the
-characters found in build_program.py and aip2026-data.json plus Latin-1, Latin Extended-A and
-typographic punctuation, and the OpenType features the page uses. fontsource splits the font
+(roman: wght 400-800, wdth 75-125; italic: wght 400-700 at wdth 100), then keeps only the
+characters found in build_program.py and aip2026-data.json plus Latin-1 and typographic
+punctuation (other characters fall back to the system font, glyph by glyph), and the OpenType features the page uses. fontsource splits the font
 into a "latin" and a "latin-ext" file; both are kept, each with its own unicode-range, which
 build_program.py reads from fonts/fonts.json.
 """
@@ -29,7 +29,7 @@ OUT = ROOT / 'fonts'
 FEATURES = ['kern', 'liga', 'tnum', 'pnum', 'frac', 'numr', 'dnom', 'case', 'ccmp', 'locl',
             'mark', 'mkmk', 'rvrn']
 STYLES = {
-    'roman': dict(src='normal', axes={'wght': (400, 800), 'wdth': (62, 125)}),
+    'roman': dict(src='normal', axes={'wght': (400, 800), 'wdth': (75, 125)}),
     'italic': dict(src='italic', axes={'wght': (400, 700), 'wdth': 100}),
 }
 
@@ -38,7 +38,7 @@ def wanted_codepoints():
     text = (ROOT / 'build_program.py').read_text(encoding='utf-8')
     text += (ROOT / 'aip2026-data.json').read_text(encoding='utf-8')
     cps = {ord(c) for c in text}
-    cps |= set(range(0x20, 0x7F)) | set(range(0xA0, 0x100)) | set(range(0x100, 0x180))
+    cps |= set(range(0x20, 0x7F)) | set(range(0xA0, 0x100))
     cps |= set(range(0x2010, 0x2028)) | set(range(0x2030, 0x203B))
     cps |= {0x2044, 0x20AC, 0x2122, 0x2212, 0x2190, 0x2192, 0x2215}
     return cps

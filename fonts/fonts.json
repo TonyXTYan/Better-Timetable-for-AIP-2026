@@ -3,28 +3,28 @@
   "file": "archivo-roman-latin.woff2",
   "style": "normal",
   "weight": "400 800",
-  "stretch": "62% 125%",
-  "unicode_range": "U+20-7E,U+A0-FF,U+102,U+131,U+152-153,U+300,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2212,U+2215"
+  "stretch": "75% 125%",
+  "unicode_range": "U+20-7E,U+A0-FF,U+131,U+300,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2212,U+2215"
  },
  {
   "file": "archivo-roman-latin-ext.woff2",
   "style": "normal",
   "weight": "400 800",
-  "stretch": "62% 125%",
-  "unicode_range": "U+100-101,U+103-130,U+132-151,U+154-17F,U+2020,U+2113"
+  "stretch": "75% 125%",
+  "unicode_range": "U+101,U+107,U+10C-10D,U+110-111,U+141-142,U+14D,U+2020,U+2113"
  },
  {
   "file": "archivo-italic-latin.woff2",
   "style": "italic",
   "weight": "400 700",
   "stretch": "100%",
-  "unicode_range": "U+20-7E,U+A0-FF,U+102,U+131,U+152-153,U+300,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2212,U+2215"
+  "unicode_range": "U+20-7E,U+A0-FF,U+131,U+300,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2212,U+2215"
  },
  {
   "file": "archivo-italic-latin-ext.woff2",
   "style": "italic",
   "weight": "400 700",
   "stretch": "100%",
-  "unicode_range": "U+100-101,U+103-130,U+132-151,U+154-17F,U+2020,U+2113"
+  "unicode_range": "U+101,U+107,U+10C-10D,U+110-111,U+141-142,U+14D,U+2020,U+2113"
  }
 ]
