@@ -4679,7 +4679,22 @@ function weekFit(root = document.getElementById('agenda')){
   const stop = !ov._keyed && ov.querySelector('.week-blk[tabindex="0"], .week-tk[tabindex="0"]');
   if (stop) stop.setAttribute('aria-describedby', 'weekKeys');
   weekSync(ov);
+  weekSeedScroll(ov);
   weekPaintNow();
+}
+// On a phone the sideways overview opens at the time of day that matters: half an hour
+// before now during the congress's hours (it is on now there), else the day's 08:30
+// start, not at 07:00's empty morning. Once, for the overview just drawn.
+function weekSeedScroll(ov){
+  if (ov._seeded || !ov.classList.contains('week-h') || !PHONE_MQ.matches) return;
+  ov._seeded = true;
+  const sc = ov.querySelector('.week-sc'), col = ov.querySelector('.week-col');
+  if (!sc || !col || sc.scrollLeft) return;
+  const n = aedtNow(), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, dur = t1 - t0;
+  const live = todayIdx() >= 0 && n.min >= t0 && n.min <= t1;
+  const m = live ? Math.max(t0, n.min - 30) : Math.max(t0, 8.5 * 60);
+  sc.scrollLeft = Math.max(0, (m - t0) / dur * col.offsetWidth);
+  if (sc.onscroll) sc.onscroll();
 }
 // Does a label show at least the start (four letters, or the whole word) of its title's
 // first word, with room for the ellipsis when more follows? (No title: nothing to show.)
