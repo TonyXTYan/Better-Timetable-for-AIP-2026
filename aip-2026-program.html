@@ -591,6 +591,11 @@ html[data-view-tx="lay"]::view-transition-group(*.mx){animation-duration:calc(30
 html[data-view-tx="lay"]::view-transition-new(*.mx-shape){animation:calc(90ms * var(--mo)) var(--ease) both mx-shape-in}
 html[data-view-tx="lay"]::view-transition-old(*.mx-shape){animation:calc(90ms * var(--mo)) linear both week-tx-out}
 @keyframes lay-in{from{opacity:0;transform:scale(.985)}}
+/* (the new page's stuck heads (mx-head) show at once, as the toolbar does, over the items
+   moving under them) */
+html[data-view-tx="lay"]::view-transition-new(*.mx-head){animation:none}
+/* (a moving Horizontal bar leaves its stubs of the Now line behind: the line stays put) */
+html[data-view-tx="lay"] .hz-day .hz-bar.is-now.hz-now-in[style*="view-transition-name"]::before{display:none}
 /* A change whose morph is off (recent ones were slow): a short plain cross-fade */
 html[data-view-tx="xf"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-out}
 html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--ease) both week-tx-fade}
@@ -1058,11 +1063,13 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* The list uses the page's full width, as the calendars do: a time slot's parallel sessions
    spread into as many columns as fit. A plate of one column (a session alone in its slot,
-   a break, My agenda's rows) stops at --plate-max, about what the page's old content
-   column held, so its star and actions stay near its text and its lines keep a readable
-   length; long text inside keeps a narrower measure still. */
+   a break) stops at --plate-max, about what the page's old content column held, so its
+   star and actions stay near its text and its lines keep a readable length; long text
+   inside keeps a narrower measure still. My agenda is all one column, so its Now and
+   Up next plate and each day (its heading, with Open in program, and its rows) stop
+   there too, lined up with each other. */
 :root{--plate-max:72rem}
-.cards.single,.cards.ivs,.ag-list{max-width:var(--plate-max)}
+.cards.single,.cards.ivs,#builderList>.up-next,#builderList>.ag-day{max-width:var(--plate-max)}
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
 
@@ -5789,6 +5796,17 @@ const MX_ITEM = '.card[data-sid], .talk[data-tid], .ag-row, .ag-row li[data-tid]
 const MX_GRID = '.vt-line.f[data-m], .vt-t[data-m]:not(.tk)';
 const MX_COVER = '.hz-top, .hz-label, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul, .week-v .week-axis, .week-h .week-dayh';
 const MX_SCROLL = '.hz-vp, .vt-wrap.scroll, .week-sc';
+// (the heads a calendar keeps stuck under the toolbar, over its items)
+const MX_HEADS = '.hz-top, .vt-hbar, .vt-grid > .vt-head, .vt-grid > .vt-corner, .vt-picker, .vt-lh, .week-rul';
+// A test of whether a box on screen is partly under one of those heads (in sight).
+function mxUnderHeads(){
+  const vh = innerHeight, hs = [];
+  for (const h of document.getElementById('main').querySelectorAll(MX_HEADS)){
+    const r = h.getBoundingClientRect();
+    if (r.height && r.bottom > 0 && r.top < vh) hs.push(r);
+  }
+  return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
+}
 let mxNamed = [], mxOwner = null, mxShown = [], mxNew = false;
 function mxClear(){
   for (const el of mxNamed){ el.style.viewTransitionName = ''; el.style.viewTransitionClass = ''; }
@@ -5922,7 +5940,13 @@ function mxBegin(kind, from, opts){
     // hour lines; the covers and every session (or item on its own) in sight first, then
     // what is inside them, up to half the budget)
     let must = 0, all = -1;
-    if (only) seen.sort((a, b) => (b.key === first) - (a.key === first) || a.d - b.d);
+    // (opts.only: a named item is drawn above the whole page, so one partly under a
+    // calendar's stuck heads would cover them while it moves; but for the first, those
+    // are left to the page, at either end)
+    if (only){
+      const under = mxUnderHeads();
+      seen = seen.filter(it => it.key === first || !under(it.r)).sort((a, b) => (b.key === first) - (a.key === first) || a.d - b.d);
+    }
     if (opts.lite && !only && y0 === null && opts.band === undefined){
       all = seen.length;
       seen = seen.filter(it => coverish(it) || (it.kind === 'item' && it.d === 0));
@@ -5955,6 +5979,19 @@ function mxBegin(kind, from, opts){
       const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && new Set(old.keys()));
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
+      if (only){
+        const under = mxUnderHeads();
+        for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
+        // (and the heads stuck at the top of the new page (a phone's time head sits 50px
+        // under its stream chips) are shown over the items at once, with the toolbar, so
+        // nothing moving crosses over them: mx-head, in the style sheet)
+        const bar = stickyWrap.getBoundingClientRect().bottom;
+        let i = 0;
+        for (const h of document.getElementById('main').querySelectorAll(MX_HEADS)){
+          const r = h.getBoundingClientRect();
+          if (r.height && r.bottom > bar + 1 && r.top < bar + 64 && r.top < innerHeight) mxName(h, 'h-' + i++, 'mx-cover mx-head');
+        }
+      }
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
       let count = old.size;
@@ -8586,7 +8623,10 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
 // a sideways week: leftmost) or top-most (Vertical), one whose start shows if any does.
 // Returns its key, where it is on the screen (y), its start (day, minute) and the keys of
 // the sessions starting with it (itself first); null when there is none. Straight back
-// (the same item, the page not scrolled since): where it was before (layBack).
+// (the same item, the page not scrolled since): where it was before (layBack), and the
+// item you were at then if the other layout had shown one beside it in its place. With
+// the page at the program's top or above it (top), nothing is kept: the other layout
+// starts at its own top, as the page did.
 const LAY_CAL = '.hz-bar, .vt-card, .week-blk:not(.week-off)';
 let layBack = null;
 function layAnchor(){
@@ -8636,12 +8676,16 @@ function layAnchor(){
   const keys = [key, ...DATA.days[day].slots.filter(x => x.start === slot.start && 's-' + x.id !== key).map(x => 's-' + x.id)];
   // (the new page comes in about it)
   document.documentElement.style.setProperty('--lay-o', `${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
-  return { key, keys, y: back && back.key === key ? back.y : r.top, from: r.top, day, min: toMin(start) };
+  const lead = back && back.key === key && back.ret || key;
+  if (lead !== key){ const i = keys.indexOf(lead); if (i > 0) keys.splice(i, 1); keys.unshift(lead); }
+  const top = !back && window.scrollY <= programTop() + 8;
+  const again = !!(back && back.key === key);
+  return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
 }
 // Before the other layout is drawn: a Horizontal day opens with the item near its left
 // edge (as from the week), so it is drawn there at once.
 function layPrep(a, to){
-  if (!a || to !== 'calendar' || state.orient === 'v' || state.day === 'all' || a.day !== state.day) return;
+  if (!a || a.top || to !== 'calendar' || state.orient === 'v' || state.day === 'all' || a.day !== state.day) return;
   HZ.left[(dvAgenda() ? 'a:' : '') + DATA.days[a.day].date] = a.min - (PHONE_MQ.matches ? 15 : 30);
 }
 // Once it is drawn: the item where it was on the screen (never under the toolbar or the
@@ -8658,6 +8702,11 @@ function layLand(a){
       if (el.matches(MX_ITEM) && (talk || !el.dataset.tid) && el.getClientRects().length) return el;
     return null;
   };
+  if (a && a.top){
+    layBack = null;
+    if (window.scrollY > programTop()) scrollToProgramTop();
+    return null;
+  }
   if (a && state.layout === 'list' && a.key[0] === 's') listFill(a.key.slice(2));   // (its block, if not drawn yet)
   let el = null;
   for (const k of a ? a.keys : []) if ((el = find(k))) break;
@@ -8678,9 +8727,12 @@ function layLand(a){
     }
   }
   const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : el.closest('.vt-day, .vt-grid, .vt-sx') ? vtStick(el) : 0;
+  // (in sight, and in the upper part of it: where reading goes on; but straight back to
+  // the item you were at, exactly where it was, if a tall card's top was above the screen)
+  const exact = a.again && el === find(a.keys[0]);
   const place = () => {
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - a.y), behavior: 'instant' });
-    // (in sight, and in the upper part of it: where reading goes on)
+    if (exact) return;
     const top = stickyWrap.getBoundingClientRect().bottom + stick + 12, low = Math.max(top, innerHeight * .45), y = el.getBoundingClientRect().top;
     if (y < top || y > low) window.scrollBy({ top: y - (y < top ? top : low), behavior: 'instant' });
   };
@@ -8693,7 +8745,10 @@ function layLand(a){
     layMeasureAbove(el);
     place();
   }
-  layBack = { key: el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, y: a.from, layout: state.layout, sy: window.scrollY };
+  // (straight back: from it to where the item you were at was; if this is a session beside
+  // that item (a phone's week leaves some out), to that item, not this)
+  const key = el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid;
+  layBack = { key, y: a.from, layout: state.layout, sy: window.scrollY, ret: key !== a.keys[0] ? a.keys[0] : null };
   return el;
 }
 function layMeasureAbove(el){
@@ -9878,8 +9933,16 @@ function revealInCard(card, summary){
 }
 // What a vertical day keeps stuck under the toolbar over an item: its column heads, in
 // their own bar (a grid that scrolls sideways) or atop the grid, unless a short screen
-// lets them scroll away (My agenda's one column on a phone on its side).
+// lets them scroll away (My agenda's one column on a phone on its side); on a phone, whose
+// day is one list by start time, the stream chips and the item's time head.
 function vtStick(el){
+  const lb = el.closest('.vt-lb');
+  if (lb){
+    const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+    const low = h => { const cs = h && getComputedStyle(h); return cs && cs.position === 'sticky' ? parseFloat(cs.top) - th + h.offsetHeight : 0; };
+    const lh = lb.previousElementSibling, pk = lb.closest('.vt-list')?.previousElementSibling;
+    return Math.max(0, low(pk && pk.matches('.vt-picker') ? pk : null), low(lh && lh.matches('.vt-lh') ? lh : null));
+  }
   const h = el.closest('.vt-sx')?.querySelector('.vt-hbar') || el.closest('.vt-grid')?.querySelector(':scope > .vt-head');
   return h && getComputedStyle(h).position === 'sticky' ? h.offsetHeight : 0;
 }
