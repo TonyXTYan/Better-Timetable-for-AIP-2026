@@ -346,6 +346,9 @@ window.applyDisplay = function(d){
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316181C'/%3E%3Crect x='12.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3Crect x='17.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3C/svg%3E">
 <style>
 @@FONTS@@
+</style>
+<script>try{var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}catch(e){}</script>
+<style>
 :root{
   /* Line List: calm achromatic ink on a neutral grey ground; colour only where it is data
      (each stream takes its hue from a spectral line) and sodium amber only for "now". */
@@ -791,6 +794,14 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .saved-marker:not(:empty){color:var(--ink)}
 .replace-note{display:block;margin:4px 0 8px;font-size:.8125rem;color:var(--muted)}
 .ed-saved{font-weight:650;color:var(--ink)}
+/* ---------- load stability, deep-link landing, sheets (fixes) ----------
+   The toolbar ships with its final geometry: seven empty cells in the day ruler, and the
+   Now button laid out but invisible until the first render decides whether it shows. */
+.daytab.ph{pointer-events:none}
+.now-pending{visibility:hidden}
+@keyframes jump-tint{0%,55%{background-color:var(--surface-3);box-shadow:inset 3px 0 0 var(--ink)}100%{background-color:transparent;box-shadow:inset 0 0 0 transparent}}
+@media (pointer:coarse){.jump-target.jump-target,.jump-target.jump-target:focus-visible{outline:none}.jump-target.jump-target{animation:jump-tint calc(1.4s * var(--mo)) ease-out}}
+@media (scripting:enabled){body:not(.ready) footer{visibility:hidden}}
 /* ---------- move to another device ---------- */
 #moveDialog{width:min(560px,94vw);padding:0 20px 20px}
 #moveDialog>.md-intro{margin-right:0}
@@ -2708,7 +2719,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
         <button data-orient="v" aria-pressed="false">Vertical</button>
       </div>
     </div>
-    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
+    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span></div>
     <div class="controls">
       <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span class="tb-q" id="searchMiniQ"></span></button>
       <div class="searchbox" role="search">
@@ -2725,7 +2736,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
           <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream.<span class="fp-grp"> Click a group badge on a session (e.g. QST) to show only that group.</span></span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream.<span class="fp-grp"> Tap a group badge on a session (e.g. QST) to show only that group.</span></span></p>
         </div>
       </div>
-      <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
+      <button class="toggle now-pending" id="nowBtn" type="button">Now</button>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button></div>
     <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
@@ -8550,13 +8561,18 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
   showView(layout, 'program');
   if (s && layout === 'calendar' && calendarJump(s, jumpTalk)) return;
   if (jump){
-    listFill(jump);
+    // A day is drawn whole and marked (what has ended, what is on now) before the landing
+    // is worked out, and the blocks above the target are measured, not estimated: the page
+    // is then where it will stay (All week fills only the session's own block).
+    if (state.day === 'all'){ listFill(jump); paintNow(); } else listFill();
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
+      listMeasureAbove(card);
       const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
       if (talk) talk.open = true;
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
-      target.focus({ preventScroll: true });
+      target.focus({ preventScroll: true, focusVisible: false });
+      markJumpTarget(target);
       revealInCard(card, talk && talk.querySelector('summary'));
       // (a face still loading, the italic names say, rewraps the text above: place it again
       // once the type is in, unless the reader has scrolled meanwhile)
@@ -8572,6 +8588,23 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
     }
   }
   document.querySelector('#daytabs [aria-pressed="true"]').focus();
+}
+// The blocks above a jump's target are measured at their real height (they are only
+// estimated until the browser draws them), so the landing does not move once they are.
+function listMeasureAbove(card){
+  const all = [...document.querySelectorAll('#agenda .block')], at = all.indexOf(card.closest('.block'));
+  const above = all.slice(0, Math.max(0, at)).filter(b => !b._drawn && b.getClientRects().length);
+  for (const b of above) b.style.contentVisibility = 'visible';
+  const hs = above.map(b => b.offsetHeight);
+  above.forEach((b, i) => { b.style.contentVisibility = ''; if (hs[i]) b.style.setProperty('--cih', hs[i] + 'px'); });
+}
+// On a touch screen the target of a link is marked by a short tint, not a focus ring (a
+// ring there crosses the star beside the title); the first key press takes the mark away.
+function markJumpTarget(el){
+  document.querySelectorAll('.jump-target').forEach(x => x.classList.remove('jump-target'));
+  el.classList.add('jump-target');
+  const off = () => { el.classList.remove('jump-target'); window.removeEventListener('keydown', off, true); };
+  window.addEventListener('keydown', off, true);
 }
 // Scroll a session card to just under the sticky toolbar, so its header shows above
 // the talk; a talk far down a long session goes a quarter of the way down the screen.
@@ -9188,7 +9221,9 @@ function paintCountdown(){
 // Marks what is on now and next. It only toggles classes, so a timer can run it.
 function paintNow(){
   const n = aedtNow();
-  document.getElementById('nowBtn').hidden = todayIdx() < 0 || !(state.scope === 'program' || (state.scope === 'agenda' && state.layout === 'calendar'));
+  const nowBtn = document.getElementById('nowBtn');
+  nowBtn.hidden = todayIdx() < 0 || !(state.scope === 'program' || (state.scope === 'agenda' && state.layout === 'calendar'));
+  nowBtn.classList.remove('now-pending');
   const blocks = [...document.querySelectorAll('#agenda .block')];
   let next = null;
   for (const b of blocks){
@@ -10361,7 +10396,8 @@ if (DLG_JS) for (const d of document.querySelectorAll('dialog')){
     d.close(e.submitter && e.submitter.value || undefined);
   });
 }
-start();
+// (the footer stays unseen until the first drawing, so it does not ride down the page as the program fills in)
+try { start(); } finally { document.body.classList.add('ready'); }
 </script>
 </body>
 </html>
