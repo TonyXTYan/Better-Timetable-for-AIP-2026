@@ -260,17 +260,17 @@ def build_payload(raw):
 DARK_TOKENS = """\
   --bg:#0f1012; --card:#17181b; --ink:#ecedef; --muted:#9ca2ab; --line:#2e3136; --accent:#ecedef; --accent-ink:#121316;
   --plenary:#ecedef; --plenary-bg:#2a2c30;
-  --aip:#2ed6dd; --aip-bg:#003436;
-  --anzcop:#ff8783; --anzcop-bg:#44211f;
-  --commad:#a9bbff; --commad-bg:#232a48;
-  --focus:#5dbe5f; --focus-bg:#1a341a;
-  --edu:#d6a800; --edu-bg:#382b00;
-  --poster:#dcbcff; --poster-bg:#332542;
-  --events:#ec7cbb; --events-bg:#402132;
-  --special:#3aa8f0; --special-bg:#0d3045;
-  --business:#aab4c2; --business-bg:#262b33;
-  --social:#c9bba9; --social-bg:#2f2b27;
-  --plenary-fill:#454951;
+  --aip:#2ed6dd; --aip-bg:#1b363a;
+  --anzcop:#ff8783; --anzcop-bg:#3c2a2c;
+  --commad:#a9bbff; --commad-bg:#2e323f;
+  --focus:#5dbe5f; --focus-bg:#223326;
+  --edu:#cfc63a; --edu-bg:#343420;
+  --poster:#dcbcff; --poster-bg:#37323f;
+  --events:#ec7cbb; --events-bg:#392835;
+  --special:#3aa8f0; --special-bg:#1d2f3d;
+  --business:#aab4c2; --business-bg:#2f3136;
+  --social:#c9bba9; --social-bg:#333232;
+  --plenary-fill:#454951; --aip-fill:#21686c; --anzcop-fill:#784747; --commad-fill:#545c7b; --focus-fill:#345e38; --edu-fill:#646128; --poster-fill:#6a5d7b; --events-fill:#70425e; --special-fill:#265474; --business-fill:#555a61; --social-fill:#625c57;
   --star:#ecedef; --cx-mark:#ecedef;
   --shadow:none;
   --na:#ffb13b; --na-text:#ffc061; --na-fill:#ffb13b; --na-ink:#121316; --na-bg:#402306; --na-sel:#b86400;
@@ -279,7 +279,7 @@ DARK_TOKENS = """\
   --link:#ecedef; --surface:#17181b; --surface-2:#1c1d21; --surface-3:#24262a; --sunken:#1e2024; --sunken-2:#202327; --sticky-bg:rgba(15,16,18,.9); --hover-line:#4a4f57; --ink-2:#b9bec6; --ink-3:#d3d7dd; --faint:#6f757e; --caret:#6f757e; --cnt-ink:#121316; --pop-shadow:rgba(0,0,0,.55); --flash:#2a2c30; --mark-bg:#4a4e56; --mark-ink:#ffffff; --toast-bg:#ecedef; --toast-ink:#121316; --toast-ring:transparent; --day-rule:#ecedef; --warn-ink:#ecedef; --ok-ink:#d3d7dd; --now-text:#ffc061; --live-ink:#ffb13b; --now-bg:#402306; --now-line:#ffb13b; --next-bg:#2a2c30; --next-ink:#d3d7dd; --danger-bg:#3a1517; --danger-line:#7a2a2c; --today-bg:#402306; --today-ink:#ffc061; --clash-bg:#24262a; --clash-line:#6f757e; --clash-ink:#ecedef; --clash-row-bg:#1e2024; --clash-row-line:#4a4f57; --warm-bg:#2a2c30; --warm-line:#ecedef; --warm-ink:#ecedef; --starOn-bg:#ecedef; --starOn-line:#ecedef; --starOn-ink:#121316; --active-bg:#2a2c30; --active-ink:#ecedef; --grp-bg:#24262a; --grp-line:#4a4f57; --grp-ink:#ecedef; --grp-btn:#3a3e45; --ok-bg:#1e2024; --ok-line:#2e3136; --ok-strong:#ecedef; --ok-btn:#ecedef; --info-bg:#1e2024; --info-line:#2e3136; --info-ink:#d3d7dd; --info-strong:#ecedef; --info-btn:#ecedef; --info-hover:#24262a; --backdrop:rgba(0,0,0,.66); --switch-off:#3a3e45;
   color-scheme:dark;  --focus-ring:rgba(236,237,239,.35);
   --bar-ink:#ecedef; --bar-meta:#b9bec6; --sx-shade:rgba(0,0,0,.6); --past-ink:#d3d7dd;
-  --tk-mix:13%;
+  --tk-mix:13%; --wk-mix:42%;
   --press:brightness(1.75); --press-sum:var(--surface-3);
 """
 # (every token set in the light high-contrast block must be set here too: in a dark theme
@@ -288,8 +288,9 @@ DARK_HC_TOKENS = """\
   --press:brightness(2.1); --press-sum:#2a2c30;
   --ink:#ffffff; --muted:#c8cdd4; --line:#656b74; --hover-line:#8e949c; --ink-2:#e2e5ea; --ink-3:#f1f3f5; --faint:#9ca2ab; --caret:#8e949c;
   --accent:#ffffff; --link:#ffffff; --star:#ffffff; --day-rule:#ffffff; --field-line:#8e949c;
-  --plenary:#ffffff; --aip:#39dde4; --anzcop:#ffb5b0; --commad:#b6c6ff; --focus:#7cdd7d; --edu:#f0c239; --poster:#dcbcff; --events:#ffb1da; --special:#8eceff; --business:#bec9d7; --social:#d4c6b4;
-  --na:#ffb13b; --na-text:#ffc061; --doublet-w:8px;"""
+  --plenary:#ffffff; --aip:#39dde4; --anzcop:#ffb5b0; --commad:#b6c6ff; --focus:#7cdd7d; --edu:#e3da4a; --poster:#dcbcff; --events:#ffb1da; --special:#8eceff; --business:#bec9d7; --social:#d4c6b4;
+  --na:#ffb13b; --na-text:#ffc061; --doublet-w:8px;
+  --wk-mix:38%;"""
 
 def font_faces(root):
     """@font-face rules for the Archivo subsets in fonts/ (made by fonts/make_fonts.py), as
@@ -352,16 +353,16 @@ window.applyDisplay = function(d){
   --bg:#f3f4f5; --card:#ffffff; --ink:#16181c; --muted:#5d636d; --line:#dadde2;
   --accent:#16181c; --accent-ink:#ffffff;
   --plenary:#16181c; --plenary-bg:#eceef0;
-  --aip:#006b6f; --aip-bg:#d0f9fb;
-  --anzcop:#c71f31; --anzcop-bg:#ffebe9;
-  --commad:#4a57db; --commad-bg:#ebf0ff;
-  --focus:#006313; --focus-bg:#e0f8df;
-  --edu:#7e6300; --edu-bg:#ffefc5;
-  --poster:#8b41c7; --poster-bg:#f5ecff;
-  --events:#b92684; --events-bg:#ffe9f4;
-  --special:#006ca0; --special-bg:#e2f3ff;
-  --business:#4a5563; --business-bg:#e6eaef;
-  --social:#6b5f52; --social-bg:#efebe6;
+  --aip:#006b6f; --aip-bg:#e6f0f1;
+  --anzcop:#c71f31; --anzcop-bg:#f9e9ea;
+  --commad:#4a57db; --commad-bg:#edeefb;
+  --focus:#006313; --focus-bg:#e6efe7;
+  --edu:#6b6a00; --edu-bg:#f0f0e6;
+  --poster:#8b41c7; --poster-bg:#f3ecf9;
+  --events:#b92684; --events-bg:#f8e9f3;
+  --special:#006ca0; --special-bg:#e6f0f6;
+  --business:#4a5563; --business-bg:#edeeef;
+  --social:#6b5f52; --social-bg:#f0efee;
   --star:#16181c; --cx-mark:#16181c;
   --shadow:none;
   --radius:10px;
@@ -390,8 +391,11 @@ window.applyDisplay = function(d){
   --qr-dark:#000000; --qr-light:#ffffff;
   /* a pressed control's tint (lighter in the dark theme) */
   --press:brightness(.94); --press-sum:var(--surface-2);
+  /* a week overview block: its stream colour, mixed with the card by this much (all of it in
+     light; 42% in dark, the --X-fill mix), white text (--fill-ink) on it */
+  --wk-mix:100%;
   /* solid fills for selected chips: white text (--fill-ink) on these in both modes */
-  --plenary-fill:#16181c; --aip-fill:#006b6f; --anzcop-fill:#c71f31; --commad-fill:#4a57db; --focus-fill:#006313; --edu-fill:#7e6300; --poster-fill:#8b41c7; --events-fill:#b92684; --special-fill:#006ca0; --business-fill:#4a5563; --social-fill:#6b5f52;
+  --plenary-fill:#16181c; --aip-fill:#006b6f; --anzcop-fill:#c71f31; --commad-fill:#4a57db; --focus-fill:#006313; --edu-fill:#6b6a00; --poster-fill:#8b41c7; --events-fill:#b92684; --special-fill:#006ca0; --business-fill:#4a5563; --social-fill:#6b5f52;
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
    Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
@@ -412,7 +416,7 @@ window.applyDisplay = function(d){
 :root[data-contrast="high"]{
   --ink:#0b0c0e; --muted:#33373d; --line:#8e949c; --hover-line:#4b5058; --ink-2:#1f2226; --ink-3:#121418; --faint:#5d636d; --caret:#4b5058;
   --accent:#0b0c0e; --link:#0b0c0e; --star:#0b0c0e; --day-rule:#0b0c0e; --field-line:#4b5058;
-  --plenary:#0b0c0e; --aip:#005d61; --anzcop:#aa0021; --commad:#3940c3; --focus:#006112; --edu:#675000; --poster:#7628b0; --events:#a0006f; --special:#005783; --business:#495462; --social:#5d5144;
+  --plenary:#0b0c0e; --aip:#005d61; --anzcop:#aa0021; --commad:#3940c3; --focus:#006112; --edu:#585700; --poster:#7628b0; --events:#a0006f; --special:#005783; --business:#495462; --social:#5d5144;
   --na:#8a4a00; --na-text:#7a4100; --doublet-w:8px;
 }
 @media screen and (prefers-color-scheme: dark){
@@ -530,7 +534,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-v .week-axis{position:sticky;left:0;z-index:3;background:var(--card)}
 .week-col{position:relative;border-radius:var(--r-tag);background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
 .week-col.today{box-shadow:0 0 0 1px color-mix(in srgb,var(--na) 45%,transparent)}
-.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:var(--r-line);background:var(--c);color:var(--cnt-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
+.week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:var(--r-line);background:color-mix(in srgb,var(--c) var(--wk-mix),var(--card));color:var(--fill-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
 .week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual;pointer-events:none}
 .week-blk b{font-weight:720}
 .week-n::after{content:attr(data-n)}
