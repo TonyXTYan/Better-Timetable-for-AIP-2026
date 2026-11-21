@@ -5712,11 +5712,18 @@ function mxScan(aux, keep){
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
   const ghost = main.querySelector('.vt-ghost'), boxes = new Map();
-  const box = el => {
+  // (Horizontal: an item's box starts right of the lanes' names, which stay over the
+  // canvas as it scrolls, so nothing moving shows over them; the names themselves are
+  // covers, in the whole box)
+  const box = (el, kind) => {
     const sc = el.closest(MX_SCROLL);
     if (!sc) return null;
-    let r = boxes.get(sc);
-    if (!r) boxes.set(sc, r = sc.getBoundingClientRect());
+    const k = kind === 'item' ? sc : sc.parentNode;
+    let r = boxes.get(k);
+    if (!r){
+      const b = sc.getBoundingClientRect(), lab = kind === 'item' && sc.classList.contains('hz-vp') ? sc.querySelector('.hz-label') : null, lw = lab ? lab.offsetWidth : 0;
+      boxes.set(k, r = lw ? { left: b.left + lw, right: b.right, top: b.top, bottom: b.bottom, width: b.width - lw, height: b.height } : b);
+    }
     return r;
   };
   // (a list's time blocks far from the screen are not laid out by the browser, and
@@ -5736,7 +5743,7 @@ function mxScan(aux, keep){
     if (kind === 'item' && off(el, m)) return;
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2) return;
-    const c = box(el);
+    const c = box(el, kind);
     if (c && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
     const was = items.get(key);
     if (was && was.r.width * was.r.height >= r.width * r.height) return;
@@ -5890,14 +5897,25 @@ function mxBegin(kind, from, opts){
         return { left, top, width, height, right: left + width, bottom: top + height };
       };
       // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
-      // canvas do not spill past its edges while they move)
-      const clip = (r, c) => c ? `inset(${Math.max(0, c.top - r.top)}px ${Math.max(0, r.right - c.right)}px ${Math.max(0, r.bottom - c.bottom)}px ${Math.max(0, c.left - r.left)}px)` : 'inset(0px 0px 0px 0px)';
+      // canvas do not spill past its edges while they move). An edge inside the box gives a
+      // negative inset, not none: the item and its clip then move alike all the way (an
+      // inset held at 0 while the item comes inside would cut it short of the box's edge).
+      const clip = (r, c) => c ? `inset(${(c.top - r.top).toFixed(1)}px ${(r.right - c.right).toFixed(1)}px ${(r.bottom - c.bottom).toFixed(1)}px ${(c.left - r.left).toFixed(1)}px)` : 'inset(0px 0px 0px 0px)';
       // (only an item that reaches past its box at either end needs the clip: each
       // animation costs a style pass, and a grid in a scroll box has dozens of items)
       const out = x => x.c && (x.r.left < x.c.left - 1 || x.r.right > x.c.right + 1 || x.r.top < x.c.top - 1 || x.r.bottom > x.c.bottom + 1);
       const clipped = (...xs) => xs.some(out);
+      const same = (a, b) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2;
       for (const { key, o, n } of plan.pairs){
         if (clipped(o, n)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(n.r, n.c) }]);
+        // a cover that stays where it is but whose contents change (the ruler and minimap
+        // at another zoom, with Now somewhere else): the new one replaces the old quickly,
+        // rather than the two showing over each other all the way
+        if (o.kind === 'cover' && same(o.r, n.r)){
+          run(key, 'new', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MO_S / 3 });
+          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MO_S / 3, easing: 'linear' });
+          continue;
+        }
         // a block that changes shape: its new look comes in over the old one early, so
         // the two never show as doubled text for long
         if (Math.abs(o.r.width - n.r.width) > 6 || Math.abs(o.r.height - n.r.height) > 6){
@@ -5965,10 +5983,23 @@ function withTransition(kind, fn, from, opts = {}){
   if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
   if (opts.press){
     const o = { ...opts, press: null };
-    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o));
+    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o), txSlideFirst(o, opts.press));
     return;
   }
   txStart(kind, fn, from, opts);
+}
+// A toolbar switch (a sliding segmented control) whose change will take a while to show
+// (its redraw and the wait for its first moving frame, as last time or guessed, over
+// TX_SLIDE_FIRST): its selection slides at the press, and the change starts once it has
+// (the ms to wait; 0: the slide waits for the change instead and runs alongside it,
+// segWait). On a slow device the switch then answers at once, rather than after the
+// redraw (which freezes the page, and with it any slide).
+const TX_SLIDE_FIRST = 250;
+function txSlideFirst(o, press){
+  if (motionReduced() || !press.parentElement || !press.parentElement.matches('.agenda-views')) return 0;
+  const t = performance.now(), p = o.pair ? txPairRec(o) : null;
+  const wait = (o.to !== undefined ? txGuess(o.to) : txAvg) + (p && p.last ? p.last.freeze : txAged(txFreeze, t));
+  return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
 }
 // fn, timed: its cost is the script and the layout it causes
 const txTimed = (fn, opts, after) => () => {
@@ -6124,19 +6155,21 @@ function txWatch(vt, t, done){
 // TX_PAIR_DOWN[0] after the redraw, or a frame took over TX_PAIR_DOWN[1] while it
 // moved; one step up when both were well within (TX_FREEZE, TX_JANK) twice in a row.
 // Whichever way comes next gets the level that leaves, so the two ways never take turns.
-const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125];
+// Some never go below a floor (TX_PAIR_FLOOR): Sessions <-> Talks always folds and
+// unfolds, if with half the names, since a cross-fade there shows nothing of what changed.
+const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1 };
 const txPairs = new Map();
 const txPairKey = o => [o.pair, state.scope, state.layout, state.orient].join('|');
 function txPairRec(o){
   const k = txPairKey(o);
-  if (!txPairs.has(k)) txPairs.set(k, { level: null, why: '', last: null });
+  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null });
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
   if (p.level !== null) return p.level;
   const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
   p.why = 'redraw ' + Math.round(cost) + 'ms expected';
-  return p.level = cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2;
+  return p.level = Math.max(TX_PAIR_FLOOR[p.pair] || 0, cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2);
 }
 function txPairNote(p, lv, freeze, jank){
   p.last = { freeze, jank };
@@ -6144,7 +6177,7 @@ function txPairNote(p, lv, freeze, jank){
   p.ok = !down && freeze < TX_FREEZE && jank <= TX_JANK ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
-  p.level = down ? Math.max(0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
+  p.level = down ? Math.max(TX_PAIR_FLOOR[p.pair] || 0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
   if (p.level !== lv) p.why = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
 }
 // ?txdebug=1 in the address: each change's decision (the kind asked for and the kind
@@ -6269,7 +6302,7 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now){
+function txPending(press, go, now, slide = 0){
   if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
@@ -6279,8 +6312,8 @@ function txPending(press, go, now){
     ran = true;
     if (viewTx === tx) viewTx = null;
   };
-  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
-  requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, 0));
+  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, slide, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
+  requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, slide));
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 
@@ -11421,7 +11454,8 @@ const SEG_GROUPS = '.agenda-views, .seg';
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
 // Calendar, the scope) slides only once the new view shows: until then the page is busy
 // redrawing (or frozen under a view transition's snapshot), and a slide started at the
-// press would be over before a frame of it is drawn. Meanwhile (seg-hold) the indicator
+// press would be over before a frame of it is drawn (but for a change slow to show, which
+// waits for the slide instead: txSlideFirst). Meanwhile (seg-hold) the indicator
 // and the labels' colours stay as they were; then they move, alongside the view's own
 // change. (viewTx: a change pressed and waiting for its frame, or a transition not yet
 // showing)
@@ -11433,7 +11467,10 @@ function segWait(g){
   const go = () => { if (g._segHold){ segUnhold(g); segPlace(g, false, true); } };
   const tick = () => {
     const t = viewTx;
-    if (t && t.vt){ t.vt.ready.then(go, go); return; }
+    // (in the transition's first frame, before its styles are worked out: read at once,
+    // as the transition's own start has just changed every style, the options' places
+    // would cost a second pass over all of them)
+    if (t && t.vt){ t.vt.ready.then(() => requestAnimationFrame(go), go); return; }
     if (!t || ++n > 90){ go(); return; }
     requestAnimationFrame(tick);
   };
@@ -11450,7 +11487,7 @@ function segPlace(g, snap, now){
   if (g._segHold){ if (!snap && on) return; segUnhold(g); }
   if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
   if (snap || !g._segOn || !g.classList.contains('seg-ind')) g.classList.add('seg-snap');
-  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
+  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
   else if (g._segOn !== on && !motionReduced()){
     // the slide: the chosen option's own fill waits until the indicator is under it
     g.classList.add('seg-moving');
