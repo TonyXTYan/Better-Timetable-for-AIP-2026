@@ -8599,7 +8599,7 @@ function paintCountdown(){
   el.textContent = ti >= 0 ? 'Today: ' + DATA.days[ti].label
     : n.date > DATA.days[DATA.days.length - 1].date ? '7–11 Dec 2026, finished'
     : days > 1 ? 'Starts in ' + days + ' days'
-    : days === 1 ? 'Starts tomorrow!' : '7–11 Dec 2026';
+    : days === 1 ? 'Starts tomorrow' : '7–11 Dec 2026';
   // (the sodium doublet marks "now": it stands beside the countdown only on a congress day)
   el.parentNode.classList.toggle('is-today', ti >= 0);
 }
