@@ -3336,9 +3336,9 @@ function blockEst(slots){
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
   const hs = slots.map(s => {
     const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
-    return s.talks.length ? head + 25 + s.talks.reduce((h, t) => h + 20 + 20.5 * lines(t.t.length, 8, cw - 90)
+    return s.talks.length ? head + 25 + s.talks.reduce((h, t) => h + (phone ? 36 : 26) + 20.5 * lines(t.t.length, 8, cw - 90)
         + 20 * lines(t.sp.reduce((n, p) => n + p.n.length + (p.a ? p.a.length + 5 : 2), 0), 7, cw - 90), 0)
-      : head - 28 + (s.desc ? 30 : 0);
+      : head + (phone ? 50 : 30) + (s.conv && s.conv.length ? 22 : 0) + (s.desc ? 30 : 0);
   });
   let h = phone ? 36 : 0;
   for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
@@ -8556,6 +8556,14 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
       target.focus({ preventScroll: true });
       revealInCard(card, talk && talk.querySelector('summary'));
+      // (a face still loading, the italic names say, rewraps the text above: place it again
+      // once the type is in, unless the reader has scrolled meanwhile)
+      if (document.fonts && document.fonts.status === 'loading'){
+        let mine = true;
+        const ins = ['wheel', 'touchstart', 'keydown', 'pointerdown'], off = () => { mine = false; for (const k of ins) window.removeEventListener(k, off, true); };
+        for (const k of ins) window.addEventListener(k, off, { capture: true, passive: true });
+        document.fonts.ready.then(() => { if (mine && card.isConnected) revealInCard(card, talk && talk.querySelector('summary')); off(); });
+      }
       card.classList.add('flash');
       setTimeout(() => card.classList.remove('flash'), 1400 * motionK() + 100);
       return;
