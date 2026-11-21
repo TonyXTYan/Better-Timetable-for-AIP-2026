@@ -764,6 +764,12 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 #eventDialog summary:hover{color:var(--ink)}
 .ed-ttime{flex:none;min-width:5.6em;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
 .ed-ttitle{min-width:0}
+@media (max-width:420px){
+  #eventDialog summary{display:grid;grid-template-columns:12px minmax(0,1fr);column-gap:10px;align-items:start}
+  #eventDialog summary::before{grid-row:1 / 3;margin-top:.55em}
+  .ed-ttime{grid-column:2;min-width:0}
+  .ed-ttitle{grid-column:2}
+}
 .saved-marker:not(:empty){color:var(--ink)}
 .replace-note{display:block;margin:4px 0 8px;font-size:.8125rem;color:var(--muted)}
 .ed-saved{font-weight:650;color:var(--ink)}
@@ -778,6 +784,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .md-lead{font-size:0.875rem;color:var(--ink-2);margin:0 0 4px}
 .md-qr{margin:6px 0 4px;border:1px solid var(--line);border-radius:var(--r-plate);padding:0 12px}
 .md-qr summary{cursor:pointer;padding:10px 0;font-weight:650;font-size:.875rem;color:var(--ink);min-height:40px;box-sizing:border-box}
+.md-qr summary{display:flex;align-items:center;gap:10px;list-style:none}
+.md-qr summary::-webkit-details-marker{display:none}
+.md-qr summary::before{content:"";flex:none;width:6px;height:6px;margin:0 3px 0 1px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(-45deg);transition:transform var(--dur-s,120ms)}
+.md-qr[open] summary::before{transform:rotate(45deg)}
 .md-qr[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
 .md-warn{font-size:.8125rem;color:var(--ink);background:var(--surface-3);border:1px solid var(--line);border-left:3px solid var(--ink-2);border-radius:var(--r-seg);padding:8px 12px;margin:10px 0}
 .qr-box{width:var(--qr-size,280px);max-width:100%;margin:4px auto 6px;background:var(--qr-light);border-radius:var(--r-plate);border:1px solid var(--line);overflow:hidden}
@@ -1860,7 +1870,7 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.day.has{height:9px}
 /* a slot where saved items overlap (bdClashes): an ink triangle under the track, wider than a saved slot's bar */
 .bd-tick.has.cx{width:11px;height:9px;border-radius:0;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%)}
-.bd-cxtri{display:inline-block;width:11px;height:9px;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
+.bd-cxtri{display:inline-block;flex:none;width:11px;height:9px;margin-right:2px;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
 .bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--ink-2);border-radius:var(--r-seg);background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
 button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-cxn{display:inline-flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--ink-2)}
@@ -1868,7 +1878,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
 .bd-cxnote{flex:1 1 100%;margin:4px 0 0;font-size:.75rem;color:var(--clash-ink);font-weight:600}
 .bd-card.cx{background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 8%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
-.bd-cxp{font-size:.6875rem;font-weight:750;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--ink-2);border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
+.bd-cxp{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:750;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--ink-2);border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
 .bd-days{height:22px}
 .bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:var(--r-seg);font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--ink);white-space:nowrap;line-height:1.5}
 .bd-day:hover{background:var(--surface-3)}
@@ -2027,7 +2037,17 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
   .bd-info,.bd-abs{display:inline-flex;align-items:center;min-height:40px;margin-block:-8px}
   .bd-abs{margin-block:0}
   .bd-cxkey{min-height:40px;margin-block:-6px}
-  .bd-day{min-height:40px}
+  .bd-day{min-height:40px;min-width:40px}
+  .bd-talk{min-height:40px}
+  .bd-info{min-width:40px;justify-content:center}
+  .bd-opts label{min-height:40px}
+  .bd-range{height:40px}
+}
+/* the other dialogs on touch: 40px targets whatever the width */
+@media (pointer:coarse){
+  .toggle.dlg-x{width:40px;height:40px}
+  #eventDialog .ag-btn{min-height:40px}
+  .dd-foot .linkish{min-height:40px}
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
@@ -2041,13 +2061,13 @@ html[data-speed="xslow"]{--mo:4}
    when they do not grow out of their block) fade in rising 8px and fade out sinking, their
    backdrops fading too; a closing one lets clicks through at once. The details' own grow
    and shrink (a view transition, data-view-tx="dlg") replaces this. */
-dialog{--dlg-t:calc(var(--mo,1) * 140ms);opacity:0;translate:0 8px;transition:opacity calc(var(--mo,1) * 110ms) ease-in,translate calc(var(--mo,1) * 110ms) ease-in,overlay calc(var(--mo,1) * 110ms) allow-discrete,display calc(var(--mo,1) * 110ms) allow-discrete}
-dialog[open]{opacity:1;translate:none;transition-duration:var(--dlg-t);transition-timing-function:cubic-bezier(.2,.7,.3,1)}
+dialog{--dlg-t:var(--dur-l,calc(var(--mo,1) * 200ms));opacity:0;translate:0 8px;transition:opacity var(--dur-s,calc(var(--mo,1) * 120ms)) ease-in,translate var(--dur-s,calc(var(--mo,1) * 120ms)) ease-in,overlay var(--dur-s,calc(var(--mo,1) * 120ms)) allow-discrete,display var(--dur-s,calc(var(--mo,1) * 120ms)) allow-discrete}
+dialog[open]{opacity:1;translate:none;transition-duration:var(--dlg-t);transition-timing-function:var(--ease-em,cubic-bezier(.3,.15,0,1))}
 @starting-style{dialog[open]{opacity:0;translate:0 8px}}
 dialog:not([open]){pointer-events:none}
 html.dlg-js dialog:not([open]),html.dlg-js dialog:not([open])::backdrop{transition:none}   /* the close is animated in script (DLG_JS) */
 dialog::backdrop{opacity:0;transition:opacity calc(var(--mo,1) * 110ms) ease-in,overlay calc(var(--mo,1) * 110ms) allow-discrete,display calc(var(--mo,1) * 110ms) allow-discrete}
-dialog[open]::backdrop{opacity:1;transition-duration:calc(var(--mo,1) * 140ms);transition-timing-function:ease-out}
+dialog[open]::backdrop{opacity:1;transition-duration:calc(var(--mo,1) * 160ms);transition-timing-function:ease-out}
 @starting-style{dialog[open]::backdrop{opacity:0}}
 html[data-view-tx="dlg"] #eventDialog,html[data-view-tx="dlg"] #eventDialog::backdrop{transition:none}
 /* The Undo bar rises in from the foot and sinks away; the Streams panel and the Export
@@ -2242,6 +2262,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .seg input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
 .seg .sz-a{font-weight:800;line-height:1.1}
 .seg.sizes label>span{justify-content:flex-end;min-height:48px}
+@media (pointer:coarse){.seg label>span{min-height:40px}.seg.sizes label>span{min-height:52px}}
 .dd-switch{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;margin:0 0 8px;padding:10px 12px 10px 14px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);color:var(--ink);text-align:left;min-height:52px}
 .dd-switch:hover{border-color:var(--hover-line)}
 .dd-switch:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -2287,24 +2308,34 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   body.print-agenda>*:not(#printDoc){display:none!important}
   body.print-agenda #printDoc{display:block}
 }
-.print-doc{color:var(--ink);font-size:10pt;line-height:1.35}
-.print-doc h1{font-size:17pt;margin:0 0 2pt;letter-spacing:-.01em}
-.print-doc .pd-meta{margin:0 0 10pt;color:var(--muted);font-size:9pt}
-.print-doc h2{font-size:12pt;margin:12pt 0 4pt;padding-bottom:2pt;border-bottom:1.5pt solid var(--day-rule);break-after:avoid}
-.print-doc h3{font-size:10.5pt;margin:8pt 0 2pt;break-after:avoid}
+/* The printed agenda: set like a programme book, ink on white, a 3pt stream line at each row,
+   times condensed, names italic. Borders print where fills would not. */
+.print-doc{color:var(--ink);font-size:10pt;line-height:1.4}
+.print-doc h1{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10pt;margin:0 0 4pt;font-size:20pt;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em}
+.print-doc .pd-sub{font-size:12pt;font-weight:600;font-stretch:100%;letter-spacing:0;color:var(--ink-2)}
+.print-doc .pd-meta{display:flex;flex-wrap:wrap;gap:0 16pt;margin:0 0 2pt;color:var(--ink-2);font-size:9pt}
+.print-doc .pd-meta:last-of-type{margin-bottom:10pt}
+.print-doc h2{margin:14pt 0 4pt;padding-bottom:3pt;border-bottom:1pt solid var(--ink);font-size:13pt;font-weight:700;break-after:avoid}
+.print-doc h3{display:flex;flex-wrap:wrap;gap:0 10pt;margin:8pt 0 2pt;font-size:10.5pt;font-weight:700;break-after:avoid}
 .print-doc table{width:100%;border-collapse:collapse;table-layout:fixed}
-.print-doc th{text-align:left;font-size:8pt;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:1pt solid var(--ink);padding:3pt 4pt}
-.print-doc td{vertical-align:top;border-bottom:.5pt solid var(--line);padding:4pt;overflow-wrap:anywhere}
+.print-doc th{text-align:left;font-size:8.5pt;font-weight:650;color:var(--muted);border-bottom:.75pt solid var(--ink);padding:3pt 4pt}
+.print-doc td{vertical-align:top;border-bottom:.5pt solid var(--line);padding:5pt 4pt;overflow-wrap:anywhere}
 .print-doc tr{break-inside:avoid}
-.print-doc .pd-time{width:17%;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+.print-doc .pd-time{width:17%;white-space:nowrap;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700}
+.print-doc td.pd-time{padding-left:7pt;border-left:3pt solid var(--c,var(--ink-2))}
 .print-doc .pd-kind{width:9%}
-.print-doc .pd-title{width:34%;font-weight:600}
+.print-doc .pd-title{width:34%;font-weight:640}
 .print-doc .pd-who{width:20%}
 .print-doc .pd-sess{width:20%}
-.print-doc .pd-aff,.print-doc .pd-room{display:block;color:var(--muted);font-size:8.5pt;font-weight:400}
-.print-doc .pd-inner{list-style:none;margin:2px 0 0;padding:0;font-weight:400;font-size:8.5pt}
+.print-doc .pd-n{font-style:italic;font-weight:480}
+.print-doc .pd-p,.print-doc .pd-aff,.print-doc .pd-room{display:block}
+.print-doc .pd-aff,.print-doc .pd-room{color:var(--muted);font-size:8.5pt;font-weight:400;font-style:normal}
+.print-doc .pd-inner{list-style:none;margin:2pt 0 0;padding:0;font-weight:400;font-size:8.5pt}
 .print-doc .pd-inner .pd-aff{display:inline}
-.print-doc .pd-clash{display:block;font-weight:700;color:var(--warn-ink);font-size:8.5pt}
+.print-doc .pd-it{margin-right:6pt;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700}
+.print-doc h3 .pd-it{font-weight:500}
+.print-doc .pd-k{margin-right:6pt;color:var(--muted);font-size:8.5pt;font-weight:400}
+.print-doc .pd-clash{display:table;margin-top:3pt;padding:0 3pt;border:.75pt solid var(--ink);border-radius:2pt;font-weight:700;color:var(--ink);font-size:8.5pt}
 .print-doc .pd-group{break-inside:avoid}
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
 .print-doc .pd-foot{margin-top:14pt;color:var(--muted);font-size:8.5pt}
@@ -7491,18 +7522,19 @@ function buildPrintDoc(){
   let generated;
   try { generated = new Date().toLocaleString('en-AU', { day:'numeric', month:'long', year:'numeric', hour:'numeric', minute:'2-digit' }); }
   catch (e) { generated = new Date().toString(); }
-  const people = sp => sp.map(p => `${esc(p.n)}${p.a ? `<span class="pd-aff">${esc(p.a)}</span>` : ''}`).join('');
+  const people = sp => sp.map(p => `<span class="pd-p"><i class="pd-n">${esc(p.n)}</i>${p.a ? `<span class="pd-aff">${esc(p.a)}</span>` : ''}</span>`).join('');
   const row = it => {
-    const who = it.t ? (it.t.sp.length ? people(it.t.sp) : 'Speaker TBA') : esc((it.s.conv || []).join('; '));
+    const who = it.t ? (it.t.sp.length ? people(it.t.sp) : 'Speaker TBA') : (it.s.conv || []).map(n => `<i class="pd-n">${esc(n)}</i>`).join('; ');
     const sess = it.t ? `${esc(it.s.title)}${it.s.room ? `<span class="pd-room">${esc(it.s.room)}</span>` : ''}`
       : `${esc(it.s.room || 'Belinda Hutchinson Building')}${it.s.talks.length ? `<span class="pd-room">${plural(it.s.talks.length, it.s.cat === 'poster' ? 'poster' : 'talk')}</span>` : ''}`;
-    const clash = groupNo.has(it) ? `<span class="pd-clash">&#9888; Clash ${groupNo.get(it)}</span>` : '';
+    const clash = groupNo.has(it) ? `<span class="pd-clash">Clash ${groupNo.get(it)}</span>` : '';
     const inner = it.inner && it.inner.length ? `<ul class="pd-inner">${it.inner.map(t =>
-      `<li>&#9733; ${t.s}&#8211;${t.e} ${esc(t.t)}${t.sp.length ? ` <span class="pd-aff">${esc(t.sp.map(p => p.n).join(', '))}</span>` : ''}</li>`).join('')}</ul>` : '';
-    return `<tr><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${inner}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
+      `<li><span class="pd-it">&#9733; ${t.s}&#8211;${t.e}</span>${esc(t.t)}${t.sp.length ? ` <i class="pd-aff pd-n">${esc(t.sp.map(p => p.n).join(', '))}</i>` : ''}</li>`).join('')}</ul>` : '';
+    return `<tr style="--c:${CAT_COLORS[it.s.cat][0]}"><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${inner}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
   };
-  let html = `<h1>AIP Congress 2026 — My agenda</h1>
-    <p class="pd-meta">Generated ${esc(generated)} &middot; ${esc(agendaCountText(items, false, ' · '))} &middot; about ${plannedHours(items).toFixed(1)} h &middot; ${groups.length ? clashWords(groups.length, groups.reduce((n, g) => n + g.length, 0)) : 'no clashes'} &middot; All times AEDT (Australia/Sydney) &middot; Belinda Hutchinson Building, The University of Sydney</p>`;
+  let html = `<h1>AIP Congress 2026<span class="pd-sub">My agenda</span></h1>
+    <p class="pd-meta"><span>${esc(agendaCountText(items, false, ', '))}</span><span>about ${plannedHours(items).toFixed(1)} h</span><span>${groups.length ? clashWords(groups.length, groups.reduce((n, g) => n + g.length, 0)) : 'no clashes'}</span></p>
+    <p class="pd-meta"><span>All times AEDT (Australia/Sydney)</span><span>Belinda Hutchinson Building, The University of Sydney</span><span>Generated ${esc(generated)}</span></p>`;
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
@@ -7512,8 +7544,8 @@ function buildPrintDoc(){
   });
   if (groups.length){
     html += `<section class="pd-clashes"><h2>Clash details</h2>` + groups.map((g, i) => `<div class="pd-group">
-      <h3>Clash ${i + 1} &middot; ${esc(g[0].d.label)} &middot; ${groupSpan(g)}</h3>
-      <ul>${g.map(it => `<li>${it.start}&#8211;${it.end} &middot; ${kindLabel(it)} &middot; ${esc(itemTitle(it))}${it.t ? ` (in ${esc(it.s.title)})` : ''}</li>`).join('')}</ul></div>`).join('') + `</section>`;
+      <h3>Clash ${i + 1}<span class="pd-it">${esc(g[0].d.label)}</span><span class="pd-it">${groupSpan(g)}</span></h3>
+      <ul>${g.map(it => `<li><span class="pd-it">${it.start}&#8211;${it.end}</span><span class="pd-k">${kindLabel(it)}</span>${esc(itemTitle(it))}${it.t ? ` (in ${esc(it.s.title)})` : ''}</li>`).join('')}</ul></div>`).join('') + `</section>`;
   }
   html += `<p class="pd-foot">From the AIP Congress 2026 Program Explorer, built from the official Indico timetable. Times and rooms can change; check the official program close to the day.</p>`;
   return html;
@@ -7967,7 +7999,7 @@ function bdCard(s, parallel){
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
   return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
-      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden>&#9888; Clash</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="bd-cxtri" aria-hidden="true"></i> Clash</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
@@ -7997,7 +8029,7 @@ function bdRenderSlot(){
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
       <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
-      ${clashes ? `<br><span class="ag-warn">&#9888; ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
+      ${clashes ? `<br><span class="ag-warn"><i class="bd-cxtri" aria-hidden="true"></i> ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -8067,7 +8099,7 @@ function bdPaintChecks(){
   const note = bdEl('bdSlotCx');
   note.hidden = !pairs.length;
   note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
-  note.innerHTML = pairs.length ? '&#9888; Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
+  note.innerHTML = pairs.length ? '<i class="bd-cxtri" aria-hidden="true"></i> Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
   // the key to the slider's marks, which steps to the next slot with a clash
   const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
   const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
@@ -9725,7 +9757,7 @@ function renderMoveSend(){
       <button type="button" class="toggle" id="moveDownload">Download file</button>
     </div>`;
   const warn = local ? `<p class="md-warn">This page is open from a file on this computer, so the ${phone ? 'link and QR code only work' : 'QR code and link only work'} here. The agenda code and the file work on any device.</p>` : '';
-  const note = `<p class="md-note">On the other device, open the link; or open this page there, go to <b>My agenda → Export → Move to another device</b>, and paste the code or import the file.</p>`;
+  const note = `<p class="md-note">On the other device, open the link; or open this page there, open <b>My agenda</b>, then <b>Export</b>, then <b>Move to another device</b>, and paste the code or import the file.</p>`;
   box.innerHTML = phone
     ? `<p class="md-lead">Send your agenda (${n}) to your other device: share or copy the link, or save the file.</p>` + buttons + warn + note +
       (qr ? `<details class="md-qr"><summary>Show QR code (to scan with another phone)</summary>${qrHtml('Scan this with the other phone’s camera to open your agenda there, then tap <b>Add</b>.')}</details>` : qrHtml(''))
