@@ -2865,7 +2865,12 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 .alias-chip b{color:inherit}
 .fallback-banner,#peopleList .ag-empty h3{overflow-wrap:anywhere}
 /* A calendar uses the full width; the header and toolbar line up with it. */
-body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
+body.wide-view .toolbar,body.wide-view .hero-inner,body.participants-view .toolbar,body.participants-view .hero-inner{max-width:none}
+/* Participants: the same full width and 20px gutters as the calendars (the .people column,
+   the header and the toolbar all share them); the people flow into as many columns as fit. */
+body.participants-view .people{max-width:none}
+body.participants-view .people-intro{max-width:100ch}
+body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
 /* Compact header on phones and in landscape on phones (about 100px): the wordmark with Aa,
    the countdown and one line of facts */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
