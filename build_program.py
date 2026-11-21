@@ -3052,6 +3052,10 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 }
 /* the largest text on the narrowest phones: the three sort buttons share the row without widening the page */
 @media (max-width:720px){.pp-sort.agenda-views{min-width:0}.pp-sort.agenda-views button{min-width:0;padding-left:4px;padding-right:4px;overflow-wrap:anywhere;line-height:1.15}}
+/* (and with the largest text there, the Sort label goes above them, so they have the whole row) */
+@media (max-width:400px){html[data-text="xl"] .pp-ctl:has(>.pp-sort){flex-wrap:wrap;row-gap:6px}html[data-text="xl"] .pp-ctl>.pp-sort{flex:1 1 100%}}
+/* Participants on paper: the people only (no A-Z rail, sort or category) */
+@media print{.pp-rail,.pp-controls,.pp-bubble{display:none!important}.pp-body{display:block;margin-right:0}}
 /* Print (A13): the list flows as plain cards (a slot is not one unbreakable plate), the stream
    edge is a real border (it prints without backgrounds), nothing is tinted, grey or sodium. */
 @media print{
@@ -11481,9 +11485,13 @@ document.getElementById('importFile').addEventListener('change', async e => {
 const stickyWrap = document.querySelector('.sticky-wrap');
 // --toolbar-h is what the toolbar covers: sticky rulers and heads sit right under it.
 // --toolbar-full is its unfolded height, for sizes that should not change as it folds.
-// (While it folds or unfolds, the edge it is moving to: tbCompact moves the heads under it.)
+// (While it folds or unfolds, it stays as it was on the page and the heads in sight have
+// their own, the edge it is moving to (tbCompact): a new value on the root restyles
+// every element on the page, which on a slow device held up the fold's first frame. It
+// changes once the fold is over.)
 function syncToolbarHeight(){
-  const h = Math.round(TB.anim ? TB.anim.px : stickyWrap.getBoundingClientRect().height) + 'px', root = document.documentElement.style;
+  if (TB.anim) return;
+  const h = Math.round(stickyWrap.getBoundingClientRect().height) + 'px', root = document.documentElement.style;
   root.setProperty('--toolbar-h', h);
   if (!TB.on && !stickyWrap.classList.contains('tb-anim')) root.setProperty('--toolbar-full', h);
 }
@@ -11508,8 +11516,9 @@ function tbPaintMini(){
 // when the fold ends: --toolbar-h itself is set once, to the edge the bar is moving to.
 const TB_FOLLOW = '.hz-top, .vt-head, .vt-corner, .vt-hbar, .vt-picker, .vt-lh, .week-rul, .block-time, .pp-rail';
 function tbFollowers(){
-  const out = [];
-  for (const el of document.querySelectorAll(TB_FOLLOW)){
+  const out = [], all = document.querySelectorAll(TB_FOLLOW);
+  out.all = all;
+  for (const el of all){
     const cs = getComputedStyle(el);
     if (cs.position !== 'sticky') continue;
     const top = parseFloat(cs.top), r = el.getBoundingClientRect();
@@ -11530,8 +11539,9 @@ function tbHeadState(slimH, fullH){
   for (const el of document.querySelectorAll(TB_HEADS)){
     const box = el.parentElement, r = box.getBoundingClientRect();
     if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
-    // its place under the bar, relative to the bar's edge (a constant: read while still)
-    if (!el.getAnimations().length) el._tbOff = parseFloat(getComputedStyle(el).top) - th;
+    // its place under the bar, relative to the bar's edge (a constant: read while still;
+    // mid-fold, against the edge it has of its own)
+    if (!el.getAnimations().length) el._tbOff = parseFloat(getComputedStyle(el).top) - (parseFloat(el.style.getPropertyValue('--toolbar-h')) || th);
     const off = el._tbOff;
     if (!Number.isFinite(off)) continue;
     const sFull = fullH + off, sSlim = slimH + off;
@@ -11557,6 +11567,7 @@ function tbAnimEnd(run){
   stickyWrap.style.removeProperty('--tb-edge');
   stickyWrap.querySelector('.toolbar').style.opacity = '';
   for (const el of run.fe){ el.style.top = ''; el.style.height = ''; }
+  for (const el of run.lv) el.style.removeProperty('--toolbar-h');
   if (TB.anim === run) TB.anim = null;
 }
 // the bar's height in its own pixels, fractions kept (so holding it moves nothing below)
@@ -11628,9 +11639,13 @@ function tbCompact(on){
     // the row it changes to comes in softly, rather than replacing the old one in a frame
     bar.style.opacity = '0.2';
     const t = bar.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: ms * 0.7, easing: 'ease-out', fill: 'forwards' });
-    TB.anim = { a, e, t, f: [], fe: [], from: h0, to: h1, px: h1px };
-    // the heads under it: from where they are to where the new edge puts them
-    syncToolbarHeight();
+    TB.anim = { a, e, t, f: [], fe: [], lv: [], from: h0, to: h1, px: h1px };
+    // the heads under it: from where they are to where the new edge puts them (each given
+    // that edge as its own --toolbar-h, until the fold is over)
+    // (all of them, not only those in sight: one scrolled up to the edge meanwhile sticks
+    // at the new edge, as it would have before)
+    const edge = Math.round(h1px) + 'px';
+    for (const el of follow.all){ el.style.setProperty('--toolbar-h', edge); TB.anim.lv.push(el); }
     for (const f of follow){
       const cs = getComputedStyle(f.el), top = parseFloat(cs.top), h = parseFloat(cs.height);
       // (only what sits at the edge or will: one lower down is in its own place either way)
