@@ -2605,12 +2605,19 @@ function hlWith(s, q){
   const terms = termsOf(q);
   if (!terms.length) return esc(s);
   if (_hlRe.q !== q){
-    const pat = terms.filter(t => t.length > 1)
-                     .map(t => { const p = t.split(' ').map(escRe).join('\\s+'); return shortAlias(t) ? '(?<![a-z0-9])' + p + '(?![a-z0-9])' : p; })
-                     .sort((a,b) => b.length - a.length).join('|');
-    _hlRe = { q, re: pat ? new RegExp(pat, 'g') : null };
+    // Short aliases ("anu", "unsw") match only as whole tokens. No lookbehind
+    // (Safari < 16.4 throws on it): each alias is wrapped in a capture group
+    // and the character before it is checked in the loop below. `plain` is the
+    // same alternation without the aliases, tried where that check fails.
+    // The order is the one the lookbehind form had (25 characters longer).
+    const alts = terms.filter(t => t.length > 1)
+                      .map(t => { const p = t.split(' ').map(escRe).join('\\s+'), w = shortAlias(t); return { p, w, k: p.length + (w ? 25 : 0) }; })
+                      .sort((a,b) => b.k - a.k);
+    const pat = alts.map(a => a.w ? '(' + a.p + ')(?![a-z0-9])' : a.p).join('|');
+    const plain = alts.some(a => a.w) && alts.filter(a => !a.w).map(a => a.p).join('|');
+    _hlRe = { q, re: pat ? new RegExp(pat, 'g') : null, plain: plain ? new RegExp(plain, 'y') : null };
   }
-  const re = _hlRe.re;
+  const re = _hlRe.re, plainRe = _hlRe.plain;
   if (!re) return esc(s);
   // Match on the folded text. Folding nearly always keeps every position;
   // when a character changes length (ß, æ, a lone accent), map positions back.
@@ -2630,6 +2637,14 @@ function hlWith(s, q){
   re.lastIndex = 0;
   let out = '', last = 0, m;
   while ((m = re.exec(hay)) !== null){
+    if (m.length > 1 && m.index > 0 && /[a-z0-9]/.test(hay[m.index - 1]) && m.some((g, i) => i && g !== undefined)){
+      // An alias glued to a letter or digit: only the other terms may match here.
+      const at = m.index;
+      if (plainRe){ plainRe.lastIndex = at; m = plainRe.exec(hay); }
+      else m = null;
+      if (!m){ re.lastIndex = at + 1; continue; }
+      re.lastIndex = at + m[0].length;
+    }
     if (!m[0].length){ re.lastIndex++; continue; }
     const a = map ? map[m.index] : m.index;
     const b = map ? map[m.index + m[0].length] : m.index + m[0].length;
