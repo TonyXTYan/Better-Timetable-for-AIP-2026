@@ -451,8 +451,10 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
-.hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
+.hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
 @media (min-width:1200px){.hero p.sub{max-width:none}}
+/* a tablet keeps the three facts on one line (Sunday's registration is in the program) */
+@media (max-width:1199px){.hero .facts .fx-reg{display:none}}
 /* the three facts on one row: each pair inline, the term quiet */
 .hero .facts{display:flex;flex-wrap:wrap;gap:4px 28px;margin:10px 0 0;font-size:.8125rem;line-height:1.45}
 .hero .facts>div{display:inline-flex;align-items:baseline;gap:6px;min-width:0}
@@ -2934,7 +2936,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
       <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University of Sydney. All times AEDT.</p>
       <dl class="facts">
-        <div><dt>Dates</dt><dd>7&#8211;11 December 2026, registration Sunday 6</dd></div>
+        <div><dt>Dates</dt><dd>7&#8211;11 December 2026<span class="fx-reg">, registration Sunday 6</span></dd></div>
         <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney</dd></div>
         <div><dt>Clock</dt><dd>All times AEDT<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
       </dl>
