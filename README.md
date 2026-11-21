@@ -42,19 +42,18 @@ user site's `404.html` that keeps `?query` and `#hash`).
     congress, else on the first session. Talks mode opens zoomed in so a 15-minute talk is at least
     6 rem wide on a phone. Streams are grouped (AIP groups get a lane each) and collapse; a lane
     shows if it has anything that day. In Sessions mode small marks along each bar's foot show
-    where its talks start, the talk on now in red; Talks mode splits each bar into its talks.
+    where its talks start; Talks mode splits each bar into its talks.
     Inside an AIP group's lane the repeated "AIP QST:" prefix is left out of titles.
   - **Vertical** puts time down the page in stream columns (AIP groups, ANZCOP, COMMAD, Focus,
     Posters and education, Forums), which split into sub-columns where sessions run side by side;
     plenaries and breaks are full-width bands and the column heads stay in view. Each session
-    card opens its talks with **N talks ▸**. Wherever talks are shown (Talks mode, or an opened
+    card opens its talks with its **N talks** button. Wherever talks are shown (Talks mode, or an opened
     card) every talk sits on the row of its start time, so reading across from a time on the
     left finds every talk starting then (session tops line up with their start time the same
     way). Sub-columns never get narrower than 7.5 rem: collapsed sessions beyond a stream's
     sub-columns stack in its cell, and when the talks need more width than the page has, the
-    grid scrolls sideways in its own box with the times and column heads kept in view. A red
-    line marks the current time. On phones it is one list grouped by start time, with stream
-    chips.
+    grid scrolls sideways in its own box with the times and column heads kept in view. On
+    phones it is one list grouped by start time, with stream chips.
 - Search every word in any order, ignoring case and accents; `"quotes"` for an exact phrase.
   If the selected day has no match, matches from the rest of the week appear. Short forms of
   institutions find their speakers' talks too (`unsw`, `anu`, `usyd`, `uts`, `uq`, `csiro` …).
@@ -84,9 +83,10 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - **Move to another device**: a QR code of the agenda link (drawn offline), copy the link or a
   short agenda code, or download a `.json` file; on the other device import the file or paste the
   link, code or file text, then add it to the agenda there or replace it.
-- **Display settings** (Aa): text size (smaller to largest), Light, Dark or System theme,
-  high-contrast text and reduced motion, saved on the device.
 - During the congress it opens on today, marks what is on now and next, and **Now** jumps there.
+  Now is the sodium D doublet (two thin amber lines): the line across each calendar, seen
+  between the bars, with two short notches on the edges of a bar or card that is on; the left
+  edge of a session or talk on now in a list; the glyph on today's tab and the Now button.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
 - **Display settings** (the **Aa** button): text size (Smaller 90 %, Default, Larger 115 %,
@@ -97,6 +97,18 @@ user site's `404.html` that keeps `?query` and `#hash`).
   saved copy for slow conference wifi).
 
 `?now=2026-12-08T11:40` pins the clock (AEDT) to preview the live view before the congress.
+
+## Look
+
+"Line List": the program set like a spectroscopist's line list. The interface is ink on a
+neutral grey, and colour appears only where it is data. Each stream takes its hue from a real
+spectral line (ANZCOP the 632.8 nm helium–neon laser, COMMAD a 455 nm blue LED, the AIP groups
+hydrogen Hβ, and so on), and the header's spectral rule, 400 to 700 nm, is the legend; the
+footer's Colour key tells the story. Amber is kept for the sodium doublet that marks now. Each
+time slot is a white plate on the grey page, divided by hairlines, with no drop shadows. The
+one typeface is Archivo, whose width axis does the work of a second face: expanded for the
+wordmark, condensed and tabular for times. Light, dark, high-contrast and forced-colour modes
+and print are designed alongside.
 
 ## Build
 
