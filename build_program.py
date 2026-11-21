@@ -974,8 +974,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-n{font-size:.8125rem;font-weight:500;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
 .pp-none .pp-aff{color:var(--muted)}
 /* columns, so a short card leaves no hole under it; the order runs down each column */
-.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip}
+.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip;background:var(--card)}
 .pp-person{background:var(--card);border:0;border-radius:0;padding:12px 14px 8px;min-width:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);margin:0}
+/* (the last person closes its row with a hairline before the plate's empty cells, as in the list) */
+.pp-person:last-child{box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
 .pp-name{font-weight:680;font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
 .pp-raw{margin-top:1px;font-size:0.75rem;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .pp-roles{list-style:none;margin:6px -6px 0;padding:0}
@@ -983,8 +985,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-role:hover{background:var(--surface-3)}
 .pp-role:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .pp-when{font-size:.75rem;font-weight:600;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
-.pp-what{color:var(--ink);font-weight:560;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:.2em}
-.pp-role:hover .pp-what{text-decoration-color:currentColor}
+.pp-what{color:var(--ink);font-weight:560;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:3px}
+.pp-role:hover .pp-what,.pp-role:focus-visible .pp-what{text-decoration-color:currentColor}
 .pp-conv .pp-what{font-weight:480;font-style:italic}
 .pp-star{background:var(--starOn-bg);color:var(--starOn-ink);padding:0 4px;border-radius:var(--r-tag)}
 /* control row: Sort | Category | Jump */
@@ -1093,7 +1095,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
 .block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* a session alone in its time slot takes the full width; long text keeps a readable measure */
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
@@ -1792,7 +1794,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
 .kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:1px 4px}
 .k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
-:root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
+/* (the mic: an outline, a 1.5px stroke like the rest of the icon set: capsule, arc, stem and base) */
+:root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Crect x='3.75' y='.75' width='4.5' height='9.5' rx='2.25'/%3E%3Cpath d='M1.25 7.75a4.75 4.75 0 0 0 9.5 0M6 12.5v3.5M3.5 16.25h5'/%3E%3C/svg%3E")}
 /* a clash: interference fringes (fine ink lines) along the top edge, as in the list, and a fine ink ring */
 .has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);box-shadow:inset 0 1px 0 var(--warn-ink)}
 .hz-bar.has-clash,.vt-card.has-clash{outline:1.5px solid var(--warn-ink);outline-offset:1px}
@@ -1846,7 +1849,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
-.vt-cxi{flex:none;vertical-align:-1px;margin-right:3px}
+/* (the fringe in the calendars' labels, bars and tags: 10px by .75rem, a little closer to its words) */
+:is(.hz-cxb,.hz-lcx,.vt-cx,.vt-hcx) .cx-fr{width:10px;height:.75rem;margin-right:4px;vertical-align:-.0625rem}
+.hz-cxb .cx-fr{vertical-align:-.125rem}
 .vt-cx{display:inline-flex;align-items:center;flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
 .vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 40%,var(--line));border-left-color:var(--c)}
 .vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:4px 4px 0 0}
@@ -1897,13 +1902,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .week-legend .wk-k i{background:var(--ink-2)}
 .week-legend .wk-kt i{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-kg i{background:var(--surface-3);box-shadow:none;border:1.5px dashed var(--ink-2);box-sizing:border-box}
-.week-legend .wk-km i{background:var(--ink-2)}
-.week-legend .wk-km i{width:1.625rem;height:1.125rem}
-.week-legend .wk-km b{position:absolute;right:1px;top:1px;bottom:1px;width:.875rem;box-sizing:border-box;border:1px solid var(--ink-2);border-radius:3px;background:var(--card);box-shadow:0 0 0 1px var(--card)}
-.week-legend .wk-km b::before{content:"";position:absolute;left:50%;top:2px;width:.375rem;height:.5rem;margin-left:-.1875rem;background:var(--ink-2);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
-.week-h .week-legend .wk-km i{width:2rem;height:1.125rem}
-.week-h .week-legend .wk-km b{left:.625rem;right:auto;top:auto;bottom:1px;width:.875rem;height:8px}
-.week-h .week-legend .wk-km b::before{top:0}
+/* a saved talk in a session: the Session swatch with the Talk swatch's outline set into it
+   (no mic: at this size it only blurs) */
+.week-legend .wk-km i{width:1.375rem;height:.75rem;background:var(--ink-2)}
+.week-legend .wk-km b{position:absolute;right:0;top:0;bottom:0;width:.75rem;box-sizing:border-box;border-radius:var(--r-line);background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-k:last-of-type{margin-right:10px}
 /* a saved session's saved talks: rows on a quiet ground, each with its own stream line */
 .ag-inner{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:2px}
@@ -6982,7 +6984,8 @@ const vtOpen = new Set();
 // My agenda's search opens a saved session on its matching talks; the ones folded by hand
 const vtShut = new Set();
 let vtWidth = 0;
-const VT_CX_ICO = '<svg class="vt-cxi" viewBox="0 0 12 11" width="11" height="10" aria-hidden="true"><path d="M6 1.2 11 10H1z M6 4.3v2.6 M6 8.3v.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+// the one clash mark, the fringe (.cx-fr), as in the list and My agenda
+const VT_CX_ICO = '<i class="cx-fr" aria-hidden="true"></i>';
 const VT_COLS = [
   { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
   { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
