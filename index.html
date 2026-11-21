@@ -3553,7 +3553,7 @@ function aliasChipsHtml(q = viewQ()){
   return aliasTerms(q).map(({ term, groups }) => {
     const names = [...groups].map(g => { const l = AFF.groups[g][0], m = /\(([^)]+)\)\s*$/.exec(l); return m ? m[1] : l; });
     if (names.every(n => wordRe(term).test(norm(n)))) return '';
-    return ` <span class="alias-chip">Matched <b>${esc(term.length <= 5 ? term.toUpperCase() : term)}</b> &rarr; ${esc(names.join(', '))}</span>`;
+    return ` <span class="alias-chip">Matched <b>${esc(term.length <= 5 ? term.toUpperCase() : term)}</b>: ${esc(names.join(', '))}</span>`;
   }).join('');
 }
 document.addEventListener('click', e => {
@@ -4280,7 +4280,7 @@ function weekOverview(){
     + (nClash ? `<li class="week-lcx"><i></i>${agendaClashWords()}</li>` : '');
   // the hint for a mouse or for touch (CSS shows the one that fits the device)
   const hint = `<h2 class="week-title">${agenda ? 'My agenda, all week' : 'All week'} <small>${esc(DATA.days[0].label)} – ${esc(DATA.days[DATA.days.length - 1].label)} 2026</small></h2>
-    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side with an orange edge. Click one, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
+    <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side, marked by fine ink lines along the top. Click one, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
     : `<span class="wh-ptr">The whole congress at a glance. Point at a session for its full title; click it, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">The whole congress at a glance. Tap a session to open its day.</span>`}</p>`;
   // what the keys do, read with the grid's one tab stop (weekFit) until the keys are used
   const keys = `<p class="visually-hidden" id="weekKeys">The grid is one stop for the Tab key. ${horiz ? 'Left and right arrows move along a day, up and down to the day before or after' : 'Up and down arrows move along a day, left and right to the day before or after'}${agenda ? ', stopping at the starred talks marked on a saved session' : ''}; Home and End go to a day's first and last ${agenda ? 'item' : 'session'}. Enter opens that day at the ${agenda ? 'item' : 'session'}.</p>`;
@@ -4649,7 +4649,7 @@ function weekShowTip(b, mark){
   const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(', ');
   // My agenda: the starred talks in a saved session, and what an item clashes with
   const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
-  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>⚠ Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
+  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
   tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)}, ${t.s}–${t.e}<br>in ${esc(s.title)}${mark ? '' : extra}`
     : `<b>${esc(s.title)}</b>${esc(d.label)}, ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
   weekPlaceTip(tip, mark || b);
@@ -5481,8 +5481,8 @@ function agendaText(){
   const cx = clashTally(items);
   let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
   const speakers = t => t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
-  out += `${agendaCountText(items, false)} · about ${plannedHours(items).toFixed(1)} h` +
-         (cx.groups ? ` · ${clashWords(cx.groups, cx.items)}` : ' · no clashes') + '\n';
+  out += `${agendaCountText(items, false)}, about ${plannedHours(items).toFixed(1)} h` +
+         (cx.groups ? `; ${clashWords(cx.groups, cx.items)}` : '; no clashes') + '\n';
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
@@ -5494,7 +5494,7 @@ function agendaText(){
       if (it.kind === 'talk') out += `             part of ${it.s.title}\n`;
       if (it.kind === 'talk' && it.s.room) out += `             ${it.s.room}\n`;
       (it.inner || []).forEach(t => out += `             ★ ${t.s}–${t.e}  ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}\n`);
-      it.clashes.forEach(x => out += `             ⚠ clashes with “${itemTitle(x)}” (${x.start}–${x.end})\n`);
+      it.clashes.forEach(x => out += `             Clashes with “${itemTitle(x)}” (${x.start}–${x.end})\n`);
     });
   });
   out += '\nSource: official AIP Congress 2026 Indico timetable — https://indico.global/event/16926/timetable/\n';
@@ -5957,7 +5957,7 @@ function hzDraw(root, left){
         const tiny = !agenda && (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
         const lst = listed(e).map(t => `<span class="hz-inl" data-tid="${t.id}">★ ${esc(t.t)}</span>`).join('');
-        const title = `<span class="hz-title">${clash ? '<span class="hz-cxb" aria-label="Clash">&#9888;</span> ' : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(shown || e.title))}</span>`;
+        const title = `<span class="hz-title">${clash ? `<span class="hz-cxb" role="img" aria-label="Clash">${VT_CX_ICO}</span>` : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(shown || e.title))}</span>`;
         // My agenda says what each item is: its kind first, then title; a talk adds its speakers and session
         const sp = e.t ? e.t.sp.map(p => p.n).join(', ') : '';
         const inner = tiny ? '' : agenda
@@ -6006,7 +6006,7 @@ function hzDraw(root, left){
     });
     const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null, rank);
     const nClash = ents.filter(e => e.clash.length).length;
-    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">&#9888; ${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? ` · ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">${VT_CX_ICO}${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? `, ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
   }
   // groups -> lanes (a lane is shown if it has anything that day)
   for (const g of agenda ? [] : HZ_GROUPS){
