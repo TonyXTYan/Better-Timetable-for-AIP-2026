@@ -1373,28 +1373,37 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-ctl{gap:6px}
 }
 .vt-grid{--vtw:3.1rem;display:grid;grid-template-columns:var(--vtw) var(--vtcols);grid-auto-rows:minmax(1.75rem,auto);column-gap:6px;margin:0 0 14px;position:relative}
-.vt-head{grid-row:1;align-self:stretch;position:sticky;top:var(--toolbar-h,150px);z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:6px;white-space:nowrap;overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:8px 8px 0 0;padding:5px 8px;margin-bottom:4px;font-weight:800;font-size:.75rem;line-height:1.2;color:var(--ink);box-shadow:0 4px 6px -4px var(--pop-shadow)}
+/* the vertical day reads as one set of condensed, tabular calendar data */
+:is(.vt-grid,.vt-hbar,.vt-picker,.vt-lh,.vt-lb,.vt-go,#vtPop){font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
+.vt-ch{flex:none;width:.5rem;height:.75rem;overflow:visible}
+.vt-go .vt-ch{margin:0 -.0625rem}
+.vt-head{grid-row:1;align-self:stretch;position:sticky;top:var(--toolbar-h,150px);z-index:5;display:flex;align-items:baseline;justify-content:space-between;gap:6px;white-space:nowrap;overflow:hidden;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:var(--r-seg);padding:5px 8px 4px;margin-bottom:4px;font-weight:700;font-size:.8125rem;line-height:1.2;color:var(--ink)}
 .vt-head span{overflow:hidden;text-overflow:ellipsis}
-.vt-head small{font-weight:700;color:var(--muted);font-size:.6875rem;white-space:nowrap}
+.vt-head small{font-weight:520;color:var(--muted);font-size:.6875rem;white-space:nowrap}
 .vt-corner{grid-row:1;grid-column:1;position:sticky;top:var(--toolbar-h,150px);z-index:5;background:var(--bg);margin-bottom:4px}
 .vt-line{grid-column:1 / -1;border-top:1px solid var(--line);pointer-events:none;z-index:0}
-.vt-line.tk{border-top-style:dashed;opacity:.7}
-.vt-t{grid-column:1;z-index:1;font-size:.75rem;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;padding:3px 0 0;align-self:start;white-space:nowrap}
-.vt-t.end{color:var(--muted);font-weight:600}
+.vt-line.tk{border-top-style:solid;opacity:.5}
+.vt-t{grid-column:1;z-index:1;font-size:.75rem;font-weight:600;color:var(--ink-2);padding:3px 0 0;align-self:start;white-space:nowrap}
+.vt-t.end{color:var(--muted);font-weight:520}
 .vt-t{scroll-margin-top:calc(var(--toolbar-h,150px) + 2.75rem)}
 .hz-bar{scroll-margin-top:calc(var(--toolbar-h,150px) + 4rem)}
-.vt-t.tk{color:var(--muted);font-weight:700;font-size:.6875rem}
+.vt-t.tk{color:var(--muted);font-weight:520;font-size:.6875rem}
 /* a talk row at the same time as the heading row above it repeats that time: kept for
    the grid, not shown */
 .vt-t.tk{visibility:hidden}
-.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:0;border-top:2px solid var(--live-ink);z-index:4;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0}
-/* the now line runs under the cards (never through their text); its dot (vt-nowd) sits
+.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:4;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0;transition:top calc(600ms * var(--mo,1)) linear}
+/* two lines of the sodium D doublet (a 2px gap); they part from the centre as the mark appears (na-part) */
+.vt-nowl::before,.vt-nowl::after{content:"";position:absolute;left:0;right:0;height:calc((var(--doublet-w) - 2px) / 2);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
+.vt-nowl::before{top:0;--na-from:0 calc(var(--doublet-w) / 4 + .5px)}
+.vt-nowl::after{bottom:0;--na-from:0 calc(var(--doublet-w) / -4 - .5px)}
+/* the now line runs under the cards (never through their text); its pill (vt-nowd) sits
    over the time gutter */
 .vt-grid .vt-nowl{z-index:1}
-.vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:999px;background:var(--live-ink);color:var(--card);font-size:.6875rem;font-weight:800;line-height:1.35;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--bg);z-index:4;pointer-events:none}
-/* inside a saved session the line shows in the session's margins and between its talks
-   (drawn on the session's own background, so under every card and its text) */
-.vt-grid .vt-card.sub.now-in{background-image:linear-gradient(var(--live-ink),var(--live-ink));background-size:100% 2px;background-repeat:no-repeat;background-position:0 calc(var(--nowy) - 2px)}
+/* inside a card it crosses, the doublet shows in the card's margins and between its talks
+   (drawn on the card's own background, so under its text) */
+.vt-grid .vt-card.now-in{background-image:linear-gradient(180deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));background-size:100% var(--doublet-w);background-repeat:no-repeat;background-position:0 calc(var(--nowy) - var(--doublet-w) / 2)}
+.vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:var(--r-tag);background:var(--na-fill);color:var(--na-ink);box-shadow:0 0 0 1px var(--na);font-size:.6875rem;font-weight:750;line-height:1.35;text-align:center;z-index:4;pointer-events:none;animation:vt-pill calc(120ms * var(--mo,1)) ease-out both}
+@keyframes vt-pill{from{opacity:0}}
 .vt-agenda .vt-card.now-in .vt-tk.dim{background:var(--body)}
 .vt-nowd[hidden]{display:none}
 .vt-t.now-hid{visibility:hidden}
@@ -1408,8 +1417,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .sx-fade.l{left:var(--sx-l,0px);background:linear-gradient(to right,var(--sx-shade),transparent)}
 .sx-fade.r{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
 .sx-l>.sx-fade.l,.sx-r>.sx-fade.r{opacity:1}
-.sx-more{position:absolute;top:50%;z-index:8;display:none;align-items:center;transform:translateY(-50%);min-height:28px;padding:0 10px;border:1px solid var(--accent);border-radius:999px;background:var(--card);color:var(--link);font:inherit;font-size:.75rem;font-weight:750;line-height:1.2;white-space:nowrap;box-shadow:0 2px 8px var(--pop-shadow);cursor:pointer}
-.sx-more.l{left:calc(var(--sx-l,0px) + 4px)}
+.sx-more{position:absolute;top:50%;z-index:8;display:none;align-items:center;gap:4px;transform:translateY(-50%);min-height:28px;padding:0 9px;border:1px solid var(--ink);border-radius:var(--r-seg);background:var(--card);color:var(--ink);font:inherit;font-size:.75rem;font-weight:650;line-height:1.2;white-space:nowrap;box-shadow:0 6px 14px -6px var(--pop-shadow);cursor:pointer}
+.sx-more.l{left:calc(var(--sx-l,0px) + 4px);padding-left:6px}
+.sx-more.r{padding-right:6px}
 .sx-more.r{right:4px}
 .sx-l .sx-more.l,.sx-r .sx-more.r{display:inline-flex}
 @media (pointer:coarse){.sx-more{min-height:36px}}
@@ -1421,7 +1431,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-hbar::after{right:0;background:linear-gradient(to left,var(--sx-shade),transparent)}
 .sx-l .vt-hbar::before,.sx-r .vt-hbar::after{opacity:1}
 /* a clamped title in full, over its card (vtPopShow) */
-#vtPop{position:absolute;z-index:45;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:5px 7px 6px;border:1px solid var(--c);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;box-shadow:0 6px 18px var(--pop-shadow);pointer-events:none}
+#vtPop{position:absolute;z-index:45;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:5px 7px 6px;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:var(--r-seg);background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;box-shadow:0 12px 28px -8px var(--pop-shadow);pointer-events:none}
 #vtPop.tk{background:var(--card);color:var(--ink);padding:3px 6px 5px}
 /* (dashed, as the card it copies: a session's other talk, a session not saved) */
 #vtPop.tk.dim{border:1px dashed color-mix(in srgb,var(--c) 55%,var(--line));color:var(--bar-meta)}
@@ -1433,45 +1443,49 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 @media print{#vtPop,.sx-more,.sx-fade{display:none!important}}
 .vt-wrap .vt-grid{margin:0}
 /* sideways only: vertical scrolling stays with the page */
-.vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+.vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--bg)}
 .vt-wrap.scroll .vt-grid{grid-template-rows:4px}
-.vt-hbar{position:sticky;top:var(--toolbar-h,150px);z-index:6;overflow:hidden;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:var(--radius) var(--radius) 0 0;padding:4px 0 5px}
-.vt-hbar + .vt-wrap.scroll{border-top:0;border-radius:0 0 var(--radius) var(--radius)}
+.vt-hbar{position:sticky;top:var(--toolbar-h,150px);z-index:6;overflow:hidden;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:var(--r-plate) var(--r-plate) 0 0;padding:4px 0 5px}
+.vt-hbar + .vt-wrap.scroll{border-top:0;border-radius:0 0 var(--r-plate) var(--r-plate)}
 .vt-hgrid{--vtw:3.1rem;display:grid;grid-template-columns:var(--vtw) var(--vtcols);column-gap:6px}
 .vt-hgrid .vt-head{position:relative;top:auto;margin:0}
 .vt-hgrid .vt-corner{position:sticky;left:0;top:auto;z-index:7;margin:0;background:var(--bg)}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
-.vt-wrap.scroll .vt-nowl{z-index:1}
-.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
+.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
-.vt-open:hover,.vt-open:focus-visible,.vt-tk:hover,.vt-tk:focus-visible{outline:2px solid var(--c);outline-offset:-2px}
+.vt-open:hover,.vt-tk:hover{outline:2px solid var(--c);outline-offset:-1px}
+.vt-open:focus-visible,.vt-tk:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 /* the time stays on one line; the stream badge keeps its full short code and moves
    under the time when the card is too narrow for both */
 .vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
-.vt-time{font-size:.75rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-.vt-badge{flex:0 0 auto;max-width:100%;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:0 6px;background:var(--card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-time{font-size:.75rem;font-weight:720;white-space:nowrap}
+.vt-card.is-now .vt-time::before{content:"";display:inline-block;width:var(--doublet-w);height:.75em;margin-right:5px;vertical-align:-.0625em;background:var(--doublet-x)}
+.vt-badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:.6875rem;font-weight:720;color:var(--c);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-badge::before{content:"";flex:none;width:3px;height:.95em;border-radius:1px;background:var(--c)}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
 .vt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 6px;padding:0 7px 4px;color:var(--bar-meta);font-size:.75rem;line-height:1.3;min-height:1.1rem}
-.vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-style:italic;font-weight:480}
+.vt-conv.rm{font-style:normal;font-weight:520}
 .vt-count{flex:0 0 auto;white-space:nowrap}
-.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 9px;font:inherit;font-weight:700;color:var(--bar-ink);cursor:pointer;border-radius:999px;white-space:nowrap}
-@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}}
-.vt-tog:hover,.vt-tog:focus-visible{border-color:var(--c);outline:1px solid var(--c)}
+.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 8px;font:inherit;font-weight:650;color:var(--bar-ink);cursor:pointer;border-radius:4px;white-space:nowrap;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}.vt-go{min-height:40px}.dv-keyb{min-height:40px}}
+.vt-tog:hover{border-color:var(--ink)}
+.vt-tog:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 /* a closed card's footer (convener, "N talks") sits at its bottom, so the buttons of
    sessions that start and end together line up across the row */
 .vt-card:not(.open):not(.band)>.vt-hd{flex:1 1 auto}
 .vt-card:not(.open):not(.band)>.vt-hd>.vt-foot{margin-top:auto}
-.vt-tog::after{content:" \25B8"}
-.vt-tog[aria-expanded="true"]::after{content:" \25BE"}
+.vt-tog::after{content:"";width:.5rem;height:.3125rem;background:currentColor;-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat;transition:rotate calc(var(--mo,1) * 120ms)}
+.vt-tog[aria-expanded="true"]::after{rotate:180deg}
 .vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.75rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
-.vt-card .vt-tk:last-child{border-radius:0 0 6px 4px}
+.vt-card .vt-tk:last-child{border-radius:0 0 4px 2px}
 .vt-ttl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
-.vt-ttime{font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);font-size:.6875rem}
-.vt-tsp{display:block;color:var(--muted);font-size:.6875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt-ttime{font-weight:720;color:var(--c);font-size:.6875rem}
+.vt-tsp{display:block;color:var(--muted);font-size:.6875rem;font-style:italic;font-weight:480;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-star{color:var(--star)}
 .vt-card.band{flex-direction:row;flex-wrap:wrap;align-items:center}
 .vt-card.band.sub{display:grid}
@@ -1487,9 +1501,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-grid.talks .vt-foot{padding:0 6px 3px}
 .vt-grid.talks .vt-title{font-size:.75rem}
 .vt-grid.talks .vt-card:not(.band) .vt-badge{display:none}
+.vt-card.past{background:color-mix(in srgb,var(--cbg) 45%,var(--card))}
 .vt-card.past .vt-title{color:var(--bar-meta)}
-.vt-card.is-now{box-shadow:0 0 0 1px var(--live-ink),var(--shadow)}
-.vt-tk.is-now{background:var(--now-bg)}
+.vt-card.is-now .vt-title{font-weight:720}
+.vt-tk.is-now{background:var(--now-bg);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--na-bg),inset 6px 0 var(--na);padding-left:10px}
 .vt-tk.is-now .vt-ttime{color:var(--now-text)}
 .vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .vt-talks .vt-tk:first-child{border-top:0}
@@ -1508,16 +1523,17 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-key{--c:var(--ink-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:0 0 10px;padding:0;list-style:none;font-size:.75rem;color:var(--ink-2)}
 .ag-key li{display:inline-flex;align-items:center;gap:6px}
 .ag-key .ak-note{color:var(--muted)}
-.ak-sw{display:inline-block;flex:none;width:1.5rem;height:.875rem;border-radius:4px;box-sizing:border-box;position:relative;overflow:hidden}
+.ak-sw{display:inline-block;flex:none;width:1.5rem;height:.875rem;border-radius:3px;box-sizing:border-box;position:relative;overflow:hidden}
 .ak-dim{border:1px dashed var(--ink-2)}
 .ak-cx{outline:2px solid var(--warn-ink);outline-offset:-2px;background:var(--surface-2)}
 .ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 2px,transparent 2px 5px)}
 .vt-agenda .ag-key{margin-top:-4px}
 /* the key as a popover from a Key button (phones and short landscape screens) */
-.dv-keyb{display:none;align-items:center;justify-content:center;flex:none;min-height:26px;padding:0 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.6875rem;font-weight:750;line-height:1;cursor:pointer}
+.dv-keyb{display:none;align-items:center;justify-content:center;flex:none;min-height:28px;padding:0 8px;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);color:var(--ink);font:inherit;font-size:.75rem;font-weight:650;line-height:1;cursor:pointer}
 .dv-keyb::before{content:"";width:.5rem;height:.5rem;margin-right:4px;border-radius:2px;border:1.5px solid currentColor;box-sizing:border-box}
-.dv-keyb:hover,.dv-keyb:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
-.dv-keypop{position:fixed;inset:auto;margin:0;box-sizing:border-box;max-width:min(22rem,calc(100vw - 16px));padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);box-shadow:0 8px 24px var(--pop-shadow)}
+.dv-keyb:hover{border-color:var(--ink)}
+.dv-keyb:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dv-keypop{position:fixed;inset:auto;margin:0;box-sizing:border-box;max-width:min(22rem,calc(100vw - 16px));padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);color:var(--ink);box-shadow:0 12px 28px -8px var(--pop-shadow)}
 .dv-keypop .ag-key{flex-direction:column;align-items:flex-start;gap:7px;margin:0}
 /* (a browser without popovers shows the key in line instead) */
 .no-popover .dv-keypop{display:none}
@@ -1553,16 +1569,16 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
   .hz-zb{display:none}
   .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
-.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
+.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.6875rem;font-weight:720;line-height:1;padding:3px 6px 3px;border-radius:var(--r-tag);white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
-.kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 1px}
-.kind.k-t::before,.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+.kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 2px}
+.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
 :root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
 .has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);box-shadow:inset 0 1px 0 var(--warn-ink)}
 .hz-bar.has-clash,.vt-card.has-clash{outline:2px solid var(--warn-ink);outline-offset:1px}
 .vt-card{position:relative}
 .vt-card.has-clash .vt-hd{padding-top:3px}
-.hz-agenda .hz-bar{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c);border-radius:8px}
+.hz-agenda .hz-bar{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c);border-radius:5px}
 .hz-agenda button.hz-bar{padding:0;flex-direction:column;align-items:stretch}
 .hz-agenda button.hz-bar>.hz-in{padding:4px 7px 4px 6px;max-width:none;background:var(--cbg)}
 .hz-agenda button.hz-bar.marked>.hz-in{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
@@ -1575,14 +1591,14 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* a talk's session runs to two lines, cut at a whole word */
 .hz-agenda .hz-of{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:normal}
 .hz-agenda .hz-bar.has-clash>.hz-in,.hz-agenda .hz-bar.has-clash>.hz-head{padding-top:8px}
-.hz-agenda .hz-bar.is-talk,.vt-agenda .vt-card.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-radius:11px;box-shadow:0 1px 3px var(--pop-shadow)}
+.hz-agenda .hz-bar.is-talk,.vt-agenda .vt-card.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-radius:5px}
 .hz-agenda .hz-bar.is-talk>.hz-in{background:none;padding-top:5px}
 .hz-agenda .hz-bar.is-talk .hz-title{font-size:.8125rem}
-.hz-agenda .hz-bar.ctx,.vt-agenda .vt-card.ctx{--body:var(--card);background:var(--card);border:1px dashed var(--c);border-left:4px dashed var(--c);box-shadow:none}
+.hz-agenda .hz-bar.ctx,.vt-agenda .vt-card.ctx{--body:var(--card);background:var(--card);border:1px dashed var(--c);border-left:3px dashed var(--c);box-shadow:none}
 .hz-agenda .hz-bar.ctx .hz-head,.vt-agenda .vt-card.ctx .vt-hd{background:color-mix(in srgb,var(--cbg) 55%,var(--card))}
 .hz-agenda .hz-segs{margin:0 3px 0 1px}
 .hz-agenda .hz-talk{top:3px;bottom:3px;border-radius:6px}
-.hz-talk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow);z-index:1}
+.hz-talk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);z-index:1}
 .hz-talk.mine .hz-tl{font-weight:700}
 .hz-talk.dim{background:transparent;color:var(--bar-meta);border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line))}
 .hz-talk.dim .hz-tt,.hz-talk.dim .hz-ts{color:var(--bar-meta)}
@@ -1610,29 +1626,29 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
-.vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:999px;padding:0 6px;white-space:nowrap}
-.vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c)}
-.vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:7px 7px 0 0}
+.vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
+.vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 40%,var(--line));border-left-color:var(--c)}
+.vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:4px 4px 0 0}
 .vt-agenda .vt-card.open .vt-hd{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent);margin-bottom:3px}
-.vt-agenda .vt-card:not(.open) .vt-hd{flex:1 1 auto;border-radius:7px}
+.vt-agenda .vt-card:not(.open) .vt-hd{flex:1 1 auto;border-radius:4px}
 .vt-agenda .vt-top{justify-content:flex-start;gap:3px 6px}
 .vt-agenda .vt-top .vt-badge{margin-left:auto}
 .vt-agenda .vt-top .vt-cx{margin:0}
-.vt-agenda .vt-tk{margin:0 5px 3px;width:auto;border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line));border-radius:6px;background:transparent;color:var(--bar-meta)}
-.vt-agenda .vt-card .vt-tk:last-child{border-radius:6px}
+.vt-agenda .vt-tk{margin:0 5px 3px;width:auto;border:1px dashed color-mix(in srgb,var(--c) 40%,var(--line));border-radius:4px;background:transparent;color:var(--bar-meta)}
+.vt-agenda .vt-card .vt-tk:last-child{border-radius:4px}
 .vt-agenda .vt-tk.dim .vt-ttime,.vt-agenda .vt-tk.dim .vt-tsp{color:var(--bar-meta)}
 /* the session's other talks are compact: two title lines (in full on hover) and their own
    height, so a tall row set by another card leaves the session's body showing, not a big empty box */
 .vt-agenda .vt-tk.dim{align-self:start;padding:2px 6px 3px;font-size:.6875rem;line-height:1.2}
 .vt-agenda .vt-tk.dim .vt-ttl{-webkit-line-clamp:2}
 .vt-agenda .vt-tk.dim .vt-tsp{font-size:.6875rem}
-.vt-agenda .vt-tk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c);box-shadow:0 1px 3px var(--pop-shadow)}
+.vt-agenda .vt-tk.mine{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1px solid var(--c);border-left:3px solid var(--c)}
 .vt-agenda .vt-tk.mine .vt-ttl{font-weight:650}
 .vt-ttime .k-ic{width:.4375rem;height:.5625rem;margin-right:3px;vertical-align:-1px}
 .vt-agenda .vt-talks{border-top:0}
 .vt-agenda .vt-card.is-talk .vt-hd{background:none}
 .vt-agenda .vt-card.is-talk .vt-title{font-size:.8125rem}
-.vt-agenda .vt-card.is-talk .vt-conv{font-style:italic}
+.vt-agenda .vt-card.is-talk .vt-conv{font-style:normal}
 .vt-open>.vt-tsp{color:var(--bar-meta)}
 .week-mine .week-blk.w-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));color:var(--ink);border:1.5px solid var(--c);border-radius:5px}
 .week-mine .week-blk.ctx{background:var(--cbg);color:var(--bar-ink);border:1.5px dashed var(--c)}
@@ -1669,15 +1685,15 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-h .week-legend .wk-km b::before{top:0}
 .week-legend .wk-k:last-of-type{margin-right:10px}
 .ag-inner{list-style:none;margin:8px 0 2px;padding:0;display:flex;flex-direction:column;gap:5px}
-.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35;background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-left:3px solid var(--c);border-radius:8px;padding:6px 6px 6px 9px;box-shadow:0 1px 2px var(--pop-shadow);--muted:var(--ink-2)}
-.ag-itime{flex:none;font-variant-numeric:tabular-nums;color:var(--c);font-size:.75rem;font-weight:800;padding-top:.1rem}
+.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35;background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-left:3px solid var(--c);border-radius:5px;padding:6px 6px 6px 9px;--muted:var(--ink-2)}
+.ag-itime{flex:none;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);color:var(--c);font-size:.75rem;font-weight:720;padding-top:.1rem}
 .ag-itime .k-ic{width:.4375rem;height:.5625rem;margin-right:4px;vertical-align:-1px}
 .vt-tk.hit,.hz-talk.hit{background:var(--active-bg);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
 .ag-imain{flex:1 1 auto;min-width:0}
 .ag-imain .linkish{font-size:.8125rem;text-align:left}
 .ag-isp{display:block;color:var(--muted);font-size:.75rem}
 /* a saved talk's own star in its session: a 44px target that overlaps the row's padding */
-.ag-iun{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:-.5rem -.375rem -.5rem 0;padding:0;border:0;border-radius:999px;background:transparent;color:var(--star);font-size:1.125rem;line-height:1;cursor:pointer}
+.ag-iun{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:-.5rem -.375rem -.5rem 0;padding:0;border:0;border-radius:var(--r-ctl);background:transparent;color:var(--star);font-size:1.125rem;line-height:1;cursor:pointer}
 .ag-iun:hover,.ag-iun:focus-visible{background:var(--surface-3)}
 .ag-iun:hover span{opacity:.6}
 .up-next .un-in{display:block;color:var(--muted);font-size:.8125rem;margin:2px 0 0 1.25rem}
@@ -1692,11 +1708,15 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .up-next .un-in .linkish{font-size:.8125rem}
 .vt-picker{display:flex;gap:6px;overflow-x:auto;position:sticky;top:var(--toolbar-h,150px);z-index:6;background:var(--bg);padding:6px 0 8px;margin:0 0 2px;scrollbar-width:none}
 .vt-picker::-webkit-scrollbar{display:none}
-.vt-picker button{flex:0 0 auto;border:1px solid var(--line);border-left:4px solid var(--c,var(--line));background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.75rem;font-weight:700;min-height:36px}
-.vt-picker button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
-.vt-picker button small{font-weight:600;opacity:.75;margin-left:4px}
-.vt-lh{position:sticky;top:calc(var(--toolbar-h,150px) + 50px);z-index:4;display:flex;align-items:baseline;gap:8px;background:var(--bg);border-top:1px solid var(--line);padding:5px 0 3px;font-weight:800;font-size:.8125rem;font-variant-numeric:tabular-nums}
-.vt-lh small{color:var(--muted);font-weight:600;font-size:.6875rem}
+.vt-picker button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:var(--r-seg);padding:6px 10px;font:inherit;font-size:.75rem;font-weight:620;min-height:36px}
+.vt-picker button[style]::before{content:"";flex:none;width:3px;height:12px;border-radius:1px;background:var(--c)}
+.vt-picker button:hover{border-color:var(--hover-line)}
+.vt-picker button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.vt-picker button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--accent-ink)}
+.vt-picker button[aria-pressed="true"][style]::before{outline:1px solid var(--accent-ink);outline-offset:0}
+.vt-picker button small{font-weight:520;opacity:.85;margin-left:0}
+.vt-lh{position:sticky;top:calc(var(--toolbar-h,150px) + 50px);z-index:4;display:flex;align-items:baseline;gap:8px;background:var(--bg);border-top:1px solid var(--line);padding:5px 0 3px;font-weight:700;font-size:1rem;font-stretch:75%}
+.vt-lh small{color:var(--muted);font-weight:520;font-size:.75rem;font-stretch:var(--stretch-cond)}
 .vt-lb{display:flex;flex-direction:column;gap:5px;padding:0 0 8px}
 .vt-lb .vt-card{margin:0;scroll-margin-top:calc(var(--toolbar-h,150px) + 5.5rem)}
 .vt-lb .vt-title{font-size:.875rem}
@@ -1710,20 +1730,20 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-lb .vt-card.band .vt-open,.vt-lb .vt-card.band .vt-foot{flex:none}
 .vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
 .vt-day{outline:none}
-.vt-day:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
-.vt-daynav .cal-day-title:focus{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.vt-day:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:var(--r-seg)}
+.vt-daynav .cal-day-title:focus{outline:2px solid var(--ink);outline-offset:3px;border-radius:var(--r-seg)}
 .vt-daynav{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0 0 10px;padding:2px 0 8px;border-bottom:2px solid var(--day-rule)}
 .vt-daynav .cal-day-title{margin:0;padding:0;border:0;text-align:center;white-space:nowrap}
-.vt-go{justify-self:start;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font:inherit;font-size:.8125rem;font-weight:700;line-height:1.4;white-space:nowrap;cursor:pointer}
+.vt-go{justify-self:start;display:inline-flex;align-items:center;gap:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:var(--r-ctl);min-height:36px;padding:0 12px;font:inherit;font-size:.8125rem;font-weight:650;line-height:1.4;white-space:nowrap;cursor:pointer}
 .vt-go.next{justify-self:end}
-.vt-go span[aria-hidden]{font-size:1.2em;line-height:1}
+
 .vt-go:hover{border-color:var(--hover-line)}
-.vt-go:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vt-go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .vt-go.none{visibility:hidden}
 .agenda.vt-sliding{position:relative;overflow:clip}
 .vt-ghost{position:absolute;left:0;right:0;padding:inherit;padding-bottom:0;pointer-events:none}
-@media (max-width:720px){.vt-god{display:none}.vt-go{padding:9px 13px}}
-.cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
+@media (max-width:720px){.vt-god{display:none}.vt-go{padding:0 12px}}
+.cal-day-title{font-size:1.125rem;font-weight:700;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .export-status{font-size:.875rem;color:var(--muted)}
 .export-status:empty{display:none}
 .ag-day{margin-top:22px}
@@ -1745,7 +1765,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 /* An item that has ended keeps readable text and working buttons: only its stream stripe
    turns grey and an "Ended" label shows by the time */
 .ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
-.ag-ended{display:none;margin-top:3px;width:max-content;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);background:var(--sunken);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+.ag-ended{display:none;margin-top:3px;width:max-content;font-size:.6875rem;font-weight:650;color:var(--ink-2);background:var(--sunken);border:1px solid var(--line);border-radius:var(--r-tag);padding:0 6px}
 .ag-row.past .ag-ended{display:block}
 .ag-time{flex:0 0 92px;font-size:.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;line-height:1.5}
 .ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
@@ -5599,7 +5619,7 @@ const entCount = ents => ents.reduce((n, e) => n + (e.ctx ? e.inner.size : 1), 0
 // My agenda's kind pill: a saved session (solid, its stream colour), a session shown only
 // for its starred talks (dashed), or a talk / poster (outlined, with a speaker icon).
 const dvKind = e => e.t ? `<span class="kind k-t">${e.s.cat === 'poster' ? 'Poster' : 'Talk'}</span>`
-  : e.ctx ? '<span class="kind k-g">Session · not saved</span>' : '<span class="kind">Session</span>';
+  : e.ctx ? '<span class="kind k-g">Session, not saved</span>' : '<span class="kind">Session</span>';
 // My agenda's key under the day heading: the shapes the day uses, as drawn.
 function dvKey(ents, inline = true){
   const has = f => ents.some(f), n = c => `<i class="ak-sw ${c}" aria-hidden="true"></i>`;
@@ -5611,7 +5631,7 @@ function dvKey(ents, inline = true){
     has(e => !e.t && !e.ctx) ? `<li><span class="kind">Session</span> saved session</li>` : '',
     tk ? `<li><span class="kind k-t">Talk</span> saved talk</li>` : '',
     ps ? `<li><span class="kind k-t">Poster</span> saved poster</li>` : '',
-    has(e => e.ctx) ? `<li><span class="kind k-g">Session · not saved</span> shown for your saved ${gw}</li>` : '',
+    has(e => e.ctx) ? `<li><span class="kind k-g">Session, not saved</span> shown for your saved ${gw}</li>` : '',
     has(e => !e.t && e.inner.size && e.s.cat !== 'poster' && e.s.talks.length > e.inner.size) ? `<li>${n('ak-dim')} the session’s other talks</li>` : '',
     has(e => e.clash.length) ? `<li>${n('ak-cx')} ${agendaClashWords(state.day)}</li>` : ''].join('');
   return `<ul class="ag-key${inline ? ' ak-inline' : ''}" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
@@ -6612,8 +6632,8 @@ const VT_COLS = [
   { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
   { key:'commad', label:'COMMAD', short:'COMMAD', col:'var(--commad)', of:s => s.cat === 'commad' },
   { key:'focus',  label:'Focus sessions', short:'Focus', col:'var(--focus)', of:s => s.cat === 'focus' },
-  { key:'misc',   label:'Posters · Edu', short:'Posters · Edu', col:'var(--poster)', of:s => ['poster','edu'].includes(s.cat) },
-  { key:'event',  label:'Forums & meetings', short:'Forums · Meetings', col:'var(--special)', of:() => true },
+  { key:'misc',   label:'Posters and Edu', short:'Posters, Edu', col:'var(--poster)', of:s => ['poster','edu'].includes(s.cat) },
+  { key:'event',  label:'Forums & meetings', short:'Forums, Meetings', col:'var(--special)', of:() => true },
 ];
 const VT_BAND_CATS = ['plenary','events','special','business','social'];
 const VT_TRACK_REM = 7.5;   // narrowest sub-column
@@ -6652,7 +6672,7 @@ function vtDayView(day){
   // one focusable box, so arrow keys work on it (vtDayNav below).
   const step = d => { const i = vtDayStep(d); return i < 0 ? null : DATA.days[i]; };
   const go = (d, to) => to
-    ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day: Alt + ${d < 0 ? 'Left' : 'Right'} arrow, or ${d < 0 ? 'Left' : 'Right'} arrow once the timetable is scrolled to its ${d < 0 ? 'left' : 'right'} edge">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`
+    ? `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day: Alt + ${d < 0 ? 'Left' : 'Right'} arrow, or ${d < 0 ? 'Left' : 'Right'} arrow once the timetable is scrolled to its ${d < 0 ? 'left' : 'right'} edge">${d < 0 ? '<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M6 1 2 6l4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}${esc(to.label.split(' ')[0])}<span class="vt-god"> ${esc(to.label.split(' ').slice(1).join(' '))}</span>${d > 0 ? '<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M2 1l4 5-4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</button>`
     : `<span class="vt-go none"></span>`;
   const head = `<div class="vt-day${agenda ? ' vt-agenda' : ''}" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1, step(-1))}<h2 class="cal-day-title" tabindex="-1">${esc(day.label)}<span class="vt-yr"> 2026</span></h2>${go(1, step(1))}</div>${agenda ? dvKey(slots) : ''}`;
 
@@ -6665,10 +6685,10 @@ function vtDayView(day){
     const clash = dvClashText(e);
     const conv = e.t ? `<span class="vt-conv" title="${esc(s.title)}">in ${esc(s.title)}</span>`
       : s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
-      : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv">${hl(s.room)}</span>` : '<span></span>';
+      : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv rm">${hl(s.room)}</span>` : '<span></span>';
     const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
-    const tog = merged(e) ? `<span class="vt-count">${count} · ★ ${e.inner.size}</span>`
-      : hitSess(e) && tk.length ? `<button type="button" class="vt-tog" data-vttog="${s.id}" data-vthit aria-expanded="${open}">${count} · ${e.hits.size} matching</button>`
+    const tog = merged(e) ? `<span class="vt-count">${count}, ★ ${e.inner.size}</span>`
+      : hitSess(e) && tk.length ? `<button type="button" class="vt-tog" data-vttog="${s.id}" data-vthit aria-expanded="${open}">${count}, ${e.hits.size} matching</button>`
       : tk.length && (agenda || !state.programTalks) ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
       : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
     const talkBtn = (t, style) => {
@@ -6764,14 +6784,14 @@ function vtDayView(day){
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
   const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
   const cx = nClash && agendaClashWords(DATA.days.indexOf(day));
-  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? ` · <span class="vt-hcx">&#9888; ${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
+  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? `, <span class="vt-hcx">&#9888; ${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
   const heads = `<div class="vt-corner">${agenda && !scroll ? DV_KEY_BTN : ''}</div>` + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
   // inside the scroll box could only stick to the box, not the page).
   // Columns off to either side show as a shade on that edge and a "More" button in the
   // heads bar (sxEdges).
-  const more = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '← More' : 'More →'}</button>`;
+  const more = d => `<button type="button" class="sx-more ${d < 0 ? 'l' : 'r'}" data-sxmore="${d}" tabindex="-1" aria-hidden="true">${d < 0 ? '<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M6 1 2 6l4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>More' : 'More<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M2 1l4 5-4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'}</button>`;
   let html = head + (scroll ? `<div class="vt-sx sx-box"><div class="vt-hbar"><div class="vt-hsc"><div class="vt-hgrid" style="${colsCss}" aria-hidden="true">${heads}</div></div>${agenda ? DV_KEY_BTN : ''}${more(-1)}${more(1)}</div>` : '')
     + `<div class="vt-wrap${scroll ? ' scroll sx-sc' : ''}"><section class="vt-grid${talksCls}" data-date="${day.date}" style="${colsCss}" aria-label="${agenda ? 'My agenda by time' : 'Timetable by stream'}">`;
   html += `${scroll ? '' : heads}<div class="vt-tcol" style="grid-row:1 / ${endLine + 1}"></div><div class="vt-nowl" hidden></div><div class="vt-nowd" aria-hidden="true" hidden></div>`;
@@ -7068,7 +7088,7 @@ function agendaEmptyDay(day, msg){
     const to = DATA.days[di + d];
     if (!to) return '<span class="vt-go none"></span>';
     const [wd, ...rest] = to.label.split(' ');
-    return `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<span aria-hidden="true">‹</span> ' : ''}${esc(wd)}<span class="vt-god"> ${esc(rest.join(' '))}</span>${d > 0 ? ' <span aria-hidden="true">›</span>' : ''}</button>`;
+    return `<button type="button" class="vt-go ${d < 0 ? 'prev' : 'next'}" data-vtgo="${d}" aria-label="${d < 0 ? 'Previous' : 'Next'} day, ${esc(to.label)}" title="${d < 0 ? 'Previous' : 'Next'} day (${d < 0 ? 'Left' : 'Right'} arrow key)">${d < 0 ? '<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M6 1 2 6l4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}${esc(wd)}<span class="vt-god"> ${esc(rest.join(' '))}</span>${d > 0 ? '<svg class="vt-ch" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true"><path d="M2 1l4 5-4 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</button>`;
   };
   return `<div class="vt-day vt-agenda vt-none" tabindex="-1" data-date="${day.date}"><div class="vt-daynav">${go(-1)}<h3 class="cal-day-title">${esc(day.label)}<span class="vt-yr"> 2026</span></h3>${go(1)}</div>${msg}</div>`;
 }
@@ -8912,7 +8932,7 @@ function paintNow(){
     const ph = dot && y !== null ? dot.offsetHeight / 2 + 1 : 0;
     const under = [...g.querySelectorAll('.vt-t:not(.tk)')].map(t => [t, ph > 0 && t.offsetTop < y + ph && t.offsetTop + t.offsetHeight > y - ph]);
     for (const [t, on] of under) if (on !== t.classList.contains('now-hid')) t.classList.toggle('now-hid', on);
-    const subs = [...g.querySelectorAll('.vt-card.sub')].map(c => [c, c.offsetTop, c.offsetHeight]);
+    const subs = [...g.querySelectorAll('.vt-card')].map(c => [c, c.offsetTop, c.offsetHeight]);
     for (const [c, top, h] of subs){
       const on = y !== null && y > top + 2 && y < top + h - 2;
       if (on) c.style.setProperty('--nowy', (y - top) + 'px');
