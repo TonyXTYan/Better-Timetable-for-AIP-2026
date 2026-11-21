@@ -2781,9 +2781,10 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
   .seg-ind.seg-snap>button,.seg-ind.seg-snap label>span,.seg-ind.seg-snap small{transition:none}
-  /* (held until the new view shows, segWait: the indicator and the colours as they were) */
+  /* (held until the new view shows, segWait: the indicator and the colours as they were,
+     the new choice lit as under a pointer meanwhile, so the press shows at once) */
   .agenda-views.seg-hold::before,.agenda-views.seg-hold>button{transition:none}
-  .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:transparent;color:var(--ink-2)}
+  .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
   .agenda-views.seg-hold>button.seg-was{color:var(--accent-ink)}
 }
 /* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
@@ -3158,6 +3159,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <button data-level="sessions" aria-pressed="true">Sessions</button>
         <button data-level="talks" aria-pressed="false">Talks</button>
       </div>
+      <span id="levelWhy" class="visually-hidden" hidden>Talks are shown one day at a time: pick a day</span>
       <div id="programOrient" class="agenda-views" role="group" aria-label="Day calendar direction" hidden>
         <button data-orient="h" aria-pressed="true">Horizontal</button>
         <button data-orient="v" aria-pressed="false">Vertical</button>
@@ -6292,10 +6294,12 @@ function withTransition(kind, fn, from, opts = {}){
 // segWait). On a slow device the switch then answers at once, rather than after the
 // redraw (which freezes the page, and with it any slide).
 const TX_SLIDE_FIRST = 250;
+// (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
+// take about as long as its redraw, as they do)
 function txSlideFirst(o, press){
   if (motionReduced() || !press.parentElement || !press.parentElement.matches('.agenda-views')) return 0;
-  const t = performance.now(), p = o.pair ? txPairRec(o) : null;
-  const wait = (o.to !== undefined ? txGuess(o.to) : txAvg) + (p && p.last ? p.last.freeze : txAged(txFreeze, t));
+  const t = performance.now(), p = o.pair ? txPairRec(o) : null, redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
+  const wait = redraw + (p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0));
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
 }
 // fn, timed: its cost is the script and the layout it causes
@@ -8733,21 +8737,23 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   }, null, txo);
 });
 // All week shows sessions only: there Sessions shows pressed and Talks is greyed out
-// (aria-disabled, still focusable, with a tip), while the choice itself (programTalks,
-// and talks=1 in the address) is kept for the days.
+// (aria-disabled, still focusable, with a tip and a description saying why, which a
+// press also shows), while the choice itself (programTalks, and talks=1 in the address)
+// is kept for the days.
 function paintLevel(){
   const week = state.day === 'all';
   for (const b of document.querySelectorAll('[data-level]')){
     const talks = b.dataset.level === 'talks';
     b.setAttribute('aria-pressed', talks === (state.programTalks && !week));
     if (!talks) continue;
-    if (week){ b.setAttribute('aria-disabled', 'true'); b.title = 'Talks are shown one day at a time: pick a day'; }
-    else if (b.hasAttribute('aria-disabled')){ b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+    if (week){ b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-describedby', 'levelWhy'); b.title = document.getElementById('levelWhy').textContent; }
+    else if (b.hasAttribute('aria-disabled')){ b.removeAttribute('aria-disabled'); b.removeAttribute('aria-describedby'); b.removeAttribute('title'); }
   }
 }
 document.getElementById('programLevel').addEventListener('click', e => {
   const b = e.target.closest('[data-level]');
-  if (!b || state.day === 'all' || b.getAttribute('aria-disabled') === 'true' || (b.dataset.level === 'talks') === state.programTalks) return;
+  if (b && b.getAttribute('aria-disabled') === 'true'){ toast(document.getElementById('levelWhy').textContent); return; }
+  if (!b || state.day === 'all' || (b.dataset.level === 'talks') === state.programTalks) return;
   // each session block turns into its talks (or folds them back in). Both ways alike: one
   // pair (txGuards), sessions named before their talks (nest), and the blocks free to
   // change shape (reshape: Vertical stretches its hours for the talks, which would
