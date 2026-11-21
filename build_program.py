@@ -328,12 +328,13 @@ HTML = r'''<!DOCTYPE html>
 <meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <script>
-// Display settings (text size, theme, contrast, colour, motion, animation speed) go on <html> before
+// Display settings (text size, font, theme, contrast, colour, motion, animation speed) go on <html> before
 // the first paint, so the page never flashes the wrong theme. Only overrides are stored.
 window.applyDisplay = function(d){
   var r = document.documentElement;
   function set(name, value, ok){ if (ok.indexOf(value) >= 0) r.setAttribute(name, value); else r.removeAttribute(name); }
   set('data-text', d.text, ['sm','lg','xl']);
+  set('data-font', d.font, ['archivo']);
   set('data-theme', d.theme, ['light','dark']);
   set('data-contrast', d.contrast, ['high']);
   set('data-colour', d.colour, ['vivid']);
@@ -357,7 +358,11 @@ window.applyDisplay = function(d){
 <style>
 @@FONTS@@
 </style>
-<script>try{var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}catch(e){}</script>
+<script>
+// Archivo (Display settings, Font) is decoded only when it is chosen: then its faces start
+// loading now, before the first paint needs them. The System font needs nothing.
+try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}}catch(e){}
+</script>
 <style>
 :root{
   /* Line List: calm achromatic ink on a neutral grey ground; colour only where it is data
@@ -391,8 +396,11 @@ window.applyDisplay = function(d){
   /* radii, strictly by kind: lines, tags, segments and chips, controls, plates, dialogs */
   --r-line:2px; --r-tag:3px; --r-seg:6px; --r-ctl:8px; --r-plate:10px; --r-dialog:12px;
   --dlg-shadow:0 24px 48px -12px rgba(12,13,15,.28),0 2px 6px rgba(12,13,15,.08);
-  /* one family; its width axis does the work of a second face */
-  --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* one family. By default the platform's own UI face (Display settings, Font: System), with
+     tabular figures; Archivo, whose width axis does the work of a second face, on request */
+  --font-system:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-archivo:"Archivo",var(--font-system);
+  --font:var(--font-system);
   --stretch-cond:87.5%; --stretch-wide:118%;
   /* surfaces and text */
   --surface:#ffffff; --surface-2:#f8f9fa; --surface-3:#eef0f2; --sunken:#e8eaed; --sunken-2:#e5e8ec; --sticky-bg:rgba(243,244,245,.92); --hover-line:#b4bac2; --ink-2:#40454d; --ink-3:#2b2f35; --faint:#8b919a; --caret:#8b919a; --cnt-ink:#ffffff; --pop-shadow:rgba(12,13,15,.2); --flash:#e4e7eb; --mark-bg:#d3d5d8; --mark-ink:#16181c; --toast-bg:#16181c; --toast-ink:#ffffff; --warn-ink:#16181c; --ok-ink:#2b2f35; --now-text:var(--na-text); --live-ink:var(--na); --now-bg:#fff5ec; --now-line:var(--na); --next-bg:#e6e8eb; --next-ink:#2b2f35; --danger-bg:#fcebea; --danger-line:#f0b7b3; --today-bg:#fff5ec; --today-ink:var(--na-text); --clash-bg:#f1f2f4; --clash-line:#8b919a; --clash-ink:#16181c; --clash-row-bg:#f6f7f8; --clash-row-line:var(--hover-line); --warm-bg:#e6e8eb; --warm-line:#16181c; --warm-ink:#16181c; --starOn-bg:#16181c; --starOn-line:#16181c; --starOn-ink:#ffffff; --active-bg:#e6e8eb; --active-ink:#16181c; --grp-bg:#e9ebee; --grp-line:var(--hover-line); --grp-ink:#16181c; --grp-btn:#d3d6da; --ok-bg:#eef0f2; --ok-line:var(--line); --ok-strong:#16181c; --ok-btn:#16181c; --info-bg:#eef0f2; --info-line:var(--line); --info-ink:#2b2f35; --info-strong:#16181c; --info-btn:#16181c; --info-hover:#f8f9fa; --link:#16181c; --day-rule:#16181c; --toast-ring:transparent; --backdrop:rgba(12,13,15,.5); --switch-off:var(--field-line); --focus-ring:rgba(22,24,28,.28);
@@ -3118,6 +3126,41 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 :root[data-colour="vivid"] .vt-badge{color:var(--bar-ink)}
 :root[data-colour="vivid"] .dd-preview{background:var(--aip-bg)}
 }
+/* Font (Display settings). System, the default, sets the page in the platform's UI face
+   (San Francisco, Segoe UI, Roboto...) with tabular figures; Archivo is the congress face, whose
+   width axis widens the wordmark and narrows times. Most system faces have no width axis, so
+   with System every width is set to normal (the same on every platform, never a stray
+   condensed cut) and the places that relied on condensing are fitted by size and spacing. */
+:root[data-font="archivo"]{--font:var(--font-archivo)}
+.ff-ag{font-size:1.25rem;font-weight:700;line-height:1;letter-spacing:-.01em;margin:1px 0 3px}
+.ff-system{font-family:var(--font-system);font-stretch:100%}
+.ff-archivo{font-family:var(--font-archivo);font-stretch:var(--stretch-wide)}
+:root:not([data-font="archivo"]){--stretch-cond:100%;--stretch-wide:100%}
+:root:not([data-font="archivo"]) :is(.block-time .bt,.ag-t0,.vt-lh,.badge,.hero h1){font-stretch:100%}
+@media screen{
+/* the wordmark: a UI face set large wants tighter tracking */
+:root:not([data-font="archivo"]) .hero h1{letter-spacing:-.022em}
+/* the three facts stay on one row */
+:root:not([data-font="archivo"]) .hero .facts{column-gap:20px}
+@media (max-width:1199px){:root:not([data-font="archivo"]) .hero .facts{column-gap:16px}}
+/* the phone's one-line facts: "Dec" for "December" while the line would wrap (and on the
+   narrowest phones a wrap falls between the place and the clock) */
+@media (max-width:439px){:root:not([data-font="archivo"]) .facts-short .fs-x{display:none}}
+/* the list's time column: a rem wide, so a wider face (and a larger text size) still fits it */
+:root:not([data-font="archivo"]) .block{grid-template-columns:5.5rem minmax(0,1fr)}
+:root:not([data-font="archivo"]) .block-time .bt{letter-spacing:-.015em}
+@media (max-width:720px){:root:not([data-font="archivo"]) .block{grid-template-columns:1fr}}
+/* My agenda's time column likewise */
+:root:not([data-font="archivo"]) .ag-time{flex-basis:4.25rem}
+:root:not([data-font="archivo"]) .ag-t0{font-size:1.25rem;letter-spacing:-.015em}
+@media (max-width:720px){:root:not([data-font="archivo"]) .ag-time{flex-basis:auto}}
+/* the vertical day's stream heads: a one-column head holds its name */
+:root:not([data-font="archivo"]) .vt-head{gap:4px;padding-left:6px;padding-right:6px;font-size:.75rem;letter-spacing:-.01em}
+/* the week overview's day heads ("Tue 8 Dec" beside the doublet) on one line */
+@media (min-width:721px){:root:not([data-font="archivo"]) .week-h{--dl:6.25rem}}
+/* the horizontal day's narrow phone labels hold "COMMAD" beside the caret */
+@media (max-width:720px){:root:not([data-font="archivo"]) button.hz-gl{gap:2px;letter-spacing:-.01em}:root:not([data-font="archivo"]) .hz-lane.sole button.hz-gl{font-size:.6875rem}}
+}
 </style>
 </head>
 <body>
@@ -3127,7 +3170,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     <div class="hero-main">
       <h1>AIP Congress 2026</h1>
       <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
-      <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University of Sydney. All times AEDT.</p>
+      <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University&nbsp;of&nbsp;Sydney. All&nbsp;times&nbsp;AEDT.</p>
       <dl class="facts">
         <div><dt>Dates</dt><dd>7&#8211;11 December 2026<span class="fx-reg">, registration Sunday 6</span></dd></div>
         <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney</dd></div>
@@ -3287,6 +3330,13 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <label><input type="radio" name="dsText" value=""><span><span class="sz-a" aria-hidden="true">A</span>Default</span></label>
         <label><input type="radio" name="dsText" value="lg"><span><span class="sz-a" style="font-size:1.15em" aria-hidden="true">A</span>Larger</span></label>
         <label><input type="radio" name="dsText" value="xl"><span><span class="sz-a" style="font-size:1.3em" aria-hidden="true">A</span>Largest</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="dd-group dd-font">
+      <legend>Font</legend>
+      <div class="seg" style="--n:2">
+        <label><input type="radio" name="dsFont" value=""><span><span class="ff-ag ff-system" aria-hidden="true">Ag</span>System<small>Your device&#8217;s own</small></span></label>
+        <label><input type="radio" name="dsFont" value="archivo"><span><span class="ff-ag ff-archivo" aria-hidden="true">Ag</span>Archivo<small>Wide title, narrow times</small></span></label>
       </div>
     </fieldset>
     <fieldset class="dd-group">
@@ -5516,7 +5566,7 @@ function weekBandLabels(cols, shown, lh){
   for (const job of jobs) for (const l of job.labs){
     const want = Math.ceil(l.lab.getBoundingClientRect().width) + 1, full = l.lab.textContent;
     // (every label has the same type)
-    if (!font){ font = getComputedStyle(l.lab).font; if (pen.font !== font) pen.font = font; }
+    if (!font){ font = cssFont(l.lab); if (pen.font !== font) pen.font = font; }
     const pad = want - pen.measureText(full).width;
     l.names = weekBandNames(full).map(t => ({ t, w: t === full ? want : Math.ceil(pen.measureText(t).width + pad) }));
   }
@@ -7384,6 +7434,13 @@ function hzMapLabels(h){
   });
 }
 
+// An element's font as a canvas font. (The computed `font` shorthand reads "" when a
+// longhand it cannot express is set, as tabular figures are; a canvas then measures in
+// its default 10px sans-serif, so the shorthand is built from the longhands instead.)
+function cssFont(el){
+  const cs = getComputedStyle(el), wd = { '75%':'condensed', '87.5%':'semi-condensed', '112.5%':'semi-expanded', '125%':'expanded' };
+  return cs.font || [cs.fontStyle, cs.fontWeight, wd[cs.fontStretch] || '', cs.fontSize, cs.fontFamily].filter(Boolean).join(' ');
+}
 // Whole words in lines `w` px wide, at most n lines (the first starts after `lead`, the
 // star). A word longer than a line gets a line of its own and the last line takes the rest
 // of the title; both are cut by CSS with an ellipsis, so the text itself stays whole.
@@ -7471,7 +7528,7 @@ function hzFitText(h, pick){
   // (thin: narrower than 30px, or than its time at the usual size; hz-noic: no room for
   // the time and its kind icon both; hz-mm: thinner than its time even when small, so it
   // shows the hour over the minutes, "11" / ":30", never the minutes alone)
-  const ttf = talks.length ? getComputedStyle(talks[0].querySelector('.hz-tt')).font : '';
+  const ttf = talks.length ? cssFont(talks[0].querySelector('.hz-tt')) : '';
   const ttw = ttf ? hzMeasure(ttf, '00:00') : 0, ttw0 = ttf ? hzMeasure(ttf.replace(/[\d.]+px/, remPx() * .5 + 'px'), '00:00') : 0;
   const tfit = talks.map(t => { const w = t.clientWidth; return [over(t.querySelector('.hz-tl')) || over(t.querySelector('.hz-ts')), w < 30 || w - 8 < ttw, w < 18, w - 8 < ttw + 10, w - 4 < ttw0]; });
   // (it needs room beside it for the start of the time)
@@ -11187,7 +11244,7 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 });
 
 // ---------- display settings ----------
-// Text size, theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
+// Text size, font (System or Archivo), theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
 // the defaults are stored (localStorage 'aip2026-display'); the inline script in <head>
 // applies them before the first paint, and applyDisplay() keeps <html> and theme-color in step.
 const DISPLAY_KEY = 'aip2026-display';
@@ -11195,7 +11252,7 @@ const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['slow','xslow'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['slow','xslow'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
@@ -11213,6 +11270,7 @@ function saveDisplay(){
 function motionReduced(){ return display.motion ? display.motion === 'reduce' : motionQuery.matches; }
 function syncDisplayForm(){
   displayDialog.querySelectorAll('input[name="dsText"]').forEach(r => r.checked = r.value === (display.text || ''));
+  displayDialog.querySelectorAll('input[name="dsFont"]').forEach(r => r.checked = r.value === (display.font || ''));
   displayDialog.querySelectorAll('input[name="dsTheme"]').forEach(r => r.checked = r.value === (display.theme || ''));
   displayDialog.querySelectorAll('input[name="dsColour"]').forEach(r => r.checked = r.value === (display.colour || ''));
   displayDialog.querySelectorAll('input[name="dsSpeed"]').forEach(r => r.checked = r.value === (display.speed || ''));
@@ -11237,6 +11295,13 @@ function refitCalendars(){
   document.querySelectorAll('#agenda .block, #builderList .ag-row').forEach(b => { b._drawn = false; b.style.removeProperty('--cih'); });
   blockHeightsSoon();
 }
+// Archivo's faces are decoded only once that font is chosen (the inline script in <head>
+// starts them when it was chosen before); this resolves when they are ready.
+function archivoReady(){
+  const F = document.fonts;
+  if (!F || !F.load) return Promise.resolve();
+  return Promise.all(['420 16px Archivo', '700 16px Archivo', 'italic 480 16px Archivo'].map(f => F.load(f))).catch(() => {});
+}
 function setDisplay(key, value){
   if (value) display[key] = value; else delete display[key];
   const go = () => {
@@ -11244,10 +11309,14 @@ function setDisplay(key, value){
     saveDisplay();
     syncDisplayForm();
     fitPlaceholder();
-    if (key === 'text') refitCalendars();
+    // (a new rem or a new face: the calendars measure their text again)
+    if (key === 'text' || key === 'font') refitCalendars();
   };
-  // a new look fades in; the motion settings themselves apply at once
-  if (key === 'motion' || key === 'speed') go(); else displayFade(go, key === 'text');
+  // a new look fades in; the motion settings themselves apply at once. Archivo loads
+  // first, so the fade lands on it (never on a stand-in face) and the calendars measure it.
+  if (key === 'motion' || key === 'speed') go();
+  else if (key === 'font' && value) archivoReady().then(() => { if (display.font === value) displayFade(go); });
+  else displayFade(go, key === 'text');
 }
 // A new theme, contrast or text size cross-fades the whole page (this dialog too) from
 // the old look to the new one, so nothing flashes and a new text size never jumps. Not
@@ -11294,6 +11363,7 @@ document.addEventListener('click', e => {
 });
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
+  else if (e.target.name === 'dsFont') setDisplay('font', e.target.value);
   else if (e.target.name === 'dsTheme') setDisplay('theme', e.target.value);
   else if (e.target.name === 'dsColour') setDisplay('colour', e.target.value);
   else if (e.target.name === 'dsSpeed'){ setDisplay('speed', e.target.value); speedDemo(); }
@@ -11308,14 +11378,14 @@ displayDialog.addEventListener('click', e => {
     setDisplay('motion', want === motionQuery.matches ? '' : (want ? 'reduce' : 'full'));
   } else if (e.target.closest('#dsReset')){
     // (motion and speed go back too, so the fade is decided by the settings being left)
-    const hadText = !!display.text;
+    const hadText = !!display.text, hadFont = !!display.font;
     displayFade(() => {
       display = {};
       window.applyDisplay(display);
       saveDisplay();
       syncDisplayForm();
       fitPlaceholder();
-      if (hadText) refitCalendars();
+      if (hadText || hadFont) refitCalendars();
     }, hadText);
     toast('Display settings reset');
   }
@@ -11327,9 +11397,12 @@ for (const q of [motionQuery, darkQuery]){
 }
 window.addEventListener('storage', e => {
   if (e.key !== DISPLAY_KEY && e.key !== null) return;
+  const was = display;
   display = readDisplay();
   window.applyDisplay(display);
   syncDisplayForm();
+  // (another tab chose a new font: measure the calendars again once it is in)
+  if (was.font !== display.font) (display.font ? archivoReady() : Promise.resolve()).then(() => { fitPlaceholder(); refitCalendars(); });
 });
 
 // ---------- move to another device ----------

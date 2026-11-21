@@ -112,8 +112,9 @@ hydrogen Hβ, and so on); the colour key in Display settings draws them on a spe
 400 to 700 nm, and the footer's Colour key tells the story. Display settings also offer a Vivid
 colour mode, where the stream colours fill the sessions instead of only marking them. Amber is kept for the sodium doublet that marks now. Each
 time slot is a white plate on the grey page, divided by hairlines, with no drop shadows. The
-one typeface is Archivo, whose width axis does the work of a second face: expanded for the
-wordmark, condensed and tabular for times. Light, dark, high-contrast and forced-colour modes
+type is one family at a time, with tabular figures for times: by default the device's own UI
+font (San Francisco, Segoe UI, Roboto...), or, under Display settings, Font, Archivo, whose width
+axis does the work of a second face: expanded for the wordmark, condensed for times. Light, dark, high-contrast and forced-colour modes
 and print are designed alongside.
 
 ## Build
@@ -130,8 +131,9 @@ The build normalises the data (stray HTML and markdown, simple inline LaTeX such
 hard line wraps, all-caps names) and rewrites `aip2026-data.json` if anything changed.
 Pushing to `main` runs `.github/workflows/pages.yml`, which rebuilds and deploys to GitHub Pages.
 
-The page's one typeface, Archivo (variable: weight and width axes, roman and italic, SIL Open Font
-License, `fonts/OFL.txt`), is inlined as base64 so the page works offline. `fonts/*.woff2` are subsets cut from
+The optional typeface, Archivo (variable: weight and width axes, roman and italic, SIL Open Font
+License, `fonts/OFL.txt`), is inlined as base64 so the page works offline; browsers decode it only
+when it is chosen (or shown as a sample in Display settings). `fonts/*.woff2` are subsets cut from
 `@fontsource-variable/archivo@5.3.0` by `fonts/make_fonts.py` (fontTools: axes limited, then only the
 characters the page and the data use); `fonts/fonts.json` lists them with their unicode ranges, and
 the build only reads those files, so it needs nothing beyond the Python standard library. Re-run
