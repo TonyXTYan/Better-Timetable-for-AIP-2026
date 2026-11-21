@@ -589,7 +589,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-rul .sx-more.r{padding-right:6px}
 .week-rul .sx-more:hover{background:var(--surface-3)}
 .week-rul .sx-more svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-@media (pointer:coarse){.week-rul .sx-more{min-height:36px}}
+@media (pointer:coarse){.week-rul .sx-more{min-height:40px}}
 .week-blk.week-off{opacity:.16;pointer-events:none}
 .week-blk.week-band.week-off{opacity:.3}
 .week-now{--dw:var(--doublet-w);--dl:calc((var(--dw) - 2px) / 2);position:absolute;left:-3px;right:-3px;top:calc(var(--np) * 1%);height:var(--dw);margin-top:calc(var(--dw) / -2);z-index:1;pointer-events:none}
@@ -1623,7 +1623,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .sx-more.r{padding-right:6px}
 .sx-more.r{right:4px}
 .sx-l .sx-more.l,.sx-r .sx-more.r{display:inline-flex}
-@media (pointer:coarse){.sx-more{min-height:36px}}
+@media (pointer:coarse){.sx-more{min-height:40px}}
 .vt-sx{--sx-l:calc(3.1rem + 1px);margin:0 0 14px}
 .vt-sx .vt-wrap{margin:0}
 .vt-hsc{overflow:hidden}
@@ -2375,11 +2375,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .result-row{padding-bottom:4px}
   .result-line{font-size:.7812rem}
   .block-time .live{margin-left:0;margin-top:0}
-  .talk-star{width:44px;height:44px;margin-right:2px}
   .searchbox input{font-size:max(1rem,16px)}
   .chip-wrap .chip,.chip-only{min-height:40px}
   .fp-actions .fp-all{min-height:40px}
-  .schedule-nav .agenda-views button{min-height:40px}
   .people{padding:10px 16px 50px}
   .people-title{font-size:1.3125rem}
   .people-intro{font-size:0.8438rem}
@@ -2391,19 +2389,18 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .pp-ctl{flex:1 1 100%}
   .pp-ctl select{min-height:42px;font-size:16px;max-width:none}
   .pp-sort.agenda-views{flex:1 1 100%;width:auto}
-  .pp-sort.agenda-views button{flex:1;min-height:40px;padding:6px 6px}
+  .pp-sort.agenda-views button{flex:1;padding:6px 6px}
   .pp-body{grid-template-columns:minmax(0,1fr) 20px;gap:0 6px;margin-right:-10px}
   .pp-letters{width:20px;padding:2px 0}
-  .pp-letters button{font-size:.625rem;border-radius:var(--r-tag)}
+  .pp-letters button{border-radius:var(--r-tag)}
   .pp-rail-in{height:min(calc(var(--n,26) * 1.25rem),100%)}
 }
-@media (pointer:coarse){.dh-focus{min-height:36px}.daytab{min-height:42px}.fp-all{min-height:36px}.chip{min-height:36px}}
+@media (pointer:coarse){.dh-focus{min-height:40px}.daytab{min-height:42px}.fp-all{min-height:40px}.chip{min-height:40px}}
 .schedule-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .schedule-nav .agenda-views{margin:0}
 .nav-main{display:contents}
 @media (max-width:720px){.schedule-nav{margin-bottom:4px}
   body.wide-view .sticky-wrap:not(.tb-compact) .result-row.rl-quiet{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
-#starCount{font-size:.82em;font-variant-numeric:tabular-nums}
 .nav-short{display:none}
 @media(max-width:480px){.schedule-nav{gap:4px}.schedule-nav button{font-size:.8125rem;padding:6px 8px}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
@@ -2413,7 +2410,6 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .nav-main{display:flex;gap:4px;flex:1 0 100%;min-width:0}
   .schedule-nav .agenda-views{padding:2px;gap:2px;min-width:0}
   .schedule-nav .agenda-views button{padding:6px 7px;white-space:nowrap}
-  #starCount{font-size:.75em}
 }
 @media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 4px;font-size:.7188rem}
   .nav-main{gap:3px}.schedule-nav .agenda-views{gap:1px}
@@ -2440,7 +2436,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 :root[data-text="lg"]{font-size:115%}
 :root[data-text="xl"]{font-size:130%}
 /* On phones the sticky toolbar keeps its default size, so larger text doesn't eat the screen. */
-@media (max-width:720px){:root[data-text="lg"] .sticky-wrap{zoom:.8696}:root[data-text="xl"] .sticky-wrap{zoom:.7692}}
+@media (max-width:720px){:root[data-text="xl"] .sticky-wrap{zoom:.9}}
 .display-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:.8125rem;font-weight:650}
 .display-btn:hover{border-color:var(--hover-line);background:var(--surface-2)}
 .display-btn .aa{font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.02em;font-size:1.0625rem;line-height:1}
@@ -2567,11 +2563,11 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 .searchbox .clr{width:24px;height:24px;right:6px}
 @media (pointer:coarse){
   button.badge,.grpill button,.searchbox .clr{border:8px solid transparent;background-clip:padding-box;box-sizing:content-box}
-  button.badge{min-height:0;padding:4px 9px;margin:-6px -8px -8px}
+  button.badge{min-height:0;padding:5px 9px;margin:-7px -8px -9px}
   .grpill button{margin:-8px -8px -8px 0}
   .searchbox .clr{right:0}
   .card-head .star{min-width:44px;min-height:44px;top:4px;right:4px}
-  .card .meta a,.card .meta .linkish,.t-body .tools a,.t-body .tools .linkish,.foot-links a,.ev-links a{display:inline-flex;align-items:center;min-height:40px;padding:0 2px;margin:-6px -2px}
+  .card .meta a,.card .meta .linkish,.t-body .tools a,.t-body .tools .linkish,.foot-links a,.ev-links a{display:inline-flex;align-items:center;min-height:40px;padding:0 4px;margin:-6px -4px}
   /* in the result line the hit area grows into the padding around it, not the line */
   #expandAll,.rl-act{min-height:0;padding:10px 0;margin:-10px 0}
   .result-row{padding-top:4px;padding-bottom:8px}
@@ -2647,7 +2643,6 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{gap:4px}
   .schedule-nav .agenda-views{padding:2px;gap:1px}
   .schedule-nav .agenda-views button{padding:5px 6px;font-size:.8125rem}
-  #starCount{font-size:.75em}
 }
 /* ...and under 700px (640x360, 667x375): the four switches of the calendar still share one
    row (side padding and the gaps come in; the labels stay) */
@@ -2678,6 +2673,43 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .week-blk{border:1px solid CanvasText}
   ::placeholder{color:GrayText}
 }
+/* Dialogs take the same ink ring when focus lands on the dialog itself. */
+dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+/* Touch (A12): hit areas key on the pointer, not on the width of the window. The week's blocks
+   stay dense; its day heading is the 40px route to a day. */
+@media (pointer:coarse){
+  .talk-star{width:44px;height:44px;margin-right:2px;position:relative}
+  .card.iv .star{position:relative}
+  .schedule-nav .agenda-views button{min-height:40px}
+  .pp-sort.agenda-views button{min-height:40px}
+  .ag-btn,.vt-open,button.hz-gl,.hz-brush,.ag-clash-ind,#clashToggle,.chip,.fp-all,.dh-focus,.sx-more,.week-rul .sx-more,.dv-keyb,.builder-actions .toggle{min-height:40px}
+  /* a saved star: the hit area stays 44px, the visible chip is 28px (ink square, white star) */
+  .star.on,.star.on:hover,.talk-star.on,.talk-star.on:hover{background:transparent;border-width:0;isolation:isolate}
+  .star.on::before,.talk-star.on::before{content:"";position:absolute;inset:8px;z-index:-1;border-radius:6px;background:var(--starOn-bg)}
+  /* the A to Z rail: slim to look at, 32px wide to hit, letters at least 24px apart */
+  .pp-letters li{margin:0 -7px}
+  .pp-letters button{border-left:6px solid transparent;border-right:6px solid transparent;background-clip:padding-box;box-sizing:border-box}
+}
+@media (pointer:coarse),(max-width:720px){
+  .pp-rail-in{height:min(calc(var(--n,26) * 1.5rem + 8px),100%)}
+}
+.pp-letters button{font-size:.75rem}
+/* The count in the My agenda switch: an absolute size, so it never shrinks below 11px. */
+#starCount{font-size:.6875rem;font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+/* The Streams panel stays on screen: it scrolls inside itself, and on phones the chips are a
+   grid with the Select all / Deselect all / Reset row held at the bottom. */
+.filter-panel{max-height:calc(100vh - var(--toolbar-h,190px) - 12px);max-height:calc(100dvh - var(--toolbar-h,190px) - 12px);overflow-y:auto;overscroll-behavior:contain}
+@media (max-width:720px),(max-height:500px){
+  .filter-panel:not([hidden]){display:flex;flex-direction:column}
+  .filter-panel .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+  .filter-panel .chips .chip-wrap{display:flex;min-width:0}
+  .filter-panel .chips .chip{flex:1 1 auto;min-width:0;text-align:left}
+  .filter-panel .fp-head{order:9;position:sticky;bottom:0;z-index:2;flex-wrap:nowrap;justify-content:flex-start;margin:12px -16px -14px;padding:8px 16px 14px;background:var(--card);border-top:1px solid var(--line)}
+  .filter-panel .fp-head>b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .filter-panel .fp-actions{flex-wrap:nowrap;gap:6px}
+  .filter-panel .fp-all{white-space:nowrap}
+}
+@media (max-width:359px){.filter-panel .fp-actions{gap:4px}.filter-panel .fp-all{padding-left:7px;padding-right:7px}}
 </style>
 </head>
 <body>
@@ -3634,10 +3666,16 @@ function eventInfoHtml(s, fmt = hl){
 }
 // Sessions without a page of their own on Indico link to the bare site; leave those out.
 const indicoUrl = u => u && /indico\.global\/./.test(u) ? u : '';
+// The congress venue: a room plate only says something when the room is somewhere else
+// (the plate is left off for an empty room or the building itself).
+const HOME_BUILDING = 'Belinda Hutchinson Building';
+const roomPlate = (room, fmt = hl) => room && room !== HOME_BUILDING ? `<span class="room">${fmt(room)}</span>` : '';
+// A link that opens a new tab says so (the words are for screen readers).
+const NEW_TAB = '<span class="visually-hidden"> (opens in new tab)</span>';
 
 function cardHtml(s){
   const [c,bg] = CAT_COLORS[s.cat];
-  const grp = s.grp ? `<button class="badge" data-grp="${s.grp}" title="Filter to ${esc(DATA.groups[s.grp]||s.grp)}">${s.grp}</button>` : `<span class="badge" style="cursor:default">${DATA.cats[s.cat]}</span>`;
+  const grp = s.grp ? `<button class="badge" data-grp="${s.grp}" title="Filter to ${esc(DATA.groups[s.grp]||s.grp)}" aria-label="Filter to ${esc(DATA.groups[s.grp]||s.grp)} (${s.grp})">${s.grp}</button>` : `<span class="badge" style="cursor:default">${DATA.cats[s.cat]}</span>`;
   const starOn = state.starred.has(s.id) ? 'on' : '';
   let talksHtml = '';
   if (s.talks.length){
@@ -3649,7 +3687,7 @@ function cardHtml(s){
           <summary>
             <span class="t-time">${t.s}</span>
             <span class="t-main">
-              <span class="t-title">${hl(t.t)}</span>
+              <span class="t-title" id="h-${t.id}">${hl(t.t)}</span>
               ${who ? `<span class="t-sp">${personStr(t.sp)}</span>` : ''}
             </span>
             <span class="t-caret" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg></span>
@@ -3657,8 +3695,8 @@ function cardHtml(s){
           <div class="t-body">
             ${t.d ? `<div class="abstract">${paras(t.d)}</div>` : '<p class="abstract none">No abstract provided.</p>'}
             <div class="tools">
-              <a href="${t.u}" target="_blank" rel="noopener">Open in Indico</a>
-              <button type="button" class="linkish t-share" data-share="t=${t.id}" data-share-title="${esc(t.t)}">Share link</button>
+              <a href="${t.u}" target="_blank" rel="noopener" aria-describedby="h-${t.id}">Open in Indico${NEW_TAB}</a>
+              <button type="button" class="linkish t-share" data-share="t=${t.id}" data-share-title="${esc(t.t)}" aria-describedby="h-${t.id}">Share link</button>
             </div>
           </div>
         </details>
@@ -3672,22 +3710,22 @@ function cardHtml(s){
   const sStar = `<button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session: ${esc(s.title)}" title="Save to My agenda" aria-pressed="${Boolean(starOn)}">${starOn?'&#9733;':'&#9734;'}</button>`;
   // a break or meeting: one slim row (its title, time and room, its star)
   if (isInterval(s)) return `<article class="card iv" data-sid="${s.id}" data-cat="${s.cat}" data-grp="${s.grp||''}" style="--c:${c};--cbg:${bg}">
-    <div class="card-head">${s.grp ? grp : ''}<h3 tabindex="-1">${hl(s.title)}</h3>${sStar}</div>
-    <div class="meta"><span class="m-time">${s.start}&#8211;${s.end}</span>${s.room ? `<span class="room">${hl(s.room)}</span>` : ''}</div>
+    <div class="card-head">${s.grp ? grp : ''}<h3 tabindex="-1" id="h-${s.id}">${hl(s.title)}</h3>${sStar}</div>
+    <div class="meta"><span class="m-time">${s.start}&#8211;${s.end}</span>${roomPlate(s.room)}</div>
   </article>`;
   return `<article class="card" data-sid="${s.id}" data-cat="${s.cat}" data-grp="${s.grp||''}" style="--c:${c};--cbg:${bg}">
     <div class="card-head">
       ${grp}
-      <h3 tabindex="-1">${hl(s.title)}</h3>
+      <h3 tabindex="-1" id="h-${s.id}">${hl(s.title)}</h3>
       ${sStar}
     </div>
     <div class="meta">
       <span class="m-time">${s.start}&#8211;${s.end}</span>
-      ${s.room ? `<span class="room">${hl(s.room)}</span>` : ''}
+      ${roomPlate(s.room)}
       ${conv}
       ${s.talks.length ? `<span class="m-n">${s.talks.length} talk${s.talks.length>1?'s':''}</span>` : ''}
-      ${indicoUrl(s.url) ? `<span><a href="${s.url}" target="_blank" rel="noopener">Open in Indico</a></span>` : ''}
-      ${s.talks.length || s.desc || s.info ? `<button type="button" class="linkish t-share" data-share="s=${s.id}" data-share-title="${esc(s.title)}">Share</button>` : ''}
+      ${indicoUrl(s.url) ? `<span><a href="${s.url}" target="_blank" rel="noopener" aria-describedby="h-${s.id}">Open in Indico${NEW_TAB}</a></span>` : ''}
+      ${s.talks.length || s.desc || s.info ? `<button type="button" class="linkish t-share" data-share="s=${s.id}" data-share-title="${esc(s.title)}" aria-describedby="h-${s.id}">Share</button>` : ''}
     </div>
     ${eventInfoHtml(s)}
     ${talksHtml}
@@ -4327,11 +4365,11 @@ function agRow(it){
   // highlighted for My agenda's search (hl is plain esc without one)
   const who = it.kind === 'talk'
     ? (it.t.sp.length ? personStr(it.t.sp) : 'Speaker TBA')
-    : `<span class="room">${hl(it.s.room || 'Belinda Hutchinson Building')}</span>`;
+    : roomPlate(it.s.room);
   const word = it.s.cat === 'poster' ? 'poster' : 'talk', nIn = it.inner ? it.inner.length : 0;
   // who (or the room), then where it sits: spaced parts, no separators
   const sub2 = it.kind === 'talk'
-    ? `<span class="ag-in">in ${hl(it.s.title)}</span>` + (it.s.room ? `<span class="room">${esc(it.s.room)}</span>` : '')
+    ? `<span class="ag-in">in ${hl(it.s.title)}</span>` + roomPlate(it.s.room, esc)
     : (it.s.talks.length ? `<span class="ag-n">${it.s.talks.length} ${word}${it.s.talks.length === 1 ? '' : 's'}${nIn ? `, ${nIn} saved` : ''}</span>` : '');
   const clashes = state.hideClashes ? [] : [...new Map(it.clashes.map(x => [itemTitle(x), x])).values()];
   const nOff = clashes.filter(x => x.off).length;
@@ -4357,13 +4395,13 @@ function agRow(it){
   return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-start="${it.start}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
     <span class="ag-time"><span class="ag-t0">${it.start}</span><span class="ag-t1"><span class="visually-hidden">to </span>${it.end}</span><span class="ag-ended">Ended</span><span class="ag-now">Now</span></span>
     <div class="ag-main">
-      <span class="ag-title"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${hl(itemTitle(it))}</span>
-      <span class="ag-sub"><span class="ag-who">${who}</span>${sub2}</span>
+      <span class="ag-title" id="agt-${it.t ? it.t.id : it.s.id}"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${hl(itemTitle(it))}</span>
+      <span class="ag-sub">${who ? `<span class="ag-who">${who}</span>` : ''}${sub2}</span>
       ${inner}${hitsHtml}${clash}
     </div>
     <div class="ag-actions">
-      <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
-      <button class="ag-btn" ${programJumpAttrs(it)}>View in program</button>
+      <button class="ag-btn" ${calendarDetailAttrs(it)} aria-describedby="agt-${it.t ? it.t.id : it.s.id}">${it.t ? 'Abstract' : 'Session details'}</button>
+      <button class="ag-btn" ${programJumpAttrs(it)} aria-describedby="agt-${it.t ? it.t.id : it.s.id}">View in program</button>
       <button class="ag-btn rm"${tid} aria-label="Remove ${kindLabel(it).toLowerCase()} from My agenda: ${esc(itemTitle(it))}" title="Remove from My agenda${nIn ? ` (its saved ${word}${nIn === 1 ? ' stays' : 's stay'})` : ''}"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="rm-word"> Remove<span class="rm-kind"> ${kindLabel(it).toLowerCase()}</span></span></button>
     </div>
   </li>`;
