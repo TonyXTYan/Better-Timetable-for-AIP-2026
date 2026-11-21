@@ -3240,7 +3240,8 @@ const TEX_SYM = {
   approx:'≈', simeq:'≃', le:'≤', leq:'≤', ge:'≥', geq:'≥', neq:'≠', ll:'≪', gg:'≫', infty:'∞', partial:'∂',
   hbar:'ℏ', ell:'ℓ', prime:'′', circ:'∘',
   // a few more of the same kind that the program's own abstracts use
-  ast:'*', propto:'∝', equiv:'≡', in:'∈', otimes:'⊗', ldots:'…'
+  ast:'*', propto:'∝', equiv:'≡', in:'∈', otimes:'⊗', ldots:'…',
+  langle:'⟨', rangle:'⟩', dagger:'†', perp:'⊥', odot:'⊙', cdots:'⋯', vert:'|', nabla:'∇'
 };
 // (relations and arrows are set with a space each side; the other symbols, as in TeX, take no space after a command name)
 const TEX_REL = '→←↔≤≥≠≪≫≈≃∼∝≡∈';
@@ -3258,7 +3259,7 @@ const TEX_SUP = (() => {
   add('0123456789+−=()', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾');
   add('abcdefghijklmnoprstuvwxyz', 'ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ');
   add('ABDEGHIJKLMNOPRTUW', 'ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂ');
-  m['*'] = '*'; m['′'] = '′'; m['°'] = '°';
+  m['*'] = '*'; m['′'] = '′'; m['°'] = '°'; m[','] = ',';
   return m;
 })();
 const TEX_SUB = (() => {
@@ -3266,6 +3267,7 @@ const TEX_SUB = (() => {
   const add = (from, to) => { for (let i = 0; i < from.length; i++) m[from[i]] = to[i]; };
   add('0123456789+−=()', '₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎');
   add('aehijklmnoprstuvx', 'ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ');
+  m[','] = ',';
   return m;
 })();
 const TEX_FAIL = {};
@@ -3300,9 +3302,22 @@ function texSegment(src){
     i++;
     return c === '-' && !text ? '−' : c;
   };
-  const script = (a, table) => {
+  // a script in Unicode's super- or subscript letters; one they lack (E_F, T_C, S_{1/2},
+  // O_{7-δ}) is written as a physicist types it in plain text: E_F, T_C, S_1/2, O_(7−δ). A
+  // superscript citation, ^{[1]}, is the citation.
+  const script = (a, table, mark) => {
     let r = '';
-    for (const c of a){ if (!table[c]) fail(); r += table[c]; }
+    // (a formula's index with a Greek letter in it keeps the letter on the line: O₇₋δ)
+    if (/^[^\s\p{Script=Greek}]+\p{Script=Greek}$/u.test(a) && [...a].slice(0, -1).every(c => table[c])) return [...a].map(c => table[c] || c).join('');
+    for (const c of a){
+      if (!table[c]){
+        const t = a.trim();
+        if (!t) fail();
+        if (/^\[[\d,\s–-]+\]$/.test(t)) return t;
+        return mark + ([...t].length === 1 || /^−?[\p{L}\p{N}.]+(?:\/[\p{L}\p{N}.]+)?$/u.test(t) ? t : '(' + t + ')');
+      }
+      r += table[c];
+    }
     return r;
   };
   const command = text => {
@@ -3340,6 +3355,12 @@ function texSegment(src){
       return !a ? fail() : [...a].length === 1 ? '√' + a : '√(' + a + ')';
     }
     if (name === 'mathbb'){ const a = arg(text); return TEX_BB[a] || fail(); }
+    if (name === 'frac' || name === 'tfrac' || name === 'dfrac'){
+      // (a number or one letter with its scripts stands bare; anything longer is bracketed)
+      const wrap = x => (x = x.trim()) && (/^[\d.]+$|^\p{L}[\u00b2\u00b3\u00b9\u1d43-\u1dbf\u2070-\u209f]*$/u.test(x) ? x : '(' + x + ')');
+      const n = wrap(arg(text)), d = wrap(arg(text));
+      return n && d ? n + '/' + d : fail();
+    }
     if (name === 'left' || name === 'right'){
       let c = src[i++];
       if (c === '\\' && (src[i] === '{' || src[i] === '}')) c = src[i++];
@@ -3351,8 +3372,8 @@ function texSegment(src){
   function item(text){
     const c = src[i];
     if (c === '{'){ i++; const r = seq('}', text); i++; return r; }
-    if (c === '^'){ i++; return script(arg(text), TEX_SUP); }
-    if (c === '_'){ i++; return script(arg(text), TEX_SUB); }
+    if (c === '^'){ i++; return script(arg(text), TEX_SUP, '^'); }
+    if (c === '_'){ i++; return script(arg(text), TEX_SUB, '_'); }
     if (c === '\\') return command(text);
     if (c === '~'){ i++; return '\u00a0'; }
     if (c === "'" && !text){ i++; return '′'; }
@@ -3372,7 +3393,8 @@ function texSegment(src){
   try {
     let out = seq('', false).normalize('NFC');
     // (a hyphen between letters stays a hyphen; any other is the minus sign)
-    out = out.replace(/([A-Za-z.])\u2212(?=[A-Za-z])/g, '$1-');
+    // (no lookbehind: older Safari cannot parse it) a minus after a plain-text index stays one
+    out = out.replace(/([_^][\p{L}\p{N}]*)?([A-Za-z.])\u2212(?=[A-Za-z])/gu, (m, sc, c) => sc === undefined ? c + '-' : m);
     // a space each side of a relation or arrow (none before the script it carries)
     out = out.replace(/[ \u00a0]*([→←↔≤≥≠≪≫≈≃∼∝≡∈])[ \u00a0]*/g, (m, r, at, all) => ' ' + r + (/[\u2070-\u209f\u1d43-\u1d6a*]/.test(all[at + m.length] || '') ? '' : ' '));
     out = out.replace(/ *\u00a0[ \u00a0]*/g, '\u00a0').replace(/ {2,}/g, ' ').replace(/^ +| +$/g, '');
