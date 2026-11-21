@@ -799,15 +799,26 @@ html[data-view-tx="mx"] .vt-wrap.scroll .vt-t{view-transition-class:mx-cover!imp
 html[data-view-tx="dlg"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
 /* (the old view goes quickly, before the new one comes in, so the two never show
    doubled for long) */
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
-html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"])::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both week-tx-in}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"],[data-view-tx="zoomout"])::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
+html:is([data-view-tx="fade"],[data-view-tx="fwd"],[data-view-tx="back"],[data-view-tx="zoom"],[data-view-tx="zoomout"])::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both week-tx-in}
 html[data-view-tx="fwd"]::view-transition-new(root){animation-name:week-tx-in-r}
 html[data-view-tx="back"]::view-transition-new(root){animation-name:week-tx-in-l}
 html[data-view-tx="zoom"]::view-transition-new(root){animation-name:week-tx-zoom}
+html[data-view-tx="zoomout"]::view-transition-new(root){animation-name:week-tx-zoomout}
 html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(var(--dur-s) / 3)}
 /* A change whose morph is off (recent ones were slow): a short plain cross-fade */
 html[data-view-tx="xf"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-out}
 html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--ease) both week-tx-fade}
+/* ---- All week <-> a day (kinds 'dayin', 'dayout'; txBandAnim) ----
+   The day grows out of its row or column in the week, or shrinks back into it: the two
+   pictures lie one over the other unblended, the day's on top, and Web Animations clip
+   and fade them (these fades are the fallback). The sessions moving between their week
+   blocks and their bars or cards take as long (300ms, times the speed). */
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(root),html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(root){mix-blend-mode:normal}
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(root){animation:calc(300ms * var(--mo)) var(--ease) both week-tx-out}
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
+html[data-view-tx="dayout"]::view-transition-old(root){z-index:1}
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* A new theme, contrast or text size (displayFade): the whole page, toolbar and dialog
    included, cross-fades from the old look to the new one */
 html[data-view-tx="disp"]::view-transition-old(root){animation:var(--dur-l) var(--ease) both week-tx-out}
@@ -823,6 +834,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
 @keyframes week-tx-in-l{from{opacity:0;transform:translateX(-18px)}}
 @keyframes week-tx-zoom{from{opacity:0;transform:scale(.97)}}
+@keyframes week-tx-zoomout{from{opacity:0;transform:scale(1.03)}}
 @keyframes week-tx-fade{from{opacity:0}}
 /* ---------- dialogs: shape shared by details, Move, Display and Build ----------
    12px radius, 1px line, the dialog shadow, hairlines between sections, a 36px square close. */
@@ -3049,6 +3061,11 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 :root[data-colour="vivid"] .vt-badge{color:var(--bar-ink)}
 :root[data-colour="vivid"] .dd-preview{background:var(--aip-bg)}
 }
+/* ---------- A segmented button that does nothing here (aria-disabled: Talks in All week) ----------
+   A fallback look (greyed, no hover or press) under the segmented controls' own styles. */
+.agenda-views button[aria-disabled="true"]{color:var(--muted);opacity:.6;cursor:not-allowed}
+.agenda-views button[aria-disabled="true"]:hover{background:transparent;color:var(--muted)}
+.agenda-views button[aria-disabled="true"]:active{scale:none;filter:none;background:transparent}
 </style>
 </head>
 <body>
@@ -4544,8 +4561,13 @@ document.getElementById('daytabs').addEventListener('click', e => {
     dayScroll();
   };
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
+  const week = (day === 'all') !== (state.day === 'all');
   if (day === state.day) go();
   else if (vertical) txPending(b, go, go);
+  // All week <-> a day: in the calendar the day grows out of the week or shrinks back
+  // into it; a list zooms in or out
+  else if (week && state.layout === 'calendar') withTransition(day === 'all' ? 'dayout' : 'dayin', go, null, txDayOpts(day, { press: b }));
+  else if (week) withTransition(day === 'all' ? 'zoomout' : 'zoom', go, null, { to: { day }, press: b, enter: day === 'all' ? 'out' : 'in' });
   else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go, null, { to: { day }, press: b });
 });
 
@@ -5517,12 +5539,13 @@ function weekTarget(sid, tid = ''){
   return button ? { button, box: button.closest('.hz-bar, .vt-card') || button } : null;
 }
 // Click a block (or a day head) to open that day in the current Horizontal or Vertical
-// layout, scrolled to the session, zooming in from the block.
+// layout, scrolled to the session: the day grows out of its row or column, the block
+// into the session's bar or card.
 function weekOpenDay(di, sid, from, tid = ''){
   const day = DATA.days[di], s = sid ? slotById(sid) : null;
   // the timeline opens with the session near its left edge
   if (s && state.orient !== 'v') HZ.left[(dvAgenda() ? 'a:' : '') + day.date] = toMin(s.start) - (PHONE_MQ.matches ? 15 : 30);
-  withTransition('zoom', () => {
+  withTransition(state.day === 'all' ? 'dayin' : 'zoom', () => {
     state.day = di;
     rerender();
     const t = s && weekTarget(s.id, tid);
@@ -5543,7 +5566,8 @@ function weekOpenDay(di, sid, from, tid = ''){
     t.box.classList.add('week-hit');
     setTimeout(() => t.box.classList.remove('week-hit'), 1400 * motionK() + 200);
     return t.box;
-  }, from, { to: { day: di }, press: document.querySelector(`#daytabs .daytab[data-day="${di}"]`) });
+  }, from, state.day === 'all' ? txDayOpts(di, { press: document.querySelector(`#daytabs .daytab[data-day="${di}"]`) })
+    : { to: { day: di }, press: document.querySelector(`#daytabs .daytab[data-day="${di}"]`) });
 }
 function weekTip(){
   let tip = document.getElementById('weekTip');
@@ -5984,7 +6008,14 @@ function mxBegin(kind, from, opts){
       const rank = it => it.kind !== 'item' ? 0 : it.key.startsWith('s-') ? 1 : 2;
       seen.sort((a, b) => rank(a) - rank(b) || a.d - b.d);
     }
-    const cap = y0 !== null ? mxNearCap() : opts.nest ? mxCap() : mxCap() * .75;
+    // All week <-> a day (opts.band, the day): only that day's sessions (and talks shown on
+    // their own) are named, each moving between its week block and its bar or card; the
+    // rest of either page grows or shrinks with the day (txBandAnim). A session's talks
+    // go inside its picture.
+    if (opts.band !== undefined) seen = seen.filter(it => it.kind === 'item' && (it.key.startsWith('s-') || it.el.dataset.inSid)
+      && (!it.el.closest('.week-ov') || it.el.closest('.week-col')?.dataset.day === String(opts.band)));
+    // (opts.lite: half as many, on a device slow to draw or move these)
+    const cap = (y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75) * (opts.lite ? .5 : 1);
     for (const it of seen){
       if (old.size >= cap) break;
       if (opts.nest && it.p && !old.has(it.p)) continue;
@@ -6001,7 +6032,7 @@ function mxBegin(kind, from, opts){
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
       let count = old.size;
-      const lim = opts.near ? mxNearCap() + 12 : mxCap();   // (room for the talks that unfold)
+      const lim = (opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);   // (room for the talks that unfold)
       for (const [key, o] of old){
         const n = now.get(key);
         if (n && !named.has(n.el)){ named.add(n.el); cand.push({ key, o, n }); }
@@ -6033,7 +6064,8 @@ function mxBegin(kind, from, opts){
       const alone = it => it.kind === 'item' && it.el.dataset.inSid;
       const union = rs => rs.reduce((u, r) => u ? { left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) } : { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, null);
       const rect = u => u && { left: u.left, top: u.top, right: u.right, bottom: u.bottom, width: u.right - u.left, height: u.bottom - u.top };
-      if (!wild && !pop){
+      const band = opts.band !== undefined;
+      if (!wild && !pop && !band){
         plan.fade = plan.fade.filter(({ key, o }) => {
           if (o.kind !== 'item' || !key.startsWith('s-')) return true;
           const to = rect(union([...now.values()].filter(n => n.p === key && alone(n)).map(n => n.r)));
@@ -6050,7 +6082,7 @@ function mxBegin(kind, from, opts){
           plan.emerge.push({ key, n, from });
         }
       }
-      for (const [key, n] of now){
+      for (const [key, n] of band ? [] : now){
         if (old.has(key) || named.has(n.el) || !near(n) || count >= lim) continue;
         if (n.kind === 'item' && n.p && old.has(n.p) && now.has(n.p) && plan.pairs.some(x => x.key === n.p)){
           mxName(n.el, key, 'mx'); named.add(n.el); count++;
@@ -6061,11 +6093,12 @@ function mxBegin(kind, from, opts){
         }
       }
     },
-    animate(){
-      const root = document.documentElement, k = motionK();
+    // (rect: All week <-> a day, the day's row or column in the week, on screen)
+    animate(rect){
+      const root = document.documentElement, k = motionK(), MS = opts.band !== undefined ? TX_DAY_MS : MX_MS;
       // durations and delays are Fast's, times the speed setting
       const run = (key, part, frames, o = {}) => {
-        try { live.push(root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MX_MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) })); } catch (e) {}
+        try { live.push(root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) })); } catch (e) {}
       };
       const box = (r, s = 1) => ({ transform: `translate(${r.left}px,${r.top}px)`, width: r.width + 'px', height: Math.max(0, r.height * s) + 'px' });
       // a rect inside `a` taken to the same place inside `b`
@@ -6086,8 +6119,8 @@ function mxBegin(kind, from, opts){
         // a block that changes shape: its new look comes in over the old one early, so
         // the two never show as doubled text for long
         if (Math.abs(o.r.width - n.r.width) > 6 || Math.abs(o.r.height - n.r.height) > 6){
-          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MX_MS * .4, easing: EASE });
-          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal', offset: .4 }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MX_MS * .55, easing: 'linear' });
+          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MS * .4, easing: EASE });
+          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal', offset: .4 }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MS * .55, easing: 'linear' });
         }
       }
       plan.grow.forEach(({ key, n, po, pn }, i) => {
@@ -6108,6 +6141,14 @@ function mxBegin(kind, from, opts){
         if (opts.collapse && o.kind === 'item'){
           run(key, 'group', [box(o.r), box(o.r, 0)]);
           run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
+        }
+        // All week <-> a day: an item with no place in the other view goes with the day as
+        // it grows out of its row or column (taken from there to the same place on the
+        // screen) or shrinks into it, fading
+        if (rect && o.kind === 'item'){
+          const vp = { left: 0, top: 0, width: innerWidth, height: innerHeight };
+          run(key, 'group', [box(o.r), box(kind === 'dayout' ? map(o.r, vp, rect) : map(o.r, rect, vp))]);
+          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MS * .6, easing: 'linear' });
         }
       }
       for (const { key, n } of plan.added){
@@ -6157,36 +6198,30 @@ const txTimed = (fn, opts, after) => () => {
 };
 function txStart(kind, fn, from, opts){
   const root = document.documentElement;
-  // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
-  // only the short fade.
-  // (opts.also: other views to judge it by, so a change and its reverse are treated alike)
-  const heavy = kind !== 'dlg' && ((opts.to !== undefined && [opts.to, ...(opts.also || [])].some(txHeavy)) || pageHeavy());
   const noTx = () => { if (!viewTx?.vt){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; } };
   if (motionReduced()){ txTimed(fn, opts)(); return; }
-  // quick succession (another change under 450ms ago) or slow redraws: no morph; and
-  // for the morph-only kinds (expand, Sessions/Talks, dialog) no transition at all
-  const t = performance.now(), busy = t - txLast < 450 || txSlow >= 2;
+  const t = performance.now(), g = txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
   txLast = t;
-  if (heavy || busy){
-    if (heavy || kind === 'mx' || kind === 'dlg' || txSlow >= 3){ noTx(); txTimed(fn, opts, heavy && kind !== 'mx' ? viewEnter : null)(); return; }
-    opts = { ...opts, plain: true };
+  if (g.none){
+    noTx();
+    txTimed(fn, opts, () => { if (g.enter) viewEnter(opts.enter); if (log) txDbgEnd(log, {}); })();
+    return;
   }
-  // Recent changes slow to show their first frame, or janky while they moved: no morph
-  // (a morph-only change cross-fades instead) until changes run smoothly again.
-  if (kind !== 'dlg' && (txFreeze > TX_FREEZE || txJank > TX_JANK)){
-    opts = { ...opts, plain: true };
-    if (kind === 'mx') kind = 'xf';
-  }
+  kind = g.kind; opts = g.opts;
+  const band = opts.band !== undefined;
   if (!document.startViewTransition){
     fn();
     if (kind === 'mx' || kind === 'dlg') return;
-    viewEnter();
+    viewEnter(opts.enter);
     return;
   }
   delete root.dataset.viewTxNew;
   delete root.dataset.viewTxQuick;
   root.dataset.viewTx = kind;
-  const mx = mxBegin(kind, from, opts);
+  // (All week -> a day: the day grows out of its row or column, measured in the week now;
+  // a day -> All week: it shrinks into the one the new week shows)
+  let rect = kind === 'dayin' ? txBandRect(opts.band) : null;
+  const mx = mxBegin(kind, from, opts), pr = opts.pair ? txPairRec(opts) : null;
   let ran = false, done, redraw = 0;
   const run = () => {
     if (ran) return done;
@@ -6200,9 +6235,10 @@ function txStart(kind, fn, from, opts){
     void document.body.offsetHeight;
     redraw = performance.now() - t0;
     txNote(redraw, opts.to);
+    if (kind === 'dayout') rect = txBandRect(opts.band);
     // a page that jumped (to the top of a new view): the old picture goes at once, so the
-    // two never show doubled
-    if (Math.abs(window.scrollY - y0) > 40) root.dataset.viewTxQuick = '';
+    // two never show doubled (a day growing or shrinking covers the jump itself)
+    if (Math.abs(window.scrollY - y0) > 40 && !band) root.dataset.viewTxQuick = '';
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
     return done;
   };
@@ -6211,45 +6247,215 @@ function txStart(kind, fn, from, opts){
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
   const tx = viewTx = mxOwner = { vt, run };
+  let bandAnims = [];
   // (the wait is counted without the redraw itself: that is judged on its own, by txNote,
   // the same with or without a transition, and a costly redraw (Talks) would otherwise
   // cost the next change (back to Sessions) its morph)
-  vt.ready.then(() => { mx.animate(); txWatch(vt, t + redraw); }, () => {});
+  vt.ready.then(() => {
+    const named = mxNamed.length;
+    mx.animate(rect);
+    if (band) bandAnims = txBandAnim(kind, rect);
+    txWatch(vt, t + redraw, (freeze, jank) => {
+      if (pr) txPairNote(pr, opts.level, freeze, jank);
+      if (log) txDbgEnd(log, { redraw, freeze, jank, named });
+    });
+  }, () => { if (log) txDbgEnd(log, { redraw, skipped: true }); });
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     mx.done();
+    for (const a of bandAnims.splice(0)) a.cancel();
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
     if (!viewTx || !viewTx.vt) clear();
   });
 }
+// The guards, in one place: what a change gets (its kind, with no morph: opts.plain, or a
+// lighter one: opts.lite), or no snapshot at all (none; enter: the short fade instead),
+// and why.
+// - A reversible change (opts.pair, with opts.dir 'in' or 'out': Sessions <-> Talks, All
+//   week <-> a day, a card's talks shown or hidden, Show full sessions) gets its pair's
+//   level, the same both ways, never one set by whatever ran just before it (txPairRec):
+//   a full morph, a lighter one (half the names) or a plain cross-fade (All week <-> a
+//   day still grows or shrinks); never nothing.
+// - Any other change: a view slow to draw (going to one: opts.to, or leaving one: also,
+//   pageHeavy) gets no snapshot, only the short fade (a morph-only change on a page that
+//   is not a long list: a plain cross-fade). Quick succession (another change under
+//   450ms ago) or slow redraws: no morph, and for the morph-only kinds (expand, dialog)
+//   no transition at all. Recent changes slow to show their first frame, or janky while
+//   they moved: no morph (a morph-only change cross-fades instead), until changes run
+//   smoothly again (those readings fade with time: txAged).
+function txGuards(kind, opts, t){
+  const o = { ...opts }, why = [], v = {};
+  let none = false, enter = false;
+  const plain = w => { why.push(w); o.plain = true; if (kind === 'mx') kind = 'xf'; };
+  if (o.pair){
+    const p = txPairRec(o), lv = txPairLevel(o, p);
+    Object.assign(v, { level: lv }, p.last || {});
+    o.level = lv;
+    if (lv === 0) plain('pair level 0: ' + p.why);
+    else if (lv === 1){ o.lite = true; why.push('pair level 1: ' + p.why); }
+    return { kind, opts: o, none, enter, why, v };
+  }
+  const slow = txSlowNow(t), busy = t - txLast < 450 || slow >= 2;
+  const fz = txAged(txFreeze, t), jk = txAged(txJank, t), ph = pageHeavy();
+  const heavy = kind !== 'dlg' && ((o.to !== undefined && [o.to, ...(o.also || [])].some(txHeavy)) || ph);
+  Object.assign(v, { guess: o.to !== undefined ? txGuess(o.to) : null, freeze: fz, jank: jk, slow, since: Math.min(t - txLast, 99999) });
+  if (heavy && kind === 'mx' && !ph && !busy) plain('heavy');
+  else if (heavy || busy){
+    if (heavy || kind === 'mx' || kind === 'dlg' || slow >= 3){
+      none = true; enter = heavy && kind !== 'mx';
+      why.push(heavy ? (ph ? 'page heavy' : 'heavy') : slow >= 3 ? 'slow redraws' : 'busy');
+      return { kind, opts: o, none, enter, why, v };
+    }
+    o.plain = true; why.push(slow >= 2 ? 'slow redraws' : 'busy');
+  }
+  if (kind !== 'dlg' && (fz > TX_FREEZE || jk > TX_JANK)) plain(fz > TX_FREEZE ? 'first frame>' + TX_FREEZE : 'worst frame>' + TX_JANK);
+  return { kind, opts: o, none, enter, why, v };
+}
 // Each transition's wait for its first moving frame (txFreeze) and its slowest frame
-// while it moves (txJank); each later one halves what an earlier one left.
+// while it moves (txJank); each later one halves what an earlier one left, and so does
+// each second that passes without one (txAged). `done(freeze, jank)` gets this one's own.
 const TX_FREEZE = 150, TX_JANK = 50;
-let txFreeze = 0, txJank = 0;
-function txWatch(vt, t){
+let txFreeze = 0, txJank = 0, txSeen = -1e9;
+const txAged = (x, t) => x * 0.5 ** Math.max(0, (t - txSeen) / 1000);
+function txWatch(vt, t, done){
   const t1 = performance.now();
   let last = t1, worst = 0, on = true;
-  txFreeze = Math.max(t1 - t, txFreeze / 2);
+  const freeze = t1 - t;
+  txFreeze = Math.max(freeze, txAged(txFreeze, t1) / 2);
+  txSeen = t1;
   const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
-  vt.finished.catch(() => {}).then(() => { on = false; txJank = Math.max(worst, txJank / 2); });
+  vt.finished.catch(() => {}).then(() => {
+    on = false;
+    const now = performance.now();
+    txJank = Math.max(worst, txAged(txJank, now) / 2);
+    txSeen = now;
+    if (done) done(freeze, worst);
+  });
+}
+// Reversible changes each keep one level for both ways (by what changes and the view it
+// changes in): 2, a full morph; 1, half the names; 0, a plain cross-fade. The first one
+// starts from the redraw expected (the slower way's, guessed: txGuess for the view it
+// goes to, the last redraw of this one for the way back): over TX_PAIR_LITE, 1, over
+// TX_PAIR_SLOW, 0. After each, one step down when its first moving frame came over
+// TX_PAIR_DOWN[0] after the redraw, or a frame took over TX_PAIR_DOWN[1] while it
+// moved; one step up when both were well within (TX_FREEZE, TX_JANK) twice in a row.
+// Whichever way comes next gets the level that leaves, so the two ways never take turns.
+const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125];
+const txPairs = new Map();
+const txPairKey = o => [o.pair, state.scope, state.layout, state.orient].join('|');
+function txPairRec(o){
+  const k = txPairKey(o);
+  if (!txPairs.has(k)) txPairs.set(k, { level: null, why: '', last: null });
+  return txPairs.get(k);
+}
+function txPairLevel(o, p){
+  if (p.level !== null) return p.level;
+  const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
+  p.why = 'redraw ' + Math.round(cost) + 'ms expected';
+  return p.level = cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2;
+}
+function txPairNote(p, lv, freeze, jank){
+  p.last = { freeze, jank };
+  const down = freeze > TX_PAIR_DOWN[0] || jank > TX_PAIR_DOWN[1];
+  p.ok = !down && freeze < TX_FREEZE && jank <= TX_JANK ? (p.ok || 0) + 1 : 0;
+  const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
+  if (up) p.ok = 0;
+  p.level = down ? Math.max(0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
+  if (p.level !== lv) p.why = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
+}
+// ?txdebug=1 in the address: each change's decision (the kind asked for and the kind
+// given, the guards' readings, why it was toned down) and, once it has moved, its redraw,
+// wait for the first moving frame and worst frame, in the console (and window.__txlog).
+const TX_DEBUG = /[?&]txdebug=1(&|$)/.test(location.search);
+let txDbgN = 0;
+function txDbg(kind, g, opts, t){
+  if (!TX_DEBUG) return null;
+  const r = { n: ++txDbgN, at: Math.round(t), asked: kind, kind: g.none ? 'none' : g.kind, pair: opts.pair ? opts.pair + ':' + opts.dir : '',
+    level: g.none ? (g.enter ? 'fade only' : 'instant') : g.opts.plain ? 'plain' : g.opts.lite ? 'lite' : 'full', why: g.why.join(', '),
+    v: Object.fromEntries(Object.entries(g.v).filter(([, x]) => x !== null).map(([k, x]) => [k, Math.round(x)])) };
+  (window.__txlog = window.__txlog || []).push(r);
+  return r;
+}
+function txDbgEnd(r, m){
+  for (const [k, x] of Object.entries(m)) r[k] = typeof x === 'number' ? Math.round(x) : x;
+  const vals = Object.entries(r.v).map(([k, x]) => k + '=' + x).join(' ');
+  console.log(`[tx] #${r.n} ${r.asked}${r.kind !== r.asked ? '->' + r.kind : ''} ${r.level}${r.pair ? ' (' + r.pair + ')' : ''}${r.why ? ' because ' + r.why : ''} | ${vals}`
+    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.skipped ? ', skipped' : ''));
 }
 // The cheap way in for a new view (no snapshot): the main area comes up from half
-// faded, quickly; the old one stays on screen while the new one is drawn.
-function viewEnter(){
+// faded, quickly; the old one stays on screen while the new one is drawn. `dir`: 'in'
+// (a day out of the week) or 'out' (back to the week) zooms it a little, in or out,
+// about the middle of the screen.
+function viewEnter(dir){
   const main = document.getElementById('main');
-  if (main.animate) main.animate([{ opacity: .4 }, { opacity: 1 }], { duration: MO_S * motionK(), easing: EASE });
+  if (!main.animate) return;
+  const s = dir === 'in' ? .985 : dir === 'out' ? 1.015 : 1;
+  const o = `50% ${Math.round(Math.max(0, innerHeight / 2 - main.getBoundingClientRect().top))}px`;
+  main.animate(s === 1 ? [{ opacity: .4 }, { opacity: 1 }] : [{ opacity: .4, scale: s, transformOrigin: o }, { opacity: 1, scale: 1, transformOrigin: o }],
+    { duration: (s === 1 ? MO_S : MO_L) * motionK(), easing: EASE });
 }
-// A redraw over 250ms counts as slow (after two in a row, changes stop animating); a
-// quick one earns back trust. Each view's last redraw time is kept too (by txKey), so
-// going to a view known (or guessed) to take over TX_HEAVY to draw is not animated.
+// All week <-> a day in the calendar ('dayin', 'dayout'): the day grows out of its row
+// (Horizontal) or column (Vertical) in the week until it fills the screen, over the week
+// as that fades; going back, it shrinks into its place in the week as the week comes up
+// under it. Its sessions move between their bars or cards and their week blocks
+// (mxBegin, opts.band). Fast's 300ms, times the speed setting.
+const TX_DAY_MS = 300;
+// Its options, going to `day` (All week: 'all') from the day or week shown; `from` the
+// day it leaves (by default, the one shown). (enter: a browser without view transitions
+// zooms the new view in or out a little, viewEnter)
+const txDayOpts = (day, o = {}, from = state.day) => ({ to: { day }, pair: 'day', dir: day === 'all' ? 'out' : 'in', band: day === 'all' ? from : day, reshape: true, enter: day === 'all' ? 'out' : 'in', ...o });
+// The day's row or column in the week overview, on screen: the part the week's scroller
+// shows (a column with its head), kept on the screen (a row below it: a strip along its
+// bottom edge, above it: along its top).
+function txBandRect(di){
+  const main = document.getElementById('agenda'), col = main.querySelector(`.week-col[data-day="${di}"]`);
+  if (!col) return null;
+  const ov = col.closest('.week-ov'), sc = ov.querySelector('.week-sc'), head = ov.querySelector(`.week-dayh[data-week-day="${di}"]`);
+  const r = (ov.classList.contains('week-h') ? col.closest('.week-row') : col).getBoundingClientRect();
+  let { left, right, top, bottom } = r;
+  if (head && !ov.classList.contains('week-h')) top = Math.min(top, head.getBoundingClientRect().top);
+  if (sc){ const c = sc.getBoundingClientRect(); left = Math.max(left, c.left); right = Math.min(right, c.right); }
+  const vw = innerWidth, vh = innerHeight, m = Math.min(48, vh / 8);
+  if (right - left < 8){ left = Math.max(0, Math.min(left, vw - 8)); right = left + 8; }
+  top = Math.max(0, Math.min(top, vh - m));
+  bottom = Math.min(vh, Math.max(bottom, top + m));
+  return { left, right, top, bottom, width: right - left, height: bottom - top };
+}
+function txBandAnim(kind, r){
+  const root = document.documentElement, k = motionK(), vw = innerWidth, vh = innerHeight, live = [];
+  const go = (part, frames, o = {}) => {
+    try { live.push(root.animate(frames, { duration: TX_DAY_MS * k, easing: EASE_EM, fill: 'both', ...o, pseudoElement: `::view-transition-${part}(root)` })); } catch (e) {}
+  };
+  const band = r && `inset(${r.top.toFixed(1)}px ${(vw - r.right).toFixed(1)}px ${(vh - r.bottom).toFixed(1)}px ${r.left.toFixed(1)}px round 8px)`, all = 'inset(0px 0px 0px 0px round 0px)';
+  if (kind === 'dayin'){
+    if (band) go('new', [{ clipPath: band }, { clipPath: all }]);
+    go('new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, easing: EASE });
+    go('old', [{ opacity: 1 }, { opacity: 0 }], { easing: 'cubic-bezier(.4,0,1,1)' });
+  } else {
+    if (band) go('old', [{ clipPath: all }, { clipPath: band }]);
+    // (gone by the time it is down to its row or column, where the week's own shows)
+    go('old', [{ opacity: 1 }, { opacity: 1, offset: .25 }, { opacity: 0, offset: .7 }, { opacity: 0 }], { easing: 'linear' });
+    go('new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_L * k, easing: EASE });
+  }
+  return live;
+}
+// A redraw over 250ms counts as slow (after two in a row, changes stop animating, for
+// two seconds); a quick one earns back trust. Each view's last redraw time is kept too
+// (by txKey), so going to a view known (or guessed) to take over TX_HEAVY to draw is not
+// animated.
 const TX_HEAVY = 90;
 const txCost = new Map();
-let txAvg = 0;
-const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks].join('|'); };
+let txAvg = 0, txSlowAt = -1e9;
+// (All week shows sessions either way: Talks is kept for the days)
+const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks && v.day !== 'all'].join('|'); };
+const txSlowNow = t => t - txSlowAt > 2000 ? 0 : txSlow;
 function txNote(ms, to){
+  const t = performance.now();
+  txSlow = txSlowNow(t);
   txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow;
+  if (ms > 250) txSlowAt = t;
   txAvg = txAvg ? txAvg * .6 + ms * .4 : ms;
   if (to !== undefined) txCost.set(txKey(), ms);
 }
@@ -6482,10 +6688,10 @@ function downloadIcs(){
 }
 
 function programCalendarItems(){
-  const items = [];
+  const items = [], talks = state.programTalks && state.day !== 'all';   // (All week: sessions)
   DATA.days.forEach((d,di) => {
     for (const s of d.slots.filter(slotMatches)){
-      if (state.programTalks && s.talks.length && s.cat !== 'poster'){
+      if (talks && s.talks.length && s.cat !== 'poster'){
         for (const t of s.talks.filter(t => talkMatches(t,s))){
           items.push({di,d,s,t,kind:'talk',start:t.s,end:t.e,clashes:[]});
         }
@@ -6520,7 +6726,7 @@ function programDayGrid(day){
 // head: full size at the top of the view, a slim strip once the head is stuck.
 // Zoom buttons (Fit day, 4 h, 2 h, 1 h) set the scale, Morning / Afternoon /
 // Evening / Now scroll to those times, ctrl/cmd + wheel (trackpad pinch) zooms
-// around the pointer. Zoom (per day and mode) and scroll (per day) are kept in
+// around the pointer. Zoom and scroll (each per day) are kept in
 // memory. Groups collapse; a lane shows if it has anything that day. Sessions
 // mode marks each talk start inside a bar (the talk on now in red); Talks mode
 // splits bars into talks, with a zoom that keeps a 15-minute talk readable.
@@ -6661,7 +6867,8 @@ function dvTimeRows(ents){
   return rows.map(r => r.items);
 }
 const hzKey = h => h.dataset.key || h.dataset.date;
-const hzZoomKey = key => key + (key.startsWith('a:') ? '' : state.programTalks ? ':t' : ':s');
+// (one zoom per day, Sessions and Talks alike: a zoom picked in one stays for the other)
+const hzZoomKey = key => key;
 // Minutes across the viewport: the zoom the user picked, else the default
 // (4 h on a desktop, 2 h on a phone; Talks mode zooms in until a 15-minute
 // talk is 6rem wide on a phone, or wide enough for full talk text on a desktop).
@@ -8041,15 +8248,16 @@ function vtDayView(day){
 document.getElementById('agenda').addEventListener('click', e => {
   const t = e.target.closest('[data-vttog]');
   if (t){
-    const id = t.dataset.vttog, top = t.getBoundingClientRect().top;
+    const id = t.dataset.vttog, top = t.getBoundingClientRect().top, shut = t.getAttribute('aria-expanded') === 'true';
     // the card grows or shrinks, its talks unfold from its heading, the rest moves along
+    // (both ways alike: one pair, txGuards)
     withTransition('mx', () => {
       if (t.getAttribute('aria-expanded') === 'true'){ vtOpen.delete(id); if ('vthit' in t.dataset) vtShut.add(id); }
       else { vtShut.delete(id); vtOpen.add(id); }
       renderCalendar();
       const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
       if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
-    }, null, { near: t.closest('.vt-card') || t, to: {} });   // (to: the day redraws; slow to draw, it changes at once)
+    }, null, { near: t.closest('.vt-card') || t, to: {}, pair: 'open', dir: shut ? 'out' : 'in' });
     return;
   }
   const b = e.target.closest('[data-vtpick]');
@@ -8310,6 +8518,7 @@ function agendaNoMatchDay(items){
   return state.day === 'all' ? msg : agendaEmptyDay(DATA.days[state.day], msg);
 }
 function renderCalendar(){
+  paintLevel();   // (All week greys out Talks)
   const favourites = state.scope === 'agenda';
   // My agenda draws its saved items with the program's own day views and week overview
   const items = favourites ? agendaCalendarItems() : programCalendarItems();
@@ -8349,7 +8558,7 @@ function renderCalendar(){
     vtPopHide();
     main.classList.toggle('wide', true);
     result.innerHTML = filtered ? agendaFilterLine(shownSel.length, wholeSel.length, !wholeSel.length || shownSel.length && shownSel.length < 10 ? others : 0)
-      : (favourites ? countWord(shownSel.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ', all times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
+      : (favourites ? countWord(shownSel.length, 'agenda item') : selected.length + (state.programTalks && state.day !== 'all' ? ' matching events' : ' matching sessions')) + ', all times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
   // with no search or stream filter the line only repeats the counts: phones keep it for
@@ -8400,22 +8609,32 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   if (window.scrollY > programTop()) scrollToProgramTop();
   }, null, txo);
 });
+// All week shows sessions only: there Sessions shows pressed and Talks is greyed out
+// (aria-disabled, still focusable, with a tip), while the choice itself (programTalks,
+// and talks=1 in the address) is kept for the days.
 function paintLevel(){
-  for (const b of document.querySelectorAll('[data-level]')) b.setAttribute('aria-pressed', (b.dataset.level === 'talks') === state.programTalks);
+  const week = state.day === 'all';
+  for (const b of document.querySelectorAll('[data-level]')){
+    const talks = b.dataset.level === 'talks';
+    b.setAttribute('aria-pressed', talks === (state.programTalks && !week));
+    if (!talks) continue;
+    if (week){ b.setAttribute('aria-disabled', 'true'); b.title = 'Talks are shown one day at a time: pick a day'; }
+    else if (b.hasAttribute('aria-disabled')){ b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+  }
 }
 document.getElementById('programLevel').addEventListener('click', e => {
   const b = e.target.closest('[data-level]');
-  if (!b || (b.dataset.level === 'talks') === state.programTalks) return;
-  // each session block turns into its talks (or folds them back in). Both ways alike:
-  // judged by the Talks view's cost either way (also), sessions named before their talks
-  // (nest), and the blocks free to change shape (reshape: Vertical stretches its hours
-  // for the talks, which would otherwise read as a page too unlike to morph).
-  const talks = b.dataset.level === 'talks', day = state.layout === 'calendar' && state.day !== 'all';
+  if (!b || state.day === 'all' || b.getAttribute('aria-disabled') === 'true' || (b.dataset.level === 'talks') === state.programTalks) return;
+  // each session block turns into its talks (or folds them back in). Both ways alike: one
+  // pair (txGuards), sessions named before their talks (nest), and the blocks free to
+  // change shape (reshape: Vertical stretches its hours for the talks, which would
+  // otherwise read as a page too unlike to morph).
+  const talks = b.dataset.level === 'talks', day = state.layout === 'calendar';
   withTransition(day ? 'mx' : 'fade', () => {
     state.programTalks = talks;
     paintLevel();
     renderCalendar();
-  }, null, { to: { programTalks: talks }, also: [{ programTalks: true }], press: b, ...(day ? { nest: true, reshape: true } : {}) });
+  }, null, { to: { programTalks: talks }, pair: 'level', dir: talks ? 'in' : 'out', press: b, ...(day ? { nest: true, reshape: true } : {}) });
 });
 function savedOrient(){
   try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
@@ -8470,7 +8689,7 @@ document.getElementById('includeParents').addEventListener('change', e => {
   // the page stays where it was (quick toggles redraw while a morph is still running,
   // and a redraw can briefly shorten the page and pull the scroll up)
   const y = window.scrollY;
-  withTransition('mx', () => { renderCalendar(); if (Math.abs(window.scrollY - y) > 1) window.scrollTo({ top: y, behavior: 'instant' }); }, null, { to: {}, reshape: true });
+  withTransition('mx', () => { renderCalendar(); if (Math.abs(window.scrollY - y) > 1) window.scrollTo({ top: y, behavior: 'instant' }); }, null, { to: {}, reshape: true, pair: 'full', dir: e.target.checked ? 'in' : 'out' });
 });
 
 const eventDialog = document.getElementById('eventDialog');
@@ -10566,10 +10785,16 @@ window.addEventListener('popstate', e => {
   // the side follows the order of the views and days, as it does for a click
   if (a[0] !== b[0]) dir = SCOPE_ORDER.indexOf(b[0]) > SCOPE_ORDER.indexOf(a[0]) ? 'fwd' : 'back';
   else if (a[1] !== b[1]) dir = b[1] === 'all' || (a[1] !== 'all' && +b[1] < +a[1]) ? 'back' : 'fwd';
+  // (the same calendar, a day for All week or back: it grows or shrinks, as for a click;
+  // Sessions for Talks or back: the blocks unfold or fold, as for a click)
+  const cal = a[0] === b[0] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3];
+  const dayDay = d => d === 'all' ? 'all' : +d;
   if (toNav === fromNav){ settleTransition(); apply(); }
+  else if (cal && a[1] !== b[1] && (a[1] === 'all') !== (b[1] === 'all')) withTransition(b[1] === 'all' ? 'dayout' : 'dayin', apply, null, txDayOpts(dayDay(b[1]), {}, dayDay(a[1])));
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
-    : a[4] !== b[4] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3] && state.day !== 'all' ? 'mx' : 'fade', apply, null, { to: {} });
+    : a[4] !== b[4] && cal && state.day !== 'all' ? 'mx' : 'fade', apply, null,
+    a[0] === b[0] && a[1] === b[1] && a[4] !== b[4] && cal && state.day !== 'all' ? { to: {}, pair: 'level', dir: b[4] === '1' ? 'in' : 'out', nest: true, reshape: true } : { to: {} });
 });
 // A click outside a dialog's box closes it, if the press began outside it too (so a drag
 // that selects text inside it and ends outside does not).
