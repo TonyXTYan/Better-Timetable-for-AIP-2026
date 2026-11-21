@@ -257,7 +257,7 @@ button{font:inherit;cursor:pointer}
    Display and the countdown on the right. (The colour key, the spectral rule, lives in
    Display settings beside the Colour setting.) */
 header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
-.hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
+.hero-inner{margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
 .hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
@@ -736,7 +736,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .detail-save.on{color:var(--starOn-ink);background:var(--starOn-bg)}
 /* ---------- toolbar ---------- */
 .sticky-wrap{position:sticky;top:0;z-index:50;background:var(--sticky-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-top:16px}
-.toolbar{max-width:1180px;margin:0 auto;padding:12px 20px 0}
+.toolbar{margin:0 auto;padding:12px 20px 0}
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
@@ -863,7 +863,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .chip-wrap :focus-visible{outline:2px solid var(--ink);outline-offset:-2px;border-radius:var(--r-seg)}
 .chip-wrap.on :focus-visible{outline-color:var(--fill-ink)}
 /* ---------- participants ---------- */
-.people{max-width:1180px;margin:0 auto;padding:14px 20px 60px}
+.people{margin:0 auto;padding:14px 20px 60px}
 .people-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin:6px 0 2px}
 .people-title{margin:0;font-size:1.5rem;letter-spacing:-.02em}
 
@@ -951,7 +951,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .share-box .toggle{min-height:40px}
 .share-box-note{margin:6px 0 0;font-size:.8125rem;color:var(--ink-2)}
 .share-box-note:empty{display:none}
-.shared-banner{width:min(1140px,calc(100% - 40px));margin:14px auto 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 12px 12px 16px;font-size:.875rem;line-height:1.5;color:var(--ok-strong)}
+.shared-banner{margin:14px 20px 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 12px 12px 16px;font-size:.875rem;line-height:1.5;color:var(--ok-strong)}
 .shared-banner .sb-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
 .shared-banner .fb-actions button{color:var(--ok-btn)}
 .shared-banner ul{margin:8px 0 0;padding-left:18px;font-size:.8125rem;max-height:220px;overflow:auto}
@@ -1026,7 +1026,7 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 @media print{.hz-day .hz-bar.is-now.hz-now-in::before{display:none}.vt-grid div.vt-card.now-in,.vt-agenda div.vt-card.now-in>.vt-hd{background-image:none!important}.vt-list .vt-card.is-now{border-left-color:var(--c);background-image:none}}
 
 /* ---------- agenda ---------- */
-.agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
+.agenda{margin:0 auto;padding:16px 20px 60px}
 /* The list is set like a line list: a large condensed time down the left, and one plate
    per time slot, its sessions cells divided by hairlines, each with its stream's line. */
 .block{display:grid;grid-template-columns:88px minmax(0,1fr);gap:18px;margin:0 0 20px}
@@ -1043,7 +1043,13 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
 .block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
-/* a session alone in its time slot takes the full width; long text keeps a readable measure */
+/* The list uses the page's full width, as the calendars do: a time slot's parallel sessions
+   spread into as many columns as fit. A plate of one column (a session alone in its slot,
+   a break, My agenda's rows) stops at --plate-max, about what the page's old content
+   column held, so its star and actions stay near its text and its lines keep a readable
+   length; long text inside keeps a narrower measure still. */
+:root{--plate-max:72rem}
+.cards.single,.cards.ivs,.ag-list{max-width:var(--plate-max)}
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
 
@@ -1139,15 +1145,14 @@ mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;paddi
 /* in the calendars' tight, clamped titles a match keeps to its own letters */
 :is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
 
-/* (in the content column: the list's 1140px, inside the same 20px gutters) */
-.empty-note{display:none;box-sizing:border-box;width:min(1140px,calc(100% - 40px));margin:24px auto 56px;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
-body.wide-view .empty-note{width:auto;margin-left:20px;margin-right:20px}
+/* (in the content column, inside the same 20px gutters) */
+.empty-note{display:none;box-sizing:border-box;margin:24px 20px 56px;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
 /* (the empty list above it keeps only its top padding) */
 #agenda:has(+.empty-note.show){padding-bottom:0}
 .empty-note.show{display:block}
 .empty-acts{display:block;margin-top:16px}
 
-footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
+footer{margin:0 20px;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
 footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
@@ -1188,7 +1193,7 @@ footer .colophon p{font-size:.8125rem}
 [hidden]{display:none!important}
 
 /* ---------- agenda builder ---------- */
-.builder{max-width:1180px;margin:0 auto;padding:12px 20px 70px}
+.builder{margin:0 auto;padding:12px 20px 70px}
 /* My agenda's one compact bar: title and counts, a clash indicator, Build and one Export menu,
    so the list or the calendar starts right under it */
 .ag-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;margin:2px 0 0}
@@ -1232,7 +1237,6 @@ footer .colophon p{font-size:.8125rem}
   #builder .builder-actions{flex-wrap:wrap}
   #builder .builder-actions .ag-opt{flex:1 1 100%}
 }
-.favourites-calendar #builder{max-width:none}
 /* Clashes are drawn as interference fringes: a small plate of fine parallel ink lines */
 .cx-fr{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;border-radius:1px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
 .ag-clash-ind{display:inline-flex;align-items:center;gap:6px;min-height:32px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:var(--r-ctl);padding:0 8px 0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
@@ -1307,7 +1311,6 @@ html:has(dialog[open]) .undo-bar{display:none}
 .agenda-views button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
-.agenda.wide{max-width:none}
 /* Full program day view: Horizontal (hz-, one sideways-scrolling canvas) or Vertical (vt-, stream columns) */
 /* Horizontal day view. The day is one plate; its head is a spectrometer: the whole day's
    trace (minimap) over a scale of hanging ticks. Everything inside is set condensed and
@@ -2683,11 +2686,9 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 .alias-chip{display:inline-block;margin:2px 0 0 6px;padding:1px 8px;border-radius:var(--r-tag);background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.75rem;font-weight:600;line-height:1.5}
 .alias-chip b{color:inherit}
 .fallback-banner,#peopleList .ag-empty h3{overflow-wrap:anywhere}
-/* A calendar uses the full width; the header and toolbar line up with it. */
-body.wide-view .toolbar,body.wide-view .hero-inner,body.participants-view .toolbar,body.participants-view .hero-inner{max-width:none}
-/* Participants: the same full width and 20px gutters as the calendars (the .people column,
-   the header and the toolbar all share them); the people flow into as many columns as fit. */
-body.participants-view .people{max-width:none}
+/* Participants: the same full width and 20px gutters as the list and the calendars (the
+   .people column, the header and the toolbar all share them); the people flow into as
+   many columns as fit. */
 body.participants-view .people-intro{max-width:100ch}
 body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
 /* Compact header on phones and in landscape on phones (about 100px): the wordmark with Aa,
@@ -3842,9 +3843,12 @@ function slotById(id){
 // the grid's columns, each card its head and a row a talk. Only roughly: it keeps the
 // page about as tall as it will be, so the scrollbar and jumps far down stay close.
 function blockEst(slots){
-  const phone = PHONE_MQ.matches, w = Math.min(1180, innerWidth) - 40 - (phone ? 0 : 100);
+  const phone = PHONE_MQ.matches, w = document.documentElement.clientWidth - 40 - (phone ? 0 : 106);
   if (slots.every(isInterval)) return slots.length * (phone ? 58 : 38) + (phone ? 36 : 0);
-  const cols = slots.length === 1 ? 1 : Math.max(1, Math.floor((w + 12) / 342)), cw = (w - (cols - 1) * 12) / cols;
+  // (as many columns as fit, but no more than it has sessions; a session alone stops at
+  // --plate-max, 72rem)
+  const cols = Math.min(slots.length, Math.max(1, Math.floor((w + 12) / 342)));
+  const cw = cols === 1 ? Math.min(w, 72 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16)) : (w - (cols - 1) * 12) / cols;
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
   const hs = slots.map(s => {
     const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
