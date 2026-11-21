@@ -2,7 +2,7 @@
 // The page is one self-contained file, so keeping a copy of it is enough.
 // Network first, so a new deploy shows on the next visit; the saved copy
 // answers when offline, or when conference wifi takes more than 4 seconds.
-const CACHE = 'aip2026-v1';
+const CACHE = 'aip2026-v2';
 const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', event => {
