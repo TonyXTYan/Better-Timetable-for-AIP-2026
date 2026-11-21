@@ -2709,6 +2709,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   .filter-panel .fp-actions{flex-wrap:nowrap;gap:6px}
   .filter-panel .fp-all{white-space:nowrap}
 }
+/* the largest text on the narrowest phones: the three sort buttons share the row without widening the page */
+@media (max-width:720px){.pp-sort.agenda-views{min-width:0}.pp-sort.agenda-views button{min-width:0;padding-left:4px;padding-right:4px;overflow-wrap:anywhere;line-height:1.15}}
 @media (max-width:359px){.filter-panel .fp-actions{gap:4px}.filter-panel .fp-all{padding-left:7px;padding-right:7px}}
 </style>
 </head>
