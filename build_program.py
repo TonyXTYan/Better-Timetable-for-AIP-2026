@@ -2765,18 +2765,21 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .seg.sizes label>span{justify-content:flex-end;min-height:48px}
 @media (pointer:coarse){.seg label>span{min-height:40px}.seg.sizes label>span{min-height:52px}}
 /* ---------- segmented controls: the selection slides ----------
-   (the view switches in the toolbar, the participants' sort, the Display dialog's choices)
+   (the view switches in the toolbar, the participants' sort, the Display dialog's choices,
+   the Horizontal calendar's zoom)
    One ink indicator per group, its ::before, sits under the chosen option at --seg-x/-y/-w/-h
    (set by segPlace) and slides to a new choice while the labels' colours cross over; while
    it moves (seg-moving) the chosen option's own fill steps aside for it, and at rest the two
    lie exactly over each other. Before the script has placed it, and in forced colours, the
    chosen option just keeps its own fill. Reduced motion: it moves at once. */
 @media (forced-colors:none){
-  .agenda-views.seg-ind,.seg.seg-ind{position:relative;isolation:isolate}
-  .agenda-views.seg-ind::before,.seg.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease)}
+  .agenda-views.seg-ind,.seg.seg-ind,.hz-zoom.seg-ind{position:relative;isolation:isolate}
+  .agenda-views.seg-ind::before,.seg.seg-ind::before,.hz-zoom.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease)}
   .seg-ind.seg-snap::before{transition:none}
   .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
+  .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
+  .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .seg.seg-ind label{z-index:1}
   .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
@@ -7100,7 +7103,7 @@ function hzDayView(day){
     : `<button type="button" data-hzgo="${k}">${label}</button>`;
   return `<div class="hz-hd"><h2 class="cal-day-title">${esc(day.label)} 2026</h2>
     <div class="hz-ctl">
-      <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
+      <div class="hz-pre hz-zoom" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
       <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning', 'AM')}${go('afternoon', 'Afternoon', 'PM')}${go('evening', 'Evening', 'Eve')}${go('now', 'Now')}</div>
     </div></div>
     ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
@@ -7352,6 +7355,7 @@ function hzDraw(root, left){
     b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5 && (z !== undefined || !talksMode || !PHONE_MQ.matches));
     b.hidden = b.dataset.hzzoom !== 'fit' && v >= full;
   });
+  segAdopt(h.parentElement.querySelector('.hz-zoom'));
   h.querySelectorAll('[data-hzstep]').forEach(b => { b.disabled = +b.dataset.hzstep > 0 ? span >= full - 0.5 : span <= 30.5; });
   // scroll to that minute
   vp.scrollLeft = Math.max(0, (left - d0) * ppm);
@@ -11772,10 +11776,11 @@ syncToolbarHeight();
 
 // ---------- segmented controls: the selection slides ----------
 // Each group of options (the toolbar's view switches, the participants' sort, the Display
-// dialog's choices) has one ink indicator, its ::before at --seg-x/-y/-w/-h, under the
-// chosen option. A new choice moves it there (a CSS transition: at once with reduced
-// motion); a group that has just come into sight or changed size places it at once (snap).
-const SEG_GROUPS = '.agenda-views, .seg';
+// dialog's choices, the Horizontal calendar's zoom) has one ink indicator, its ::before at
+// --seg-x/-y/-w/-h, under the chosen option. A new choice moves it there (a CSS transition:
+// at once with reduced motion); a group that has just come into sight or changed size
+// places it at once (snap). The zoom is drawn with each day: segAdopt takes it on.
+const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom';
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
 // Calendar, the scope) slides only once the new view shows: until then the page is busy
 // redrawing (or frozen under a view transition's snapshot), and a slide started at the
@@ -11833,26 +11838,40 @@ function segPlace(g, snap, now){
     g.classList.remove('seg-snap', 'seg-moving');
   }
 }
-(() => {
-  const ro = window.ResizeObserver ? new ResizeObserver(es => {
-    const seen = new Set();
-    for (const e of es){ const g = e.target.closest(SEG_GROUPS); if (g && !seen.has(g)){ seen.add(g); segPlace(g, true); } }
-  }) : null;
-  const mo = new MutationObserver(ms => {
-    const seen = new Map();
-    for (const m of ms){
-      const g = m.target.closest(SEG_GROUPS);
-      if (g) seen.set(g, seen.get(g) || (m.target === g && m.attributeName === 'hidden'));
-    }
-    for (const [g, snap] of seen) segPlace(g, snap);
+// (the watchers are made on first use: the calendar may draw its zoom before this point
+// of the script has run)
+function segObs(){
+  return segObs.o || (segObs.o = {
+    ro: window.ResizeObserver ? new ResizeObserver(es => {
+      const seen = new Set();
+      for (const e of es){ const g = e.target.closest(SEG_GROUPS); if (g && !seen.has(g)){ seen.add(g); segPlace(g, true); } }
+    }) : null,
+    mo: new MutationObserver(ms => {
+      const seen = new Map();
+      for (const m of ms){
+        const g = m.target.closest(SEG_GROUPS);
+        if (g) seen.set(g, seen.get(g) || (m.target === g && m.attributeName === 'hidden'));
+      }
+      for (const [g, snap] of seen) segPlace(g, snap);
+    }),
+    drawn: [],
   });
-  for (const g of document.querySelectorAll(SEG_GROUPS)){
-    segPlace(g, true);
-    if (ro){ ro.observe(g); for (const c of g.children) ro.observe(c); }
-    mo.observe(g, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden'] });
+}
+// (a group drawn anew lets go of the one it replaced, so the size watcher keeps no old ones)
+function segAdopt(g, drawn = true){
+  if (!g || g._segOn !== undefined) return;
+  g._segOn = null;
+  const o = segObs();
+  if (drawn){
+    o.drawn = o.drawn.filter(d => d.isConnected || (o.ro && [d, ...d.children].forEach(c => o.ro.unobserve(c))));
+    o.drawn.push(g);
   }
-  document.addEventListener('change', e => { const g = e.target.closest && e.target.closest('.seg'); if (g) segPlace(g); });
-})();
+  segPlace(g, true);
+  if (o.ro){ o.ro.observe(g); for (const c of g.children) o.ro.observe(c); }
+  o.mo.observe(g, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden'] });
+}
+for (const g of document.querySelectorAll(SEG_GROUPS)) segAdopt(g, false);
+document.addEventListener('change', e => { const g = e.target.closest && e.target.closest('.seg'); if (g) segPlace(g); });
 
 // "Skip to program" moves the focus past the header and toolbar to the main area (the
 // address keeps its view: a #main hash would be read as a view).
