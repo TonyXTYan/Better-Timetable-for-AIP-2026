@@ -1141,12 +1141,13 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
    down the talk's rounded edge) */
 .vt-agenda .vt-tk.is-now{box-shadow:none;padding-left:6px}
 /* the phone's vertical view is a list by start time (no now line): a card on now takes the
-   list's mark, the doublet down its left edge, just inside its stream line */
-.vt-list .vt-card.is-now{box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--cbg),inset 6px 0 var(--na)}
+   list's mark, the doublet down its left edge in place of its stream line (as a talk on now
+   does in the list); its stream stays in its code and tint */
+.vt-list .vt-card.is-now{border-left-color:transparent;background-image:var(--doublet-x);background-origin:border-box;background-size:var(--doublet-w) 100%;background-repeat:no-repeat}
 /* the week overview on a phone: today keeps its doublet glyph, over the date */
 @media (max-width:720px){.week-dayh.today .na-glyph{display:block;margin:0 0 2px}}
 /* print has no sodium: no notches on bars and cards, no doublet edge on the phone list */
-@media print{.hz-day .hz-bar.is-now.hz-now-in::before{display:none}.vt-grid div.vt-card.now-in,.vt-agenda div.vt-card.now-in>.vt-hd{background-image:none!important}.vt-list .vt-card.is-now{box-shadow:none}}
+@media print{.hz-day .hz-bar.is-now.hz-now-in::before{display:none}.vt-grid div.vt-card.now-in,.vt-agenda div.vt-card.now-in>.vt-hd{background-image:none!important}.vt-list .vt-card.is-now{border-left-color:var(--c);background-image:none}}
 
 /* ---------- agenda ---------- */
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
@@ -1223,7 +1224,7 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body .tools{display:flex;gap:16px;align-items:center;font-size:.8125rem}
 .t-body .tools .linkish,.card .meta .linkish{font-size:.8125rem}
 .ics-note summary{cursor:pointer;font-weight:600;color:var(--ink)}
-.talk-star{align-self:start;width:36px;height:36px;margin:4px 8px 0 0;border:1px solid transparent;background:transparent;border-radius:var(--r-ctl);color:var(--muted);font-size:1.1875rem;line-height:1}
+.talk-star{align-self:start;width:36px;height:36px;margin:4px 4px 0 0;border:1px solid transparent;background:transparent;border-radius:var(--r-ctl);color:var(--muted);font-size:1.1875rem;line-height:1}
 .talk-star:hover{border-color:var(--line);background:var(--card);color:var(--ink)}
 .talk-star.on,.talk-star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 /* the star's glyph settles in as its chip fills */
@@ -1231,7 +1232,7 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 @keyframes star-on{from{scale:.8}}
 /* Breaks, meals and meetings with no talks: slim interval rows on dashed hairlines, not plates */
 .block.ivb{margin-bottom:16px}
-.block.ivb .block-time{padding-top:5px}
+.block.ivb .block-time{padding-top:9px}
 .block.ivb .bt{font-size:1.125rem;color:var(--ink-2)}
 .block.ivb .bd{display:none}
 .cards.ivs{background:none;border:0;border-radius:0;overflow:visible;grid-template-columns:minmax(0,1fr)}
@@ -1242,7 +1243,7 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .card.iv h3{flex:0 1 auto;font-size:.9375rem;font-weight:600;color:var(--ink-2)}
 .card.iv .meta{flex:1 1 auto;padding:0;gap:2px 12px}
 .card.iv .meta .room{border-color:var(--hover-line);color:var(--muted)}
-.card.iv .star{position:static;order:3;margin-left:auto;width:32px;height:32px;min-width:0;min-height:0}
+.card.iv .star{position:static;order:3;margin-left:auto;margin-right:7px;width:32px;height:32px;min-width:0;min-height:0}
 .block.past .card.iv h3{color:var(--muted)}
 /* print: plain plates, no tints, no sodium (the page prints as a timetable) */
 @media print{
@@ -1255,7 +1256,7 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 }
 /* touch: every control in the list and My agenda is at least 40px tall */
 @media (pointer:coarse){
-  .card.iv .star{width:44px;height:44px;margin:-4px 0}
+  .card.iv .star{width:44px;height:44px;margin:-4px 1px -4px 0}
   .ag-btn,.cp-keep,.fb-actions button,.ag-clash-ind{min-height:40px}
 }
 mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;padding:0 1px;box-shadow:inset 0 -2px 0 var(--ink);box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -1268,6 +1269,7 @@ body.wide-view .empty-note{width:auto;margin-left:20px;margin-right:20px}
 /* (the empty list above it keeps only its top padding) */
 #agenda:has(+.empty-note.show){padding-bottom:0}
 .empty-note.show{display:block}
+.empty-acts{display:block;margin-top:16px}
 
 footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
 footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
@@ -1741,6 +1743,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
 /* high contrast: bars, cards, their pop-overs and week blocks are outlined in their stream colour */
 :root[data-contrast="high"] :is(.hz-bar,.hz-head,.hz-pop,#vtPop,.week-blk,.vt-card){border-color:var(--c)}
+:root[data-contrast="high"] .vt-list .vt-card.is-now{border-left-color:transparent}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
@@ -2058,7 +2061,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* An item that has ended keeps readable text and working buttons: only its stream stripe
    turns grey and an "Ended" label shows by the time */
 .ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
-.ag-ended{display:none;margin-top:6px;width:max-content;font-size:.6875rem;font-weight:700;font-stretch:100%;line-height:1.45;color:var(--ink-2);background:var(--sunken);border-radius:var(--r-tag);padding:0 5px}
+.ag-ended{display:none;margin-top:6px;width:max-content;font-size:.6875rem;font-weight:700;font-stretch:100%;line-height:1.45;color:var(--ink-2);background:none;box-shadow:inset 0 0 0 1px var(--hover-line);border-radius:var(--r-tag);padding:0 5px}
 .ag-row.past .ag-ended{display:block}
 /* on now: the sodium tint, the doublet in place of the stream line, a Now tag under the time */
 .ag-row.is-now{background:var(--now-bg)}
@@ -2634,7 +2637,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 #dsSpeedGroup:disabled .seg input{cursor:default}
 .dd-note{margin:6px 0 0;font-size:.75rem;color:var(--muted)}
 .dd-preview{margin:4px 0 20px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--aip);border-radius:var(--r-plate);background:var(--surface-2)}
-.dd-preview .badge{cursor:default;margin:0 0 4px;display:inline-block}
+.dd-preview .badge{cursor:default;margin:0 0 4px;display:flex;width:max-content}
 .dd-preview .pv-title{display:block;font-weight:640;font-size:1rem;line-height:1.35}
 .dd-preview .pv-meta{display:block;color:var(--muted);font-size:.8125rem;font-weight:500;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;margin-top:2px}
 .dd-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding-top:14px;border-top:1px solid var(--line)}
@@ -2713,6 +2716,9 @@ footer p a,main p a:not(.toggle),dialog p a:not(.toggle),.ev-info a{text-decorat
    (a transparent border or padding outside them). */
 .card-head .star{display:inline-flex;align-items:center;justify-content:center;min-width:1.75rem;min-height:1.75rem;top:8px;right:8px}
 button.badge{min-height:24px;display:inline-flex;align-items:center}
+/* a stream label that is not a button (Plenary) takes the same box, so every plate's title
+   sits at the same depth */
+.card-head span.badge{min-height:24px}
 .card .meta a,.card .meta .linkish,.t-body .tools a,.t-body .tools .linkish{display:inline-block;padding:3px 2px;margin:-3px -2px}
 .foot-links a{display:inline-block;padding:3px 0}
 #expandAll{display:inline-flex;align-items:center;min-height:24px}
@@ -2737,7 +2743,7 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 .on-touch{display:none}
 @media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
 .hero kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
-@media (hover:none),(pointer:coarse){.kbd-hint{display:none!important}}
+@media (hover:none),(pointer:coarse),print{.kbd-hint{display:none!important}}
 /* Result line: a quick "Search all week" and what a short form matched */
 .result-line{overflow-wrap:anywhere}
 .rl-n{font-weight:500}
@@ -2751,7 +2757,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
    the countdown, one line of facts and the spectral rule */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
   header.hero{padding:14px 0 0}
-  .hero-inner{padding:0 16px;column-gap:12px}
+  .hero-inner{padding:0 20px;column-gap:12px}
   .hero-main,.hero-side{display:contents}
   .hero h1{grid-row:1;grid-column:1;align-self:center;font-size:1.375rem;font-stretch:112%;letter-spacing:-.015em}
   .display-btn{grid-row:1;grid-column:2}
@@ -2837,7 +2843,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 /* Touch (A12): hit areas key on the pointer, not on the width of the window. The week's blocks
    stay dense; its day heading is the 40px route to a day. */
 @media (pointer:coarse){
-  .talk-star{width:44px;height:44px;margin-right:2px;position:relative}
+  .talk-star{width:44px;height:44px;margin-right:4px;position:relative}
   .card.iv .star{position:relative}
   .schedule-nav .agenda-views button{min-height:40px}
   .pp-sort.agenda-views button{min-height:40px}
@@ -2849,6 +2855,17 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   .pp-letters li{margin:0 -7px}
   .pp-letters button{border-left:6px solid transparent;border-right:6px solid transparent;background-clip:padding-box;box-sizing:border-box}
 }
+/* the same saved-star chip with a mouse: a saved talk's star is the 28px ink square a saved
+   session's is (and its hover the same 28px fill), inside its 36px button; the star column
+   of a plate, its talks and the interval rows share one axis */
+@media (forced-colors:none) and (not (pointer:coarse)){
+  .talk-star{position:relative;isolation:isolate}
+  .talk-star:hover,.talk-star.on,.talk-star.on:hover{background:transparent;border-color:transparent}
+  .talk-star::before{content:"";position:absolute;inset:3px;z-index:-1;border-radius:var(--r-ctl);transition:background-color var(--dur-s) var(--ease)}
+  .talk-star:hover::before{background:var(--surface-3)}
+  .talk-star.on::before{background:var(--starOn-bg)}
+}
+@media (pointer:coarse){.card-head span.badge{min-height:23px}}
 @media (pointer:coarse),(max-width:720px){
   .pp-rail-in{height:min(calc(var(--n,26) * 1.5rem + 8px),100%)}
 }
@@ -3927,7 +3944,7 @@ function renderAgenda(){
     let inner = all ? blockPhHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date, groups)
       : blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
     if (all){
-      inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day${CHEV}</button></div>` + inner;
+      inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${countWord(d.slots.length, 'session')}</span></div><button class="dh-focus" data-focusday="${i}">Focus this day${CHEV}</button></div>` + inner;
       html += `<div class="day-section" data-dayi="${i}">${inner}</div>`;
     } else html += inner;
   }
@@ -4173,7 +4190,8 @@ function applyFilters(){
     sec.classList.toggle('hidden', vis === 0);
     const sub = sec.querySelector('.dh-sub');
     if (sub && sec.dataset.dayi !== undefined){
-      sub.textContent = `${vis} of ${DATA.days[+sec.dataset.dayi].slots.length} sessions`;
+      const tot = DATA.days[+sec.dataset.dayi].slots.length;
+      sub.textContent = vis === tot ? countWord(tot, 'session') : `${vis} of ${countWord(tot, 'session')}`;
     }
   });
 
@@ -4201,9 +4219,13 @@ function applyFilters(){
 
   const note = document.getElementById('emptyNote');
   if (!state.cats.size) note.innerHTML = NO_STREAMS_HTML;
-  else note.textContent = all
-    ? 'No matches anywhere in the program. Try clearing the search or selecting more streams.'
-    : 'Nothing matches on this day or elsewhere this week. Try clearing the search or selecting more streams.';
+  else {
+    // the way out, as one button: clear what is narrowing the program
+    const narrowed = state.group || state.cats.size < Object.keys(DATA.cats).length;
+    const act = state.q && narrowed ? 'Clear the search and filters' : state.q ? 'Clear the search' : narrowed ? 'Reset filters' : '';
+    note.innerHTML = (all ? 'No matches anywhere in the program.' : 'Nothing matches on this day or elsewhere this week.')
+      + (act ? `<span class="empty-acts"><button type="button" class="toggle" data-reset-filters>${act}</button></span>` : '');
+  }
   note.classList.toggle('show', shownSlots === 0 && fbCount === 0);
 
   const rl = document.getElementById('resultLine');
@@ -9212,12 +9234,18 @@ document.getElementById('filterNone').addEventListener('click', () => {
   setViewCats(new Set());
   renderChips(); refresh();
 });
-document.getElementById('filterReset').addEventListener('click', () => {
+function resetFilters(){
   if (state.scope !== 'agenda') state.group = null;
   setViewCats(new Set(Object.keys(DATA.cats)));
   clearSearch();
   rerender();
-  toast('Filters reset');
+}
+document.getElementById('filterReset').addEventListener('click', () => { resetFilters(); toast('Filters reset'); });
+// the empty program's way out: the button goes with the note, so the focus moves to the search box
+document.addEventListener('click', e => {
+  if (!e.target.closest('#emptyNote [data-reset-filters]')) return;
+  resetFilters();
+  qEl.focus({ preventScroll: true });
 });
 
 // ---------- participants ----------
