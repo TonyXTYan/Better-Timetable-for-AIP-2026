@@ -7054,7 +7054,6 @@ const hzZoomKey = key => key;
 function hzSpan(key, trackW, d0, d1){
   const z = HZ.zoom[hzZoomKey(key)];
   let span = z === 'fit' ? d1 - d0 : typeof z === 'number' ? z : PHONE_MQ.matches ? 120 : 240;
-  if (z === undefined && state.programTalks && !key.startsWith('a:')) span = Math.min(span, trackW / (PHONE_MQ.matches ? 6 * remPx() / 15 : 5.2));
   return Math.max(20, Math.min(d1 - d0, span));
 }
 function hzPack(items, ppm, rank){
@@ -7402,7 +7401,7 @@ function hzDraw(root, left){
   const z = HZ.zoom[hzZoomKey(key)];
   h.parentElement.querySelectorAll('[data-hzzoom]').forEach(b => {
     const v = b.dataset.hzzoom === 'fit' ? full : +b.dataset.hzzoom;
-    b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5 && (z !== undefined || !talksMode || !PHONE_MQ.matches));
+    b.setAttribute('aria-pressed', Math.abs(span - v) < 0.5);
     b.hidden = b.dataset.hzzoom !== 'fit' && v >= full;
   });
   segAdopt(h.parentElement.querySelector('.hz-zoom'));
