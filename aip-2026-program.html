@@ -1219,12 +1219,14 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-pre button[data-hzgo="now"]{display:inline-flex;align-items:center;gap:6px}
 .hz-pre button[data-hzgo="now"]::before{content:"";flex:none;width:var(--doublet-w);height:.75rem;background:var(--doublet-x)}
 @media (pointer:coarse){.hz-pre button{min-height:40px}}
-.hz-day{--lw:9.25rem;--hzd:50px;position:relative;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);margin:0 0 14px;font-stretch:var(--stretch-cond)}
-/* sticky head: [corner | minimap] over [corner | ruler]; the minimap shrinks to a
-   slim strip once stuck, and the head's bottom margin grows by the same amount so
-   nothing below it moves */
-.hz-top{position:sticky;top:var(--toolbar-h,150px);z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 2rem;background:var(--card);border-radius:var(--r-plate) var(--r-plate) 0 0;border-bottom:1px solid var(--hover-line);transition:margin-bottom calc(.2s * var(--mo)) ease}
-.hz-day.stuck .hz-top{margin-bottom:var(--hzd);border-radius:0}
+.hz-day{--lw:9.25rem;--mapT:8px;--mapH:56px;--mapB:6px;position:relative;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);margin:0 0 14px;font-stretch:var(--stretch-cond)}
+/* sticky head: [corner | minimap] over [corner | ruler]. The head's height never
+   changes, so nothing below it can move: it sticks with its top part tucked under the
+   page toolbar (--hzhide), and once stuck the minimap slides down into a slim strip
+   just above the ruler (its top margin grows as it shrinks: the row keeps its height) */
+.hz-day{--hzhide:calc(var(--mapT) + var(--mapH) + var(--mapB) - 16px)}
+.hz-top{position:sticky;top:calc(var(--toolbar-h,150px) - var(--hzhide));z-index:20;display:grid;grid-template-columns:var(--lw) minmax(0,1fr);grid-template-rows:auto 2rem;background:var(--card);border-radius:var(--r-plate) var(--r-plate) 0 0;border-bottom:1px solid var(--hover-line)}
+.hz-day.stuck .hz-top{border-radius:0}
 .hz-corner{grid-row:1 / 3;grid-column:1;min-height:0;box-sizing:border-box;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;gap:2px;padding:2px 8px 6px 12px;min-width:0;overflow:hidden}
 .hz-tz{display:flex;align-items:center;gap:6px;font-size:.6875rem;font-weight:650;color:var(--muted)}
 .hz-zb{display:inline-flex;gap:2px;margin-left:auto;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl)}
@@ -1233,13 +1235,15 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-zb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .hz-zb button:disabled{color:var(--faint);cursor:default}
 @media (pointer:coarse){.hz-zb button{width:40px;height:40px}}
-.hz-day.stuck .hz-corner{flex-direction:row;align-items:center;padding-top:1px;padding-bottom:1px}
+/* (stuck, the corner's one row sits in the part of the head left in sight) */
+.hz-day.stuck .hz-corner{flex-direction:row;align-items:flex-end;padding-top:1px;padding-bottom:calc((2rem + 17px - 34px) / 2)}
+@media (pointer:coarse){.hz-day.stuck .hz-corner{padding-bottom:2px}}
 .hz-day.stuck .hz-tz{flex:1 1 auto}
 .hz-day.stuck .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .hz-zb button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .hz-read{font-size:.75rem;line-height:1.15;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hz-map{grid-row:1;grid-column:2;position:relative;height:56px;margin:8px 12px 6px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-seg);overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
-.hz-day.stuck .hz-map{height:14px;margin:1px 12px 1px}
+.hz-map{grid-row:1;grid-column:2;position:relative;height:var(--mapH);margin:var(--mapT) 12px var(--mapB);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-seg);overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
+.hz-day.stuck .hz-map{height:14px;margin:calc(var(--mapT) + var(--mapH) + var(--mapB) - 15px) 12px 1px}
 .hz-mt{position:absolute;left:0;right:0;top:4px;bottom:16px;transition:top calc(.2s * var(--mo)) ease,bottom calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
 .hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
@@ -1411,7 +1415,7 @@ button.hz-bar:focus-visible,.hz-head:focus-visible,.hz-talk:focus-visible{outlin
 .hz-pnote{color:var(--clash-ink);font-weight:700;font-size:.6875rem}
 @media (prefers-reduced-motion:reduce){.hz-pop{transition:none}}
 @media print{.hz-pop{display:none!important}}
-@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
+@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
   /* the canvas prints from the day's start, so the ruler does too */
   .hz-ticks{transform:none!important}.hz-ticks span.t{visibility:visible!important;color:var(--ink)!important}}
 /* print: the week stays light and clean, without the doublet */
@@ -1422,8 +1426,9 @@ button.hz-bar:focus-visible,.hz-head:focus-visible,.hz-talk:focus-visible{outlin
 .hz-corner{padding:4px 3px 6px 7px;align-items:flex-start}
 .hz-zb,.hz-read{display:none}
 .hz-tz{font-size:.6875rem}
-.hz-map{margin:6px 8px 4px}
-.hz-day.stuck .hz-map{margin:1px 8px 1px}
+.hz-day{--mapT:6px;--mapB:4px}
+.hz-map{margin-left:8px;margin-right:8px}
+.hz-day.stuck .hz-map{margin-left:8px;margin-right:8px}
 .hz-label{padding:6px 3px 6px 4px;font-size:.6875rem;align-items:flex-start;overflow-wrap:normal}
 .hz-label small{display:none}
 .hz-cnt{display:none}
@@ -1623,8 +1628,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
   .vt-daynav{margin:0 0 8px;padding:0 0 6px}
 }
 @media (max-height:500px){
-  .hz-day{--hzd:28px}
-  .hz-map{height:34px}
+  .hz-day{--mapH:34px}
 }
 /* a phone on its side: no zoom steps (the presets stay); the readout is still announced */
 @media (max-height:500px) and (max-width:960px){
@@ -6960,11 +6964,10 @@ function hzStuck(){
   const h = document.querySelector('#agenda .hz-day');
   if (!h) return;
   const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
-  // Slim, the head keeps the full head's height as bottom margin (--hzd) so nothing
-  // below moves; it turns slim only once that margin is under it, so no blank band
-  // opens between the ruler and the first lane.
-  const keep = parseFloat(getComputedStyle(h).getPropertyValue('--hzd')) || 0;
-  h.classList.toggle('stuck', h.getBoundingClientRect().top < th - keep - 0.5);
+  // Stuck once the head has reached its sticky place (its top part under the toolbar):
+  // the head keeps its height either way, so toggling moves nothing on the page.
+  const top = parseFloat(getComputedStyle(h.querySelector('.hz-top')).top);
+  h.classList.toggle('stuck', h.getBoundingClientRect().top < (Number.isFinite(top) ? top : th) - 0.5);
 }
 let hzStuckRaf = 0;
 window.addEventListener('scroll', () => {
