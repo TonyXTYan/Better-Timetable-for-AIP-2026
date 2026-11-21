@@ -1309,16 +1309,19 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
 .block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
+.cards{display:grid;grid-template-columns:repeat(var(--pc,auto-fit),minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* The list uses the page's full width, as the calendars do: a time slot's parallel sessions
-   spread into as many columns as fit. A plate of one column (a session alone in its slot,
-   a break) stops at --plate-max, about what the page's old content column held, so its
-   star and actions stay near its text and its lines keep a readable length; long text
-   inside keeps a narrower measure still. My agenda is all one column, so its Now and
-   Up next plate and each day (its heading, with Open in program, and its rows) stop
-   there too, lined up with each other. */
+   spread into as many columns as fit, in rows as even as those allow (--pc, set by
+   plateFit: 12 sessions in room for 5 go 4+4+4, not 5+5+2). A plate of one or two
+   sessions (or a break) stops at --plate-max, about what the page's old content column
+   held, so a star stays near its text and lines keep a readable length; long text inside
+   keeps a narrower measure still. My agenda is all one column, so its title bar (Build
+   and Export), its Now and Up next plate and each day (its heading, with Open in
+   program, and its rows) stop there too, lined up with each other. The cap applies only
+   where it saves over 15% of the width: just short of that, a capped plate would read
+   as one out of line with the rest, not as a column of its own. */
 :root{--plate-max:72rem}
-.cards.single,.cards.ivs,#builderList>.up-next,#builderList>.ag-day{max-width:var(--plate-max)}
+.cards:is(.single,.ivs,[data-n="1"],[data-n="2"]),#builderList>.up-next,#builderList>.ag-day,body:not(.wide-view) #builder>:is(.ag-bar,.clash-box){max-width:calc(var(--plate-max) + max(0px,var(--plate-max) * 1.15 - 100%) * 10000)}
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
 
@@ -4112,12 +4115,11 @@ function slotById(id){
 // the grid's columns, each card its head and a row a talk. Only roughly: it keeps the
 // page about as tall as it will be, so the scrollbar and jumps far down stay close.
 function blockEst(slots){
-  const phone = PHONE_MQ.matches, w = document.documentElement.clientWidth - 40 - (phone ? 0 : 106);
+  const phone = PHONE_MQ.matches, w = listPlateW();
   if (slots.every(isInterval)) return slots.length * (phone ? 58 : 38) + (phone ? 36 : 0);
-  // (as many columns as fit, but no more than it has sessions; a session alone stops at
-  // --plate-max, 72rem)
-  const cols = Math.min(slots.length, Math.max(1, Math.floor((w + 12) / 342)));
-  const cw = cols === 1 ? Math.min(w, 72 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16)) : (w - (cols - 1) * 12) / cols;
+  // (its columns as plateFit sets them; a plate of one or two stops at --plate-max)
+  const cols = plateCols(slots.length, listCols()), pm = 72 * remPx();
+  const cw = (cols <= 2 && w > pm * 1.15 ? pm : w) / cols;
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
   const hs = slots.map(s => {
     const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
@@ -4129,18 +4131,55 @@ function blockEst(slots){
   for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
   return Math.round(h);
 }
+// The width of a time block's plate of cards in the list: the page's, less its gutters,
+// the time column (88px in Archivo, 5.5rem in the other fonts, as in the CSS) and the gap
+// after it; and the columns of 330px it has room for, as its auto-fit works them out (one
+// on a phone, where the plate is one column under its time). Kept until the page's width
+// or its font changes (platesRefit), since reading it from a page just redrawn would lay
+// the whole page out for it.
+let plateW = 0;
+function listPlateW(){
+  if (plateW) return plateW;
+  const w = document.documentElement.clientWidth - 40;
+  return plateW = PHONE_MQ.matches ? w : w - (document.documentElement.dataset.font === 'archivo' ? 88 : 5.5 * remPx()) - 18 - 2;
+}
+const listCols = () => PHONE_MQ.matches ? 1 : Math.max(1, Math.floor(listPlateW() / 330));
+// k sessions in rows as even as room for m columns allows: 12 in room for 5 go 4+4+4,
+// 11 go 4+4+3, 7 go 4+3 (never fewer columns than that: no more rows than m would take)
+const plateCols = (k, m) => k <= m ? k : Math.ceil(k / Math.ceil(k / m));
+// A plate's sessions showing (data-n, which caps a plate of one or two) and its columns
+// (--pc, where they are fewer than its auto-fit would make: otherwise left to that)
+function plateFit(cards, m = listCols()){
+  if (cards.classList.contains('ivs')) return;
+  let k = 0;
+  for (const c of cards.children) if (!c.classList.contains('hidden')) k++;
+  if (cards.dataset.n !== String(k)) cards.dataset.n = k;
+  const c = plateCols(k, m);
+  if (k > m && c < m){ if (cards.style.getPropertyValue('--pc') !== String(c)) cards.style.setProperty('--pc', c); }
+  else if (cards.style.length) cards.style.removeProperty('--pc');
+}
+// (the page's width or its font changed: every plate drawn, again)
+let plateM = 0;
+function platesRefit(){
+  plateW = 0;
+  const m = listCols();
+  if (m === plateM) return;
+  plateM = m;
+  for (const c of document.querySelectorAll('#agenda .cards')) plateFit(c, m);
+}
+window.addEventListener('resize', () => { if (plateM) platesRefit(); });
 // A break, a meal or a meeting with nothing more to it (no talks, note or description): in
 // the list a slim interval row rather than a plate of its own.
 const isInterval = s => !s.talks.length && !s.desc && !s.info && (s.cat === 'social' || s.cat === 'business');
 function blocksHtml(slots, date){
-  const blocks = {};
+  const blocks = {}, m = plateM = listCols();
   slots.forEach(s => { (blocks[s.start] = blocks[s.start] || []).push(s); });
   let inner = '';
   Object.keys(blocks).sort().forEach(st => {
     const bl = blocks[st];
     const end = bl.map(x => x.end).sort().slice(-1)[0];
     const iv = bl.every(isInterval);
-    inner += `<section class="block${iv ? ' ivb' : ''}" data-date="${date}" data-start="${st}" data-end="${end}" style="--cih:${blockEst(bl)}px"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards${iv ? ' ivs' : bl.length === 1 ? ' single' : ''}">`;
+    inner += `<section class="block${iv ? ' ivb' : ''}" data-date="${date}" data-start="${st}" data-end="${end}" style="--cih:${blockEst(bl)}px"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards${iv ? ' ivs' : bl.length === 1 ? ' single' : ''}"${iv ? '' : ` data-n="${bl.length}"`}${!iv && plateCols(bl.length, m) < Math.min(bl.length, m) ? ` style="--pc:${plateCols(bl.length, m)}"` : ''}>`;
     bl.forEach(s => inner += cardHtml(s));
     inner += `</div></section>`;
   });
@@ -4184,6 +4223,8 @@ function fillPh(p, L){
     if (ok){ any = true; filterCard(card, s, filterAuto); }
   }
   b.classList.toggle('hidden', !any);
+  const cards = b.querySelector('.cards');
+  if (cards) plateFit(cards);
   if (L.expanded) b.querySelectorAll('details').forEach(d => { d.open = true; });
   p.replaceWith(b);
 }
@@ -4514,9 +4555,12 @@ function applyFilters(){
     card.classList.toggle('hidden', !ok);
     if (ok) filterCard(card, s, autoOpen);
   }));
+  const m = plateM = listCols();
   document.querySelectorAll('#agenda > .block, #agenda > .day-section .block').forEach(b => {
     const any = [...b.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
     b.classList.toggle('hidden', !any);
+    const cards = b.querySelector('.cards');
+    if (any && cards) plateFit(cards, m);
   });
   for (const p of document.querySelectorAll('#agenda .blk-ph')) p.classList.toggle('hidden', !p._g.some(slotMatches));
   document.querySelectorAll('#agenda > .day-section').forEach(sec => {
@@ -11556,7 +11600,7 @@ function setDisplay(key, value){
     syncDisplayForm();
     fitPlaceholder();
     // (a new rem or a new face: the calendars measure their text again)
-    if (key === 'text' || key === 'font') refitCalendars();
+    if (key === 'text' || key === 'font'){ refitCalendars(); platesRefit(); }
   };
   // a new look fades in; the motion settings themselves apply at once. Archivo loads
   // first, so the fade lands on it (never on a stand-in face) and the calendars measure it.
