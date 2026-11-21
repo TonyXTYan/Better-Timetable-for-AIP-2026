@@ -515,7 +515,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .ed-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0;font-size:.9375rem}
 .ed-time{font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700}
 .ed-time small{margin-left:4px;font-size:.8125rem;font-weight:500;color:var(--muted)}
-.ed-room{padding:0 6px;border:1px solid var(--ink-2);border-radius:var(--r-tag);font-size:.8125rem;font-weight:650;font-stretch:var(--stretch-cond);line-height:1.5}
+.ed-room{padding:0 6px;border:1px solid var(--hover-line);border-radius:var(--r-tag);color:var(--ink-2);font-size:.8125rem;font-weight:600;font-stretch:var(--stretch-cond);line-height:1.5}
 .ed-parent,.ed-conv{display:flex;flex-wrap:wrap;gap:2px 12px;margin:10px 0 0;font-size:.9375rem;color:var(--ink-2)}
 .ed-name{font-style:italic;font-weight:480;color:var(--ink)}
 .ed-aff{font-style:normal;color:var(--muted)}
@@ -1388,7 +1388,7 @@ button.hz-bar:focus-visible,.hz-head:focus-visible,.hz-talk:focus-visible{outlin
 .hz-pnote{color:var(--clash-ink);font-weight:700;font-size:.6875rem}
 @media (prefers-reduced-motion:reduce){.hz-pop{transition:none}}
 @media print{.hz-pop{display:none!important}}
-@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill,.hz-mark.is-now{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
+@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
   /* the canvas prints from the day's start, so the ruler does too */
   .hz-ticks{transform:none!important}.hz-ticks span.t{visibility:visible!important;color:var(--ink)!important}}
 /* print: the week stays light and clean, without the doublet */
@@ -1429,7 +1429,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* a talk row at the same time as the heading row above it repeats that time: kept for
    the grid, not shown */
 .vt-t.tk{visibility:hidden}
-.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0;transition:top calc(600ms * var(--mo,1)) linear}
+.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0 calc(var(--vtw) + 2px);transition:top calc(600ms * var(--mo,1)) linear}
 /* two lines of the sodium D doublet (a 2px gap); they part from the centre as the mark appears (na-part) */
 .vt-nowl::before,.vt-nowl::after{content:"";position:absolute;left:0;right:0;height:calc((var(--doublet-w) - 2px) / 2);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
 .vt-nowl::before{top:0;--na-from:0 calc(var(--doublet-w) / 4 + .5px)}
@@ -1543,7 +1543,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-card.past .vt-title{color:var(--bar-meta)}
 .vt-card.is-now .vt-title{font-weight:720}
 .vt-tk.is-now{background:var(--now-bg);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--na-bg),inset 6px 0 var(--na);padding-left:10px}
-.vt-tk.is-now .vt-ttime{color:var(--now-text)}
 .vt-talks{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .vt-talks .vt-tk:first-child{border-top:0}
 /* My agenda in the day views and the week overview. Every colour is the item's stream.
@@ -1944,6 +1943,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 @media (hover:hover){.bd-check:hover{background:var(--surface-3)}}
 .bd-check.on{--muted:var(--bar-meta);background:color-mix(in srgb,var(--cbg) 70%,var(--card))}
 .bd-card.on .bd-sess.on{background:transparent}
+/* (on a clash card the fringe hatch is the ground: ticked talk rows do not cover it with a flat tint) */
+.bd-card.cx .bd-check.on{background:transparent}
 .bd-check.inc{cursor:default;opacity:.8}
 .bd-check.inc input{cursor:default}
 .bd-check input{flex:none;width:17px;height:17px;margin:1px 0 0;cursor:pointer}
@@ -2609,11 +2610,12 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
    grid with the Select all / Deselect all / Reset row held at the bottom. */
 .filter-panel{max-height:calc(100vh - var(--toolbar-h,190px) - 12px);max-height:calc(100dvh - var(--toolbar-h,190px) - 12px);overflow-y:auto;overscroll-behavior:contain}
 @media (max-width:720px),(max-height:500px){
-  .filter-panel:not([hidden]){display:flex;flex-direction:column}
+  .filter-panel:not([hidden]){display:flex;flex-direction:column;padding-bottom:0}
   .filter-panel .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
   .filter-panel .chips .chip-wrap{display:flex;min-width:0}
   .filter-panel .chips .chip{flex:1 1 auto;min-width:0;text-align:left}
-  .filter-panel .fp-head{order:9;position:sticky;bottom:0;z-index:2;flex-wrap:nowrap;justify-content:flex-start;margin:12px -16px -14px;padding:8px 16px 14px;background:var(--card);border-top:1px solid var(--line)}
+  .filter-panel .fp-head{order:9;position:sticky;bottom:0;z-index:2;flex-wrap:nowrap;justify-content:flex-start;margin:12px -16px 0;padding:8px 16px 14px;background:var(--card);border-top:1px solid var(--line)}
+  /* (the panel's own bottom padding would let chips show below the held row: the row carries it) */
   .filter-panel .fp-head>b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .filter-panel .fp-actions{flex-wrap:nowrap;gap:6px}
   .filter-panel .fp-all{white-space:nowrap}
@@ -2635,7 +2637,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   .talk,.ag-row{break-inside:avoid}
   .block-time{break-after:avoid}
   .card::before,.badge::before{display:none}
-  .block.past .card h3,.block.past .card.iv h3,.block.past .t-title,.block.past .block-time .bt,.block.past .block-time .bd{color:var(--ink)}
+  .block.past .card h3,.block.past .card.iv h3,.block.past .t-title,.talk.past .t-title,.block.past .block-time .bt,.block.past .block-time .bd{color:var(--ink)}
   .talk.is-now,.ag-row.is-now{background:none}
   .talk.is-now::before,.talk.is-now::after{display:none}
   /* the week: outlined blocks (no fill), a stream edge at the left */
@@ -8775,7 +8777,8 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
       const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
       if (talk) talk.open = true;
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
-      target.focus({ preventScroll: true, focusVisible: false });
+      // (with a mouse the target keeps its focus ring, as before; on touch the tint marks it)
+      target.focus({ preventScroll: true, focusVisible: !matchMedia('(pointer: coarse)').matches });
       markJumpTarget(target);
       revealInCard(card, talk && talk.querySelector('summary'));
       // (a face still loading, the italic names say, rewraps the text above: place it again
@@ -10641,6 +10644,8 @@ window.addEventListener('hashchange', e => {
   followHashTargets(r);
 });
 setInterval(paintNow, 30000);
+// the web fonts can settle after the first paint and grow the vertical grid's rows: redraw the now line then
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => paintNow());
 document.addEventListener('visibilitychange', () => { if (!document.hidden) paintNow(); });
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
