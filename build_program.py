@@ -804,6 +804,24 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 @keyframes jump-tint{0%,55%{background-color:var(--surface-3);box-shadow:inset 3px 0 0 var(--ink)}100%{background-color:transparent;box-shadow:inset 0 0 0 transparent}}
 @media (pointer:coarse){.jump-target.jump-target,.jump-target.jump-target:focus-visible{outline:none}.jump-target.jump-target{animation:jump-tint calc(1.4s * var(--mo)) ease-out}}
 @media (scripting:enabled){body:not(.ready) footer{visibility:hidden}}
+/* Phones: the details, Display settings and Move to another device open as bottom
+   sheets (no grabber: there is no drag to dismiss). They rise from the foot over --dur-l
+   on --ease-em (the dialog transitions above; reduced motion shows them at once), and
+   their actions sit in two columns with the primary one across both. */
+@media (max-width:720px){
+  dialog#eventDialog,dialog#displayDialog,dialog#moveDialog{margin:auto 0 0;width:100%;max-width:none;max-height:88dvh;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom);translate:0 100%}
+  dialog#moveDialog{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+  dialog#eventDialog[open],dialog#displayDialog[open],dialog#moveDialog[open]{translate:none}
+  @starting-style{dialog#eventDialog[open],dialog#displayDialog[open],dialog#moveDialog[open]{translate:0 100%}}
+  #eventDialog .ed-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #eventDialog .ed-actions .ag-btn{justify-content:center}
+  #eventDialog .ed-actions .detail-save,#eventDialog .ed-actions [data-replace-session],#eventDialog .ed-actions .replace-note{grid-column:1 / -1}
+  #moveDialog .md-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #moveDialog .md-row>.toggle{justify-content:center}
+  #moveDialog .md-row>.primary,#moveDialog .md-row>button:only-of-type,
+  #moveDialog .md-row:not(:has(>.primary))>:nth-child(odd):last-child,
+  #moveDialog .md-row:has(>.primary)>:nth-child(even):last-child{grid-column:1 / -1}
+}
 /* ---------- move to another device ---------- */
 #moveDialog{width:min(560px,94vw);padding:0 20px 20px}
 #moveDialog>.md-intro{margin-right:0}
@@ -2054,8 +2072,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 #buildDialog[open]{display:flex;flex-direction:column}
 html:has(#buildDialog[open]){overflow:hidden}
 #buildDialog::backdrop{background:var(--backdrop)}
-.bd-top{flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
-.bd-titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 16px}
+.bd-top{position:relative;flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+/* the close button stands in the top right corner at every width; the title bar keeps clear of it */
+#buildDialog{--bdx:36px}
+.bd-titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 16px;min-height:var(--bdx);padding-right:calc(var(--bdx) + 10px)}
+#bdClose{position:absolute;top:16px;right:20px;z-index:2}
 .bd-titles{flex:1 1 20rem;min-width:0}
 .bd-titlebar h2{margin:0;font-size:1.25rem;font-weight:720;letter-spacing:-.005em}
 .bd-intro{margin:4px 0 0;color:var(--muted);font-size:.8125rem;max-width:70ch}
@@ -2078,16 +2099,16 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
 .bd-tick.has{width:3px;height:8px;border-radius:1px;background:var(--star)}
 .bd-tick.day.has{height:9px}
-/* a slot where saved items overlap (bdClashes): an ink triangle under the track, wider than a saved slot's bar */
-.bd-tick.has.cx{width:11px;height:9px;border-radius:0;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%)}
-.bd-cxtri{display:inline-block;flex:none;width:11px;height:9px;margin-right:2px;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
+/* a slot where saved items overlap (bdClashes): a small fringe mark under the track, wider than a saved slot's bar */
+.bd-tick.has.cx{width:9px;height:9px;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-mark,var(--warn-ink)) 0 1px,transparent 1px 3px)}
 .bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--ink-2);border-radius:var(--r-seg);background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
 button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-cxn{display:inline-flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--ink-2)}
 .bd-cxn svg{flex:none;width:12px;height:12px}
 .bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
 .bd-cxnote{flex:1 1 100%;margin:4px 0 0;font-size:.75rem;color:var(--clash-ink);font-weight:600}
-.bd-card.cx{background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 8%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.bd-card.cx,.bd-card.on.cx{background-color:var(--clash-bg);background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 6%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.bd-cxp .cx-fr,.bd-cxkey .cx-fr{margin-right:0}
 .bd-cxp{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:750;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--ink-2);border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
 .bd-days{height:22px}
 .bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:var(--r-seg);font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--ink);white-space:nowrap;line-height:1.5}
@@ -2097,6 +2118,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-time{position:absolute;top:0;font-size:.6875rem;font-stretch:var(--stretch-cond);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.5}
 .bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:2px 16px;font-size:.8125rem;color:var(--muted);align-self:center}
 .bd-opts label{display:inline-flex;align-items:center;gap:6px;min-height:32px;color:var(--ink-2);cursor:pointer}
+.bd-opt-t{white-space:nowrap}
 .bd-opts input,.bd-check input{accent-color:var(--accent)}
 .bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:16px 20px 20px}
 .bd-slot-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin:0 0 12px}
@@ -2158,6 +2180,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 @media (max-width:720px){
   #buildDialog{--thumb:20px;--thumb-h:34px;--trk:6px;width:100vw;height:100vh;height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none}
   .bd-top{padding:8px 14px 2px}
+  #bdClose{top:8px;right:14px}
   .bd-titlebar{align-items:center}
   .bd-titlebar h2{font-size:1.125rem}
   .bd-titles{flex:1 1 0}
@@ -2202,7 +2225,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
   .bd-tog .caret{margin-left:8px}
   .bd-pg-l{display:none}
   .bd-sw,.bd-tc-l{display:none}
-  .bd-tc-s{display:inline}
+  .bd-tc-s{display:inline;margin-left:.25em}   /* (the space in its markup is lost at the start of a flex item) */
+  #bdProgress{white-space:nowrap}
   .bd-tlist{grid-column:1 / -1;border-top:1px solid var(--line);margin:2px 0 2px}
   .bd-talk{min-height:44px;padding:5px 4px}
   .bd-abs{min-height:40px}
@@ -2223,6 +2247,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 @media (max-height:520px){
   #buildDialog{--thumb:16px;--thumb-h:26px;--trk:4px;width:100vw;height:100vh;height:100dvh;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none}
   .bd-top{padding:4px 14px 0}
+  #bdClose{top:4px;right:14px}
   .bd-titlebar{flex-wrap:nowrap;align-items:center}
   .bd-titlebar h2{font-size:1.0625rem;white-space:nowrap}
   .bd-titles{flex:0 1 auto}
@@ -2252,6 +2277,29 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
   .bd-info{min-width:40px;justify-content:center}
   .bd-opts label{min-height:40px}
   .bd-range{height:40px}
+}
+@media (pointer:coarse){#buildDialog{--bdx:40px}}
+@media (pointer:coarse) and (min-width:721px) and (min-height:521px){
+  .bd-days{height:40px}
+  .bd-day{top:0}
+}
+/* Landscape phones: the slider shares a row with "Slot x of y", the streams share the
+   title's row and scroll sideways, the clash sentence takes one line (its button leads to
+   the detail) and the slot's heading scrolls with the sessions. */
+@media (max-height:500px){
+  #buildDialog .bd-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:10px;padding:2px 14px 0}
+  #buildDialog .bd-titlebar,#buildDialog .bd-opts{display:contents}
+  #buildDialog .bd-titles{grid-area:1 / 1}
+  .bd-top .bd-intro{display:none}
+  #buildDialog .bd-chips{grid-area:1 / 2;align-self:center;margin:0;padding:4px 0}
+  #buildDialog .bd-chip{min-height:32px;height:32px;position:relative}
+  #buildDialog .bd-chip::after{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
+  #buildDialog .bd-opts label{grid-area:1 / 3;margin-right:calc(var(--bdx) + 4px)}
+  #buildDialog #bdProgress{display:block;grid-area:2 / 1;white-space:nowrap;font-size:.75rem}
+  #buildDialog .bd-scale{grid-area:2 / 2 / 3 / 4;margin:0}
+  #bdClose{top:2px;right:14px}
+  .bd-slot-head{position:static;margin-bottom:6px}
+  .bd-cxnote{-webkit-line-clamp:1;line-clamp:1}
 }
 /* the other dialogs on touch: 40px targets whatever the width */
 @media (pointer:coarse){
@@ -2901,7 +2949,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       </div>
       <div class="bd-opts">
         <span id="bdProgress"></span>
-        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"> Include breaks<span class="bd-opt-x"> and meetings</span></label>
+        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"><span class="bd-opt-t">Include breaks<span class="bd-opt-x"> and meetings</span></span></label>
       </div>
       <button type="button" class="toggle dlg-x" id="bdClose" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
     </div>
@@ -5424,7 +5472,8 @@ if (DLG_JS){
     if (d.__closing) return;
     if (!d.open || inVT || motionReduced() || !d.animate) return dlgNativeClose.call(d, rv);
     const opt = { duration: MO_S * motionK(), easing: 'ease-in', fill: 'forwards' };
-    const a = [d.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 8px' }], opt)];
+    const sheet = PHONE_MQ.matches && /^(eventDialog|displayDialog|moveDialog)$/.test(d.id);
+    const a = [d.animate([{ opacity: 1, translate: '0 0' }, { opacity: sheet ? 1 : 0, translate: sheet ? '0 100%' : '0 8px' }], opt)];
     try { a.push(d.animate([{ opacity: 1 }, { opacity: 0 }], { ...opt, pseudoElement: '::backdrop' })); } catch (_) {}
     d.__closing = a;
     Promise.all(a.map(x => x.finished)).then(() => {
@@ -8455,7 +8504,7 @@ function bdCard(s, parallel){
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
   return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
-      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="bd-cxtri" aria-hidden="true"></i> Clash</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="cx-fr" aria-hidden="true"></i>Clash</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
@@ -8485,7 +8534,7 @@ function bdRenderSlot(){
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
       <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
-      ${clashes ? `<br><span class="ag-warn"><i class="bd-cxtri" aria-hidden="true"></i> ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
+      ${clashes ? `<br><span class="ag-warn"><i class="cx-fr" aria-hidden="true"></i>${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -8543,8 +8592,8 @@ function bdPaintChecks(){
     card.classList.toggle('cx', !(card.querySelector('.bd-cxp').hidden = !mine.some(it => it.s === s)));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
-    if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">, all included</span><span class="bd-tc-s">&#9733; all</span>'
-      : n ? `<span class="bd-tc-l">, ${n} saved</span><span class="bd-tc-s">&#9733;${n}</span>` : '';
+    if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">, all included</span><span class="bd-tc-s"> (&#9733; all)</span>'
+      : n ? `<span class="bd-tc-l">, ${n} saved</span><span class="bd-tc-s"> (&#9733;${n})</span>` : '';
   });
   const items = mergeSaved(bdSlotItems(bd.slots[bd.i]));
   bdEl('bdSlotSaved').innerHTML = items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet';
@@ -8555,7 +8604,7 @@ function bdPaintChecks(){
   const note = bdEl('bdSlotCx');
   note.hidden = !pairs.length;
   note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
-  note.innerHTML = pairs.length ? '<i class="bd-cxtri" aria-hidden="true"></i> Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
+  note.innerHTML = pairs.length ? '<i class="cx-fr" aria-hidden="true"></i>Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
   // the key to the slider's marks, which steps to the next slot with a clash
   const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
   const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
@@ -8564,8 +8613,8 @@ function bdPaintChecks(){
     const sl = next === undefined ? null : bd.slots[next];
     key.disabled = !sl;
     key.dataset.next = sl ? next : '';
-    key.title = 'Triangles under the slider mark the slots where saved items overlap';
-    key.innerHTML = `<i class="bd-cxtri" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
+    key.title = 'Marks under the slider show the slots where saved items overlap';
+    key.innerHTML = `<i class="cx-fr" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
       + (sl ? `<span class="bd-cxn">next<span class="visually-hidden">: ${esc(sl.d.label)}, ${bdSpan(sl)[0]}</span>${BD_CHEV}</span>` : '');
   }
 }
@@ -8580,7 +8629,7 @@ bdEl('bdBody').addEventListener('click', e => {
 // start times underneath, thinned out wherever they would collide.
 function bdFrac(i){ return bd.slots.length > 1 ? i / (bd.slots.length - 1) : 0; }
 function bdPlace(box, idx, keepAll){
-  const W = box.clientWidth, pad = parseFloat(getComputedStyle(box).marginLeft) || 0, gap = keepAll ? 3 : 8;
+  const W = box.clientWidth, pad = parseFloat(getComputedStyle(box).marginLeft) || 0, gap = keepAll ? 3 : 12;
   const els = [...box.children];
   let right = -Infinity;
   els.forEach((el, k) => {
