@@ -454,15 +454,27 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .hero-when .na-glyph{display:none}
 .hero-when.is-today .na-glyph{display:inline-block}
 .facts-short{display:none}
-/* the spectral rule: 400 to 700 nm across the content width */
-.spectral{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:end;column-gap:12px;margin:22px 0 0;grid-column:1/-1}
-.sp-end{font-size:.6875rem;line-height:1;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap;padding-bottom:0;transform:translateY(50%)}
-.sp-scale{position:relative;height:28px;border-bottom:1px solid var(--hover-line)}
-.sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100%);width:2px;height:68%;margin-left:-1px;border-radius:1px 1px 0 0;background:var(--c)}
-.sp-scale i.sp-na{width:var(--doublet-w);height:100%;margin-left:calc(var(--doublet-w) / -2);background:none}
+/* The spectral rule, 400 to 700 nm across the content width, drawn like a spectrometer's
+   scale: a baseline with the lines standing on it and ticks hanging under it (every 10 nm,
+   longer every 50 nm), labelled at the hundreds. Each line is 2px, snapped to whole pixels so
+   it stays crisp; the sodium doublet (now) stands taller than the rest and resolves as it
+   appears. --sp-h is the height of a line, --sp-tk of a long tick. */
+.spectral{grid-column:1/-1;margin:24px 0 0;--sp-h:34px;--sp-na:44px;--sp-tk:7px}
+.sp-scale{position:relative;height:var(--sp-na);border-bottom:1px solid var(--ink-2)}
+.sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100% - 1px);left:round(down,calc((var(--nm) - 400) / 300 * 100% - 1px),1px);width:2px;height:var(--sp-h);background:var(--c)}
+.sp-scale i.sp-na{width:var(--doublet-w);height:var(--sp-na);left:calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2);left:round(down,calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2),1px);background:none}
 .sp-scale i[title]{cursor:help}
 /* (a hit area wider than the 2px line for its tooltip) */
 .sp-scale i::after{content:"";position:absolute;inset:0 -4px}
+.sp-na .na-glyph{display:block;height:100%}
+/* the hanging ticks: 31 short and 7 long, the last at 700 nm on the right edge */
+.sp-scale::after{content:"";position:absolute;left:0;top:100%;width:calc(100% + 1px);height:var(--sp-tk);pointer-events:none;
+  background:repeating-linear-gradient(90deg,var(--hover-line) 0 1px,transparent 1px calc((100% - 1px) / 30)) 0 0 / 100% calc(var(--sp-tk) - 3px) no-repeat,
+             repeating-linear-gradient(90deg,var(--ink-2) 0 1px,transparent 1px calc((100% - 1px) / 6)) 0 0 / 100% var(--sp-tk) no-repeat}
+.sp-axis{position:relative;height:calc(var(--sp-tk) + 1.0625rem);font-size:.6875rem;line-height:1;font-weight:520;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+.sp-axis span{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100%);transform:translateX(-50%);white-space:nowrap}
+.sp-axis span:first-child{transform:none}
+.sp-axis span:last-child{transform:translateX(-100%)}
 /* ---------- the sodium D doublet: the mark of "now" ----------
    .na-glyph is the inline mark (two lines and a gap of 2px; 3px lines with high-contrast
    text). --g recolours it (e.g. on an ink-filled control). .na-resolve makes the two lines
@@ -763,7 +775,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
 .sticky-wrap.tb-compact .daytabs{flex:1 1 auto;min-width:0;padding-bottom:0;scrollbar-width:none}
 .sticky-wrap.tb-compact .daytabs::-webkit-scrollbar{display:none}
-.sticky-wrap.tb-compact .daytab{grid-template-areas:"wd dm n";grid-template-columns:auto auto auto;column-gap:5px;padding-top:5px;padding-bottom:5px}
+.sticky-wrap.tb-compact .daytab{grid-template-areas:"wd dm n";grid-template-columns:auto auto auto;justify-content:center;align-content:center;column-gap:6px;min-height:40px;padding-top:4px;padding-bottom:4px}
 .sticky-wrap.tb-compact .dt-dm{font-size:.875rem}
 .sticky-wrap.tb-compact .controls{flex:none;flex-wrap:nowrap;padding:0;margin-left:auto}
 .sticky-wrap.tb-compact .controls .tb-mini{display:inline-flex}
@@ -791,6 +803,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .daytabs::-webkit-scrollbar{display:none}
 /* (a strip that scrolls fades at the edge it can still scroll to) */
 @supports (animation-timeline:scroll()){.daytabs{animation:dt-fade linear both;animation-timeline:scroll(self inline)}}
+/* (the fade is not motion: it stays when motion is reduced) */
+@supports (animation-timeline:scroll()){html .daytabs.daytabs{animation:dt-fade linear both!important;animation-timeline:scroll(self inline)!important}}
 @keyframes dt-fade{0%{--dt-fl:0px;--dt-fr:28px}6%{--dt-fl:28px;--dt-fr:28px}94%{--dt-fl:28px;--dt-fr:28px}100%{--dt-fl:28px;--dt-fr:0px}}
 .daytab{flex:1 1 0;position:relative;display:grid;grid-template-areas:"wd n" "dm dm";grid-template-columns:auto auto;justify-content:space-between;align-items:baseline;column-gap:10px;row-gap:1px;min-width:max-content;margin:0 0 0 -1px;padding:6px 12px 7px;border:1px solid var(--line);border-radius:0;background:var(--card);color:var(--ink);text-align:left;white-space:nowrap;line-height:1.2}
 .daytab:first-child{margin-left:0;border-radius:var(--r-ctl) 0 0 var(--r-ctl)}
@@ -1170,7 +1184,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .cp-off .cp-open{color:var(--ink-2)}
 .print-doc{display:none}
 .agenda-views{display:flex;gap:2px;width:max-content;margin-top:16px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
-.agenda-views button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;border:0;border-radius:var(--r-seg);background:transparent;padding:0 13px;color:var(--ink-2);font-size:.875rem;font-weight:620;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
+.agenda-views button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;border:0;border-radius:var(--r-seg);background:transparent;padding:0 13px;color:var(--ink-2);font-size:.875rem;font-weight:620;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
 .agenda-views button:hover{background:var(--surface-3);color:var(--ink)}
 .agenda-views button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
@@ -1772,8 +1786,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-nomatch .ag-empty-icon{color:var(--muted);font-size:1.75rem}
 .ag-menu-note{margin:0 0 4px;padding:7px 12px 9px;border-bottom:1px solid var(--line);font-size:.75rem;line-height:1.4;color:var(--muted);max-width:16rem}
 .ag-menu-note[hidden]{display:none}
-.toggle.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.toggle.primary:hover{border-color:var(--accent);filter:brightness(1.08)}
 
 /* ---------- build my agenda: a guided walk through the time slots ---------- */
 #buildDialog{--thumb:22px;border:1px solid var(--line);border-radius:16px;padding:0;width:min(1120px,96vw);height:min(900px,92vh);max-width:none;max-height:none;color:var(--ink);background:var(--card);font-size:0.8438rem;line-height:1.45;overflow:hidden}
@@ -2303,9 +2315,9 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .hero-when{grid-row:2;grid-column:1/-1;margin-top:2px}
   .hero p.sub,.hero .facts{display:none}
   .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
-  .spectral{grid-row:4;grid-template-columns:minmax(0,1fr);margin-top:12px}
-  .sp-end{display:none}
-  .sp-scale{height:12px}
+  .spectral{grid-row:4;margin-top:12px;--sp-h:12px;--sp-na:16px;--sp-tk:3px}
+  .sp-axis{display:none}
+  .sp-scale::after{background-size:0 0,100% var(--sp-tk)}
   .sticky-wrap{margin-top:10px}
 }
 /* landscape phones: the countdown and the facts share a line */
@@ -2376,7 +2388,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
-    <div class="spectral" aria-hidden="true"><span class="sp-end">400 nm</span><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:577.0;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 577.0 nm"></i><i style="--nm:579.1;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 579.1 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen H&#945;, 656.3 nm"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><span class="sp-end">700 nm</span></div>
+    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:577.0;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 577.0 nm"></i><i style="--nm:579.1;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 579.1 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen H&#945;, 656.3 nm"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -3840,10 +3852,10 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-agenda-day]');
   if (b) document.querySelector(`#daytabs [data-day="${b.dataset.agendaDay}"]`)?.click();
 });
-// "3 sessions, 1 with a saved talk · 2 talks": a session with saved talks counts
-// once; a part with nothing in it is left out. sep joins the parts (" · " by default).
+// "3 sessions, 1 with a saved talk; 2 talks": a session with saved talks counts
+// once; a part with nothing in it is left out. sep joins the parts ("; " by default).
 function countWord(n, word, html){ return (html ? `<b>${n}</b>` : n) + ' ' + word + (n === 1 ? '' : 's'); }
-function agendaCountText(items, html, sep = ' · '){
+function agendaCountText(items, html, sep = '; '){
   const sess = items.filter(x => x.kind === 'session'), nTalk = items.length - sess.length;
   const hosts = sess.filter(x => x.inner && x.inner.length), nInner = hosts.reduce((n, x) => n + x.inner.length, 0);
   const parts = [];
@@ -4715,10 +4727,10 @@ function renderClashes(items){
 function agendaStatsHtml(shown, whole, filtered){
   const where = `<span class="ag-where">${state.day === 'all' ? 'Week' : esc(DATA.days[state.day].label)}${filtered ? ', matching' : ''}:</span> `;
   if (!shown.length) return `<span class="ag-cnt">${where}${filtered ? 'nothing' : 'nothing saved'}</span>` +
-    (state.day === 'all' ? '' : `<span class="ag-hrs"> &middot; ${countWord(whole.length, 'item', true)} this week</span>`);
+    (state.day === 'all' ? '' : `<span class="ag-hrs">, ${countWord(whole.length, 'item', true)} this week</span>`);
   // the counts may end in an ellipsis on a tight bar; the planned hours never do
   const why = innerNote(shown);
-  return `<span class="ag-cnt"${why ? ` title="${countWord(shown.length, 'item')}: ${why}"` : ''}>${where}${agendaCountText(shown, true)}</span><span class="ag-hrs"> &middot; <span class="ag-about">about </span><b>${plannedHours(shown).toFixed(1)} h</b><span class="ag-tz"> &middot; All times AEDT</span></span>`;
+  return `<span class="ag-cnt"${why ? ` title="${countWord(shown.length, 'item')}: ${why}"` : ''}>${where}${agendaCountText(shown, true)}</span><span class="ag-hrs">, <span class="ag-about">about </span><b>${plannedHours(shown).toFixed(1)} h</b><span class="ag-tz">. All times AEDT</span></span>`;
 }
 // Up next and Now: today's items, on today's tab or All week (not on another day's).
 function agendaUpNext(items){
