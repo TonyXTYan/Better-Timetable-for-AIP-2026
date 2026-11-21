@@ -799,6 +799,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
    Now button laid out but invisible until the first render decides whether it shows. */
 .daytab.ph{pointer-events:none}
 .now-pending{visibility:hidden}
+.day-ended{margin:4px 0 0;font-size:.8125rem;font-weight:500;color:var(--muted)}
+.talk.past .t-title{color:var(--muted)}
 @keyframes jump-tint{0%,55%{background-color:var(--surface-3);box-shadow:inset 3px 0 0 var(--ink)}100%{background-color:transparent;box-shadow:inset 0 0 0 transparent}}
 @media (pointer:coarse){.jump-target.jump-target,.jump-target.jump-target:focus-visible{outline:none}.jump-target.jump-target{animation:jump-tint calc(1.4s * var(--mo)) ease-out}}
 @media (scripting:enabled){body:not(.ready) footer{visibility:hidden}}
@@ -3063,7 +3065,7 @@ function renderTabs(counts = programCounts(), totals = null){
   };
   const span = DATA.days.length ? DATA.days[0].label.replace(/^\S+ (\d+).*$/, '$1') + '&#8211;' + DATA.days[DATA.days.length - 1].label.replace(/^\S+ /, '') : '';
   const tab = (key, label, n, on, today, t) =>
-    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
+    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' aria-current="date" title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
   el.innerHTML = tab('all', cell(span, 'All week'), total, allOn, false, totals && sum(totals)) +
     DATA.days.map((d,i) => tab(i, dayCell(d.label, i === ti), counts[i], state.day === i, i === ti, totals && totals[i])).join('');
   // (only a new choice of day moves the strip: a redraw for new counts leaves it where
@@ -3778,7 +3780,7 @@ function applyFilters(){
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
     rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'}: <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'}, <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`
-      + searchWeekHtml(shownSlots) + aliasChipsHtml();
+      + searchWeekHtml(shownSlots) + aliasChipsHtml() + dayEndedHtml();
   }
   paintStarCount();
   if (state.scope === 'program') renderTabs(programCounts());
@@ -9218,6 +9220,20 @@ function paintCountdown(){
   el.parentNode.classList.toggle('is-today', ti >= 0);
 }
 
+// A day of the list whose every session has ended says so under its summary.
+function dayEnded(i){
+  const d = DATA.days[i], n = aedtNow();
+  return d.date < n.date || (d.date === n.date && d.slots.length > 0 && d.slots.every(s => toMin(s.end) <= n.min));
+}
+function dayEndedHtml(){
+  return state.scope === 'program' && state.layout === 'list' && state.day !== 'all' && dayEnded(state.day)
+    ? '<p class="day-ended">This day has ended.</p>' : '';
+}
+function paintDayEnded(){
+  const rl = document.getElementById('resultLine'), on = dayEndedHtml(), has = rl.querySelector('.day-ended');
+  if (on && !has) rl.insertAdjacentHTML('beforeend', on);
+  else if (!on && has) has.remove();
+}
 // Marks what is on now and next. It only toggles classes, so a timer can run it.
 function paintNow(){
   const n = aedtNow();
@@ -9229,13 +9245,24 @@ function paintNow(){
   for (const b of blocks){
     const today = b.dataset.date === n.date;
     const st = toMin(b.dataset.start), en = toMin(b.dataset.end);
-    b.classList.toggle('past', today && en <= n.min);
+    // (a block that ended is past whichever day is open; a day before today is past whole)
+    b.classList.toggle('past', b.dataset.date < n.date || (today && en <= n.min));
     b.classList.toggle('is-now', today && st <= n.min && n.min < en);
     b.classList.remove('is-next');
     if (!next && today && st > n.min && !b.classList.contains('hidden') && !b.closest('.day-section.hidden')) next = b;
   }
   if (next) next.classList.add('is-next');
   document.querySelectorAll('#agenda .talk.is-now').forEach(li => li.classList.remove('is-now'));
+  // the talks that have ended (the open days up to today)
+  for (const b of blocks){
+    if (b.dataset.date > n.date) continue;
+    const ended = b.dataset.date < n.date;
+    for (const li of b.querySelectorAll('.talk[data-tid]')){
+      const hit = talkById(li.dataset.tid);
+      li.classList.toggle('past', ended || (hit && toMin(hit.t.e) <= n.min));
+    }
+  }
+  paintDayEnded();
   for (const b of blocks){
     if (!b.classList.contains('is-now')) continue;
     for (const card of b.querySelectorAll('.card')){
