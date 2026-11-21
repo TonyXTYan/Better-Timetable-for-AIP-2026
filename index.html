@@ -540,6 +540,15 @@ html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) header.h
 ::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
 ::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(var(--dur-s) / 2);animation-timing-function:var(--ease)}
 ::view-transition-group(mx-pop){z-index:5}
+/* an item that changes shape (mx-shape): its new look comes in over the old one in the
+   first 40% of the move, and the old one goes by 55% (of 200ms, or of All week <-> a
+   day's 300ms; times the speed setting) */
+::view-transition-new(*.mx-shape){animation:calc(var(--dur-l) * .4) var(--ease) both mx-shape-in;mix-blend-mode:normal}
+::view-transition-old(*.mx-shape){animation:calc(var(--dur-l) * .55) linear both mx-shape-out;mix-blend-mode:normal}
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(*.mx-shape){animation-duration:calc(120ms * var(--mo))}
+html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(*.mx-shape){animation-duration:calc(165ms * var(--mo))}
+@keyframes mx-shape-in{from{opacity:0}}
+@keyframes mx-shape-out{0%,40%{opacity:1}to{opacity:0}}
 /* a vertical day scrolled sideways: its time column (the background the cards slide
    under) moves as a cover too, and the time labels stay over it, so neither the cards
    nor the bare labels show in the column while items move */
@@ -5866,7 +5875,12 @@ function mxBegin(kind, from, opts){
       const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
       for (const x of cand){
         if (wild && x.o.kind === 'item' && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
-        mxName(x.n.el, x.key, x.o.kind === 'cover' ? 'mx-cover' : 'mx');
+        // (a block that changes shape: its new look comes in over the old one early, so the
+        // two never show as doubled text for long; by its class, in the style sheet, which
+        // costs far less than an animation of its own for each; an hour line just
+        // cross-fades as it moves)
+        const shape = x.o.kind !== 'grid' && (Math.abs(x.o.r.width - x.n.r.width) > 6 || Math.abs(x.o.r.height - x.n.r.height) > 6);
+        mxName(x.n.el, x.key, (x.o.kind === 'cover' ? 'mx-cover' : 'mx') + (shape ? ' mx-shape' : ''));
         plan.pairs.push(x);
       }
       if (wild){
@@ -5955,13 +5969,6 @@ function mxBegin(kind, from, opts){
         if (o.kind === 'cover' && same(o.r, n.r)){
           run(key, 'new', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MO_S / 3 });
           run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MO_S / 3, easing: 'linear' });
-          continue;
-        }
-        // a block that changes shape: its new look comes in over the old one early, so
-        // the two never show as doubled text for long
-        if (Math.abs(o.r.width - n.r.width) > 6 || Math.abs(o.r.height - n.r.height) > 6){
-          run(key, 'new', [{ opacity: 0, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MS * .4, easing: EASE });
-          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal', offset: .4 }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MS * .55, easing: 'linear' });
         }
       }
       plan.grow.forEach(({ key, n, po, pn }, i) => {
