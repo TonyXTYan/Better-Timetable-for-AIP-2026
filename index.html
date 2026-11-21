@@ -6227,6 +6227,8 @@ const TX_SLIDE_FIRST = 250;
 function txSlideFirst(o, press){
   if (motionReduced() || !press.parentElement || !press.parentElement.matches('.agenda-views')) return 0;
   const t = performance.now(), p = o.pair ? txPairRec(o) : null, redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
+  // (List <-> Calendar at its level 0 takes no snapshot: its wait is the redraw alone)
+  if (p && o.pair === 'layout' && txPairLevel(o, p) === 0) return redraw > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
   const wait = redraw + (p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0));
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
 }
@@ -6235,8 +6237,9 @@ const txTimed = (fn, opts, after) => () => {
   const t0 = performance.now();
   fn();
   void document.body.offsetHeight;
-  txNote(performance.now() - t0, opts.to);
-  if (after) after();
+  const ms = performance.now() - t0;
+  txNote(ms, opts.to);
+  if (after) after(ms);
 };
 function txStart(kind, fn, from, opts){
   const root = document.documentElement;
@@ -6246,7 +6249,7 @@ function txStart(kind, fn, from, opts){
   txLast = t;
   if (g.none){
     noTx();
-    txTimed(fn, opts, () => { if (g.enter) viewEnter(opts.enter); if (log) txDbgEnd(log, {}); })();
+    txTimed(fn, opts, ms => { if (g.enter) viewEnter(opts.enter); if (g.pr) txPairPlain(g.pr, ms); if (log) txDbgEnd(log, { redraw: ms }); })();
     return;
   }
   kind = g.kind; opts = g.opts;
@@ -6334,6 +6337,9 @@ function txGuards(kind, opts, t){
     const p = txPairRec(o), lv = txPairLevel(o, p);
     Object.assign(v, { level: lv }, p.last || {});
     o.level = lv;
+    // (List <-> Calendar at level 0: no snapshot at all, as below for a heavy view; the
+    // new layout is drawn at once, in its place, and fades in)
+    if (lv === 0 && o.pair === 'layout'){ why.push('pair level 0: ' + p.why); return { kind, opts: o, none: true, enter: true, why, v, pr: p }; }
     if (lv === 0) plain('pair level 0: ' + p.why);
     else if (lv === 1){ o.lite = true; why.push('pair level 1: ' + p.why); }
     return { kind, opts: o, none, enter, why, v };
@@ -6386,9 +6392,15 @@ function txWatch(vt, t, done){
 // Whichever way comes next gets the level that leaves, so the two ways never take turns.
 // Some never go below a floor (TX_PAIR_FLOOR): Sessions <-> Talks and My agenda's Show
 // full sessions always fold and unfold, if lighter, since a cross-fade there shows
-// nothing of what changed; List <-> Calendar always moves the item you were at (its
-// level 1, one name: the snapshots cost the same either way).
-const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1, layout: 1 };
+// nothing of what changed.
+// List <-> Calendar ('layout') is held to a tighter budget, since its snapshots are of
+// whole pages, which cost about what drawing them does, and its level 0 takes none at
+// all: 2 (the item you were at and the sessions beside it move) for a redraw expected
+// within TX_LAY_COST[0], 1 (that item alone) within [1], 0 over that, or going from a
+// long list (pageHeavy) to a layout not drawn yet; and never above its own level, which
+// steps down when a change's snapshots held the page over TX_FREEZE (and up as above,
+// or at level 0 after two quick redraws in a row).
+const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
@@ -6400,6 +6412,14 @@ function txPairRec(o){
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
+  if (o.pair === 'layout'){
+    if (p.level === null){ p.level = 2; p.why = ''; }
+    const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
+    const by = cost > TX_LAY_COST[1] ? 0 : cost > TX_LAY_COST[0] ? 1 : 2;
+    if (!txCost.has(txKey(o.to)) && pageHeavy()){ p.why = 'page heavy, the other layout not drawn yet'; return 0; }
+    p.why = by < p.level || !p.step ? 'redraw ' + Math.round(cost) + 'ms expected' : p.step;
+    return Math.min(by, p.level);
+  }
   if (p.level !== null) return p.level;
   const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
   p.why = 'redraw ' + Math.round(cost) + 'ms expected';
@@ -6407,12 +6427,19 @@ function txPairLevel(o, p){
 }
 function txPairNote(p, lv, freeze, jank){
   p.last = { freeze, jank };
-  const down = freeze > TX_PAIR_DOWN[0] || jank > TX_PAIR_DOWN[1];
+  const down = freeze > (p.pair === 'layout' ? TX_FREEZE : TX_PAIR_DOWN[0]) || jank > TX_PAIR_DOWN[1];
   p.ok = !down && freeze < TX_FREEZE && jank <= TX_JANK ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
   p.level = down ? Math.max(TX_PAIR_FLOOR[p.pair] || 0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
-  if (p.level !== lv) p.why = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
+  if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
+}
+// (a pair's change made with no snapshot (List <-> Calendar at level 0): two quick
+// redraws in a row lift its own level back to 1)
+function txPairPlain(p, ms){
+  if (p.level !== 0) return;
+  p.ok = ms <= TX_LAY_COST[0] ? (p.ok || 0) + 1 : 0;
+  if (p.ok >= 2){ p.ok = 0; p.level = 1; p.last = null; p.why = p.step = `quick at level 0: redraw ${Math.round(ms)}ms`; }
 }
 // ?txdebug=1 in the address: each change's decision (the kind asked for and the kind
 // given, the guards' readings, why it was toned down) and, once it has moved, its redraw,
@@ -8649,11 +8676,18 @@ function renderCalendar(){
 // was on the screen in the other layout (layLand), and moves there from its card to its
 // bar or block (or back) with the sessions beside it in its time slot (a pair, 'layout':
 // level 2 those, 1 that item only; the rest of the page cross-fades, about it). Reduced
-// motion keeps the place, with no movement.
+// motion keeps the place, with no movement. Pressed back while that change still moves
+// (layUndo: within a second, times the speed setting, and the page not scrolled by you
+// since), it goes back to where that change began, as from there, not to wherever the
+// change had got to.
+let layUndo = null;
 document.getElementById('scheduleLayout').addEventListener('click', e => {
   const button = e.target.closest('[data-layout]');
   if (!button || button.dataset.layout === state.layout) return;
-  const to = button.dataset.layout, a = layAnchor();
+  const to = button.dataset.layout, t = performance.now();
+  const u = layUndo && layUndo.from === to && layUndo.to === state.layout && t - layUndo.t < 1000 * motionK() && TB.input < layUndo.t ? layUndo : null;
+  const a = u ? u.a && { ...u.a, again: true } : layAnchor();
+  layUndo = u ? null : { from: state.layout, to, a, t };
   withTransition('lay', () => {
     layPrep(a, to);
     showView(to, state.scope);
@@ -8664,23 +8698,28 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
 // the first card (or My agenda row) reaching well below it (the tail of one above does
 // not count), found through the time blocks' own boxes (so the blocks far away are not
 // laid out); in a calendar, of the bars or blocks in sight, the earliest (Horizontal and
-// a sideways week: leftmost) or top-most (Vertical), one whose start shows if any does.
+// a sideways week: leftmost, in a week in the day row you are reading) or top-most
+// (Vertical), one whose start shows if any does.
 // Returns its key, where it is on the screen (y), its start (day, minute) and the keys of
 // the sessions starting with it (itself first); null when there is none. Straight back
-// (the same item, the page not scrolled since): where it was before (layBack), and the
-// item you were at then if the other layout had shown one beside it in its place. With
-// the page at the program's top or above it (top), nothing is kept: the other layout
-// starts at its own top, as the page did.
+// (the item it landed on not moved on the screen since): where it was before (layBack),
+// and the item you were at then if the other layout had shown one beside it in its
+// place. With the page at the program's top or above it (top), nothing is kept: the
+// other layout starts at its own top, as the page did.
 const LAY_CAL = '.hz-bar, .vt-card, .week-blk:not(.week-off)';
 let layBack = null;
 function layAnchor(){
   const main = document.getElementById('main'), vh = innerHeight, bar = stickyWrap.getBoundingClientRect().bottom;
   let el = null;
   if (state.scope === 'participants') return null;
-  const back = layBack && layBack.layout === state.layout && Math.abs(layBack.sy - window.scrollY) < 2 ? layBack : null;
+  // (straight back: the item it landed on still where it landed on the screen; the page's
+  // scroll may have crept meanwhile, as blocks above it were drawn and the browser kept it
+  // still)
+  let back = layBack && layBack.layout === state.layout && layBack.el.isConnected ? layBack : null;
   if (back){
-    const k = back.key, id = CSS.escape(k.slice(2));
-    el = [...main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${id}"]`)].find(x => x.matches(MX_ITEM) && (k[0] === 't' || !x.dataset.tid) && x.getClientRects().length) || null;
+    const r = back.el.getBoundingClientRect();
+    if (r.height && Math.abs(r.top - back.top) < 2 && Math.abs(r.left - back.left) < 2) el = back.el;
+    else back = null;
   }
   if (el);
   else if (state.layout === 'list'){
@@ -8693,7 +8732,15 @@ function layAnchor(){
       if (el) break;
     }
   } else {
-    const cand = [];
+    // (a sideways week: its day rows, by how much of the upper half of what you read
+    // each covers (under its ruler), the most first; then, within a row, the earliest)
+    const cand = [], rows = new Map(), rul = main.querySelector('.week-h .week-rul');
+    const r0 = Math.max(bar, rul ? rul.getBoundingClientRect().bottom : 0), r1 = r0 + (vh - r0) / 2;
+    const rowRank = row => {
+      if (!row) return 0;
+      if (!rows.has(row)){ const q = row.getBoundingClientRect(); rows.set(row, -Math.max(0, Math.min(q.bottom, r1) - Math.max(q.top, r0)) * 1e4 + q.top); }
+      return rows.get(row);
+    };
     for (const x of main.querySelectorAll(LAY_CAL)){
       if (!x.dataset.sid && !x.dataset.tid) continue;
       // (what sticks under the toolbar over it: Horizontal's ruler, Vertical's heads)
@@ -8706,9 +8753,9 @@ function layAnchor(){
       const across = !!(hz || x.closest('.week-h'));
       // (its start shows: its left edge in the box, or its top below what sticks)
       const shown = across ? r.left >= left - 2 : r.top >= bar + stick - 2;
-      cand.push({ x, r, shown, a: across ? Math.max(r.left, left) : Math.max(r.top, bar + stick), b: across ? r.top : r.left });
+      cand.push({ x, r, shown, w: rowRank(x.closest('.week-h .week-row')), a: across ? Math.max(r.left, left) : Math.max(r.top, bar + stick), b: across ? r.top : r.left });
     }
-    cand.sort((p, q) => q.shown - p.shown || p.a - q.a || p.b - q.b);
+    cand.sort((p, q) => p.w - q.w || q.shown - p.shown || p.a - q.a || p.b - q.b);
     el = cand.length ? cand[0].x : null;
   }
   if (!el) return null;
@@ -8727,9 +8774,9 @@ function layAnchor(){
   return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
 }
 // Before the other layout is drawn: a Horizontal day opens with the item near its left
-// edge (as from the week), so it is drawn there at once.
+// edge (as from the week), so it is drawn there at once; straight back, where you had it.
 function layPrep(a, to){
-  if (!a || a.top || to !== 'calendar' || state.orient === 'v' || state.day === 'all' || a.day !== state.day) return;
+  if (!a || a.top || a.again || to !== 'calendar' || state.orient === 'v' || state.day === 'all' || a.day !== state.day) return;
   HZ.left[(dvAgenda() ? 'a:' : '') + DATA.days[a.day].date] = a.min - (PHONE_MQ.matches ? 15 : 30);
 }
 // Once it is drawn: the item where it was on the screen (never under the toolbar or the
@@ -8746,8 +8793,8 @@ function layLand(a){
       if (el.matches(MX_ITEM) && (talk || !el.dataset.tid) && el.getClientRects().length) return el;
     return null;
   };
+  layBack = null;
   if (a && a.top){
-    layBack = null;
     if (window.scrollY > programTop()) scrollToProgramTop();
     return null;
   }
@@ -8758,8 +8805,11 @@ function layLand(a){
     if (window.scrollY > programTop()) scrollToProgramTop();
     return null;
   }
+  // (straight back to the item you were at: exactly where it was, if a tall card's top was
+  // above the screen, or a bar's start under a Horizontal day's labels)
+  const exact = a.again && el === find(a.keys[0]);
   const hz = el.closest('.hz-day');
-  if (hz){
+  if (hz && !exact){
     const vp = hz.querySelector('.hz-vp'), lw = vp.querySelector('.hz-label')?.offsetWidth || 0, c = vp.getBoundingClientRect(), r = el.getBoundingClientRect();
     if (r.left < c.left + lw || r.left > c.right - 40) hzScrollTo(hz, a.min - (PHONE_MQ.matches ? 15 : 30), 0, 'instant');
   } else {
@@ -8771,9 +8821,8 @@ function layLand(a){
     }
   }
   const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : el.closest('.vt-day, .vt-grid, .vt-sx') ? vtStick(el) : 0;
-  // (in sight, and in the upper part of it: where reading goes on; but straight back to
-  // the item you were at, exactly where it was, if a tall card's top was above the screen)
-  const exact = a.again && el === find(a.keys[0]);
+  // (in sight, and in the upper part of it: where reading goes on; but straight back,
+  // exactly where it was)
   const place = () => {
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - a.y), behavior: 'instant' });
     if (exact) return;
@@ -8789,10 +8838,13 @@ function layLand(a){
     layMeasureAbove(el);
     place();
   }
+  // (the page's own scroll: it never folds or unfolds the toolbar, as a scroll of yours
+  // just before the press otherwise would)
+  TB.input = -1e9; TB.last = window.scrollY;
   // (straight back: from it to where the item you were at was; if this is a session beside
   // that item (a phone's week leaves some out), to that item, not this)
-  const key = el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid;
-  layBack = { key, y: a.from, layout: state.layout, sy: window.scrollY, ret: key !== a.keys[0] ? a.keys[0] : null };
+  const key = el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, r = el.getBoundingClientRect();
+  layBack = { key, el, top: r.top, left: r.left, y: a.from, layout: state.layout, ret: key !== a.keys[0] ? a.keys[0] : null };
   return el;
 }
 function layMeasureAbove(el){
