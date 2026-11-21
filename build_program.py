@@ -440,15 +440,17 @@ button{font:inherit;cursor:pointer}
    Display and the countdown on the right; and along its foot the spectral rule, the
    program's legend: each stream's line standing at its wavelength, with "now" (the sodium
    D doublet) among them. */
-header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
+header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
-.hero p.sub{margin:12px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
-.hero .facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 14px;margin:14px 0 0;font-size:.875rem;line-height:1.45}
-.hero .facts>div{display:contents}
+.hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
+@media (min-width:1200px){.hero p.sub{max-width:none}}
+/* the three facts on one row: each pair inline, the term quiet */
+.hero .facts{display:flex;flex-wrap:wrap;gap:4px 28px;margin:10px 0 0;font-size:.8125rem;line-height:1.45}
+.hero .facts>div{display:inline-flex;align-items:baseline;gap:6px;min-width:0}
 .hero .facts dt{color:var(--muted);font-weight:500}
-.hero .facts dd{margin:0;color:var(--ink);font-weight:560}
+.hero .facts dd{margin:0;color:var(--ink-2);font-weight:560}
 .hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;padding-top:2px}
 .hero-when{display:flex;align-items:center;gap:8px;margin:0;font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .hero-when .na-glyph{display:none}
@@ -459,7 +461,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
    longer every 50 nm), labelled at the hundreds. Each line is 2px, snapped to whole pixels so
    it stays crisp; the sodium doublet (now) stands taller than the rest and resolves as it
    appears. --sp-h is the height of a line, --sp-tk of a long tick. */
-.spectral{grid-column:1/-1;margin:24px 0 0;--sp-h:34px;--sp-na:44px;--sp-tk:7px}
+.spectral{grid-column:1/-1;margin:16px 0 0;--sp-h:20px;--sp-na:26px;--sp-tk:6px}
 .sp-scale{position:relative;height:var(--sp-na);border-bottom:1px solid var(--ink-2)}
 .sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100% - 1px);left:round(down,calc((var(--nm) - 400) / 300 * 100% - 1px),1px);width:2px;height:var(--sp-h);background:var(--c)}
 .sp-scale i.sp-na{width:var(--doublet-w);height:var(--sp-na);left:calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2);left:round(down,calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2),1px);background:none}
@@ -1192,11 +1194,14 @@ footer p{margin:4px 0}
 footer .colophon .na-glyph{margin-left:2px}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
-footer .cols{gap:24px 32px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+/* four columns on the content width (the colour key the fourth), two by two on tablets,
+   one on phones */
+footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){footer .cols{grid-template-columns:repeat(4,minmax(0,1fr))}}
 footer p{line-height:1.6;max-width:62ch}
 footer a{color:var(--ink)}
-footer .colophon{grid-column:1/-1}
-footer .colophon p{max-width:80ch}
+footer .colophon p{font-size:.8125rem}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -1757,8 +1762,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
   .hz-pre button{padding:3px 10px;white-space:nowrap}
   .cal-day-title{font-size:1rem;margin:0 0 6px;padding:4px 0 6px}
   /* the day's title and its zoom and jump buttons share a row */
-  .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;border-bottom:2px solid var(--day-rule)}
-  .hz-hd .cal-day-title{flex:none;margin:0;border:0;padding:4px 0}
+  .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:0;border-bottom:1px solid var(--line)}
+  .hz-hd .cal-day-title{flex:none;margin:0;border:0;padding:4px 0;font-size:1rem}
   .hz-hd .hz-ctl{flex:1 1 auto;min-width:0;margin:0}
   .vt-daynav{margin:0 0 8px;padding:0 0 6px}
 }
@@ -2435,6 +2440,37 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .vt-agenda .vt-head>span:first-child:not(:only-child){display:none}
   .vt-agenda .vt-head{justify-content:flex-end}
 }
+/* ---------- chrome and layout (round 2: header, calendar headings, footer, list and
+   participants details) ---------- */
+/* Calendar headings (A6): the date is the left item of the zoom and jump row, which is
+   ruled with a hairline, not an ink rule. The vertical day keeps its previous and next
+   buttons, grouped on the right. */
+.cal-day-title{font-size:1.125rem;font-weight:700;line-height:1.3;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.hz-hd{display:flex;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.hz-hd .cal-day-title{flex:none;margin:0;padding:0;border:0}
+.hz-hd .hz-ctl{margin:0}
+.vt-daynav{grid-template-columns:minmax(0,1fr) auto auto;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.vt-daynav>.cal-day-title{grid-row:1;grid-column:1;margin:0;padding:0;border:0;text-align:left;font-size:1.125rem}
+.vt-daynav>:first-child{grid-row:1;grid-column:2}
+.vt-daynav>:last-child{grid-row:1;grid-column:3}
+.vt-daynav>.vt-go.none{display:none}
+.hz-ls{display:none}
+@media (max-width:720px),(max-height:500px){
+  .cal-day-title,.vt-daynav>.cal-day-title{font-size:1rem}
+  .cal-day-title{margin:0 0 8px;padding:0 0 6px}
+  .vt-daynav{margin:0 0 8px;padding:0 0 6px}
+}
+/* the narrowest phones: the date on its own line, then every zoom and jump button in view
+   (no sideways scroller); the presets shorten to AM, PM and Eve, and the toolbar's Now
+   stands in for the preset one */
+@media (max-width:480px){
+  .hz-hd{flex-wrap:wrap;gap:6px 0;padding-bottom:6px}
+  .hz-hd .cal-day-title{flex:1 1 100%}
+  .hz-hd .hz-ctl{flex:1 1 100%;overflow:visible;-webkit-mask-image:none;mask-image:none;flex-wrap:wrap;gap:6px;padding:0}
+  .hz-lw{display:none}
+  .hz-ls{display:inline}
+  .hz-pre button[data-hzgo="now"]{display:none}
+}
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
@@ -2669,16 +2705,16 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
       <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University of Sydney. All times AEDT.</p>
       <dl class="facts">
-        <div><dt>Dates</dt><dd>Monday 7 to Friday 11 December 2026, registration from Sunday 6 December</dd></div>
-        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, The University of Sydney</dd></div>
-        <div><dt>Clock</dt><dd>All times AEDT (Australia/Sydney)<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
+        <div><dt>Dates</dt><dd>7&#8211;11 December 2026, registration Sunday 6</dd></div>
+        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney</dd></div>
+        <div><dt>Clock</dt><dd>All times AEDT<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
       </dl>
     </div>
     <div class="hero-side">
       <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
-    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:577.0;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 577.0 nm"></i><i style="--nm:579.1;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 579.1 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen H&#945;, 656.3 nm"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
+    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" title="Education and PEG: mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -2936,7 +2972,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     </div>
     <div class="colophon">
       <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG the mercury yellow doublet at 577 and 579&nbsp;nm; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events H&#945; and H&#948; mixed, a purple no single wavelength can make. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
+      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
@@ -6075,11 +6111,14 @@ function hzDayView(day){
     if (m < d1) mh += `<span class="hz-mlab" style="left:min(${pc(m)}%, calc(100% - 3.7em))"${(m - h0) % lstep ? ' hidden' : ''}>${hzHM(m)}</span>`;
   }
   const t = hzTargets(d0, d1, day.date);
-  const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
+  // (on the narrowest phones the presets read AM, PM and Eve; the full word stays their name)
+  const go = (k, label, short) => t[k] === null ? '' : short
+    ? `<button type="button" data-hzgo="${k}" aria-label="${label}"><span class="hz-lw">${label}</span><span class="hz-ls" aria-hidden="true">${short}</span></button>`
+    : `<button type="button" data-hzgo="${k}">${label}</button>`;
   return `<div class="hz-hd"><h2 class="cal-day-title">${esc(day.label)} 2026</h2>
     <div class="hz-ctl">
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
-      <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
+      <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning', 'AM')}${go('afternoon', 'Afternoon', 'PM')}${go('evening', 'Evening', 'Eve')}${go('now', 'Now')}</div>
     </div></div>
     ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
