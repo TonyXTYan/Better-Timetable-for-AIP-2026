@@ -240,9 +240,9 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 @keyframes na-part{from{translate:var(--na-from,0 0)}}
 .sp-na .na-glyph{display:block;height:100%}
 /* ---------- Congress events: note and official links on cards and in details ---------- */
-.ev-info{margin:8px 0 2px;padding:7px 10px;border-left:3px solid var(--events);border-radius:0 8px 8px 0;background:var(--events-bg);font-size:.8438rem;color:var(--ink)}
+.ev-info{margin:8px 0 2px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-tag);background:var(--surface-2);font-size:.875rem;line-height:1.5;color:var(--ink)}
 .ev-info p{margin:0}
-.card .ev-info{margin:10px 15px 12px 17px}
+.card .ev-info{margin:10px 19px 14px}
 .card .ev-info+.talks{margin-top:0}
 .ev-info p+p{margin-top:4px}
 .ev-links{display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -711,98 +711,156 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .share-box .toggle{min-height:38px}
 .share-box-note{margin:6px 0 0;font-size:.8125rem;color:var(--ink-2)}
 .share-box-note:empty{display:none}
-.shared-banner{width:min(1140px,calc(100% - 40px));margin:14px auto 0;background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:var(--radius);padding:12px 16px;font-size:.875rem;color:var(--ok-strong)}
+.shared-banner{width:min(1140px,calc(100% - 40px));margin:14px auto 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 12px 12px 16px;font-size:.875rem;line-height:1.5;color:var(--ok-strong)}
 .shared-banner .sb-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
-.shared-banner .fb-actions button{border-color:var(--ok-line);color:var(--ok-btn)}
+.shared-banner .fb-actions button{color:var(--ok-btn)}
 .shared-banner ul{margin:8px 0 0;padding-left:18px;font-size:.8125rem;max-height:220px;overflow:auto}
 .shared-banner summary{cursor:pointer;font-weight:600;margin-top:6px;font-size:.8125rem}
+.pv-when{margin-right:4px;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);font-weight:600}
 /* ---------- live "now" markers ---------- */
 .block.past .card h3,.block.past .t-title,.block.past .block-time .bt,.block.past .block-time .bd{color:var(--muted)}
 .block.past .card::before{opacity:.45}
-.block-time .live{display:none;margin-top:4px;font-size:.6875rem;font-weight:750;line-height:1.35;border-radius:var(--r-tag);padding:0 5px;width:max-content;margin-left:auto}
+.block-time .live{display:none;margin-top:6px;font-size:.6875rem;font-weight:750;line-height:1.45;border-radius:var(--r-tag);padding:0 5px;width:max-content;margin-left:auto}
 .block.is-now .live-now{display:block;background:var(--na-fill);color:var(--na-ink);box-shadow:inset 0 0 0 1px var(--na)}
-.block.is-next .live-next{display:block;background:var(--next-bg);color:var(--next-ink)}
-.talk.is-now{background:var(--now-bg);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--now-bg),inset 6px 0 var(--na)}
+.block.is-next .live-next{display:block;background:var(--next-bg);color:var(--next-ink);box-shadow:inset 0 0 0 1px var(--line)}
+/* The talk on now: the sodium tint and the doublet down its left edge (two 2px lines, a 2px
+   gap), which resolves once as it appears; its time turns sodium with "Now" under it. */
+.talk.is-now{position:relative;background:var(--now-bg)}
+.talk.is-now::before,.talk.is-now::after{content:"";position:absolute;top:0;bottom:0;width:calc((var(--doublet-w) - 2px) / 2);background:var(--na);pointer-events:none;animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
+.talk.is-now::before{left:0;--na-from:calc(var(--doublet-w) / 4 + .5px) 0}
+.talk.is-now::after{left:calc(var(--doublet-w) - (var(--doublet-w) - 2px) / 2);--na-from:calc(var(--doublet-w) / -4 - .5px) 0}
 .talk.is-now .t-time{color:var(--na-text)}
-.talk.is-now .t-time::after{content:"Now";display:block;font-size:.6875rem;font-weight:750}
-.up-next{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:10px 14px 10px 18px;font-size:.875rem;box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--card),inset 6px 0 var(--na)}
+.talk.is-now .t-time::after{content:"Now";display:block;font-size:.6875rem;font-weight:750;font-stretch:100%;line-height:1.5}
+.talk.is-now summary:hover,.talk.is-now:has(summary:hover){background:var(--now-bg)}
+/* My agenda's Now and Next: a plate whose left edge is the doublet */
+.up-next{position:relative;margin:16px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 16px 12px 22px;font-size:.875rem;overflow:clip}
+.up-next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--doublet-w);background:var(--doublet-x)}
 .up-next b{font-weight:700}
-.up-next>div+div{margin-top:4px}
-.up-next .linkish{font-size:.875rem;text-align:left}
-.up-next .un-when{color:var(--muted);font-size:.8125rem}
-.up-next .un-k{font-size:.75rem;font-weight:750;color:var(--na-text);margin-right:8px}
+.up-next>div{display:grid;grid-template-columns:2.75rem minmax(0,1fr);column-gap:10px;align-items:baseline}
+.up-next>div+div{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.up-next .linkish{font-size:.9375rem;font-weight:640;text-align:left;text-decoration-color:transparent}
+.up-next .linkish:hover{text-decoration-color:currentColor}
+.up-next .un-when{color:var(--muted);font-size:.8125rem;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+.up-next .un-k{grid-column:1;grid-row:1;font-size:.75rem;font-weight:750;color:var(--ink-2)}
+.up-next>div>:not(.un-k){grid-column:2}
+.up-next .un-k.is-now{color:var(--na-text)}
 .result-line b{color:var(--ink)}
 
 /* ---------- agenda ---------- */
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
-.block{display:grid;grid-template-columns:86px 1fr;gap:14px;margin:0 0 22px}
+/* The list is set like a line list: a large condensed time down the left, and one plate
+   per time slot, its sessions cells divided by hairlines, each with its stream's line. */
+.block{display:grid;grid-template-columns:88px minmax(0,1fr);gap:18px;margin:0 0 20px}
 .block.hidden{display:none}
-.blk-ph{margin:0 0 22px}
+.blk-ph{margin:0 0 20px}
 .blk-ph.hidden{display:none}
 /* The browser lays out and paints only the time blocks near the screen (All week is
    thousands of elements): a block away from it keeps the height it last had, or one
    estimated from its cards (--cih, set by blocksHtml), and its cards' shadows are not cut. */
 .block{content-visibility:auto;contain-intrinsic-size:auto 600px auto var(--cih,400px);overflow-clip-margin:24px}
 @media print{.block{content-visibility:visible}}
-.block-time{position:sticky;top:calc(var(--toolbar-h,150px) + 10px);align-self:start;text-align:right;padding-top:2px}
+.block-time{position:sticky;top:calc(var(--toolbar-h,150px) + 10px);align-self:start;text-align:right;padding-top:9px}
 .card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
-.block-time .bt{font-weight:800;font-size:1.0625rem;letter-spacing:-.01em}
-.block-time .bd{font-size:.7188rem;color:var(--muted);font-weight:600}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
+.block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
+.block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* a session alone in its time slot takes the full width; long text keeps a readable measure */
 .cards.single{grid-template-columns:minmax(0,1fr)}
-.cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:78ch}
+.cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
 
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
+/* A cell: its hairlines are drawn over its neighbours to the left and above, so the plate's
+   edge clips the outer ones and only the interior lines show, whatever the column count. */
+.card{background:var(--card);border:0;border-radius:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);display:flex;flex-direction:column;position:relative;min-width:0}
+.card:last-child{box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
 .card.hidden{display:none}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--faint))}
-/* The star sits in the corner, so a long stream badge or larger text moves the title
-   under the badge instead of squeezing or overflowing it. */
-.card-head{position:relative;padding:13px calc(1.5rem + 20px) 0 17px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
-.card-head .star{position:absolute;top:11px;right:12px}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--faint))}
+/* Badge line, then the title, then the meta. The star sits in the corner. */
+.card-head{position:relative;padding:14px calc(2.25rem + 14px) 0 19px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.card-head .star{position:absolute;top:8px;right:8px}
 .badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:720;font-stretch:92%;line-height:1.25;letter-spacing:0;padding:2px 0;border-radius:0;background:none;color:var(--c,var(--ink-2));cursor:pointer;border:0;white-space:nowrap;margin-top:2px}
 .badge::before{content:"";flex:none;width:3px;height:.95em;border-radius:1px;background:currentColor}
 .badge:hover{text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:1px}
-.card h3{margin:0;font-size:.9688rem;line-height:1.35;letter-spacing:-.01em;flex:1 1 7em;min-width:0;overflow-wrap:break-word}
-.star{flex:0 0 auto;border:0;background:transparent;font-size:1.125rem;line-height:1;padding:2px 3px;color:var(--muted);border-radius:8px}
-.star:hover{background:var(--surface-3)}
-.star.on{color:var(--star)}
-.card .meta{padding:6px 15px 0 17px;font-size:.7812rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:3px 12px}
-.card .meta > span:has(> b):not(:first-child){flex-basis:100%}
-.card .meta b{color:var(--ink);font-weight:600}
-.card .desc{padding:8px 15px 12px 17px;font-size:.8438rem;color:var(--ink-2)}
-details.about{margin:0 15px 12px 17px;font-size:.8438rem}
-details.about summary{cursor:pointer;color:var(--link);font-weight:600;font-size:.8125rem}
+.card h3{margin:0;font-size:1rem;font-weight:640;line-height:1.32;letter-spacing:-.005em;min-width:0;max-width:100%;overflow-wrap:break-word;text-wrap:pretty}
+.star{flex:0 0 auto;border:1px solid transparent;background:transparent;font-size:1.125rem;line-height:1;padding:0;color:var(--muted);border-radius:var(--r-ctl)}
+.star:hover{background:var(--surface-3);color:var(--ink)}
+.star.on,.star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
+.card .meta{padding:8px 19px 0;font-size:.8125rem;font-weight:500;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.card .meta .m-time{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+.card .meta .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-stretch:var(--stretch-cond);line-height:1.45}
+.card .meta .m-conv{flex-basis:100%;color:var(--muted)}
+.card .meta .m-conv b{font-style:italic;font-weight:480;color:var(--ink-2)}
+.card .meta .m-n{font-variant-numeric:tabular-nums}
+.card .desc{padding:8px 19px 14px;font-size:.9375rem;line-height:1.6;color:var(--ink-2)}
+.card>.meta:last-child{padding-bottom:14px}
+details.about{margin:10px 19px 14px;font-size:.9375rem}
+details.about summary{cursor:pointer;color:var(--link);font-weight:600;font-size:.8125rem;width:max-content;text-decoration:underline;text-decoration-color:var(--hover-line);text-decoration-thickness:1px;text-underline-offset:.2em}
+details.about summary:hover{text-decoration-color:currentColor}
 details.about .desc{padding:8px 0 0}
 
-.talks{list-style:none;margin:10px 0 0;padding:0;border-top:1px solid var(--line)}
-.talk{display:grid;grid-template-columns:minmax(0,1fr) auto;border-bottom:1px solid var(--line)}
+/* Talks: rows under a hairline, the time condensed and tabular, the speakers in italic */
+.talks{list-style:none;margin:12px 0 0;padding:0;border-top:1px solid var(--line)}
+.talk{display:grid;grid-template-columns:minmax(0,1fr) auto;border-bottom:1px solid var(--line);transition:background-color var(--dur-s) var(--ease)}
 .talk:last-child{border-bottom:0}
 .talk.hidden{display:none}
-details.talk-d summary{list-style:none;display:flex;gap:8px;align-items:baseline;padding:9px 5px 9px 17px;cursor:pointer;border-radius:10px}
+.talk:has(>details>summary:hover){background:var(--surface-2)}
+details.talk-d summary{list-style:none;display:flex;gap:10px;align-items:baseline;padding:10px 2px 10px 19px;cursor:pointer}
 details.talk-d summary::-webkit-details-marker{display:none}
-details.talk-d summary:hover{background:var(--surface-2)}
-.t-time{flex:0 0 auto;font-size:.7188rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:38px}
+.t-time{flex:0 0 auto;font-size:.8125rem;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);min-width:2.25rem}
 .t-main{flex:1;min-width:0}
-.t-title{display:block;font-size:.8625rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
-.t-sp{display:block;font-size:.75rem;color:var(--muted);margin-top:2px}
-.t-caret{flex:0 0 auto;color:var(--caret);font-size:.625rem;transition:transform calc(.15s * var(--mo))}
+.t-title{display:block;font-size:.9375rem;font-weight:560;line-height:1.38;overflow-wrap:anywhere;text-wrap:pretty}
+.t-sp{display:block;font-size:.8125rem;font-style:italic;font-weight:480;line-height:1.45;color:var(--ink-2);margin-top:3px}
+.t-sp .aff{font-style:normal;font-weight:420;color:var(--muted)}
+.t-caret{flex:0 0 auto;align-self:center;display:inline-flex;color:var(--caret);transition:transform var(--dur-s) var(--ease-em)}
+.t-caret svg{display:block}
+details.talk-d summary:hover .t-caret{color:var(--ink-2)}
 details.talk-d[open] .t-caret{transform:rotate(90deg)}
-.t-body{padding:0 16px 13px 65px;font-size:.8438rem;color:var(--ink-2)}
-.t-body .abstract{margin:0 0 10px;overflow-wrap:anywhere}
-.t-body .abstract.none{color:var(--faint)}
+.t-body{padding:0 16px 14px calc(19px + 2.25rem + 10px);font-size:.9375rem;line-height:1.6;color:var(--ink-2)}
+.t-body .abstract{margin:0 0 10px;max-width:72ch;overflow-wrap:anywhere}
+.t-body .abstract.none{color:var(--muted);font-style:italic}
 .t-body .aff{font-style:italic}
-.t-body .tools{display:flex;gap:16px;align-items:center;font-size:.7812rem}
-.t-body .tools .linkish,.card .meta .linkish{font-size:.7812rem}
+.t-body .tools{display:flex;gap:16px;align-items:center;font-size:.8125rem}
+.t-body .tools .linkish,.card .meta .linkish{font-size:.8125rem}
 .ics-note summary{cursor:pointer;font-weight:600;color:var(--ink)}
-.talk-star{align-self:start;width:38px;height:38px;margin:0 5px 0 0;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--muted);font-size:1.3125rem;line-height:1}
-.talk-star:hover{border-color:var(--line);background:var(--surface-2)}
-.talk-star.on{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
-mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:3px;padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.talk-star{align-self:start;width:36px;height:36px;margin:4px 8px 0 0;border:1px solid transparent;background:transparent;border-radius:var(--r-ctl);color:var(--muted);font-size:1.1875rem;line-height:1}
+.talk-star:hover{border-color:var(--line);background:var(--card);color:var(--ink)}
+.talk-star.on,.talk-star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
+/* the star's glyph settles in as its chip fills */
+:is(.star,.talk-star).on{animation:star-on var(--dur-s) var(--ease-em)}
+@keyframes star-on{from{scale:.8}}
+/* Breaks, meals and meetings with no talks: slim interval rows on dashed hairlines, not plates */
+.block.ivb{margin-bottom:16px}
+.block.ivb .block-time{padding-top:5px}
+.block.ivb .bt{font-size:1.125rem;color:var(--ink-2)}
+.block.ivb .bd{display:none}
+.cards.ivs{background:none;border:0;border-radius:0;overflow:visible;grid-template-columns:minmax(0,1fr)}
+.card.iv{flex-direction:row;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:36px;padding:3px 0 3px 14px;background:none;box-shadow:none;border-top:1px dashed var(--hover-line)}
+.card.iv:last-child{border-bottom:1px dashed var(--hover-line)}
+.card.iv::before{top:50%;bottom:auto;height:14px;margin-top:-7px;border-radius:1px}
+.card.iv .card-head{display:contents}
+.card.iv h3{flex:0 1 auto;font-size:.9375rem;font-weight:600;color:var(--ink-2)}
+.card.iv .meta{flex:1 1 auto;padding:0;gap:2px 12px}
+.card.iv .meta .room{border-color:var(--hover-line);color:var(--muted)}
+.card.iv .star{position:static;order:3;margin-left:auto;width:32px;height:32px;min-width:0;min-height:0}
+.block.past .card.iv h3{color:var(--muted)}
+/* print: plain plates, no tints, no sodium (the page prints as a timetable) */
+@media print{
+  .cards,.card,.ag-list,.ag-row,.talk.is-now,.ag-row.is-now,.ag-row.has-clash{background:none!important}
+  .talk.is-now::before,.talk.is-now::after,.ag-row.has-clash::after,.block-time .live,.ag-now,.t-caret{display:none!important}
+  .talk.is-now .t-time,.ag-row.is-now .ag-t0{color:var(--ink)}
+  .talk.is-now .t-time::after{content:none}
+  .ag-row.is-now::before{width:3px;background:var(--c)}
+  .block-time{position:static}
+}
+/* touch: every control in the list and My agenda is at least 40px tall */
+@media (pointer:coarse){
+  .card.iv .star{width:44px;height:44px;margin:-4px 0}
+  .ag-btn,.cp-keep,.fb-actions button,.ag-clash-ind{min-height:40px}
+}
+mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;padding:0 1px;box-shadow:inset 0 -2px 0 var(--ink);box-decoration-break:clone;-webkit-box-decoration-break:clone}
 /* in the calendars' tight, clamped titles a match keeps to its own letters */
 :is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
 
-.empty-note{display:none;text-align:center;color:var(--muted);font-size:.9062rem;padding:40px 10px}
+.empty-note{display:none;margin:8px 0 0;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
 .empty-note.show{display:block}
 
 footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
@@ -816,17 +874,20 @@ footer .colophon .na-glyph{margin-left:2px}
 
 .day-section.hidden{display:none}
 .fallback-wrap{margin-top:10px}
-.fallback-banner{background:var(--info-bg);border:1px solid var(--info-line);border-radius:var(--radius);padding:13px 16px;margin:8px 0 16px;font-size:.875rem;color:var(--info-ink);display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
-.fallback-banner b{color:var(--info-strong)}
+.fallback-banner{background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 12px 12px 16px;margin:8px 0 16px;font-size:.875rem;line-height:1.5;color:var(--info-ink);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.fallback-banner>div:first-child{flex:1 1 20rem;min-width:0}
+.fallback-banner b{color:var(--info-strong);font-weight:700}
 .fb-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-.fb-actions button{border:1px solid var(--info-line);background:var(--surface);border-radius:999px;padding:5px 13px;font-size:.7812rem;font-weight:600;color:var(--info-btn)}
-.fb-actions button:hover{background:var(--info-hover)}
-.day-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--day-rule);padding:24px 0 10px;margin-bottom:2px}
-.day-head>div{flex:1 1 240px}
-.day-head .dh-label{display:inline;margin:0;font-size:1.0625rem;font-weight:800;letter-spacing:.2px}
-.day-head .dh-sub{font-size:.7812rem;color:var(--muted);margin-left:10px}
-.dh-focus{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
-.dh-focus:hover{background:var(--surface-3)}
+.fb-actions button{min-height:36px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-ctl);padding:0 14px;font-size:.8125rem;font-weight:650;color:var(--info-btn);transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.fb-actions button:hover{background:var(--surface-2);border-color:var(--hover-line)}
+/* A day's heading in All week and My agenda: the date set large on a 1px ink rule */
+.day-head{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap;border-bottom:1px solid var(--day-rule);padding:28px 0 10px;margin-bottom:16px}
+.day-head>div{flex:1 1 240px;min-width:0}
+.day-head .dh-label{display:inline;margin:0;font-size:1.375rem;font-weight:720;line-height:1.2;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.day-head .dh-sub{font-size:.8125rem;font-weight:500;color:var(--muted);margin-left:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dh-focus{display:inline-flex;align-items:center;gap:4px;min-height:32px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-ctl);padding:0 8px 0 12px;font-size:.8125rem;font-weight:650;color:var(--ink-2);cursor:pointer;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.dh-focus:hover{background:var(--surface-2);border-color:var(--hover-line);color:var(--ink)}
+.dh-focus .ic,.ag-go .ic{flex:none;color:var(--muted)}
 
 [hidden]{display:none!important}
 
@@ -836,7 +897,7 @@ footer .colophon .na-glyph{margin-left:2px}
    so the list or the calendar starts right under it */
 .ag-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;margin:2px 0 0}
 .ag-bar-main{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;min-width:0;flex:1 1 22rem}
-.ag-bar h2{margin:0;font-size:1.25rem;letter-spacing:-.02em;white-space:nowrap}
+.ag-bar h2{margin:0;font-size:1.375rem;font-weight:720;line-height:1.2;letter-spacing:-.01em;white-space:nowrap}
 .builder-stats{margin:0;color:var(--muted);font-size:.8438rem}
 .builder-stats b{color:var(--ink)}
 .ag-clash-slot:empty{display:none}
@@ -876,30 +937,36 @@ footer .colophon .na-glyph{margin-left:2px}
   #builder .builder-actions .ag-opt{flex:1 1 100%}
 }
 .favourites-calendar #builder{max-width:none}
-.ag-clash-ind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:999px;padding:3px 11px;font-size:.8125rem;font-weight:700;white-space:nowrap}
-.ag-clash-ind:hover{border-color:var(--clash-row-line)}
-.ag-clash-ind.quiet{border-color:var(--line);background:var(--surface);color:var(--ink-2);font-weight:600}
-.ag-clash-ind .caret{font-size:.7em;transition:transform calc(.15s * var(--mo))}
+/* Clashes are drawn as interference fringes: a small plate of fine parallel ink lines */
+.cx-fr{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;border-radius:1px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
+.ag-clash-ind{display:inline-flex;align-items:center;gap:6px;min-height:32px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:var(--r-ctl);padding:0 8px 0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.ag-clash-ind>span{display:inline-flex;align-items:center}
+.ag-clash-ind .cx-fr{margin-right:7px}
+.ag-clash-ind:hover{border-color:var(--ink-2)}
+.ag-clash-ind[aria-expanded="true"]{background:var(--card);border-color:var(--ink)}
+.ag-clash-ind.quiet{border-color:var(--line);background:var(--card);color:var(--ink-2);font-weight:600}
+.ag-clash-ind .cx-wk{font-weight:500;color:var(--muted);white-space:pre}
+.ag-clash-ind .caret{flex:none;color:var(--ink-2);transition:transform var(--dur-s) var(--ease-em)}
 .ag-clash-ind[aria-expanded="true"] .caret{transform:rotate(180deg)}
-.ag-ok{color:var(--ok-ink);font-weight:700}
+.ag-ok{color:var(--ok-ink);font-size:.8125rem;font-weight:650}
 .ag-warn{color:var(--warn-ink);font-weight:700}
 .builder-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .builder-actions .toggle{min-height:36px}
 .ag-opt{display:inline-flex;align-items:center;gap:6px;font-size:.8125rem;color:var(--ink-2);min-height:36px;cursor:pointer}
 .ag-opt input{accent-color:var(--accent);width:16px;height:16px;margin:0}
 .ag-menu{position:relative}
-.ag-menu .caret{font-size:.75em;margin-left:2px}
-.ag-menu-list{position:absolute;right:0;top:calc(100% + 6px);z-index:60;min-width:15rem;display:flex;flex-direction:column;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px var(--pop-shadow)}
+.ag-menu .caret{margin-left:-1px}
+.ag-menu-list{position:absolute;right:0;top:calc(100% + 6px);z-index:60;min-width:15rem;display:flex;flex-direction:column;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);box-shadow:0 12px 28px -8px var(--pop-shadow)}
 .ag-menu-list[hidden]{display:none}
-.ag-menu-list button{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:9px 12px;font-size:.875rem;font-weight:600;color:var(--ink);min-height:40px}
+.ag-menu-list button{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:var(--r-seg);padding:9px 12px;font-size:.875rem;font-weight:600;color:var(--ink);min-height:40px}
 .ag-menu-list button:hover,.ag-menu-list button:focus-visible{background:var(--surface-3)}
 .ag-menu-list button:disabled{color:var(--muted);cursor:default;background:transparent}
-.ag-menu-list .danger:not(:disabled){color:var(--now-text)}
+.ag-menu-list .danger:not(:disabled){color:var(--danger-ink)}
 .ag-menu-list .danger:not(:disabled):hover,.ag-menu-list .danger:focus-visible{background:var(--danger-bg)}
 .ag-menu-sep{height:1px;margin:5px 6px;background:var(--line)}
 .toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
 /* Undo after a removal: a bar at the foot of the screen, wherever the list is scrolled */
-.undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 28px -6px var(--pop-shadow);font-size:0.875rem}
+.undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:var(--r-plate);box-shadow:inset 0 0 0 1px var(--toast-ring),0 12px 28px -8px var(--pop-shadow);font-size:0.875rem}
 .undo-bar[hidden]{display:none}
 /* An open dialog (details, Build, Display, Move) would sit under the bar: the Undo offer
    steps aside while it is open and comes back, its time paused, when it closes. */
@@ -908,28 +975,32 @@ html:has(dialog[open]) .undo-bar{display:none}
 .undo-actions{display:flex;gap:6px;flex:none}
 .undo-bar .toggle{min-height:36px;padding:5px 14px;background:transparent;border-color:var(--toast-ink);color:var(--toast-ink)}
 .undo-bar #undoBtn{background:var(--toast-ink);color:var(--toast-bg);font-weight:700}
-.undo-bar .toggle:hover{filter:brightness(1.15)}
+.undo-bar .toggle:hover{background:transparent;filter:none;box-shadow:inset 0 0 0 1px var(--toast-ink)}
+.undo-bar #undoBtn:hover{background:var(--toast-ink);opacity:.88}
 #undoDismiss{padding:5px 10px;border-color:transparent}
-.clash-box{margin:10px 0 0;background:var(--clash-row-bg);border:1px solid var(--clash-row-line);border-radius:12px;padding:4px 14px 6px}
+.clash-box{margin:12px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:6px 16px 8px}
 .clash-box-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:6px 0}
-.clash-box-head h3{margin:0;font-size:.9375rem;color:var(--clash-ink)}
-.clash-box-note{margin:0 0 8px;font-size:.8125rem;color:var(--ink-2)}
+.clash-box-head h3{margin:0;font-size:1.125rem;font-weight:700;color:var(--clash-ink)}
+.clash-box-head .cp-count{margin-left:8px;font-size:.8125rem;font-weight:500;color:var(--muted)}
+.clash-box-note{margin:0 0 10px;font-size:.875rem;color:var(--ink-2)}
 .clash-tools .toggle{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:5px 12px;font-size:0.8125rem}
-.clash-tools .toggle::before{content:"";width:14px;height:14px;border:2px solid var(--muted);border-radius:4px;box-sizing:border-box}
+.clash-tools .toggle::before{content:"";width:14px;height:14px;border:1.5px solid var(--field-line);border-radius:var(--r-tag);box-sizing:border-box}
 .clash-tools .toggle[aria-pressed="true"]{background:var(--active-bg);border-color:var(--accent);color:var(--active-ink)}
 .clash-tools .toggle[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--surface)}
 .cp-groups{list-style:none;margin:0;padding:0 0 4px}
-.cp-group{border-top:1px solid var(--clash-line);padding:8px 0}
-.cp-head{font-size:0.8438rem;color:var(--ink-2);margin-bottom:4px}
-.cp-head b{color:var(--clash-ink)}
+.cp-group{border-top:1px solid var(--line);padding:10px 0}
+.cp-head{display:flex;align-items:baseline;gap:0 10px;flex-wrap:wrap;font-size:0.875rem;color:var(--ink-2);margin-bottom:6px}
+.cp-head .cx-fr{margin-right:-2px}
+.cp-head b{color:var(--clash-ink);font-weight:700}
+.cp-when{color:var(--muted);font-variant-numeric:tabular-nums}
 .cp-items{list-style:none;margin:0;padding:0}
-.cp-items li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:3px 0;font-size:0.8438rem}
-.cp-time{flex:0 0 auto;font-size:0.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;min-width:84px}
+.cp-items li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:4px 0;font-size:0.875rem}
+.cp-time{flex:0 0 auto;font-size:0.8125rem;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);min-width:84px}
 .cp-items .ag-kind{margin-right:0}
-.cp-open{text-align:left;font-size:0.8438rem;overflow-wrap:anywhere;min-width:0;flex:1 1 12rem}
-.cp-in{flex-basis:100%;padding-left:92px;font-size:0.75rem;color:var(--muted)}
-.cp-keep{flex:none;margin-left:auto;border:1px solid var(--clash-line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:3px 11px;font-size:.75rem;font-weight:650;white-space:nowrap}
-.cp-keep:hover{border-color:var(--clash-row-line);color:var(--ink)}
+.cp-open{text-align:left;font-size:0.875rem;overflow-wrap:anywhere;min-width:0;flex:1 1 12rem}
+.cp-in{flex-basis:100%;padding-left:94px;font-size:0.8125rem;color:var(--muted)}
+.cp-keep{flex:none;margin-left:auto;min-height:30px;border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:var(--r-ctl);padding:0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.cp-keep:hover{border-color:var(--hover-line);background:var(--surface-2);color:var(--ink)}
 .cp-in+.cp-keep,.cp-items li>.cp-keep{align-self:center}
 .cp-hid{font-style:italic;font-weight:600;color:var(--ink-2)}
 .cp-off .cp-open{color:var(--ink-2)}
@@ -1303,10 +1374,12 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
   .hz-zb{display:none}
   .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 }
-.kind{display:inline-flex;align-items:center;gap:3px;flex:none;box-sizing:border-box;font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;padding:3px 6px 2px;border-radius:999px;white-space:nowrap;vertical-align:1px;background:var(--c);color:var(--card)}
+/* What an agenda item is: a small tag. A session is filled in its stream's colour, a talk
+   or poster outlined in it, a session shown only for context dashed. Sentence case. */
+.kind{display:inline-flex;align-items:center;flex:none;box-sizing:border-box;font-size:.6875rem;font-weight:700;letter-spacing:0;line-height:1.1;padding:2px 5px;border-radius:var(--r-tag);white-space:nowrap;vertical-align:.0625rem;background:var(--c);color:var(--card)}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
-.kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:2px 5px 1px}
-.kind.k-t::before,.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
+.kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:1px 4px}
+.k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
 :root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
 .has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);box-shadow:inset 0 1px 0 var(--warn-ink)}
 .hz-bar.has-clash,.vt-card.has-clash{outline:2px solid var(--warn-ink);outline-offset:1px}
@@ -1418,20 +1491,21 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .week-h .week-legend .wk-km b{left:.625rem;right:auto;top:auto;bottom:1px;width:.875rem;height:8px}
 .week-h .week-legend .wk-km b::before{top:0}
 .week-legend .wk-k:last-of-type{margin-right:10px}
-.ag-inner{list-style:none;margin:8px 0 2px;padding:0;display:flex;flex-direction:column;gap:5px}
-.ag-inner li{display:flex;align-items:flex-start;gap:7px;font-size:.8125rem;line-height:1.35;background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border:1px solid var(--c);border-left:3px solid var(--c);border-radius:8px;padding:6px 6px 6px 9px;box-shadow:0 1px 2px var(--pop-shadow);--muted:var(--ink-2)}
-.ag-itime{flex:none;font-variant-numeric:tabular-nums;color:var(--c);font-size:.75rem;font-weight:800;padding-top:.1rem}
+/* a saved session's saved talks: rows on a quiet ground, each with its own stream line */
+.ag-inner{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:2px}
+.ag-inner li{display:flex;align-items:flex-start;gap:10px;font-size:.875rem;line-height:1.4;background:var(--surface-2);border-radius:var(--r-tag);padding:6px 6px 6px 12px;box-shadow:inset 2px 0 var(--c)}
+.ag-itime{flex:none;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);color:var(--ink-2);font-size:.8125rem;font-weight:650;padding-top:.05rem}
 .ag-itime .k-ic{width:.4375rem;height:.5625rem;margin-right:4px;vertical-align:-1px}
 .vt-tk.hit,.hz-talk.hit{background:var(--active-bg);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
 .ag-imain{flex:1 1 auto;min-width:0}
-.ag-imain .linkish{font-size:.8125rem;text-align:left}
-.ag-isp{display:block;color:var(--muted);font-size:.75rem}
+.ag-imain .linkish{font-size:.875rem;font-weight:600;text-align:left}
+.ag-isp{display:block;color:var(--ink-2);font-size:.8125rem;font-style:italic;font-weight:480}
 /* a saved talk's own star in its session: a 44px target that overlaps the row's padding */
-.ag-iun{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:-.5rem -.375rem -.5rem 0;padding:0;border:0;border-radius:999px;background:transparent;color:var(--star);font-size:1.125rem;line-height:1;cursor:pointer}
+.ag-iun{flex:none;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;margin:-.5rem -.375rem -.5rem 0;padding:0;border:0;border-radius:var(--r-ctl);background:transparent;color:var(--star);font-size:1.125rem;line-height:1;cursor:pointer}
 .ag-iun:hover,.ag-iun:focus-visible{background:var(--surface-3)}
 .ag-iun:hover span{opacity:.6}
-.up-next .un-in{display:block;color:var(--muted);font-size:.8125rem;margin:2px 0 0 1.25rem}
-.up-next .un-tk{font-size:.6875rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.up-next .un-in{display:block;color:var(--muted);font-size:.8125rem;margin:4px 0 0}
+.up-next .un-tk{font-size:.75rem;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;margin-right:6px}
 @media (max-width:720px){
   .ag-inner li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:6px;row-gap:1px}
   .ag-itime{grid-row:1;grid-column:1}
@@ -1476,43 +1550,63 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .cal-day-title{font-size:1.0625rem;font-weight:800;letter-spacing:.2px;margin:0 0 10px;padding:8px 0 10px;border-bottom:2px solid var(--day-rule)}
 .export-status{font-size:.875rem;color:var(--muted)}
 .export-status:empty{display:none}
-.ag-day{margin-top:22px}
-.ag-day .day-head{padding-top:8px}
-.ag-list{list-style:none;margin:0;padding:0}
-.ag-row{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin:8px 0;position:relative;overflow:hidden}
+.ag-day{margin-top:12px}
+.ag-day .day-head{padding-top:16px;margin-bottom:12px}
+/* one plate per day; each item a cell with its stream's line, divided by hairlines */
+.ag-list{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
+.ag-row{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:0;border-radius:0;padding:14px 16px 14px 19px;margin:0;position:relative;overflow:hidden}
+.ag-row+.ag-row{border-top:1px solid var(--line)}
 /* (as the program's time blocks: rows away from the screen are not laid out) */
 .ag-row{content-visibility:auto;contain-intrinsic-size:auto 600px auto var(--cih,210px)}
 @media (max-width:720px){.ag-row{contain-intrinsic-size:auto 350px auto var(--cih,430px)}}
 @media print{.ag-row{content-visibility:visible}}
-.ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--faint))}
+.ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--faint))}
 /* the list speaks as the calendars do: a session row is tinted (its saved talks nested in
    it as white talk cards), a talk row is a white card outlined in its stream colour; a
    clash adds an orange outline and a hatched band, keeping the stream colours */
-.ag-row.is-sess{--muted:var(--bar-meta);background:color-mix(in srgb,var(--cbg) 42%,var(--card));border-color:color-mix(in srgb,var(--c) 30%,var(--line))}
-.ag-row.is-talk{background:color-mix(in srgb,var(--c) var(--tk-mix,0%),var(--card));border-color:color-mix(in srgb,var(--c) 70%,var(--line))}
-.ag-row.has-clash{outline:2px solid var(--warn-ink);outline-offset:-1px;padding-top:15px}
-.ag-row.has-clash::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:repeating-linear-gradient(135deg,var(--warn-ink) 0 3px,transparent 3px 7px);pointer-events:none}
+/* a clash: fringes (fine ink lines) beside the stream line, on the clash ground */
+.ag-row.has-clash{background:var(--clash-row-bg)}
+.ag-row.has-clash::after{content:"";position:absolute;left:5px;top:0;bottom:0;width:7px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);pointer-events:none}
 /* An item that has ended keeps readable text and working buttons: only its stream stripe
    turns grey and an "Ended" label shows by the time */
 .ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
-.ag-ended{display:none;margin-top:3px;width:max-content;font-size:.6875rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);background:var(--sunken);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+.ag-ended{display:none;margin-top:6px;width:max-content;font-size:.6875rem;font-weight:700;font-stretch:100%;line-height:1.45;color:var(--ink-2);background:var(--sunken);border-radius:var(--r-tag);padding:0 5px}
 .ag-row.past .ag-ended{display:block}
-.ag-time{flex:0 0 92px;font-size:.75rem;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px;line-height:1.5}
+/* on now: the sodium tint, the doublet in place of the stream line, a Now tag under the time */
+.ag-row.is-now{background:var(--now-bg)}
+.ag-row.is-now::before{width:var(--doublet-w);background:var(--doublet-x)}
+.ag-row.is-now.has-clash::after{left:calc(var(--doublet-w) + 3px)}
+.ag-row.is-now .ag-t0{color:var(--na-text)}
+.ag-now{display:none;margin:6px 0 0 auto;width:max-content;font-size:.6875rem;font-weight:750;font-stretch:100%;line-height:1.45;border-radius:var(--r-tag);padding:0 5px;background:var(--na-fill);color:var(--na-ink);box-shadow:inset 0 0 0 1px var(--na)}
+.ag-row.is-now .ag-now{display:block}
+.ag-time{flex:0 0 64px;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);line-height:1.1;text-align:right}
+.ag-t0{display:block;font-size:1.375rem;font-weight:700;font-stretch:75%;color:var(--ink)}
+.ag-t1{display:block;margin-top:3px;font-size:.8125rem;font-weight:500;color:var(--muted)}
+.ag-t1::before{content:"to "}
+.ag-row.past .ag-t0{color:var(--muted)}
+.ag-row .ag-ended{margin-left:auto}
 .ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
-.ag-title{display:block;font-size:.9062rem;font-weight:650;line-height:1.4}
-.ag-sub{display:block;font-size:.7812rem;color:var(--muted);margin-top:2px}
-.ag-kind{margin-right:8px;vertical-align:2px}
-.ag-clash{display:block;margin-top:6px;font-size:.7812rem;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:8px;padding:5px 10px}
+.ag-title{display:block;font-size:1rem;font-weight:640;line-height:1.38;text-wrap:pretty}
+.ag-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:.8125rem;color:var(--muted);margin-top:5px}
+.ag-sub .ag-who{color:var(--ink-2);font-style:italic;font-weight:480}
+.ag-sub .ag-who .aff{font-style:normal;color:var(--muted);font-weight:420}
+.ag-sub .ag-who:has(.room){font-style:normal}
+.ag-sub .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-style:normal;font-stretch:var(--stretch-cond);line-height:1.45}
+.ag-sub .ag-n{font-variant-numeric:tabular-nums}
+.ag-kind{margin-right:8px;vertical-align:.125rem}
+.ag-clash{display:flex;align-items:baseline;margin-top:10px;font-size:.8125rem;line-height:1.45;color:var(--clash-ink);background:var(--card);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:6px 10px}
+.ag-clash .cx-fr{flex:none;margin-right:8px;vertical-align:0}
 .ag-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 @media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px;margin-top:-5px}}
 @media (min-width:1100px){.ag-actions{width:340px}}
-.ag-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:600;color:var(--muted);white-space:nowrap}
-.ag-btn:hover{background:var(--surface-3);color:var(--ink)}
-.ag-btn.rm:hover{background:var(--danger-bg);color:var(--now-text);border-color:var(--danger-line)}
-.ag-empty{text-align:center;padding:52px 16px;background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);margin-top:18px}
-.ag-empty .ag-empty-icon{font-size:2.125rem;color:var(--star)}
-.ag-empty h3{margin:8px 0 4px;font-size:1.1875rem}
-.ag-empty p{margin:0 auto 16px;max-width:44ch;color:var(--muted);font-size:.875rem}
+.ag-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:32px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-ctl);padding:0 10px;font-size:.8125rem;font-weight:650;color:var(--ink-2);white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
+.ag-btn:hover{background:var(--surface-2);border-color:var(--hover-line);color:var(--ink)}
+.ag-btn .ic{flex:none}
+.ag-btn.rm:hover{background:var(--danger-bg);color:var(--danger-ink);border-color:var(--danger-line)}
+.ag-empty{text-align:center;padding:48px 20px;background:var(--card);border:1px dashed var(--hover-line);border-radius:var(--r-plate);margin-top:18px}
+.ag-empty .ag-empty-icon{font-size:2rem;line-height:1;color:var(--star)}
+.ag-empty h3{margin:10px 0 6px;font-size:1.25rem;font-weight:700;text-wrap:balance}
+.ag-empty p{margin:0 auto 18px;max-width:46ch;color:var(--ink-2);font-size:.9375rem;text-wrap:pretty}
 .ics-note{margin-top:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:.8125rem;color:var(--muted)}
 .ics-note textarea{width:100%;margin-top:8px;font:.7188rem/1.5 var(--font);font-stretch:var(--stretch-cond);border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .ag-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
@@ -1525,13 +1619,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .agenda-none #buildAgenda,.agenda-none .controls .searchbox,.agenda-none #searchMini,.agenda-none #filterMenu,.agenda-none .result-row{display:none!important}
 /* My agenda's search and streams: a starred talk that carries the match, the talks of a
    saved session it matched, a clash with a hidden item, the Export menu's note */
-.ag-inner li.ag-ihit{background:var(--active-bg);border-radius:8px;margin:0 -6px;padding:3px 6px}
-.ag-hits{margin:7px 0 0;font-size:.7812rem;color:var(--muted);line-height:1.45}
-.ag-hits .linkish{font-size:.7812rem;text-align:left}
-.ag-hits-k{font-weight:700;color:var(--ink-2)}
+.ag-inner li.ag-ihit{background:var(--active-bg)}
+.ag-hits{margin:10px 0 0;font-size:.8125rem;color:var(--muted);line-height:1.45}
+.ag-hits .linkish{font-size:.8125rem;text-align:left}
+.ag-hits-k{font-weight:650;color:var(--ink-2)}
 .ag-hits ul{list-style:none;margin:2px 0 0;padding:0}
 .ag-hits li{position:relative;padding-left:12px;margin:2px 0}
-.ag-hits li::before{content:"";position:absolute;left:2px;top:.6em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
+.ag-hits li::before{content:"";position:absolute;left:0;top:.35em;width:2px;height:.75em;border-radius:1px;background:var(--hover-line)}
 .ag-hit-more .linkish{font-weight:500}
 .ag-cx-off{font-style:italic;opacity:.85}
 .ag-nomatch .ag-empty-icon{color:var(--muted);font-size:1.75rem}
@@ -1819,6 +1913,10 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .cp-open{order:2}
   .cp-in{order:3}
   .ag-row.past .ag-ended{display:inline-block;margin:0 0 0 8px;vertical-align:1px}
+  .ag-time{text-align:left;align-items:baseline;align-content:center;column-gap:8px}
+  .ag-t1{margin-top:0}
+  .ag-row.is-now .ag-now{display:inline-block;margin:0}
+  .ag-row{padding:12px 14px 14px 17px}
   .undo-bar{width:calc(100vw - 24px);flex-wrap:wrap;padding:8px 8px 8px 14px}
   .undo-bar #undoMsg{flex:1 1 10rem}
   .undo-bar .toggle{min-height:42px}
@@ -1976,7 +2074,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
   body{background:var(--card)}
-  .card,.ag-row{box-shadow:none;break-inside:avoid}
+  .card,.ag-row{break-inside:avoid}
   .na-glyph,#nowBtn::before,.hero-when .na-glyph,.sp-na{display:none!important}
   /* My agenda prints from its own list (#printDoc), not from the page */
   body.print-agenda>*:not(#printDoc){display:none!important}
@@ -2215,7 +2313,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <label class="ag-opt" id="parentOption" hidden><input type="checkbox" id="includeParents"> <span><span class="ag-opt-show">Show f</span><span class="ag-opt-f">F</span>ull sessions<span class="ag-opt-long"> for saved talks</span></span></label>
       <button class="toggle primary" id="buildAgenda" data-build><span>Build<span class="ag-build-long"> my agenda</span></span></button>
       <div class="ag-menu" id="exportWrap">
-        <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <span class="caret" aria-hidden="true">&#9662;</span></button>
+        <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></button>
         <div class="ag-menu-list" id="exportMenu" role="menu" aria-labelledby="exportBtn" hidden>
           <p class="ag-menu-note" id="exportNote" role="none" hidden></p>
           <button type="button" role="menuitem" tabindex="-1" id="printAgenda">Print or save as PDF</button>
@@ -2796,6 +2894,7 @@ function slotById(id){
 // page about as tall as it will be, so the scrollbar and jumps far down stay close.
 function blockEst(slots){
   const phone = PHONE_MQ.matches, w = Math.min(1180, innerWidth) - 40 - (phone ? 0 : 100);
+  if (slots.every(isInterval)) return slots.length * (phone ? 58 : 38) + (phone ? 36 : 0);
   const cols = slots.length === 1 ? 1 : Math.max(1, Math.floor((w + 12) / 342)), cw = (w - (cols - 1) * 12) / cols;
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
   const hs = slots.map(s => {
@@ -2808,6 +2907,9 @@ function blockEst(slots){
   for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
   return Math.round(h);
 }
+// A break, a meal or a meeting with nothing more to it (no talks, note or description): in
+// the list a slim interval row rather than a plate of its own.
+const isInterval = s => !s.talks.length && !s.desc && !s.info && (s.cat === 'social' || s.cat === 'business');
 function blocksHtml(slots, date){
   const blocks = {};
   slots.forEach(s => { (blocks[s.start] = blocks[s.start] || []).push(s); });
@@ -2815,7 +2917,8 @@ function blocksHtml(slots, date){
   Object.keys(blocks).sort().forEach(st => {
     const bl = blocks[st];
     const end = bl.map(x => x.end).sort().slice(-1)[0];
-    inner += `<section class="block" data-date="${date}" data-start="${st}" data-end="${end}" style="--cih:${blockEst(bl)}px"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards ${bl.length===1?'single':''}">`;
+    const iv = bl.every(isInterval);
+    inner += `<section class="block${iv ? ' ivb' : ''}" data-date="${date}" data-start="${st}" data-end="${end}" style="--cih:${blockEst(bl)}px"><div class="block-time"><div class="bt">${st}</div><div class="bd">${slotDurLabel(bl)}</div><span class="live live-now">Now</span><span class="live live-next">Next</span></div><div class="cards${iv ? ' ivs' : bl.length === 1 ? ' single' : ''}">`;
     bl.forEach(s => inner += cardHtml(s));
     inner += `</div></section>`;
   });
@@ -2945,7 +3048,7 @@ function renderAgenda(){
     let inner = all ? blockPhHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date, groups)
       : blocksHtml(searching ? d.slots.filter(slotTextMatches) : d.slots, d.date);
     if (all){
-      inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day &#8594;</button></div>` + inner;
+      inner = `<div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${d.slots.length} of ${d.slots.length} sessions</span></div><button class="dh-focus" data-focusday="${i}">Focus this day${CHEV}</button></div>` + inner;
       html += `<div class="day-section" data-dayi="${i}">${inner}</div>`;
     } else html += inner;
   }
@@ -3090,7 +3193,7 @@ function cardHtml(s){
               <span class="t-title">${hl(t.t)}</span>
               ${who ? `<span class="t-sp">${personStr(t.sp)}</span>` : ''}
             </span>
-            <span class="t-caret">&#9654;</span>
+            <span class="t-caret" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg></span>
           </summary>
           <div class="t-body">
             ${t.d ? `<div class="abstract">${paras(t.d)}</div>` : '<p class="abstract none">No abstract provided.</p>'}
@@ -3106,18 +3209,24 @@ function cardHtml(s){
   } else if (s.desc){
     talksHtml = `<details class="about"><summary>About this session</summary><div class="desc">${paras(s.desc)}</div></details>`;
   }
-  const conv = s.conv && s.conv.length ? `<span>Convened by <b>${s.conv.map(hl).join(', ')}</b></span>` : '';
+  const conv = s.conv && s.conv.length ? `<span class="m-conv">Convened by <b>${s.conv.map(hl).join(', ')}</b></span>` : '';
+  const sStar = `<button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session: ${esc(s.title)}" title="Save to My agenda" aria-pressed="${Boolean(starOn)}">${starOn?'&#9733;':'&#9734;'}</button>`;
+  // a break or meeting: one slim row (its title, time and room, its star)
+  if (isInterval(s)) return `<article class="card iv" data-sid="${s.id}" data-cat="${s.cat}" data-grp="${s.grp||''}" style="--c:${c};--cbg:${bg}">
+    <div class="card-head">${s.grp ? grp : ''}<h3 tabindex="-1">${hl(s.title)}</h3>${sStar}</div>
+    <div class="meta"><span class="m-time">${s.start}&#8211;${s.end}</span>${s.room ? `<span class="room">${hl(s.room)}</span>` : ''}</div>
+  </article>`;
   return `<article class="card" data-sid="${s.id}" data-cat="${s.cat}" data-grp="${s.grp||''}" style="--c:${c};--cbg:${bg}">
     <div class="card-head">
       ${grp}
       <h3 tabindex="-1">${hl(s.title)}</h3>
-      <button class="star ${starOn}" data-sstar="${s.id}" aria-label="Save session: ${esc(s.title)}" title="Save to My agenda" aria-pressed="${Boolean(starOn)}">${starOn?'&#9733;':'&#9734;'}</button>
+      ${sStar}
     </div>
     <div class="meta">
-      <span><b>${s.start}&#8211;${s.end}</b></span>
-      ${s.room ? `<span>${hl(s.room)}</span>` : ''}
+      <span class="m-time">${s.start}&#8211;${s.end}</span>
+      ${s.room ? `<span class="room">${hl(s.room)}</span>` : ''}
       ${conv}
-      ${s.talks.length ? `<span>${s.talks.length} talk${s.talks.length>1?'s':''}</span>` : ''}
+      ${s.talks.length ? `<span class="m-n">${s.talks.length} talk${s.talks.length>1?'s':''}</span>` : ''}
       ${indicoUrl(s.url) ? `<span><a href="${s.url}" target="_blank" rel="noopener">Open in Indico</a></span>` : ''}
       ${s.talks.length || s.desc || s.info ? `<button type="button" class="linkish t-share" data-share="s=${s.id}" data-share-title="${esc(s.title)}">Share</button>` : ''}
     </div>
@@ -3126,6 +3235,8 @@ function cardHtml(s){
   </article>`;
 }
 
+// The chevron after a button that goes somewhere ("Focus this day", "Open in program")
+const CHEV = '<svg class="ic" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg>';
 function fallbackHtml(){
   let out = '', count = 0;
   const dayLabel = DATA.days[state.day].label;
@@ -3134,11 +3245,11 @@ function fallbackHtml(){
     const slots = d.slots.filter(slotMatches);
     if (!slots.length) return;
     count += slots.length;
-    out += `<div class="day-section"><div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${slots.length} matching session${slots.length>1?'s':''}</span></div><button class="dh-focus" data-focusday="${i}">Go to this day &#8594;</button></div>${blocksHtml(slots, d.date)}</div>`;
+    out += `<div class="day-section"><div class="day-head"><div><h2 class="dh-label">${esc(d.label)} 2026</h2><span class="dh-sub">${slots.length} matching session${slots.length>1?'s':''}</span></div><button class="dh-focus" data-focusday="${i}">Go to this day${CHEV}</button></div>${blocksHtml(slots, d.date)}</div>`;
   });
   if (!count) return { html:'', count:0 };
   const why = state.q ? ` for &ldquo;${esc(state.q)}&rdquo;` : ' for the current filters';
-  const banner = `<div class="fallback-banner"><div><b>No matches on ${esc(dayLabel)}</b>${why} &mdash; showing results from the rest of the week.</div><div class="fb-actions">${state.q?'<button data-fbclear>Clear search</button>':''}<button data-fball>Show all week</button></div></div>`;
+  const banner = `<div class="fallback-banner"><div><b>No matches on ${esc(dayLabel)}</b>${why}. Showing results from the rest of the week.</div><div class="fb-actions">${state.q?'<button data-fbclear>Clear search</button>':''}<button data-fball>Show all week</button></div></div>`;
   return { html: `<div class="fallback-wrap" id="fallbackZone">${banner}${out}</div>`, count };
 }
 
@@ -3603,7 +3714,7 @@ function agendaEmptyDayHtml(day, items){
   return `<div class="ag-empty ag-empty-day"><h3>Nothing saved on ${esc(day.label)}</h3>
     <p>${days ? 'Go to a day with saved items, pick' : 'Pick'} sessions or talks for this day in <b>Build my agenda</b>, or browse the day in the program.</p>
     ${days ? `<div class="ag-empty-actions ag-days" role="group" aria-label="Days with saved items">${days}</div>` : ''}
-    <div class="ag-empty-actions"><button class="toggle primary" data-build>Build my agenda</button><button class="toggle" data-goprogram="${di}">Browse this day &#8594;</button></div></div>`;
+    <div class="ag-empty-actions"><button class="toggle primary" data-build>Build my agenda</button><button class="toggle" data-goprogram="${di}">Browse this day</button></div></div>`;
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-agenda-day]');
@@ -3719,13 +3830,13 @@ function itemIds(it){ return [it.t ? it.t.id : it.s.id, ...(it.inner || []).map(
 // removes the items that overlap it (with Undo).
 function clashPanelHtml(groups, numbers){
   return `<ol class="cp-groups">${groups.map(g => `<li class="cp-group">
-      <div class="cp-head"><b>Clash ${numbers.get(g)}</b> &middot; ${esc(g[0].d.label)} &middot; ${groupSpan(g)}</div>
+      <div class="cp-head"><i class="cx-fr" aria-hidden="true"></i><b>Clash ${numbers.get(g)}</b> <span class="cp-when">${esc(g[0].d.label)}, ${groupSpan(g)}</span></div>
       <ul class="cp-items">${g.map(it => {
         const [c, bg] = CAT_COLORS[it.s.cat];
         const drop = it.clashes.flatMap(itemIds), n = it.clashes.length;
         const keep = `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
         // an item My agenda's search or streams hide is still in the clash: said so
-        const sub = [it.t ? `in ${esc(it.s.title)}` : '', it.off ? '<span class="cp-hid">Hidden by your search or streams</span>' : ''].filter(Boolean).join(' &middot; ');
+        const sub = [it.t ? `in ${esc(it.s.title)}` : '', it.off ? '<span class="cp-hid">Hidden by your search or streams</span>' : ''].filter(Boolean).join('. ');
         return `<li style="--c:${c};--cbg:${bg}" ${itemIdAttrs(it)}${it.off ? ' class="cp-off"' : ''}><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}${it.off ? '<span class="visually-hidden"> (hidden by your search or streams)</span>' : ''}</button>${keep}${sub ? `<span class="cp-in">${sub}</span>` : ''}</li>`;
       }).join('')}</ul></li>`).join('')}</ol>`;
 }
@@ -3757,15 +3868,16 @@ function agRow(it){
   // highlighted for My agenda's search (hl is plain esc without one)
   const who = it.kind === 'talk'
     ? (it.t.sp.length ? personStr(it.t.sp) : 'Speaker TBA')
-    : hl(it.s.room || 'Belinda Hutchinson Building');
+    : `<span class="room">${hl(it.s.room || 'Belinda Hutchinson Building')}</span>`;
   const word = it.s.cat === 'poster' ? 'poster' : 'talk', nIn = it.inner ? it.inner.length : 0;
+  // who (or the room), then where it sits: spaced parts, no separators
   const sub2 = it.kind === 'talk'
-    ? ['in ' + hl(it.s.title), esc(it.s.room)].filter(Boolean).join(' · ')
-    : (it.s.talks.length ? it.s.talks.length + ' ' + word + (it.s.talks.length === 1 ? '' : 's') + (nIn ? ` · ${nIn} saved` : '') : '');
+    ? `<span class="ag-in">in ${hl(it.s.title)}</span>` + (it.s.room ? `<span class="room">${esc(it.s.room)}</span>` : '')
+    : (it.s.talks.length ? `<span class="ag-n">${it.s.talks.length} ${word}${it.s.talks.length === 1 ? '' : 's'}${nIn ? `, ${nIn} saved` : ''}</span>` : '');
   const clashes = state.hideClashes ? [] : [...new Map(it.clashes.map(x => [itemTitle(x), x])).values()];
   const nOff = clashes.filter(x => x.off).length;
   const clash = clashes.length
-    ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}>&#9888; Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
+    ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}><i class="cx-fr" aria-hidden="true"></i>Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
     : '';
   // the search matched talks in this session that are not starred: name them
   const hits = (it.hits || []).filter(t => !(it.inner || []).includes(t));
@@ -3780,20 +3892,20 @@ function agRow(it){
   // star (filled: saved; a tap takes the talk out), apart from the session's Remove.
   const inner = nIn ? `<ul class="ag-inner" aria-label="Saved ${word}s in this session">${it.inner.map(t => {
     const sp = t.sp.map(p => p.n).join(', ');
-    return `<li data-tid="${t.id}"${hit.has(t) ? ' class="ag-ihit"' : ''}><span class="ag-itime"><i class="k-ic" aria-hidden="true"></i>${t.s}&#8211;${t.e}</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>${sp ? `<span class="ag-isp">${hl(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Remove ${word} from My agenda: ${esc(t.t)}" title="Saved. Remove this ${word} from My agenda (the session stays)"><span aria-hidden="true">&#9733;</span></button></li>`;
+    return `<li data-tid="${t.id}"${hit.has(t) ? ' class="ag-ihit"' : ''}><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>${sp ? `<span class="ag-isp">${hl(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Remove ${word} from My agenda: ${esc(t.t)}" title="Saved. Remove this ${word} from My agenda (the session stays)"><span aria-hidden="true">&#9733;</span></button></li>`;
   }).join('')}</ul>` : '';
   const ids = itemIdAttrs(it);
-  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
-    <span class="ag-time">${it.start}&#8211;${it.end}<span class="ag-ended">Ended</span></span>
+  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-start="${it.start}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
+    <span class="ag-time"><span class="ag-t0">${it.start}</span><span class="ag-t1"><span class="visually-hidden">to </span>${it.end}</span><span class="ag-ended">Ended</span><span class="ag-now">Now</span></span>
     <div class="ag-main">
       <span class="ag-title"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${hl(itemTitle(it))}</span>
-      <span class="ag-sub">${who}${sub2 ? ' &middot; ' + sub2 : ''}</span>
+      <span class="ag-sub"><span class="ag-who">${who}</span>${sub2}</span>
       ${inner}${hitsHtml}${clash}
     </div>
     <div class="ag-actions">
       <button class="ag-btn" ${calendarDetailAttrs(it)}>${it.t ? 'Abstract' : 'Session details'}</button>
       <button class="ag-btn" ${programJumpAttrs(it)}>View in program</button>
-      <button class="ag-btn rm"${tid} aria-label="Remove ${kindLabel(it).toLowerCase()} from My agenda: ${esc(itemTitle(it))}" title="Remove from My agenda${nIn ? ` (its saved ${word}${nIn === 1 ? ' stays' : 's stay'})` : ''}"><span aria-hidden="true">&#10005;</span><span class="rm-word"> Remove<span class="rm-kind"> ${kindLabel(it).toLowerCase()}</span></span></button>
+      <button class="ag-btn rm"${tid} aria-label="Remove ${kindLabel(it).toLowerCase()} from My agenda: ${esc(itemTitle(it))}" title="Remove from My agenda${nIn ? ` (its saved ${word}${nIn === 1 ? ' stays' : 's stay'})` : ''}"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="rm-word"> Remove<span class="rm-kind"> ${kindLabel(it).toLowerCase()}</span></span></button>
     </div>
   </li>`;
 }
@@ -4433,7 +4545,7 @@ function agendaEmptyHtml(){
       <p>Let <b>Build my agenda</b> walk you through the week one time slot at a time, or use the star beside any talk or session in the program, or bring your agenda over from another device.</p>
       <div class="ag-empty-actions">
         <button class="toggle primary" data-build>Build my agenda</button>
-        <button class="toggle" data-goprogram="${state.day}">Browse the program &#8594;</button>
+        <button class="toggle" data-goprogram="${state.day}">Browse the program</button>
         <button class="toggle" data-open-move>Import from another device</button>
       </div>
     </div>`;
@@ -4452,7 +4564,7 @@ function renderClashes(items){
   const shown = scoped.length ? scoped : dayGroups.length ? dayGroups : groups;
   // numbered within what the panel lists, as the bar counts them ("Clash 1" of "Wed: 2 clashes")
   const numbers = new Map(shown.map((g, i) => [g, i + 1]));
-  const caret = ' <span class="caret" aria-hidden="true">&#9662;</span>';
+  const caret = '<svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg>';
   const nItems = g => g.reduce((n, x) => n + x.length, 0);
   // the items left shown, while My agenda's search or streams are on
   const nShown = g => agendaFiltered() ? g.reduce((n, x) => n + x.filter(y => !y.off).length, 0) : undefined;
@@ -4462,16 +4574,16 @@ function renderClashes(items){
     return;
   }
   const where = day === null ? 'Week' : DATA.days[day].label.split(' ')[0];
-  const n = scoped.length, all = groups.length, cxWk = t => `<span class="cx-wk"> &middot; ${t}</span>`;
+  const n = scoped.length, all = groups.length, cxWk = t => `<span class="cx-wk">; ${t}</span>`;
   const allWords = clashWords(all, nItems(groups));
   const label = state.hideClashes ? `${allWords} hidden`
     : !n ? (day === null ? 'No clashes shown' + cxWk(allWords + ' in all') : `No clashes on ${where}` + cxWk('week: ' + allWords))
-    : `&#9888; ${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
+    : `<i class="cx-fr" aria-hidden="true"></i>${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
   slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !scoped.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox"><span>${label}</span>${caret}</button>`;
   box.hidden = !clashPanelOpen;
   const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button></span>`;
   const onWhat = shown === groups && day !== null && !dayGroups.length ? ' on other days' : day === null ? ' this week' : ' on ' + esc(DATA.days[day].label);
-  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : `&middot; ${clashWords(shown.length, nItems(shown), nShown(shown))}`}</span></h3>${tools}</div>` +
+  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : `${clashWords(shown.length, nItems(shown), nShown(shown))}`}</span></h3>${tools}</div>` +
     (state.hideClashes ? '<p class="clash-box-note">Clash warnings are hidden in the list, the calendar and the exports.</p>'
       : '<p class="clash-box-note">Items that overlap in time. <b>Keep this</b> removes the items that overlap it; you can undo.</p>' + clashPanelHtml(shown, numbers));
   box.setAttribute('aria-labelledby', 'clashBoxTitle');
@@ -4543,7 +4655,7 @@ function renderBuilder(){
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
     const of = filtered ? `${dayItems.length} of ${countWord(whole.filter(x => x.di === di).length, 'item')}` : countWord(dayItems.length, 'item');
-    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${of} &middot; ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program &#8594;</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
+    html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${of}, ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program${CHEV}</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
   body.innerHTML = agendaUpNext(items) + html;
 }
@@ -8586,10 +8698,10 @@ function upNextHtml(items){
     return ` <span class="un-in" data-tid="${t.id}"><span class="un-tk">${word} ${on ? 'now' : t.s}</span> <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${on ? ` <span class="un-when">until ${t.e}</span>` : ''}</span>`;
   };
   const row = (label, it, when) =>
-    `<div ${itemIdAttrs(it)}><span class="un-k">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
+    `<div ${itemIdAttrs(it)}><span class="un-k${label === 'Now' ? ' is-now' : ''}">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
   return `<div class="up-next" id="upNext">` +
     current.map(it => row('Now', it, `until ${it.end}`)).join('') +
-    next.map(it => row('Next', it, `${it.start} · in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
+    next.map(it => row('Next', it, `${it.start}, in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
 }
 
 function paintCountdown(){
@@ -8669,8 +8781,11 @@ function paintNow(){
       if (on !== c.classList.contains('now-in')) c.classList.toggle('now-in', on);
     }
   });
-  document.querySelectorAll('#builder .ag-row[data-date]').forEach(r =>
-    r.classList.toggle('past', r.dataset.date === n.date && toMin(r.dataset.end) <= n.min));
+  document.querySelectorAll('#builder .ag-row[data-date]').forEach(r => {
+    const today = r.dataset.date === n.date;
+    r.classList.toggle('past', today && toMin(r.dataset.end) <= n.min);
+    r.classList.toggle('is-now', today && toMin(r.dataset.start) <= n.min && n.min < toMin(r.dataset.end));
+  });
   if (state.scope === 'agenda' && state.layout === 'list'){
     const old = document.getElementById('upNext');
     // Up next stands aside while My agenda's search or streams are on
@@ -9164,8 +9279,8 @@ function agendaPreviewList(items){
   const mine = id => state.starred.has(id) ? '<span class="pv-mine" title="Already in My agenda">★</span> ' : '';
   return `<ul class="pv-list">${previewMerged(items).map(it => {
     const [c, bg] = CAT_COLORS[it.s.cat];
-    const inner = (it.inner || []).map(t => `<li data-tid="${t.id}">${t.s}–${t.e} · ${mine(t.id)}${esc(t.t)}</li>`).join('');
-    return `<li style="--c:${c};--cbg:${bg}" ${it.t ? `data-tid="${it.t.id}" data-in-sid="${it.s.id}"` : `data-sid="${it.s.id}"`}><span class="kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span> ${esc(it.d.label)} · ${it.start}–${it.end} · ${mine(it.id)}${esc(itemTitle(it))}${it.t ? ` <span class="pv-in">in ${esc(it.s.title)}</span>` : ''}${inner ? `<ul>${inner}</ul>` : ''}</li>`;
+    const inner = (it.inner || []).map(t => `<li data-tid="${t.id}"><span class="pv-when">${t.s}–${t.e}</span> ${mine(t.id)}${esc(t.t)}</li>`).join('');
+    return `<li style="--c:${c};--cbg:${bg}" ${it.t ? `data-tid="${it.t.id}" data-in-sid="${it.s.id}"` : `data-sid="${it.s.id}"`}><span class="kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span> <span class="pv-when">${esc(it.d.label)}, ${it.start}–${it.end}</span> ${mine(it.id)}${esc(itemTitle(it))}${it.t ? ` <span class="pv-in">in ${esc(it.s.title)}</span>` : ''}${inner ? `<ul>${inner}</ul>` : ''}</li>`;
   }).join('')}</ul>`;
 }
 function mergeIntoAgenda(ids){
