@@ -273,10 +273,10 @@ DARK_TOKENS = """\
   --plenary-fill:#454951; --aip-fill:#21686c; --anzcop-fill:#784747; --commad-fill:#545c7b; --focus-fill:#345e38; --edu-fill:#646128; --poster-fill:#6a5d7b; --events-fill:#70425e; --special-fill:#265474; --business-fill:#555a61; --social-fill:#625c57;
   --star:#ecedef; --cx-mark:#ecedef;
   --shadow:none;
-  --na:#ffb13b; --na-text:#ffc061; --na-fill:#ffb13b; --na-ink:#121316; --na-bg:#402306; --na-sel:#b86400;
+  --na:#ffb13b; --na-text:#ffc061; --na-fill:#ffb13b; --na-ink:#121316; --na-bg:#2e271e; --na-sel:#b86400;
   --field-line:#6f757e; --danger-ink:#ff9a92; --fill-ink:#ffffff;
   --dlg-shadow:0 24px 48px -12px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.4);
-  --link:#ecedef; --surface:#17181b; --surface-2:#1c1d21; --surface-3:#24262a; --sunken:#1e2024; --sunken-2:#202327; --sticky-bg:rgba(15,16,18,.9); --hover-line:#4a4f57; --ink-2:#b9bec6; --ink-3:#d3d7dd; --faint:#6f757e; --caret:#6f757e; --cnt-ink:#121316; --pop-shadow:rgba(0,0,0,.55); --flash:#2a2c30; --mark-bg:#4a4e56; --mark-ink:#ffffff; --toast-bg:#ecedef; --toast-ink:#121316; --toast-ring:transparent; --day-rule:#ecedef; --warn-ink:#ecedef; --ok-ink:#d3d7dd; --now-text:#ffc061; --live-ink:#ffb13b; --now-bg:#402306; --now-line:#ffb13b; --next-bg:#2a2c30; --next-ink:#d3d7dd; --danger-bg:#3a1517; --danger-line:#7a2a2c; --today-bg:#402306; --today-ink:#ffc061; --clash-bg:#24262a; --clash-line:#6f757e; --clash-ink:#ecedef; --clash-row-bg:#1e2024; --clash-row-line:#4a4f57; --warm-bg:#2a2c30; --warm-line:#ecedef; --warm-ink:#ecedef; --starOn-bg:#ecedef; --starOn-line:#ecedef; --starOn-ink:#121316; --active-bg:#2a2c30; --active-ink:#ecedef; --grp-bg:#24262a; --grp-line:#4a4f57; --grp-ink:#ecedef; --grp-btn:#3a3e45; --ok-bg:#1e2024; --ok-line:#2e3136; --ok-strong:#ecedef; --ok-btn:#ecedef; --info-bg:#1e2024; --info-line:#2e3136; --info-ink:#d3d7dd; --info-strong:#ecedef; --info-btn:#ecedef; --info-hover:#24262a; --backdrop:rgba(0,0,0,.66); --switch-off:#3a3e45;
+  --link:#ecedef; --surface:#17181b; --surface-2:#1c1d21; --surface-3:#24262a; --sunken:#1e2024; --sunken-2:#202327; --sticky-bg:rgba(15,16,18,.9); --hover-line:#4a4f57; --ink-2:#b9bec6; --ink-3:#d3d7dd; --faint:#6f757e; --caret:#6f757e; --cnt-ink:#121316; --pop-shadow:rgba(0,0,0,.55); --flash:#2a2c30; --mark-bg:#4a4e56; --mark-ink:#ffffff; --toast-bg:#ecedef; --toast-ink:#121316; --toast-ring:transparent; --day-rule:#ecedef; --warn-ink:#ecedef; --ok-ink:#d3d7dd; --now-text:var(--na-text); --live-ink:var(--na); --now-bg:#2e271e; --now-line:var(--na); --next-bg:#2a2c30; --next-ink:#d3d7dd; --danger-bg:#3a1517; --danger-line:#7a2a2c; --today-bg:#2e271e; --today-ink:var(--na-text); --clash-bg:#24262a; --clash-line:#6f757e; --clash-ink:#ecedef; --clash-row-bg:#1e2024; --clash-row-line:var(--hover-line); --warm-bg:#2a2c30; --warm-line:#ecedef; --warm-ink:#ecedef; --starOn-bg:#ecedef; --starOn-line:#ecedef; --starOn-ink:#121316; --active-bg:#2a2c30; --active-ink:#ecedef; --grp-bg:#24262a; --grp-line:var(--hover-line); --grp-ink:#ecedef; --grp-btn:#3a3e45; --ok-bg:#1e2024; --ok-line:var(--line); --ok-strong:#ecedef; --ok-btn:#ecedef; --info-bg:#1e2024; --info-line:var(--line); --info-ink:#d3d7dd; --info-strong:#ecedef; --info-btn:#ecedef; --info-hover:#24262a; --backdrop:rgba(0,0,0,.66); --switch-off:var(--field-line);
   color-scheme:dark;  --focus-ring:rgba(236,237,239,.35);
   --bar-ink:#ecedef; --bar-meta:#b9bec6; --sx-shade:rgba(0,0,0,.6); --past-ink:#d3d7dd;
   --tk-mix:13%; --wk-mix:42%;
@@ -367,7 +367,7 @@ window.applyDisplay = function(d){
   --shadow:none;
   --radius:10px;
   /* sodium D, the only mark of "now": line (marks only), text, lamp fill with ink on it, tint */
-  --na:#b86400; --na-text:#8c4c00; --na-fill:#ffb224; --na-ink:#16181c; --na-bg:#ffecde;
+  --na:#b86400; --na-text:#8c4c00; --na-fill:#ffb224; --na-ink:#16181c; --na-bg:#fff5ec;
   /* the doublet on an ink-filled (selected) control */
   --na-sel:#ffb224;
   /* the doublet: two lines with a gap of the same width, across (x) or down (y) */
@@ -375,7 +375,7 @@ window.applyDisplay = function(d){
   --doublet-x:linear-gradient(90deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));
   --doublet-y:linear-gradient(180deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));
   /* borders of text fields (3:1 on white); destructive and error text; text on a stream fill */
-  --field-line:#8b919a; --danger-ink:#a3162a; --fill-ink:#ffffff;
+  --field-line:#848a93; --danger-ink:#a3162a; --fill-ink:#ffffff;
   /* radii, strictly by kind: lines, tags, segments and chips, controls, plates, dialogs */
   --r-line:2px; --r-tag:3px; --r-seg:6px; --r-ctl:8px; --r-plate:10px; --r-dialog:12px;
   --dlg-shadow:0 24px 48px -12px rgba(12,13,15,.28),0 2px 6px rgba(12,13,15,.08);
@@ -383,7 +383,7 @@ window.applyDisplay = function(d){
   --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --stretch-cond:87.5%; --stretch-wide:118%;
   /* surfaces and text */
-  --surface:#ffffff; --surface-2:#f8f9fa; --surface-3:#eef0f2; --sunken:#e8eaed; --sunken-2:#e5e8ec; --sticky-bg:rgba(243,244,245,.92); --hover-line:#b4bac2; --ink-2:#40454d; --ink-3:#2b2f35; --faint:#8b919a; --caret:#8b919a; --cnt-ink:#ffffff; --pop-shadow:rgba(12,13,15,.2); --flash:#e4e7eb; --mark-bg:#d3d5d8; --mark-ink:#16181c; --toast-bg:#16181c; --toast-ink:#ffffff; --warn-ink:#16181c; --ok-ink:#2b2f35; --now-text:#8c4c00; --live-ink:#b86400; --now-bg:#ffecde; --now-line:#b86400; --next-bg:#e6e8eb; --next-ink:#2b2f35; --danger-bg:#fcebea; --danger-line:#f0b7b3; --today-bg:#ffecde; --today-ink:#8c4c00; --clash-bg:#f1f2f4; --clash-line:#8b919a; --clash-ink:#16181c; --clash-row-bg:#f6f7f8; --clash-row-line:#b4bac2; --warm-bg:#e6e8eb; --warm-line:#16181c; --warm-ink:#16181c; --starOn-bg:#16181c; --starOn-line:#16181c; --starOn-ink:#ffffff; --active-bg:#e6e8eb; --active-ink:#16181c; --grp-bg:#e9ebee; --grp-line:#c4c9d0; --grp-ink:#16181c; --grp-btn:#d3d6da; --ok-bg:#eef0f2; --ok-line:#dadde2; --ok-strong:#16181c; --ok-btn:#16181c; --info-bg:#eef0f2; --info-line:#dadde2; --info-ink:#2b2f35; --info-strong:#16181c; --info-btn:#16181c; --info-hover:#f8f9fa; --link:#16181c; --day-rule:#16181c; --toast-ring:transparent; --backdrop:rgba(12,13,15,.5); --switch-off:#c4c9d0; --focus-ring:rgba(22,24,28,.28);
+  --surface:#ffffff; --surface-2:#f8f9fa; --surface-3:#eef0f2; --sunken:#e8eaed; --sunken-2:#e5e8ec; --sticky-bg:rgba(243,244,245,.92); --hover-line:#b4bac2; --ink-2:#40454d; --ink-3:#2b2f35; --faint:#8b919a; --caret:#8b919a; --cnt-ink:#ffffff; --pop-shadow:rgba(12,13,15,.2); --flash:#e4e7eb; --mark-bg:#d3d5d8; --mark-ink:#16181c; --toast-bg:#16181c; --toast-ink:#ffffff; --warn-ink:#16181c; --ok-ink:#2b2f35; --now-text:var(--na-text); --live-ink:var(--na); --now-bg:#fff5ec; --now-line:var(--na); --next-bg:#e6e8eb; --next-ink:#2b2f35; --danger-bg:#fcebea; --danger-line:#f0b7b3; --today-bg:#fff5ec; --today-ink:var(--na-text); --clash-bg:#f1f2f4; --clash-line:#8b919a; --clash-ink:#16181c; --clash-row-bg:#f6f7f8; --clash-row-line:var(--hover-line); --warm-bg:#e6e8eb; --warm-line:#16181c; --warm-ink:#16181c; --starOn-bg:#16181c; --starOn-line:#16181c; --starOn-ink:#ffffff; --active-bg:#e6e8eb; --active-ink:#16181c; --grp-bg:#e9ebee; --grp-line:var(--hover-line); --grp-ink:#16181c; --grp-btn:#d3d6da; --ok-bg:#eef0f2; --ok-line:var(--line); --ok-strong:#16181c; --ok-btn:#16181c; --info-bg:#eef0f2; --info-line:var(--line); --info-ink:#2b2f35; --info-strong:#16181c; --info-btn:#16181c; --info-hover:#f8f9fa; --link:#16181c; --day-rule:#16181c; --toast-ring:transparent; --backdrop:rgba(12,13,15,.5); --switch-off:var(--field-line); --focus-ring:rgba(22,24,28,.28);
   /* calendar engines: text on every --<cat>-bg tint (at least 4.5:1 on all of them, light
      and dark), the edge shade of a sideways scroller, and text on past week blocks */
   --bar-ink:#16181c; --bar-meta:#40454d; --sx-shade:rgba(12,13,15,.18); --past-ink:#2b2f35;
@@ -414,7 +414,7 @@ window.applyDisplay = function(d){
 /* High-contrast text (Display settings): darker text and stronger lines in light,
    lighter text and stronger lines in dark. */
 :root[data-contrast="high"]{
-  --ink:#0b0c0e; --muted:#33373d; --line:#8e949c; --hover-line:#4b5058; --ink-2:#1f2226; --ink-3:#121418; --faint:#5d636d; --caret:#4b5058;
+  --ink:#0b0c0e; --muted:#33373d; --line:#80868f; --hover-line:#4b5058; --ink-2:#1f2226; --ink-3:#121418; --faint:#5d636d; --caret:#4b5058;
   --accent:#0b0c0e; --link:#0b0c0e; --star:#0b0c0e; --day-rule:#0b0c0e; --field-line:#4b5058;
   --plenary:#0b0c0e; --aip:#005d61; --anzcop:#aa0021; --commad:#3940c3; --focus:#006112; --edu:#585700; --poster:#7628b0; --events:#a0006f; --special:#005783; --business:#495462; --social:#5d5144;
   --na:#8a4a00; --na-text:#7a4100; --doublet-w:8px;
@@ -524,8 +524,9 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-dayh.week-dnar{flex-wrap:nowrap;white-space:nowrap}
 .week-dnar .week-mon{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .week-dayh:hover{border-color:var(--hover-line);background:var(--surface-3)}
-.week-dayh.today{background:var(--na-bg);border-color:var(--na);color:var(--ink)}
-.week-dayh.today small{color:var(--na-text)}
+/* today: the doublet glyph before its label, nothing more (the now-line marks the time) */
+.week-dayh.today{color:var(--ink)}
+.week-dayh.today small{color:var(--muted)}
 .week-v .week-body{height:var(--wh)}
 .week-axis{position:relative}
 .week-axis span{position:absolute;font-size:.6875rem;font-weight:550;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums}
@@ -533,7 +534,6 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
 .week-v .week-sc{padding-top:.4rem}
 .week-v .week-axis{position:sticky;left:0;z-index:3;background:var(--card)}
 .week-col{position:relative;border-radius:var(--r-tag);background-color:var(--surface-2);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px calc(var(--wh) * 60 / var(--dur)));cursor:pointer}
-.week-col.today{box-shadow:0 0 0 1px color-mix(in srgb,var(--na) 45%,transparent)}
 .week-blk{position:absolute;top:calc(var(--a) * 1%);height:calc(var(--h) * 1%);left:calc(var(--l) * 1% + 1px);width:calc(var(--w) * 1% - 2px);min-height:3px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0;border:0;border-radius:var(--r-line);background:color-mix(in srgb,var(--c) var(--wk-mix),var(--card));color:var(--fill-ink);font:inherit;font-size:.6875rem;font-weight:550;line-height:1.12;text-align:left;overflow:hidden;cursor:pointer;z-index:2}
 .week-blk span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,1);overflow:hidden;max-width:100%;padding:2px 3px 0;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual;pointer-events:none}
 .week-blk b{font-weight:720}
@@ -1023,8 +1023,9 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-bubble{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:5.5rem;height:5.5rem;border-radius:var(--r-dialog);display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;font-stretch:var(--stretch-cond);background:var(--toast-bg);color:var(--toast-ink);box-shadow:var(--dlg-shadow);pointer-events:none}
 .pp-bubble[hidden]{display:none}
 .participants-view #nowBtn{display:none}
-#nowBtn{color:var(--na-text);border-color:var(--na);background:var(--na-bg)}
-#nowBtn:hover{border-color:var(--na);background:color-mix(in srgb,var(--na-bg) 70%,var(--na-fill))}
+#nowBtn{color:var(--ink);border-color:var(--hover-line);background:var(--card)}
+#nowBtn:hover{border-color:var(--ink)}
+#nowBtn:active{background:var(--na-bg)}
 #nowBtn::before{content:"";flex:none;width:var(--doublet-w);height:.75rem;background:var(--doublet-x)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,8px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:10px 16px;border-radius:var(--r-seg);font-size:.8125rem;font-weight:560;line-height:1.35;box-shadow:inset 0 0 0 1px var(--toast-ring),0 12px 28px -8px var(--pop-shadow);opacity:0;pointer-events:none;transition:opacity calc(160ms * var(--mo,1)) var(--ease-em,ease-out),transform calc(160ms * var(--mo,1)) var(--ease-em,ease-out);max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -1049,14 +1050,16 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .block-time .live{display:none;margin-top:6px;font-size:.6875rem;font-weight:750;line-height:1.45;border-radius:var(--r-tag);padding:0 5px;width:max-content;margin-left:auto}
 .block.is-now .live-now{display:block;background:var(--na-fill);color:var(--na-ink);box-shadow:inset 0 0 0 1px var(--na)}
 .block.is-next .live-next{display:block;background:var(--next-bg);color:var(--next-ink);box-shadow:inset 0 0 0 1px var(--line)}
-/* The talk on now: the sodium tint and the doublet down its left edge (two 2px lines, a 2px
-   gap), which resolves once as it appears; its time turns sodium with "Now" under it. */
+/* The talk on now: a faint sodium tint and the doublet down its left edge (two 2px lines, a
+   2px gap), which resolves once as it appears; its time turns sodium. Its slot already shows
+   the Now tag, so there the talk's own "now" is kept for screen readers only. */
 .talk.is-now{position:relative;background:var(--now-bg)}
 .talk.is-now::before,.talk.is-now::after{content:"";position:absolute;top:0;bottom:0;width:calc((var(--doublet-w) - 2px) / 2);background:var(--na);pointer-events:none;animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
 .talk.is-now::before{left:0;--na-from:calc(var(--doublet-w) / 4 + .5px) 0}
 .talk.is-now::after{left:calc(var(--doublet-w) - (var(--doublet-w) - 2px) / 2);--na-from:calc(var(--doublet-w) / -4 - .5px) 0}
 .talk.is-now .t-time{color:var(--na-text)}
 .talk.is-now .t-time::after{content:"Now";display:block;font-size:.6875rem;font-weight:750;font-stretch:100%;line-height:1.5}
+.block.is-now .talk.is-now .t-time::after{content:", now";position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .talk.is-now summary:hover,.talk.is-now:has(summary:hover){background:var(--now-bg)}
 /* My agenda's Now and Next: a plate whose left edge is the doublet */
 .up-next{position:relative;margin:16px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 16px 12px 22px;font-size:.875rem;overflow:clip}
@@ -1071,6 +1074,28 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .up-next>div>:not(.un-k){grid-column:2}
 .up-next .un-k.is-now{color:var(--na-text)}
 .result-line b{color:var(--ink)}
+
+/* ---------- colour discipline and one grammar for now (overrides) ----------
+   Rules owned by other sections, restated here with equal or higher specificity. */
+/* today in the day strip carries only its doublet glyph */
+.daytab.today:not(.on) .dt-wd{color:var(--muted)}
+/* standalone outlined controls and segmented groups: a --hover-line border (3:1 on the
+   page); the dividers inside them stay --line */
+.toggle,#eventDialog .ag-btn{border-color:var(--hover-line)}
+:root .ag-btn,:root .display-btn,:root .agenda-views,:root .seg{border-color:var(--hover-line)}
+/* calendar bars and cards: a hairline border, the stream on the 3px line down the left;
+   it turns the stream colour on hover and focus (and in high contrast) */
+.hz-bar>.hz-head{border-bottom-color:var(--line)}
+.hz-agenda :is(div,button).hz-bar{border-color:var(--line);border-left-color:var(--c)}
+.vt-agenda div.vt-card{border-color:var(--line);border-left-color:var(--c)}
+#vtPop:not(.tk,.ctx){border-color:var(--line);border-left-color:var(--c)}
+div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
+.vt-card .vt-open:hover{outline:0}
+/* a talk on now nested in a My agenda card: the card's notches mark now (no doublet bracket
+   down the talk's rounded edge) */
+.vt-agenda .vt-tk.is-now{box-shadow:none;padding-left:6px}
+/* the week overview on a phone: today keeps its doublet glyph, over the date */
+@media (max-width:720px){.week-dayh.today .na-glyph{display:block;margin:0 0 2px}}
 
 /* ---------- agenda ---------- */
 .agenda{max-width:1180px;margin:0 auto;padding:16px 20px 60px}
@@ -1455,9 +1480,12 @@ button.hz-gl[aria-expanded="false"] .hz-car{transform:rotate(-90deg)}
 .hz-colt{position:absolute;top:13px;height:4px;border-radius:1px;background:var(--c);opacity:.8;min-width:2px;z-index:2}
 .hz-empty{padding:26px 16px;color:var(--muted);font-size:.9rem;text-align:center}
 /* a bar: the stream's tint with its line down the left */
-.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px;transition:background-color var(--dur-s) var(--ease)}
+.hz-bar{position:absolute;z-index:2;box-sizing:border-box;display:block;text-align:left;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);padding:0;overflow:clip;font-size:.75rem;line-height:1.3;min-width:5px;transition:background-color var(--dur-s) var(--ease)}
 button.hz-bar{padding:5px 7px 4px 7px;display:flex;align-items:flex-start;justify-content:flex-start}
-button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-visible,.hz-talk:hover,.hz-talk:focus-visible{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
+/* hover and focus: the bar's hairline turns its stream colour; the focus ring is ink */
+button.hz-bar:hover,button.hz-bar:focus-visible,.hz-bar:has(>.hz-head:hover),.hz-bar:has(>.hz-head:focus-visible){border-color:var(--c);z-index:5}
+.hz-talk:hover{outline:2px solid var(--c);outline-offset:-1px;z-index:5}
+button.hz-bar:focus-visible,.hz-head:focus-visible,.hz-talk:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;z-index:5}
 .hz-in{display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;box-sizing:border-box}
 .hz-title{font-weight:640;font-size:.8125rem;line-height:1.28;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:normal;word-break:normal;hyphens:manual;-webkit-hyphens:manual}
 /* a bar too narrow for whole words shows its stream badge only (title in its tooltip and details) */
@@ -1507,28 +1535,25 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
    whole height still takes the click) */
 .hz-tick .hz-talk{background:linear-gradient(var(--c),var(--c)) left bottom/100% 6px no-repeat;border:0;padding:0;border-radius:var(--r-line)}
 .hz-tick .hz-talk>*{display:none}
-/* talk marks along a session's foot: 1.5px lines in the stream colour; the talk on now is
-   a 1.5px doublet in sodium, with a sodium rule along its span */
+/* talk marks along a session's foot: 1.5px lines in the stream colour (the talk on now
+   too: the bar's notches mark now) */
 .hz-mark{position:absolute;bottom:0;height:12px;box-sizing:border-box;border-left:1.5px solid var(--c);pointer-events:none}
 .hz-mark.first{border-left-color:transparent}
-.hz-mark.is-now{border-left:0;height:14px;background:linear-gradient(90deg,var(--na) 0 1.5px,transparent 0 3px,var(--na) 0 4.5px) left top/4.5px 100% no-repeat,linear-gradient(var(--na),var(--na)) left bottom/100% 2px no-repeat}
-.hz-mark.first.is-now{background:linear-gradient(var(--na),var(--na)) left bottom/100% 2px no-repeat}
 .hz-bar.marked{padding-bottom:15px}
 .hz-bar.marked .hz-in{max-height:100%;overflow:hidden}
 .hz-bar.marked .hz-title{flex-shrink:0}
 /* past: a paler tint and softer text, still at least 4.5:1 (no opacity) */
-.hz-bar.past{background:color-mix(in srgb,var(--cbg) 45%,var(--card));border-color:color-mix(in srgb,var(--c) 22%,transparent);border-left-color:color-mix(in srgb,var(--c) 55%,var(--card))}
+.hz-bar.past{background:color-mix(in srgb,var(--cbg) 45%,var(--card));border-color:var(--line);border-left-color:color-mix(in srgb,var(--c) 55%,var(--card))}
 .hz-bar.past .hz-title,.hz-bar.past .hz-tl,.hz-bar.past .hz-bdg{color:var(--bar-meta)}
-/* on now: the same fill, the title a step bolder; the doublet passing through is the cue */
+/* on now: the same fill, the title a step bolder. The doublet runs under every bar (each bar
+   is opaque, so it is seen only in the gaps, My agenda's too); where it passes under a bar on
+   now, the bar shows it as two short notches, at its top edge and its bottom edge, set in the
+   bar's padding (and over the hairline under its talks), so they never touch its text. A talk
+   cell or tick on now is drawn like the others. (--nowx: where the line's centre crosses the
+   bar's padding box, from hzPaintNow.) */
 .hz-bar.is-now .hz-title{font-weight:720}
-.hz-talk.is-now{background:var(--na-bg);border-color:var(--na);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--na-bg),inset 6px 0 var(--na);padding-left:9px}
-.hz-tick .hz-talk.is-now{background:linear-gradient(var(--na),var(--na)) left bottom/100% 6px no-repeat;box-shadow:none;padding-left:0}
-/* (My agenda's bars carry an opaque body, so there the doublet runs over them) */
-.hz-agenda .hz-nowl{z-index:4}
-.hz-day .hz-bar.hz-now-in,.hz-day .hz-talk.hz-now-in{background-image:var(--doublet-x);background-repeat:no-repeat;background-size:var(--doublet-w) 100%;background-position:calc(var(--nowx,-99px) - var(--doublet-w) / 2) 0}
-.hz-day.hz-tick .hz-talk.hz-now-in{background-image:linear-gradient(var(--na),var(--na));background-size:100% 6px;background-position:left bottom}
-.hz-talk.is-now .hz-tt{color:var(--na-text)}
-.hz-talk.is-now.hz-thin{padding-left:7px}
+.hz-agenda .hz-nowl{z-index:1}
+.hz-day .hz-bar.is-now.hz-now-in::before{content:"";position:absolute;z-index:4;top:0;bottom:0;left:calc(var(--nowx,-99px) - var(--doublet-w) / 2);width:var(--doublet-w);background:var(--doublet-x) left top / 100% 5px no-repeat,var(--doublet-x) left bottom / 100% 5px no-repeat;pointer-events:none}
 #hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:var(--r-seg);font-size:.75rem;line-height:1.4;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;pointer-events:none;white-space:pre-line;box-shadow:0 12px 28px -8px var(--pop-shadow)}
 #hzTip[hidden]{display:none}
 /* a cut card in full, over it (hzPopShow): its left edge and width (a narrow card widens
@@ -1595,18 +1620,16 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* a talk row at the same time as the heading row above it repeats that time: kept for
    the grid, not shown */
 .vt-t.tk{visibility:hidden}
-.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:4;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0;transition:top calc(600ms * var(--mo,1)) linear}
+.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0;transition:top calc(600ms * var(--mo,1)) linear}
 /* two lines of the sodium D doublet (a 2px gap); they part from the centre as the mark appears (na-part) */
 .vt-nowl::before,.vt-nowl::after{content:"";position:absolute;left:0;right:0;height:calc((var(--doublet-w) - 2px) / 2);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
 .vt-nowl::before{top:0;--na-from:0 calc(var(--doublet-w) / 4 + .5px)}
 .vt-nowl::after{bottom:0;--na-from:0 calc(var(--doublet-w) / -4 - .5px)}
-/* the now line runs under the cards (never through their text); its pill (vt-nowd) sits
-   over the time gutter */
-.vt-grid .vt-nowl{z-index:1}
-/* inside a card it crosses, the doublet shows in the card's margins and between its talks
-   (drawn on the card's own background, so under its text) */
-/* inside a card the doublet sits behind the text at reduced strength, so it never reads as a strike-through */
-.vt-grid .vt-card.now-in{--na-in:color-mix(in srgb,var(--na) 42%,transparent);background-image:linear-gradient(180deg,var(--na-in) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na-in) 0 var(--doublet-w));background-size:100% var(--doublet-w);background-repeat:no-repeat;background-position:0 calc(var(--nowy) - var(--doublet-w) / 2)}
+/* the now line runs under the cards (never through their text), in My agenda too; its pill
+   (vt-nowd) sits over the time gutter. A card it crosses shows it as two short notches at
+   its left and right edges, in the card's padding (and on My agenda's header strip, which
+   covers the card's own fill); --nowy is where the line crosses, from the card's top. */
+.vt-grid div.vt-card.now-in,.vt-agenda div.vt-card.now-in>.vt-hd{background-image:var(--doublet-y),var(--doublet-y);background-repeat:no-repeat;background-size:6px var(--doublet-w);background-position:0 calc(var(--nowy) - 1px - var(--doublet-w) / 2),100% calc(var(--nowy) - 1px - var(--doublet-w) / 2)}
 .vt-nowd{position:absolute;left:0;width:calc(var(--vtw) + 2px);box-sizing:border-box;transform:translateY(-50%);padding:1px 0 0;border-radius:var(--r-tag);background:var(--na-fill);color:var(--na-ink);box-shadow:0 0 0 1px var(--na);font-size:.6875rem;font-weight:750;line-height:1.35;text-align:center;z-index:4;pointer-events:none;animation:vt-pill calc(120ms * var(--mo,1)) ease-out both}
 @keyframes vt-pill{from{opacity:0}}
 .vt-agenda .vt-card.now-in .vt-tk.dim{background:var(--body)}
@@ -1657,8 +1680,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-hgrid .vt-corner{position:sticky;left:0;top:auto;z-index:7;margin:0;background:var(--bg)}
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
-.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
-:root[data-contrast="high"] .vt-card{border-color:var(--c)}
+.vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid var(--line);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
+/* high contrast: bars, cards, their pop-overs and week blocks are outlined in their stream colour */
+:root[data-contrast="high"] :is(.hz-bar,.hz-head,.hz-pop,#vtPop,.week-blk,.vt-card){border-color:var(--c)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
@@ -1668,7 +1692,6 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
    under the time when the card is too narrow for both */
 .vt-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 4px}
 .vt-time{font-size:.75rem;font-weight:720;white-space:nowrap}
-.vt-card.is-now .vt-time::before{content:"";display:inline-block;width:var(--doublet-w);height:.75em;margin-right:5px;vertical-align:-.0625em;background:var(--doublet-x)}
 .vt-badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:.6875rem;font-weight:720;color:var(--c);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt-badge::before{content:"";flex:none;width:3px;height:.95em;border-radius:1px;background:var(--c)}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
