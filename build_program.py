@@ -1111,7 +1111,11 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .talk.is-now summary:hover,.talk.is-now:has(summary:hover){background:var(--now-bg)}
 /* My agenda's Now and Next: a plate whose left edge is the doublet */
 .up-next{position:relative;margin:16px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 16px 12px 22px;font-size:.875rem;overflow:clip}
-.up-next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--doublet-w);background:var(--doublet-x)}
+/* the doublet edge runs beside the rows that are on now only: a panel of what is next has none */
+.up-next>div{position:relative}
+.up-next>div:has(>.un-k.is-now)::before{content:"";position:absolute;left:-22px;top:-1px;bottom:0;width:var(--doublet-w);background:var(--doublet-x)}
+.up-next>div:first-child:has(>.un-k.is-now)::before{top:-12px}
+.up-next>div:last-child:has(>.un-k.is-now)::before{bottom:-12px}
 .up-next b{font-weight:700}
 .up-next>div{display:grid;grid-template-columns:2.75rem minmax(0,1fr);column-gap:10px;align-items:baseline}
 .up-next>div+div{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
