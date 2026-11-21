@@ -347,6 +347,9 @@ window.applyDisplay = function(d){
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316181C'/%3E%3Crect x='12.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3Crect x='17.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3C/svg%3E">
 <style>
 @@FONTS@@
+</style>
+<script>try{var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}catch(e){}</script>
+<style>
 :root{
   /* Line List: calm achromatic ink on a neutral grey ground; colour only where it is data
      (each stream takes its hue from a spectral line) and sodium amber only for "now". */
@@ -797,6 +800,34 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .saved-marker:not(:empty){color:var(--ink)}
 .replace-note{display:block;margin:4px 0 8px;font-size:.8125rem;color:var(--muted)}
 .ed-saved{font-weight:650;color:var(--ink)}
+/* ---------- load stability, deep-link landing, sheets (fixes) ----------
+   The toolbar ships with its final geometry: seven empty cells in the day ruler, and the
+   Now button laid out but invisible until the first render decides whether it shows. */
+.daytab.ph{pointer-events:none}
+.now-pending{visibility:hidden}
+.day-ended{margin:4px 0 0;font-size:.8125rem;font-weight:500;color:var(--muted)}
+.talk.past .t-title{color:var(--muted)}
+@keyframes jump-tint{0%,55%{background-color:var(--surface-3);box-shadow:inset 3px 0 0 var(--ink)}100%{background-color:transparent;box-shadow:inset 0 0 0 transparent}}
+@media (pointer:coarse){.jump-target.jump-target,.jump-target.jump-target:focus-visible{outline:none}.jump-target.jump-target{animation:jump-tint calc(1.4s * var(--mo)) ease-out}}
+@media (scripting:enabled){body:not(.ready) footer{visibility:hidden}}
+/* Phones: the details, Display settings and Move to another device open as bottom
+   sheets (no grabber: there is no drag to dismiss). They rise from the foot over --dur-l
+   on --ease-em (the dialog transitions above; reduced motion shows them at once), and
+   their actions sit in two columns with the primary one across both. */
+@media (max-width:720px){
+  dialog#eventDialog,dialog#displayDialog,dialog#moveDialog{margin:auto 0 0;width:100%;max-width:none;max-height:88dvh;border-radius:12px 12px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom);translate:0 100%}
+  dialog#moveDialog{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+  dialog#eventDialog[open],dialog#displayDialog[open],dialog#moveDialog[open]{translate:none}
+  @starting-style{dialog#eventDialog[open],dialog#displayDialog[open],dialog#moveDialog[open]{translate:0 100%}}
+  #eventDialog .ed-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #eventDialog .ed-actions .ag-btn{justify-content:center}
+  #eventDialog .ed-actions .detail-save,#eventDialog .ed-actions [data-replace-session],#eventDialog .ed-actions .replace-note{grid-column:1 / -1}
+  #moveDialog .md-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #moveDialog .md-row>.toggle{justify-content:center}
+  #moveDialog .md-row>.primary,#moveDialog .md-row>button:only-of-type,
+  #moveDialog .md-row:not(:has(>.primary))>:nth-child(odd):last-child,
+  #moveDialog .md-row:has(>.primary)>:nth-child(even):last-child{grid-column:1 / -1}
+}
 /* ---------- move to another device ---------- */
 #moveDialog{width:min(560px,94vw);padding:0 20px 20px}
 #moveDialog>.md-intro{margin-right:0}
@@ -2095,8 +2126,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 #buildDialog[open]{display:flex;flex-direction:column}
 html:has(#buildDialog[open]){overflow:hidden}
 #buildDialog::backdrop{background:var(--backdrop)}
-.bd-top{flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
-.bd-titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 16px}
+.bd-top{position:relative;flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+/* the close button stands in the top right corner at every width; the title bar keeps clear of it */
+#buildDialog{--bdx:36px}
+.bd-titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 16px;min-height:var(--bdx);padding-right:calc(var(--bdx) + 10px)}
+#bdClose{position:absolute;top:16px;right:20px;z-index:2}
 .bd-titles{flex:1 1 20rem;min-width:0}
 .bd-titlebar h2{margin:0;font-size:1.25rem;font-weight:720;letter-spacing:-.005em}
 .bd-intro{margin:4px 0 0;color:var(--muted);font-size:.8125rem;max-width:70ch}
@@ -2119,16 +2153,16 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
 .bd-tick.has{width:3px;height:8px;border-radius:1px;background:var(--star)}
 .bd-tick.day.has{height:9px}
-/* a slot where saved items overlap (bdClashes): an ink triangle under the track, wider than a saved slot's bar */
-.bd-tick.has.cx{width:11px;height:9px;border-radius:0;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%)}
-.bd-cxtri{display:inline-block;flex:none;width:11px;height:9px;margin-right:2px;background:var(--cx-mark,var(--warn-ink));clip-path:polygon(50% 0,100% 100%,0 100%);vertical-align:0}
+/* a slot where saved items overlap (bdClashes): a small fringe mark under the track, wider than a saved slot's bar */
+.bd-tick.has.cx{width:9px;height:9px;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-mark,var(--warn-ink)) 0 1px,transparent 1px 3px)}
 .bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--ink-2);border-radius:var(--r-seg);background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
 button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-cxn{display:inline-flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--ink-2)}
 .bd-cxn svg{flex:none;width:12px;height:12px}
 .bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
 .bd-cxnote{flex:1 1 100%;margin:4px 0 0;font-size:.75rem;color:var(--clash-ink);font-weight:600}
-.bd-card.cx{background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 8%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.bd-card.cx,.bd-card.on.cx{background-color:var(--clash-bg);background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 6%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.bd-cxp .cx-fr,.bd-cxkey .cx-fr{margin-right:0}
 .bd-cxp{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:750;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--ink-2);border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
 .bd-days{height:22px}
 .bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:var(--r-seg);font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--ink);white-space:nowrap;line-height:1.5}
@@ -2138,6 +2172,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 .bd-time{position:absolute;top:0;font-size:.6875rem;font-stretch:var(--stretch-cond);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.5}
 .bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:2px 16px;font-size:.8125rem;color:var(--muted);align-self:center}
 .bd-opts label{display:inline-flex;align-items:center;gap:6px;min-height:32px;color:var(--ink-2);cursor:pointer}
+.bd-opt-t{white-space:nowrap}
 .bd-opts input,.bd-check input{accent-color:var(--accent)}
 .bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:16px 20px 20px}
 .bd-slot-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin:0 0 12px}
@@ -2199,6 +2234,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 @media (max-width:720px){
   #buildDialog{--thumb:20px;--thumb-h:34px;--trk:6px;width:100vw;height:100vh;height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none}
   .bd-top{padding:8px 14px 2px}
+  #bdClose{top:8px;right:14px}
   .bd-titlebar{align-items:center}
   .bd-titlebar h2{font-size:1.125rem}
   .bd-titles{flex:1 1 0}
@@ -2243,7 +2279,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
   .bd-tog .caret{margin-left:8px}
   .bd-pg-l{display:none}
   .bd-sw,.bd-tc-l{display:none}
-  .bd-tc-s{display:inline}
+  .bd-tc-s{display:inline;margin-left:.25em}   /* (the space in its markup is lost at the start of a flex item) */
+  #bdProgress{white-space:nowrap}
   .bd-tlist{grid-column:1 / -1;border-top:1px solid var(--line);margin:2px 0 2px}
   .bd-talk{min-height:44px;padding:5px 4px}
   .bd-abs{min-height:40px}
@@ -2264,6 +2301,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
 @media (max-height:520px){
   #buildDialog{--thumb:16px;--thumb-h:26px;--trk:4px;width:100vw;height:100vh;height:100dvh;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none}
   .bd-top{padding:4px 14px 0}
+  #bdClose{top:4px;right:14px}
   .bd-titlebar{flex-wrap:nowrap;align-items:center}
   .bd-titlebar h2{font-size:1.0625rem;white-space:nowrap}
   .bd-titles{flex:0 1 auto}
@@ -2293,6 +2331,29 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
   .bd-info{min-width:40px;justify-content:center}
   .bd-opts label{min-height:40px}
   .bd-range{height:40px}
+}
+@media (pointer:coarse){#buildDialog{--bdx:40px}}
+@media (pointer:coarse) and (min-width:721px) and (min-height:521px){
+  .bd-days{height:40px}
+  .bd-day{top:0}
+}
+/* Landscape phones: the slider shares a row with "Slot x of y", the streams share the
+   title's row and scroll sideways, the clash sentence takes one line (its button leads to
+   the detail) and the slot's heading scrolls with the sessions. */
+@media (max-height:500px){
+  #buildDialog .bd-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:10px;padding:2px 14px 0}
+  #buildDialog .bd-titlebar,#buildDialog .bd-opts{display:contents}
+  #buildDialog .bd-titles{grid-area:1 / 1}
+  .bd-top .bd-intro{display:none}
+  #buildDialog .bd-chips{grid-area:1 / 2;align-self:center;margin:0;padding:4px 0}
+  #buildDialog .bd-chip{min-height:32px;height:32px;position:relative}
+  #buildDialog .bd-chip::after{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
+  #buildDialog .bd-opts label{grid-area:1 / 3;margin-right:calc(var(--bdx) + 4px)}
+  #buildDialog #bdProgress{display:block;grid-area:2 / 1;white-space:nowrap;font-size:.75rem}
+  #buildDialog .bd-scale{grid-area:2 / 2 / 3 / 4;margin:0}
+  #bdClose{top:2px;right:14px}
+  .bd-slot-head{position:static;margin-bottom:6px}
+  .bd-cxnote{-webkit-line-clamp:1;line-clamp:1}
 }
 /* the other dialogs on touch: 40px targets whatever the width */
 @media (pointer:coarse){
@@ -2886,7 +2947,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <button data-orient="v" aria-pressed="false">Vertical</button>
       </div>
     </div>
-    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
+    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span></div>
     <div class="controls">
       <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span class="tb-q" id="searchMiniQ"></span></button>
       <div class="searchbox" role="search">
@@ -2903,7 +2964,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
           <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream.<span class="fp-grp"> Click a group badge on a session (e.g. QST) to show only that group.</span></span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream.<span class="fp-grp"> Tap a group badge on a session (e.g. QST) to show only that group.</span></span></p>
         </div>
       </div>
-      <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
+      <button class="toggle now-pending" id="nowBtn" type="button">Now</button>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button></div>
     <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
@@ -3066,7 +3127,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </div>
       <div class="bd-opts">
         <span id="bdProgress"></span>
-        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"> Include breaks<span class="bd-opt-x"> and meetings</span></label>
+        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"><span class="bd-opt-t">Include breaks<span class="bd-opt-x"> and meetings</span></span></label>
       </div>
       <button type="button" class="toggle dlg-x" id="bdClose" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
     </div>
@@ -3135,6 +3196,200 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 const DATA = @@DATA@@;
+// ---------- TeX in titles and abstracts ----------
+// Some titles and abstracts arrive with their maths as TeX between single dollar signs
+// ($\mu^+\mu^-$). texToUnicode sets what it can as plain Unicode (Greek, arrows, relations,
+// accents, super- and subscripts). It works on one field at a time, pairing the dollar
+// signs from left to right, and a segment it cannot set whole (a command it does not know,
+// a subscript with no Unicode form, a display $$...$$, over 120 characters, or one that
+// reads like prose, as "$5 and $6" would) is left exactly as it came, dollar signs
+// included. It runs once over the program's titles and abstracts as the page loads, before
+// anything is drawn or searched. Speakers and affiliations are not touched.
+const TEX_SYM = {
+  alpha:'α', beta:'β', gamma:'γ', delta:'δ', epsilon:'ε', varepsilon:'ε', zeta:'ζ', eta:'η', theta:'θ', vartheta:'ϑ',
+  iota:'ι', kappa:'κ', lambda:'λ', mu:'μ', nu:'ν', xi:'ξ', pi:'π', varpi:'ϖ', rho:'ρ', varrho:'ϱ', sigma:'σ',
+  varsigma:'ς', tau:'τ', upsilon:'υ', phi:'φ', varphi:'φ', chi:'χ', psi:'ψ', omega:'ω',
+  Gamma:'Γ', Delta:'Δ', Theta:'Θ', Lambda:'Λ', Xi:'Ξ', Pi:'Π', Sigma:'Σ', Upsilon:'Υ', Phi:'Φ', Psi:'Ψ', Omega:'Ω',
+  rightarrow:'→', to:'→', leftarrow:'←', leftrightarrow:'↔', pm:'±', mp:'∓', times:'×', cdot:'⋅', sim:'∼',
+  approx:'≈', simeq:'≃', le:'≤', leq:'≤', ge:'≥', geq:'≥', neq:'≠', ll:'≪', gg:'≫', infty:'∞', partial:'∂',
+  hbar:'ℏ', ell:'ℓ', prime:'′', circ:'∘',
+  // a few more of the same kind that the program's own abstracts use
+  ast:'*', propto:'∝', equiv:'≡', in:'∈', otimes:'⊗', ldots:'…'
+};
+// (relations and arrows are set with a space each side; the other symbols, as in TeX, take no space after a command name)
+const TEX_REL = '→←↔≤≥≠≪≫≈≃∼∝≡∈';
+const TEX_OP = new Set(['rightarrow', 'to', 'leftarrow', 'leftrightarrow', 'pm', 'mp', 'times', 'cdot', 'sim', 'approx', 'simeq',
+  'le', 'leq', 'ge', 'geq', 'neq', 'll', 'gg', 'propto', 'equiv', 'in', 'otimes']);
+const TEX_FN = new Set(['ln', 'log', 'sin', 'cos', 'tan', 'arccos', 'arctan', 'erfc']);
+const TEX_KEEP = new Set(['mathrm', 'textrm', 'text', 'mathit', 'textit', 'textup', 'textbf', 'mathbf', 'mathsf', 'mathcal', 'small']);
+const TEX_TEXT = new Set(['text', 'textrm', 'textit', 'textup', 'textbf']);
+const TEX_SWITCH = new Set(['rm', 'it']);
+const TEX_MARK = { bar:'\u0304', overline:'\u0304', hat:'\u0302', tilde:'\u0303', vec:'\u20d7', dot:'\u0307' };
+const TEX_BB = { R:'ℝ', Z:'ℤ', N:'ℕ', Q:'ℚ', C:'ℂ' };
+const TEX_SUP = (() => {
+  const m = {};
+  const add = (from, to) => { for (let i = 0; i < from.length; i++) m[from[i]] = to[i]; };
+  add('0123456789+−=()', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾');
+  add('abcdefghijklmnoprstuvwxyz', 'ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ');
+  add('ABDEGHIJKLMNOPRTUW', 'ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂ');
+  m['*'] = '*'; m['′'] = '′'; m['°'] = '°';
+  return m;
+})();
+const TEX_SUB = (() => {
+  const m = {};
+  const add = (from, to) => { for (let i = 0; i < from.length; i++) m[from[i]] = to[i]; };
+  add('0123456789+−=()', '₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎');
+  add('aehijklmnoprstuvx', 'ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ');
+  return m;
+})();
+const TEX_FAIL = {};
+// One segment (the text between a pair of dollar signs) as Unicode, or null when it
+// cannot be set whole.
+function texSegment(src){
+  if (!src || src.length > 120 || src.indexOf('$') >= 0) return null;
+  // a plain run with spaces at its edges, or words of prose, is not maths
+  if (!/[\\^_{}~']/.test(src) && src.trim() !== src) return null;
+  if (/[a-z]{5,}/.test(src.replace(/\\(?:text|textrm|textit|textup|textbf|mathrm|mathit|mathbf|mathsf|mathcal|small)\s*\{[^{}]*\}/g, '').replace(/\\[A-Za-z]+/g, ''))) return null;
+  let i = 0;
+  const fail = () => { throw TEX_FAIL; };
+  const skip = () => { while (i < src.length && /\s/.test(src[i])) i++; };
+  const seq = (stop, text) => {
+    let out = '';
+    while (i < src.length){
+      if (src[i] === stop) return out;
+      if (src[i] === '}') fail();
+      out += item(text);
+    }
+    if (stop) fail();
+    return out;
+  };
+  // one argument: a {group}, a command, or one character
+  const arg = text => {
+    skip();
+    if (i >= src.length) fail();
+    if (src[i] === '{'){ i++; const r = seq('}', text); i++; return r; }
+    if (src[i] === '\\') return command(text);
+    const c = src[i];
+    if ('^_}{#&%'.includes(c)) fail();
+    i++;
+    return c === '-' && !text ? '−' : c;
+  };
+  const script = (a, table) => {
+    let r = '';
+    for (const c of a){ if (!table[c]) fail(); r += table[c]; }
+    return r;
+  };
+  const command = text => {
+    i++;
+    const m = /^[A-Za-z]+/.exec(src.slice(i, i + 24));
+    if (!m){
+      const c = src[i++];
+      if (c === ',') return '\u2009';
+      if (c === ';') return '\u2005';
+      if (c === '!') return '';
+      if (c === ' ') return ' ';
+      if (c === '%') return '%';
+      return fail();
+    }
+    const name = m[0];
+    i += name.length;
+    if (name === 'quad') return '\u2003';
+    if (Object.prototype.hasOwnProperty.call(TEX_SYM, name)){
+      // (as in TeX a letter or digit right after a symbol takes no space: "\Delta T" is ΔT; before an
+      // operator or a bracket the space typed is kept)
+      if (!TEX_OP.has(name)){ const m2 = /^\s+[A-Za-z0-9]/.exec(src.slice(i)); if (m2) skip(); }
+      return TEX_SYM[name];
+    }
+    if (TEX_FN.has(name)) return name;
+    if (TEX_SWITCH.has(name)){ skip(); return ''; }
+    if (TEX_KEEP.has(name)) return arg(text || TEX_TEXT.has(name));
+    if (TEX_MARK[name]){
+      const a = arg(text);
+      return [...a].length === 1 ? a + TEX_MARK[name] : fail();
+    }
+    if (name === 'sqrt'){
+      skip();
+      if (src[i] === '[') fail();
+      const a = arg(text).trim();
+      return !a ? fail() : [...a].length === 1 ? '√' + a : '√(' + a + ')';
+    }
+    if (name === 'mathbb'){ const a = arg(text); return TEX_BB[a] || fail(); }
+    if (name === 'left' || name === 'right'){
+      let c = src[i++];
+      if (c === '\\' && (src[i] === '{' || src[i] === '}')) c = src[i++];
+      else if (c === '.') return '';
+      return c && '()[]|{}'.includes(c) ? c : fail();
+    }
+    return fail();
+  };
+  function item(text){
+    const c = src[i];
+    if (c === '{'){ i++; const r = seq('}', text); i++; return r; }
+    if (c === '^'){ i++; return script(arg(text), TEX_SUP); }
+    if (c === '_'){ i++; return script(arg(text), TEX_SUB); }
+    if (c === '\\') return command(text);
+    if (c === '~'){ i++; return '\u00a0'; }
+    if (c === "'" && !text){ i++; return '′'; }
+    if (c === '-' && !text){ i++; return '−'; }
+    if (c === '#' || c === '&' || c === '%') fail();
+    if (/\s/.test(c)){   // a run of spaces is one; none before a script
+      let j = i;
+      while (j < src.length && /\s/.test(src[j])) j++;
+      const nx = src[j], pv = src[i - 1];
+      i = j;
+      // (no space between a base and its script)
+      return (nx === '^' || nx === '_') && (!pv || /[A-Za-z0-9})\]]/.test(pv)) ? '' : ' ';
+    }
+    i++;
+    return c;
+  }
+  try {
+    let out = seq('', false).normalize('NFC');
+    // (a hyphen between letters stays a hyphen; any other is the minus sign)
+    out = out.replace(/([A-Za-z.])\u2212(?=[A-Za-z])/g, '$1-');
+    // a space each side of a relation or arrow (none before the script it carries)
+    out = out.replace(/[ \u00a0]*([→←↔≤≥≠≪≫≈≃∼∝≡∈])[ \u00a0]*/g, (m, r, at, all) => ' ' + r + (/[\u2070-\u209f\u1d43-\u1d6a*]/.test(all[at + m.length] || '') ? '' : ' '));
+    out = out.replace(/ *\u00a0[ \u00a0]*/g, '\u00a0').replace(/ {2,}/g, ' ').replace(/^ +| +$/g, '');
+    return out;
+  } catch (e){
+    if (e !== TEX_FAIL) throw e;
+    return null;
+  }
+}
+// A field with its TeX set as Unicode; `log(before, after)` hears of every segment
+// (after is null for one left raw).
+function texToUnicode(str, log){
+  if (typeof str !== 'string' || str.indexOf('$') < 0) return str;
+  let out = '', i = 0;
+  while (i < str.length){
+    const a = str.indexOf('$', i);
+    if (a < 0){ out += str.slice(i); break; }
+    out += str.slice(i, a);
+    if (str[a + 1] === '$'){   // display maths: left as it is
+      const d = str.indexOf('$$', a + 2), end = d < 0 ? a + 2 : d + 2;
+      out += str.slice(a, end);
+      i = end;
+      continue;
+    }
+    const b = str.indexOf('$', a + 1);
+    if (b < 0){ out += str.slice(a); break; }
+    const seg = str.slice(a, b + 1), r = texSegment(str.slice(a + 1, b));
+    out += r === null ? seg : r;
+    if (log) log(seg, r);
+    i = b + 1;
+  }
+  return out;
+}
+(function texProgram(){
+  for (const d of DATA.days) for (const s of d.slots){
+    s.title = texToUnicode(s.title);
+    if (s.desc) s.desc = texToUnicode(s.desc);
+    for (const t of s.talks){
+      t.t = texToUnicode(t.t);
+      if (t.d) t.d = texToUnicode(t.d);
+    }
+  }
+})();
 const CAT_COLORS = {
   plenary:['var(--plenary)','var(--plenary-bg)'], aip:['var(--aip)','var(--aip-bg)'],
   anzcop:['var(--anzcop)','var(--anzcop-bg)'], commad:['var(--commad)','var(--commad-bg)'],
@@ -3230,7 +3485,7 @@ function renderTabs(counts = programCounts(), totals = null){
   };
   const span = DATA.days.length ? DATA.days[0].label.replace(/^\S+ (\d+).*$/, '$1') + '&#8211;' + DATA.days[DATA.days.length - 1].label.replace(/^\S+ /, '') : '';
   const tab = (key, label, n, on, today, t) =>
-    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
+    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' aria-current="date" title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
   el.innerHTML = tab('all', cell(span, 'All week'), total, allOn, false, totals && sum(totals)) +
     DATA.days.map((d,i) => tab(i, dayCell(d.label, i === ti), counts[i], state.day === i, i === ti, totals && totals[i])).join('');
   // (only a new choice of day moves the strip: a redraw for new counts leaves it where
@@ -3315,6 +3570,8 @@ function renderChips(){
 const FOLD = {'‘':"'",'’':"'",'‚':"'",'′':"'",'“':'"','”':'"','„':'"','″':'"',
   '‐':'-','‑':'-','‒':'-','–':'-','—':'-','−':'-','ß':'ss','ﬀ':'ff','ﬁ':'fi','ﬂ':'fl',
   'ı':'i','ø':'o','Ø':'o','ł':'l','Ł':'l','æ':'ae','Æ':'ae','đ':'d','Đ':'d'};
+const GREEK_NAMES = {'α':'alpha','β':'beta','γ':'gamma','δ':'delta','ε':'epsilon','ϵ':'epsilon','ζ':'zeta','η':'eta','θ':'theta','ϑ':'theta','ι':'iota','κ':'kappa','ϰ':'kappa','λ':'lambda','μ':'mu','ν':'nu','ξ':'xi','ο':'omicron','π':'pi','ϖ':'pi','ρ':'rho','ϱ':'rho','σ':'sigma','ς':'sigma','τ':'tau','υ':'upsilon','φ':'phi','ϕ':'phi','χ':'chi','ψ':'psi','ω':'omega'};
+const GREEK_RE = /[αβγδεϵζηθϑικϰλμνξοπϖρϱσςτυφϕχψω]/g;
 const NON_ASCII = /[^\x00-\x7f]/;
 const NON_ASCII_ALL = /[^\x00-\x7f]/g;
 const _folded = new Map();
@@ -3322,7 +3579,10 @@ let _foldResized = false;
 function foldChar(c){
   let f = _folded.get(c);
   if (f === undefined){
-    f = (FOLD[c] !== undefined ? FOLD[c] : c.normalize('NFD').replace(/[̀-ͯ]/g, '')).toLowerCase();
+    // (NFKD also takes superscripts and subscripts back to their digits and letters, so
+    // "B0" finds B̄⁰; a Greek letter folds to its name, so "mu" finds μ)
+    f = (FOLD[c] !== undefined ? FOLD[c] : c.normalize('NFKD').replace(/[\u0300-\u036f\u20d0-\u20ff]/g, '')).toLowerCase()
+      .replace(GREEK_RE, g => GREEK_NAMES[g]);
     _folded.set(c, f);
   }
   if (f.length !== c.length) _foldResized = true;
@@ -3951,7 +4211,7 @@ function applyFilters(){
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
     rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'}: <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'}, <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`
-      + searchWeekHtml(shownSlots) + aliasChipsHtml();
+      + searchWeekHtml(shownSlots) + aliasChipsHtml() + dayEndedHtml();
   }
   paintStarCount();
   if (state.scope === 'program') renderTabs(programCounts());
@@ -4850,7 +5110,22 @@ function weekFit(root = document.getElementById('agenda')){
   const stop = !ov._keyed && ov.querySelector('.week-blk[tabindex="0"], .week-tk[tabindex="0"]');
   if (stop) stop.setAttribute('aria-describedby', 'weekKeys');
   weekSync(ov);
+  weekSeedScroll(ov);
   weekPaintNow();
+}
+// On a phone the sideways overview opens at the time of day that matters: half an hour
+// before now during the congress's hours (it is on now there), else the day's 08:30
+// start, not at 07:00's empty morning. Once, for the overview just drawn.
+function weekSeedScroll(ov){
+  if (ov._seeded || !ov.classList.contains('week-h') || !PHONE_MQ.matches) return;
+  ov._seeded = true;
+  const sc = ov.querySelector('.week-sc'), col = ov.querySelector('.week-col');
+  if (!sc || !col || sc.scrollLeft) return;
+  const n = aedtNow(), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, dur = t1 - t0;
+  const live = todayIdx() >= 0 && n.min >= t0 && n.min <= t1;
+  const m = live ? Math.max(t0, n.min - 30) : Math.max(t0, 8.5 * 60);
+  sc.scrollLeft = Math.max(0, (m - t0) / dur * col.offsetWidth);
+  if (sc.onscroll) sc.onscroll();
 }
 // Does a label show at least the start (four letters, or the whole word) of its title's
 // first word, with room for the ellipsis when more follows? (No title: nothing to show.)
@@ -5381,7 +5656,8 @@ if (DLG_JS){
     if (d.__closing) return;
     if (!d.open || inVT || motionReduced() || !d.animate) return dlgNativeClose.call(d, rv);
     const opt = { duration: MO_S * motionK(), easing: 'ease-in', fill: 'forwards' };
-    const a = [d.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 8px' }], opt)];
+    const sheet = PHONE_MQ.matches && /^(eventDialog|displayDialog|moveDialog)$/.test(d.id);
+    const a = [d.animate([{ opacity: 1, translate: '0 0' }, { opacity: sheet ? 1 : 0, translate: sheet ? '0 100%' : '0 8px' }], opt)];
     try { a.push(d.animate([{ opacity: 1 }, { opacity: 0 }], { ...opt, pseudoElement: '::backdrop' })); } catch (_) {}
     d.__closing = a;
     Promise.all(a.map(x => x.finished)).then(() => {
@@ -8416,7 +8692,7 @@ function bdCard(s, parallel){
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
   return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
-      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="bd-cxtri" aria-hidden="true"></i> Clash</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="cx-fr" aria-hidden="true"></i>Clash</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
@@ -8446,7 +8722,7 @@ function bdRenderSlot(){
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
       <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
-      ${clashes ? `<br><span class="ag-warn"><i class="bd-cxtri" aria-hidden="true"></i> ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
+      ${clashes ? `<br><span class="ag-warn"><i class="cx-fr" aria-hidden="true"></i>${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -8504,8 +8780,8 @@ function bdPaintChecks(){
     card.classList.toggle('cx', !(card.querySelector('.bd-cxp').hidden = !mine.some(it => it.s === s)));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
-    if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">, all included</span><span class="bd-tc-s">&#9733; all</span>'
-      : n ? `<span class="bd-tc-l">, ${n} saved</span><span class="bd-tc-s">&#9733;${n}</span>` : '';
+    if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">, all included</span><span class="bd-tc-s"> (&#9733; all)</span>'
+      : n ? `<span class="bd-tc-l">, ${n} saved</span><span class="bd-tc-s"> (&#9733;${n})</span>` : '';
   });
   const items = mergeSaved(bdSlotItems(bd.slots[bd.i]));
   bdEl('bdSlotSaved').innerHTML = items.length ? `<b>${items.length}</b> saved in this slot` : 'nothing saved here yet';
@@ -8516,7 +8792,7 @@ function bdPaintChecks(){
   const note = bdEl('bdSlotCx');
   note.hidden = !pairs.length;
   note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
-  note.innerHTML = pairs.length ? '<i class="bd-cxtri" aria-hidden="true"></i> Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
+  note.innerHTML = pairs.length ? '<i class="cx-fr" aria-hidden="true"></i>Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
   // the key to the slider's marks, which steps to the next slot with a clash
   const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
   const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
@@ -8525,8 +8801,8 @@ function bdPaintChecks(){
     const sl = next === undefined ? null : bd.slots[next];
     key.disabled = !sl;
     key.dataset.next = sl ? next : '';
-    key.title = 'Triangles under the slider mark the slots where saved items overlap';
-    key.innerHTML = `<i class="bd-cxtri" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
+    key.title = 'Marks under the slider show the slots where saved items overlap';
+    key.innerHTML = `<i class="cx-fr" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
       + (sl ? `<span class="bd-cxn">next<span class="visually-hidden">: ${esc(sl.d.label)}, ${bdSpan(sl)[0]}</span>${BD_CHEV}</span>` : '');
   }
 }
@@ -8541,7 +8817,7 @@ bdEl('bdBody').addEventListener('click', e => {
 // start times underneath, thinned out wherever they would collide.
 function bdFrac(i){ return bd.slots.length > 1 ? i / (bd.slots.length - 1) : 0; }
 function bdPlace(box, idx, keepAll){
-  const W = box.clientWidth, pad = parseFloat(getComputedStyle(box).marginLeft) || 0, gap = keepAll ? 3 : 8;
+  const W = box.clientWidth, pad = parseFloat(getComputedStyle(box).marginLeft) || 0, gap = keepAll ? 3 : 12;
   const els = [...box.children];
   let right = -Infinity;
   els.forEach((el, k) => {
@@ -8738,13 +9014,18 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
   showView(layout, 'program');
   if (s && layout === 'calendar' && calendarJump(s, jumpTalk)) return;
   if (jump){
-    listFill(jump);
+    // A day is drawn whole and marked (what has ended, what is on now) before the landing
+    // is worked out, and the blocks above the target are measured, not estimated: the page
+    // is then where it will stay (All week fills only the session's own block).
+    if (state.day === 'all'){ listFill(jump); paintNow(); } else listFill();
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
+      listMeasureAbove(card);
       const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
       if (talk) talk.open = true;
       const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
-      target.focus({ preventScroll: true });
+      target.focus({ preventScroll: true, focusVisible: false });
+      markJumpTarget(target);
       revealInCard(card, talk && talk.querySelector('summary'));
       // (a face still loading, the italic names say, rewraps the text above: place it again
       // once the type is in, unless the reader has scrolled meanwhile)
@@ -8760,6 +9041,23 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
     }
   }
   document.querySelector('#daytabs [aria-pressed="true"]').focus();
+}
+// The blocks above a jump's target are measured at their real height (they are only
+// estimated until the browser draws them), so the landing does not move once they are.
+function listMeasureAbove(card){
+  const all = [...document.querySelectorAll('#agenda .block')], at = all.indexOf(card.closest('.block'));
+  const above = all.slice(0, Math.max(0, at)).filter(b => !b._drawn && b.getClientRects().length);
+  for (const b of above) b.style.contentVisibility = 'visible';
+  const hs = above.map(b => b.offsetHeight);
+  above.forEach((b, i) => { b.style.contentVisibility = ''; if (hs[i]) b.style.setProperty('--cih', hs[i] + 'px'); });
+}
+// On a touch screen the target of a link is marked by a short tint, not a focus ring (a
+// ring there crosses the star beside the title); the first key press takes the mark away.
+function markJumpTarget(el){
+  document.querySelectorAll('.jump-target').forEach(x => x.classList.remove('jump-target'));
+  el.classList.add('jump-target');
+  const off = () => { el.classList.remove('jump-target'); window.removeEventListener('keydown', off, true); };
+  window.addEventListener('keydown', off, true);
 }
 // Scroll a session card to just under the sticky toolbar, so its header shows above
 // the talk; a talk far down a long session goes a quarter of the way down the screen.
@@ -9402,22 +9700,49 @@ function paintCountdown(){
   el.parentNode.classList.toggle('is-today', ti >= 0);
 }
 
+// A day of the list whose every session has ended says so under its summary.
+function dayEnded(i){
+  const d = DATA.days[i], n = aedtNow();
+  return d.date < n.date || (d.date === n.date && d.slots.length > 0 && d.slots.every(s => toMin(s.end) <= n.min));
+}
+function dayEndedHtml(){
+  return state.scope === 'program' && state.layout === 'list' && state.day !== 'all' && dayEnded(state.day)
+    ? '<p class="day-ended">This day has ended.</p>' : '';
+}
+function paintDayEnded(){
+  const rl = document.getElementById('resultLine'), on = dayEndedHtml(), has = rl.querySelector('.day-ended');
+  if (on && !has) rl.insertAdjacentHTML('beforeend', on);
+  else if (!on && has) has.remove();
+}
 // Marks what is on now and next. It only toggles classes, so a timer can run it.
 function paintNow(){
   const n = aedtNow();
-  document.getElementById('nowBtn').hidden = todayIdx() < 0 || !(state.scope === 'program' || (state.scope === 'agenda' && state.layout === 'calendar'));
+  const nowBtn = document.getElementById('nowBtn');
+  nowBtn.hidden = todayIdx() < 0 || !(state.scope === 'program' || (state.scope === 'agenda' && state.layout === 'calendar'));
+  nowBtn.classList.remove('now-pending');
   const blocks = [...document.querySelectorAll('#agenda .block')];
   let next = null;
   for (const b of blocks){
     const today = b.dataset.date === n.date;
     const st = toMin(b.dataset.start), en = toMin(b.dataset.end);
-    b.classList.toggle('past', today && en <= n.min);
+    // (a block that ended is past whichever day is open; a day before today is past whole)
+    b.classList.toggle('past', b.dataset.date < n.date || (today && en <= n.min));
     b.classList.toggle('is-now', today && st <= n.min && n.min < en);
     b.classList.remove('is-next');
     if (!next && today && st > n.min && !b.classList.contains('hidden') && !b.closest('.day-section.hidden')) next = b;
   }
   if (next) next.classList.add('is-next');
   document.querySelectorAll('#agenda .talk.is-now').forEach(li => li.classList.remove('is-now'));
+  // the talks that have ended (the open days up to today)
+  for (const b of blocks){
+    if (b.dataset.date > n.date) continue;
+    const ended = b.dataset.date < n.date;
+    for (const li of b.querySelectorAll('.talk[data-tid]')){
+      const hit = talkById(li.dataset.tid);
+      li.classList.toggle('past', ended || (hit && toMin(hit.t.e) <= n.min));
+    }
+  }
+  paintDayEnded();
   for (const b of blocks){
     if (!b.classList.contains('is-now')) continue;
     for (const card of b.querySelectorAll('.card')){
@@ -10578,7 +10903,8 @@ if (DLG_JS) for (const d of document.querySelectorAll('dialog')){
     d.close(e.submitter && e.submitter.value || undefined);
   });
 }
-start();
+// (the footer stays unseen until the first drawing, so it does not ride down the page as the program fills in)
+try { start(); } finally { document.body.classList.add('ready'); }
 </script>
 </body>
 </html>
