@@ -2970,6 +2970,200 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 const DATA = @@DATA@@;
+// ---------- TeX in titles and abstracts ----------
+// Some titles and abstracts arrive with their maths as TeX between single dollar signs
+// ($\mu^+\mu^-$). texToUnicode sets what it can as plain Unicode (Greek, arrows, relations,
+// accents, super- and subscripts). It works on one field at a time, pairing the dollar
+// signs from left to right, and a segment it cannot set whole (a command it does not know,
+// a subscript with no Unicode form, a display $$...$$, over 120 characters, or one that
+// reads like prose, as "$5 and $6" would) is left exactly as it came, dollar signs
+// included. It runs once over the program's titles and abstracts as the page loads, before
+// anything is drawn or searched. Speakers and affiliations are not touched.
+const TEX_SYM = {
+  alpha:'α', beta:'β', gamma:'γ', delta:'δ', epsilon:'ε', varepsilon:'ε', zeta:'ζ', eta:'η', theta:'θ', vartheta:'ϑ',
+  iota:'ι', kappa:'κ', lambda:'λ', mu:'μ', nu:'ν', xi:'ξ', pi:'π', varpi:'ϖ', rho:'ρ', varrho:'ϱ', sigma:'σ',
+  varsigma:'ς', tau:'τ', upsilon:'υ', phi:'φ', varphi:'φ', chi:'χ', psi:'ψ', omega:'ω',
+  Gamma:'Γ', Delta:'Δ', Theta:'Θ', Lambda:'Λ', Xi:'Ξ', Pi:'Π', Sigma:'Σ', Upsilon:'Υ', Phi:'Φ', Psi:'Ψ', Omega:'Ω',
+  rightarrow:'→', to:'→', leftarrow:'←', leftrightarrow:'↔', pm:'±', mp:'∓', times:'×', cdot:'⋅', sim:'∼',
+  approx:'≈', simeq:'≃', le:'≤', leq:'≤', ge:'≥', geq:'≥', neq:'≠', ll:'≪', gg:'≫', infty:'∞', partial:'∂',
+  hbar:'ℏ', ell:'ℓ', prime:'′', circ:'∘',
+  // a few more of the same kind that the program's own abstracts use
+  ast:'*', propto:'∝', equiv:'≡', in:'∈', otimes:'⊗', ldots:'…'
+};
+// (relations and arrows are set with a space each side; the other symbols, as in TeX, take no space after a command name)
+const TEX_REL = '→←↔≤≥≠≪≫≈≃∼∝≡∈';
+const TEX_OP = new Set(['rightarrow', 'to', 'leftarrow', 'leftrightarrow', 'pm', 'mp', 'times', 'cdot', 'sim', 'approx', 'simeq',
+  'le', 'leq', 'ge', 'geq', 'neq', 'll', 'gg', 'propto', 'equiv', 'in', 'otimes']);
+const TEX_FN = new Set(['ln', 'log', 'sin', 'cos', 'tan', 'arccos', 'arctan', 'erfc']);
+const TEX_KEEP = new Set(['mathrm', 'textrm', 'text', 'mathit', 'textit', 'textup', 'textbf', 'mathbf', 'mathsf', 'mathcal', 'small']);
+const TEX_TEXT = new Set(['text', 'textrm', 'textit', 'textup', 'textbf']);
+const TEX_SWITCH = new Set(['rm', 'it']);
+const TEX_MARK = { bar:'\u0304', overline:'\u0304', hat:'\u0302', tilde:'\u0303', vec:'\u20d7', dot:'\u0307' };
+const TEX_BB = { R:'ℝ', Z:'ℤ', N:'ℕ', Q:'ℚ', C:'ℂ' };
+const TEX_SUP = (() => {
+  const m = {};
+  const add = (from, to) => { for (let i = 0; i < from.length; i++) m[from[i]] = to[i]; };
+  add('0123456789+−=()', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾');
+  add('abcdefghijklmnoprstuvwxyz', 'ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ');
+  add('ABDEGHIJKLMNOPRTUW', 'ᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂ');
+  m['*'] = '*'; m['′'] = '′'; m['°'] = '°';
+  return m;
+})();
+const TEX_SUB = (() => {
+  const m = {};
+  const add = (from, to) => { for (let i = 0; i < from.length; i++) m[from[i]] = to[i]; };
+  add('0123456789+−=()', '₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎');
+  add('aehijklmnoprstuvx', 'ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ');
+  return m;
+})();
+const TEX_FAIL = {};
+// One segment (the text between a pair of dollar signs) as Unicode, or null when it
+// cannot be set whole.
+function texSegment(src){
+  if (!src || src.length > 120 || src.indexOf('$') >= 0) return null;
+  // a plain run with spaces at its edges, or words of prose, is not maths
+  if (!/[\\^_{}~']/.test(src) && src.trim() !== src) return null;
+  if (/[a-z]{5,}/.test(src.replace(/\\(?:text|textrm|textit|textup|textbf|mathrm|mathit|mathbf|mathsf|mathcal|small)\s*\{[^{}]*\}/g, '').replace(/\\[A-Za-z]+/g, ''))) return null;
+  let i = 0;
+  const fail = () => { throw TEX_FAIL; };
+  const skip = () => { while (i < src.length && /\s/.test(src[i])) i++; };
+  const seq = (stop, text) => {
+    let out = '';
+    while (i < src.length){
+      if (src[i] === stop) return out;
+      if (src[i] === '}') fail();
+      out += item(text);
+    }
+    if (stop) fail();
+    return out;
+  };
+  // one argument: a {group}, a command, or one character
+  const arg = text => {
+    skip();
+    if (i >= src.length) fail();
+    if (src[i] === '{'){ i++; const r = seq('}', text); i++; return r; }
+    if (src[i] === '\\') return command(text);
+    const c = src[i];
+    if ('^_}{#&%'.includes(c)) fail();
+    i++;
+    return c === '-' && !text ? '−' : c;
+  };
+  const script = (a, table) => {
+    let r = '';
+    for (const c of a){ if (!table[c]) fail(); r += table[c]; }
+    return r;
+  };
+  const command = text => {
+    i++;
+    const m = /^[A-Za-z]+/.exec(src.slice(i, i + 24));
+    if (!m){
+      const c = src[i++];
+      if (c === ',') return '\u2009';
+      if (c === ';') return '\u2005';
+      if (c === '!') return '';
+      if (c === ' ') return ' ';
+      if (c === '%') return '%';
+      return fail();
+    }
+    const name = m[0];
+    i += name.length;
+    if (name === 'quad') return '\u2003';
+    if (Object.prototype.hasOwnProperty.call(TEX_SYM, name)){
+      // (as in TeX a letter or digit right after a symbol takes no space: "\Delta T" is ΔT; before an
+      // operator or a bracket the space typed is kept)
+      if (!TEX_OP.has(name)){ const m2 = /^\s+[A-Za-z0-9]/.exec(src.slice(i)); if (m2) skip(); }
+      return TEX_SYM[name];
+    }
+    if (TEX_FN.has(name)) return name;
+    if (TEX_SWITCH.has(name)){ skip(); return ''; }
+    if (TEX_KEEP.has(name)) return arg(text || TEX_TEXT.has(name));
+    if (TEX_MARK[name]){
+      const a = arg(text);
+      return [...a].length === 1 ? a + TEX_MARK[name] : fail();
+    }
+    if (name === 'sqrt'){
+      skip();
+      if (src[i] === '[') fail();
+      const a = arg(text).trim();
+      return !a ? fail() : [...a].length === 1 ? '√' + a : '√(' + a + ')';
+    }
+    if (name === 'mathbb'){ const a = arg(text); return TEX_BB[a] || fail(); }
+    if (name === 'left' || name === 'right'){
+      let c = src[i++];
+      if (c === '\\' && (src[i] === '{' || src[i] === '}')) c = src[i++];
+      else if (c === '.') return '';
+      return c && '()[]|{}'.includes(c) ? c : fail();
+    }
+    return fail();
+  };
+  function item(text){
+    const c = src[i];
+    if (c === '{'){ i++; const r = seq('}', text); i++; return r; }
+    if (c === '^'){ i++; return script(arg(text), TEX_SUP); }
+    if (c === '_'){ i++; return script(arg(text), TEX_SUB); }
+    if (c === '\\') return command(text);
+    if (c === '~'){ i++; return '\u00a0'; }
+    if (c === "'" && !text){ i++; return '′'; }
+    if (c === '-' && !text){ i++; return '−'; }
+    if (c === '#' || c === '&' || c === '%') fail();
+    if (/\s/.test(c)){   // a run of spaces is one; none before a script
+      let j = i;
+      while (j < src.length && /\s/.test(src[j])) j++;
+      const nx = src[j], pv = src[i - 1];
+      i = j;
+      // (no space between a base and its script)
+      return (nx === '^' || nx === '_') && (!pv || /[A-Za-z0-9})\]]/.test(pv)) ? '' : ' ';
+    }
+    i++;
+    return c;
+  }
+  try {
+    let out = seq('', false).normalize('NFC');
+    // (a hyphen between letters stays a hyphen; any other is the minus sign)
+    out = out.replace(/([A-Za-z.])\u2212(?=[A-Za-z])/g, '$1-');
+    // a space each side of a relation or arrow (none before the script it carries)
+    out = out.replace(/[ \u00a0]*([→←↔≤≥≠≪≫≈≃∼∝≡∈])[ \u00a0]*/g, (m, r, at, all) => ' ' + r + (/[\u2070-\u209f\u1d43-\u1d6a*]/.test(all[at + m.length] || '') ? '' : ' '));
+    out = out.replace(/ *\u00a0[ \u00a0]*/g, '\u00a0').replace(/ {2,}/g, ' ').replace(/^ +| +$/g, '');
+    return out;
+  } catch (e){
+    if (e !== TEX_FAIL) throw e;
+    return null;
+  }
+}
+// A field with its TeX set as Unicode; `log(before, after)` hears of every segment
+// (after is null for one left raw).
+function texToUnicode(str, log){
+  if (typeof str !== 'string' || str.indexOf('$') < 0) return str;
+  let out = '', i = 0;
+  while (i < str.length){
+    const a = str.indexOf('$', i);
+    if (a < 0){ out += str.slice(i); break; }
+    out += str.slice(i, a);
+    if (str[a + 1] === '$'){   // display maths: left as it is
+      const d = str.indexOf('$$', a + 2), end = d < 0 ? a + 2 : d + 2;
+      out += str.slice(a, end);
+      i = end;
+      continue;
+    }
+    const b = str.indexOf('$', a + 1);
+    if (b < 0){ out += str.slice(a); break; }
+    const seg = str.slice(a, b + 1), r = texSegment(str.slice(a + 1, b));
+    out += r === null ? seg : r;
+    if (log) log(seg, r);
+    i = b + 1;
+  }
+  return out;
+}
+(function texProgram(){
+  for (const d of DATA.days) for (const s of d.slots){
+    s.title = texToUnicode(s.title);
+    if (s.desc) s.desc = texToUnicode(s.desc);
+    for (const t of s.talks){
+      t.t = texToUnicode(t.t);
+      if (t.d) t.d = texToUnicode(t.d);
+    }
+  }
+})();
 const CAT_COLORS = {
   plenary:['var(--plenary)','var(--plenary-bg)'], aip:['var(--aip)','var(--aip-bg)'],
   anzcop:['var(--anzcop)','var(--anzcop-bg)'], commad:['var(--commad)','var(--commad-bg)'],
@@ -3150,6 +3344,8 @@ function renderChips(){
 const FOLD = {'‘':"'",'’':"'",'‚':"'",'′':"'",'“':'"','”':'"','„':'"','″':'"',
   '‐':'-','‑':'-','‒':'-','–':'-','—':'-','−':'-','ß':'ss','ﬀ':'ff','ﬁ':'fi','ﬂ':'fl',
   'ı':'i','ø':'o','Ø':'o','ł':'l','Ł':'l','æ':'ae','Æ':'ae','đ':'d','Đ':'d'};
+const GREEK_NAMES = {'α':'alpha','β':'beta','γ':'gamma','δ':'delta','ε':'epsilon','ϵ':'epsilon','ζ':'zeta','η':'eta','θ':'theta','ϑ':'theta','ι':'iota','κ':'kappa','ϰ':'kappa','λ':'lambda','μ':'mu','ν':'nu','ξ':'xi','ο':'omicron','π':'pi','ϖ':'pi','ρ':'rho','ϱ':'rho','σ':'sigma','ς':'sigma','τ':'tau','υ':'upsilon','φ':'phi','ϕ':'phi','χ':'chi','ψ':'psi','ω':'omega'};
+const GREEK_RE = /[αβγδεϵζηθϑικϰλμνξοπϖρϱσςτυφϕχψω]/g;
 const NON_ASCII = /[^\x00-\x7f]/;
 const NON_ASCII_ALL = /[^\x00-\x7f]/g;
 const _folded = new Map();
@@ -3157,7 +3353,10 @@ let _foldResized = false;
 function foldChar(c){
   let f = _folded.get(c);
   if (f === undefined){
-    f = (FOLD[c] !== undefined ? FOLD[c] : c.normalize('NFD').replace(/[̀-ͯ]/g, '')).toLowerCase();
+    // (NFKD also takes superscripts and subscripts back to their digits and letters, so
+    // "B0" finds B̄⁰; a Greek letter folds to its name, so "mu" finds μ)
+    f = (FOLD[c] !== undefined ? FOLD[c] : c.normalize('NFKD').replace(/[\u0300-\u036f\u20d0-\u20ff]/g, '')).toLowerCase()
+      .replace(GREEK_RE, g => GREEK_NAMES[g]);
     _folded.set(c, f);
   }
   if (f.length !== c.length) _foldResized = true;
