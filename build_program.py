@@ -1235,7 +1235,7 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body .tools{display:flex;gap:16px;align-items:center;font-size:.8125rem}
 .t-body .tools .linkish,.card .meta .linkish{font-size:.8125rem}
 .ics-note summary{cursor:pointer;font-weight:600;color:var(--ink)}
-.talk-star{align-self:start;width:36px;height:36px;margin:4px 4px 0 0;border:1px solid transparent;background:transparent;border-radius:var(--r-ctl);color:var(--muted);font-size:1.1875rem;line-height:1}
+.talk-star{align-self:start;width:36px;height:36px;margin:4px 4px 0 0;padding:0;border:1px solid transparent;background:transparent;border-radius:var(--r-ctl);color:var(--muted);font-size:1.125rem;line-height:1}
 .talk-star:hover{border-color:var(--line);background:var(--card);color:var(--ink)}
 .talk-star.on,.talk-star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 /* the star's glyph settles in as its chip fills */
