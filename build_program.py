@@ -659,7 +659,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
   .week-now{--dw:4.5px;--dl:1.5px}
   .week-legend,.week-h .week-legend{margin-left:0;gap:4px 12px}
   .week-h{--dl:3.1rem;--hppm:.07rem}
-  .week-h .week-dayh{align-items:flex-start;padding:4px 5px}
+  .week-h .week-dayh{align-items:flex-start;padding:4px 5px;text-align:left}
 }
 /* Short screens (a phone on its side): the vertical overview's sticky day heads take
    one slim line, so the grid keeps most of the height under the toolbar */
@@ -1215,7 +1215,7 @@ html:has(dialog[open]) .undo-bar{display:none}
    tabular; colour marks streams only; the sodium doublet marks now. */
 .hz-ctl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:0 0 10px}
 /* zoom and "go to": segmented controls (a container of segments, the chosen one in ink) */
-.hz-pre{display:inline-flex;gap:2px;flex-wrap:wrap;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
+.hz-pre{display:inline-flex;gap:2px;flex-wrap:nowrap;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
 .hz-pre button{min-height:32px;padding:4px 11px;border-radius:var(--r-seg);border:0;background:transparent;color:var(--ink-2);font-size:.8125rem;font-weight:650;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
 .hz-pre button:hover{background:var(--surface-3);color:var(--ink)}
 .hz-pre button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
@@ -1271,7 +1271,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-ticks span.t::before{content:"";position:absolute;left:0;bottom:0;width:1px;height:8px;background:var(--ink-2)}
 .hz-ticks span.t.m{padding-bottom:5px;font-size:.6875rem;font-weight:500;color:var(--muted)}
 .hz-ticks span.t.m::before{height:4px;background:var(--hover-line)}
-.hz-ticks span.t.cut{color:transparent}
+.hz-ticks span.t.cut{overflow:hidden;text-indent:-200px}
 /* now on the ruler: the sodium tag, standing on the doublet that runs down the day */
 .hz-nowpill{position:absolute;bottom:4px;transform:translateX(-50%);z-index:2;padding:2px 5px 1px;border-radius:var(--r-tag);background:var(--na-fill);box-shadow:0 0 0 1px var(--na);color:var(--na-ink);font-size:.6875rem;font-weight:750;line-height:1.2;white-space:nowrap;animation:hz-fade var(--dur-s) var(--ease) calc(80ms * var(--mo)) both}
 .hz-nowpill::after{content:"";position:absolute;left:50%;top:calc(100% + 1px);height:8px;width:var(--doublet-w);margin-left:calc(var(--doublet-w) / -2);background:var(--doublet-x)}
@@ -1365,7 +1365,9 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-talk .hz-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--cl);overflow:hidden;flex:none}
 .hz-mid .hz-tl{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:.6875rem}
 .hz-mid .hz-ts{display:none}
-.hz-tick .hz-talk{background:var(--c);border:1px solid var(--cbg);padding:0;border-radius:var(--r-line)}
+/* fitted too small for text, each talk is a line segment along the foot of its session (the
+   whole height still takes the click) */
+.hz-tick .hz-talk{background:linear-gradient(var(--c),var(--c)) left bottom/100% 6px no-repeat;border:0;padding:0;border-radius:var(--r-line)}
 .hz-tick .hz-talk>*{display:none}
 /* talk marks along a session's foot: 1.5px lines in the stream colour; the talk on now is
    a 1.5px doublet in sodium, with a sodium rule along its span */
@@ -1382,11 +1384,11 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 /* on now: the same fill, the title a step bolder; the doublet passing through is the cue */
 .hz-bar.is-now .hz-title{font-weight:720}
 .hz-talk.is-now{background:var(--na-bg);border-color:var(--na);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--na-bg),inset 6px 0 var(--na);padding-left:9px}
-.hz-tick .hz-talk.is-now{background:var(--na);box-shadow:none;padding-left:0}
+.hz-tick .hz-talk.is-now{background:linear-gradient(var(--na),var(--na)) left bottom/100% 6px no-repeat;box-shadow:none;padding-left:0}
 /* (My agenda's bars carry an opaque body, so there the doublet runs over them) */
 .hz-agenda .hz-nowl{z-index:4}
 .hz-day .hz-bar.hz-now-in,.hz-day .hz-talk.hz-now-in{background-image:var(--doublet-x);background-repeat:no-repeat;background-size:var(--doublet-w) 100%;background-position:calc(var(--nowx,-99px) - var(--doublet-w) / 2) 0}
-.hz-day.hz-tick .hz-talk.hz-now-in{background-image:none}
+.hz-day.hz-tick .hz-talk.hz-now-in{background-image:linear-gradient(var(--na),var(--na));background-size:100% 6px;background-position:left bottom}
 .hz-talk.is-now .hz-tt{color:var(--na-text)}
 .hz-talk.is-now.hz-thin{padding-left:7px}
 #hzTip{position:fixed;z-index:90;max-width:300px;background:var(--toast-bg);color:var(--toast-ink);padding:6px 9px;border-radius:var(--r-seg);font-size:.75rem;line-height:1.4;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;pointer-events:none;white-space:pre-line;box-shadow:0 12px 28px -8px var(--pop-shadow)}
@@ -1414,7 +1416,11 @@ button.hz-bar:hover,button.hz-bar:focus-visible,.hz-head:hover,.hz-head:focus-vi
 .hz-pnote{color:var(--clash-ink);font-weight:700;font-size:.6875rem}
 @media (prefers-reduced-motion:reduce){.hz-pop{transition:none}}
 @media print{.hz-pop{display:none!important}}
-@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill,.hz-mark.is-now{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-bar,.hz-talk{background:none}}
+@media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill,.hz-mark.is-now{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
+  /* the canvas prints from the day's start, so the ruler does too */
+  .hz-ticks{transform:none!important}.hz-ticks span.t{visibility:visible!important;color:var(--ink)!important}}
+/* print: the week stays light and clean, without the doublet */
+@media print{.week-ov{border-color:var(--line)}.week-now,.week-dayh .na-glyph,.week-rul .sx-more{display:none!important}.week-col{background-color:transparent}}
 @media (max-width:720px){
 .hz-day{--lw:4.75rem}
 .hz-full{display:none}.hz-ab{display:inline}
@@ -1596,7 +1602,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
   .hz-ctl{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:3px 18px 3px 2px;margin:0 0 4px;-webkit-mask-image:linear-gradient(to left,transparent,#000 18px);mask-image:linear-gradient(to left,transparent,#000 18px)}
   .hz-ctl::-webkit-scrollbar{display:none}
   .hz-pre{flex-wrap:nowrap;flex:none}
-  .hz-pre button{min-height:30px;padding:3px 10px;white-space:nowrap}
+  .hz-pre button{padding:3px 10px;white-space:nowrap}
   .cal-day-title{font-size:1rem;margin:0 0 6px;padding:4px 0 6px}
   /* the day's title and its zoom and jump buttons share a row */
   .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;border-bottom:2px solid var(--day-rule)}
