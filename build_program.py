@@ -444,15 +444,17 @@ button{font:inherit;cursor:pointer}
    Display and the countdown on the right; and along its foot the spectral rule, the
    program's legend: each stream's line standing at its wavelength, with "now" (the sodium
    D doublet) among them. */
-header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
+header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
-.hero p.sub{margin:12px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
-.hero .facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 14px;margin:14px 0 0;font-size:.875rem;line-height:1.45}
-.hero .facts>div{display:contents}
+.hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
+@media (min-width:1200px){.hero p.sub{max-width:none}}
+/* the three facts on one row: each pair inline, the term quiet */
+.hero .facts{display:flex;flex-wrap:wrap;gap:4px 28px;margin:10px 0 0;font-size:.8125rem;line-height:1.45}
+.hero .facts>div{display:inline-flex;align-items:baseline;gap:6px;min-width:0}
 .hero .facts dt{color:var(--muted);font-weight:500}
-.hero .facts dd{margin:0;color:var(--ink);font-weight:560}
+.hero .facts dd{margin:0;color:var(--ink-2);font-weight:560}
 .hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;padding-top:2px}
 .hero-when{display:flex;align-items:center;gap:8px;margin:0;font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .hero-when .na-glyph{display:none}
@@ -463,7 +465,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
    longer every 50 nm), labelled at the hundreds. Each line is 2px, snapped to whole pixels so
    it stays crisp; the sodium doublet (now) stands taller than the rest and resolves as it
    appears. --sp-h is the height of a line, --sp-tk of a long tick. */
-.spectral{grid-column:1/-1;margin:24px 0 0;--sp-h:34px;--sp-na:44px;--sp-tk:7px}
+.spectral{grid-column:1/-1;margin:16px 0 0;--sp-h:20px;--sp-na:26px;--sp-tk:6px}
 .sp-scale{position:relative;height:var(--sp-na);border-bottom:1px solid var(--ink-2)}
 .sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100% - 1px);left:round(down,calc((var(--nm) - 400) / 300 * 100% - 1px),1px);width:2px;height:var(--sp-h);background:var(--c)}
 .sp-scale i.sp-na{width:var(--doublet-w);height:var(--sp-na);left:calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2);left:round(down,calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2),1px);background:none}
@@ -872,7 +874,9 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
    condensed and tabular); the chosen day is filled with ink; today carries the doublet. */
 @property --dt-fl{syntax:"<length>";inherits:false;initial-value:0px}
 @property --dt-fr{syntax:"<length>";inherits:false;initial-value:0px}
-.daytabs{display:flex;gap:0;overflow-x:auto;padding:0 0 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent);mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent)}
+/* (4px of room on every side, given back by the margin, so a cell's focus ring is not
+   cut off by the scroller) */
+.daytabs{display:flex;gap:0;overflow-x:auto;padding:4px 4px 10px;margin:-4px -4px 0;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent);mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent)}
 .daytabs::-webkit-scrollbar{display:none}
 /* (a strip that scrolls fades at the edge it can still scroll to) */
 @supports (animation-timeline:scroll()){.daytabs{animation:dt-fade linear both;animation-timeline:scroll(self inline)}}
@@ -882,11 +886,15 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .daytab{flex:1 1 0;position:relative;display:grid;grid-template-areas:"wd n" "dm dm";grid-template-columns:auto auto;justify-content:space-between;align-items:baseline;column-gap:10px;row-gap:1px;min-width:max-content;margin:0 0 0 -1px;padding:6px 12px 7px;border:1px solid var(--line);border-radius:0;background:var(--card);color:var(--ink);text-align:left;white-space:nowrap;line-height:1.2}
 .daytab:first-child{margin-left:0;border-radius:var(--r-ctl) 0 0 var(--r-ctl)}
 .daytab:last-child{border-radius:0 var(--r-ctl) var(--r-ctl) 0}
-.dt-wd{grid-area:wd;display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:550;color:var(--muted)}
+/* (a fixed-height line whose baseline is its text's, so today's glyph cannot move the
+   weekday off its neighbours' line) */
+.dt-wd{grid-area:wd;height:1rem;display:flex;align-items:baseline;gap:4px;font-size:.6875rem;font-weight:550;color:var(--muted)}
 .dt-dm{grid-area:dm;font-size:1rem;font-weight:700;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;letter-spacing:-.005em}
 .daytab .dt-count{grid-area:n;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
 .daytab:hover{z-index:1;border-color:var(--hover-line);background:var(--surface-2)}
-.daytab.on{z-index:2;background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dt-wd .na-glyph{align-self:center}
+/* (the ink fill stays inside the strip's hairline) */
+.daytab.on{z-index:2;background:var(--accent);border-color:var(--line);color:var(--accent-ink)}
 .daytab.on .dt-wd,.daytab.on .dt-count{color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
 .daytab.on .na-glyph{--g:var(--na-sel)}
 /* relative: its hidden words stay inside the sideways-scrolling tabs */
@@ -970,8 +978,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-n{font-size:.8125rem;font-weight:500;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
 .pp-none .pp-aff{color:var(--muted)}
 /* columns, so a short card leaves no hole under it; the order runs down each column */
-.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip}
+.pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip;background:var(--card)}
 .pp-person{background:var(--card);border:0;border-radius:0;padding:12px 14px 8px;min-width:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);margin:0}
+/* (the last person closes its row with a hairline before the plate's empty cells, as in the list) */
+.pp-person:last-child{box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
 .pp-name{font-weight:680;font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
 .pp-raw{margin-top:1px;font-size:0.75rem;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .pp-roles{list-style:none;margin:6px -6px 0;padding:0}
@@ -979,8 +989,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-role:hover{background:var(--surface-3)}
 .pp-role:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .pp-when{font-size:.75rem;font-weight:600;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
-.pp-what{color:var(--ink);font-weight:560;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:.2em}
-.pp-role:hover .pp-what{text-decoration-color:currentColor}
+.pp-what{color:var(--ink);font-weight:560;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:3px}
+.pp-role:hover .pp-what,.pp-role:focus-visible .pp-what{text-decoration-color:currentColor}
 .pp-conv .pp-what{font-weight:480;font-style:italic}
 .pp-star{background:var(--starOn-bg);color:var(--starOn-ink);padding:0 4px;border-radius:var(--r-tag)}
 /* control row: Sort | Category | Jump */
@@ -1124,7 +1134,7 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .card,.talk,.block{scroll-margin-top:calc(var(--toolbar-h,150px) + 16px)}
 .block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
 .block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
 /* a session alone in its time slot takes the full width; long text keeps a readable measure */
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
@@ -1147,7 +1157,7 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .star.on,.star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 .card .meta{padding:8px 19px 0;font-size:.8125rem;font-weight:500;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 .card .meta .m-time{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
-.card .meta .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-stretch:var(--stretch-cond);line-height:1.45}
+.card .meta .room{display:inline-block;padding:0 5px;border:1px solid var(--hover-line);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:600;font-stretch:var(--stretch-cond);line-height:1.45}
 .card .meta .m-conv{flex-basis:100%;color:var(--muted)}
 .card .meta .m-conv b{font-style:italic;font-weight:480;color:var(--ink-2)}
 .card .meta .m-n{font-variant-numeric:tabular-nums}
@@ -1221,7 +1231,11 @@ mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;paddi
 /* in the calendars' tight, clamped titles a match keeps to its own letters */
 :is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
 
-.empty-note{display:none;margin:8px 0 0;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
+/* (in the content column: the list's 1140px, inside the same 20px gutters) */
+.empty-note{display:none;box-sizing:border-box;width:min(1140px,calc(100% - 40px));margin:24px auto 56px;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
+body.wide-view .empty-note{width:auto;margin-left:20px;margin-right:20px}
+/* (the empty list above it keeps only its top padding) */
+#agenda:has(+.empty-note.show){padding-bottom:0}
 .empty-note.show{display:block}
 
 footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
@@ -1231,11 +1245,14 @@ footer p{margin:4px 0}
 footer .colophon .na-glyph{margin-left:2px}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
-footer .cols{gap:24px 32px;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+/* four columns on the content width (the colour key the fourth), two by two on tablets,
+   one on phones */
+footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){footer .cols{grid-template-columns:repeat(4,minmax(0,1fr))}}
 footer p{line-height:1.6;max-width:62ch}
 footer a{color:var(--ink)}
-footer .colophon{grid-column:1/-1}
-footer .colophon p{max-width:80ch}
+footer .colophon p{font-size:.8125rem}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -1794,8 +1811,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
   .hz-pre button{padding:3px 10px;white-space:nowrap}
   .cal-day-title{font-size:1rem;margin:0 0 6px;padding:4px 0 6px}
   /* the day's title and its zoom and jump buttons share a row */
-  .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;border-bottom:2px solid var(--day-rule)}
-  .hz-hd .cal-day-title{flex:none;margin:0;border:0;padding:4px 0}
+  .hz-hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:0;border-bottom:1px solid var(--line)}
+  .hz-hd .cal-day-title{flex:none;margin:0;border:0;padding:4px 0;font-size:1rem}
   .hz-hd .hz-ctl{flex:1 1 auto;min-width:0;margin:0}
   .vt-daynav{margin:0 0 8px;padding:0 0 6px}
 }
@@ -1814,7 +1831,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .kind.k-t{background:var(--card);color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
 .kind.k-g{background:var(--card);color:var(--bar-ink);border:1px dashed var(--c);padding:1px 4px}
 .k-ic{content:"";display:inline-block;flex:none;width:.5rem;height:.6875rem;background:currentColor;-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
-:root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17'%3E%3Crect x='3' y='0' width='6' height='10.5' rx='3'/%3E%3Cpath d='M1 7.5a5 5 0 0 0 10 0M6 12.5V17M3 16.2h6' fill='none' stroke='%23000' stroke-width='1.7'/%3E%3C/svg%3E")}
+/* (the mic: an outline, a 1.5px stroke like the rest of the icon set: capsule, arc, stem and base) */
+:root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Crect x='3.75' y='.75' width='4.5' height='9.5' rx='2.25'/%3E%3Cpath d='M1.25 7.75a4.75 4.75 0 0 0 9.5 0M6 12.5v3.5M3.5 16.25h5'/%3E%3C/svg%3E")}
 /* a clash: interference fringes (fine ink lines) along the top edge, as in the list, and a fine ink ring */
 .has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);box-shadow:inset 0 1px 0 var(--warn-ink)}
 .hz-bar.has-clash,.vt-card.has-clash{outline:1.5px solid var(--warn-ink);outline-offset:1px}
@@ -1868,7 +1886,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
-.vt-cxi{flex:none;vertical-align:-1px;margin-right:3px}
+/* (the fringe in the calendars' labels, bars and tags: 10px by .75rem, a little closer to its words) */
+:is(.hz-cxb,.hz-lcx,.vt-cx,.vt-hcx) .cx-fr{width:10px;height:.75rem;margin-right:4px;vertical-align:-.0625rem}
+.hz-cxb .cx-fr{vertical-align:-.125rem}
 .vt-cx{display:inline-flex;align-items:center;flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
 .vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 40%,var(--line));border-left-color:var(--c)}
 .vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:4px 4px 0 0}
@@ -1919,13 +1939,10 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .week-legend .wk-k i{background:var(--ink-2)}
 .week-legend .wk-kt i{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-kg i{background:var(--surface-3);box-shadow:none;border:1.5px dashed var(--ink-2);box-sizing:border-box}
-.week-legend .wk-km i{background:var(--ink-2)}
-.week-legend .wk-km i{width:1.625rem;height:1.125rem}
-.week-legend .wk-km b{position:absolute;right:1px;top:1px;bottom:1px;width:.875rem;box-sizing:border-box;border:1px solid var(--ink-2);border-radius:3px;background:var(--card);box-shadow:0 0 0 1px var(--card)}
-.week-legend .wk-km b::before{content:"";position:absolute;left:50%;top:2px;width:.375rem;height:.5rem;margin-left:-.1875rem;background:var(--ink-2);-webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
-.week-h .week-legend .wk-km i{width:2rem;height:1.125rem}
-.week-h .week-legend .wk-km b{left:.625rem;right:auto;top:auto;bottom:1px;width:.875rem;height:8px}
-.week-h .week-legend .wk-km b::before{top:0}
+/* a saved talk in a session: the Session swatch with the Talk swatch's outline set into it
+   (no mic: at this size it only blurs) */
+.week-legend .wk-km i{width:1.375rem;height:.75rem;background:var(--ink-2)}
+.week-legend .wk-km b{position:absolute;right:0;top:0;bottom:0;width:.75rem;box-sizing:border-box;border-radius:var(--r-line);background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-k:last-of-type{margin-right:10px}
 /* a saved session's saved talks: rows on a quiet ground, each with its own stream line */
 .ag-inner{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-direction:column;gap:2px}
@@ -2032,7 +2049,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-sub .ag-who{color:var(--ink-2);font-style:italic;font-weight:480}
 .ag-sub .ag-who .aff{font-style:normal;color:var(--muted);font-weight:420}
 .ag-sub .ag-who:has(.room){font-style:normal}
-.ag-sub .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-style:normal;font-stretch:var(--stretch-cond);line-height:1.45}
+.ag-sub .room{display:inline-block;padding:0 5px;border:1px solid var(--hover-line);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:600;font-style:normal;font-stretch:var(--stretch-cond);line-height:1.45}
 .ag-sub .ag-n{font-variant-numeric:tabular-nums}
 .ag-kind{margin-right:8px;vertical-align:.125rem}
 .ag-clash{display:flex;align-items:baseline;margin-top:10px;font-size:.8125rem;line-height:1.45;color:var(--clash-ink);background:var(--card);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:6px 10px}
@@ -2472,6 +2489,49 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .vt-agenda .vt-head>span:first-child:not(:only-child){display:none}
   .vt-agenda .vt-head{justify-content:flex-end}
 }
+/* ---------- chrome and layout (round 2: header, calendar headings, footer, list and
+   participants details) ---------- */
+/* Calendar headings (A6): the date is the left item of the zoom and jump row, which is
+   ruled with a hairline, not an ink rule. The vertical day keeps its previous and next
+   buttons, grouped on the right. */
+.cal-day-title{font-size:1.125rem;font-weight:700;line-height:1.3;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.hz-hd{display:flex;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.hz-hd .cal-day-title{flex:none;margin:0;padding:0;border:0}
+.hz-hd .hz-ctl{margin:0}
+.vt-daynav{grid-template-columns:minmax(0,1fr) auto auto;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.vt-daynav>.cal-day-title{grid-row:1;grid-column:1;margin:0;padding:0;border:0;text-align:left;font-size:1.125rem}
+.vt-daynav>:first-child{grid-row:1;grid-column:2}
+.vt-daynav>:last-child{grid-row:1;grid-column:3}
+.vt-daynav>.vt-go.none{display:none}
+.hz-ls{display:none}
+@media (max-width:720px),(max-height:500px){
+  .cal-day-title,.vt-daynav>.cal-day-title{font-size:1rem}
+  .cal-day-title{margin:0 0 8px;padding:0 0 6px}
+  .vt-daynav{margin:0 0 8px;padding:0 0 6px}
+}
+/* the narrowest phones: the date on its own line, then every zoom and jump button in view
+   (no sideways scroller); the presets shorten to AM, PM and Eve, and the toolbar's Now
+   stands in for the preset one */
+@media (max-width:480px){
+  .hz-hd{flex-wrap:wrap;gap:6px 0;padding-bottom:6px}
+  .hz-hd .cal-day-title{flex:1 1 100%}
+  .hz-hd .hz-ctl{flex:1 1 100%;overflow:visible;-webkit-mask-image:none;mask-image:none;flex-wrap:wrap;gap:6px;padding:0}
+  .hz-lw{display:none}
+  .hz-ls{display:inline}
+  .hz-pre button[data-hzgo="now"]{display:none}
+}
+/* Interval rows on the narrowest phones: the title and its times in a column, the star
+   centred on the right; the stream's tick moves into the title */
+@media (max-width:359px){
+  .card.iv{display:grid;grid-template-columns:minmax(0,1fr) 40px;grid-template-areas:'t s' 'm s';column-gap:8px;row-gap:2px;align-items:center;padding:6px 0 6px 2px}
+  .card.iv::before{display:none}
+  .card.iv h3{grid-area:t;min-width:0}
+  .card.iv h3::before{content:'';display:inline-block;width:3px;height:.95em;background:var(--c);margin-right:8px;vertical-align:-1px;border-radius:1px}
+  .card.iv .meta{grid-area:m;padding-left:11px}
+  .card.iv .star{grid-area:s;align-self:center;justify-self:end;margin-left:0}
+}
+/* (phones on their side: the day strip keeps its 4px of room for focus rings there too) */
+@media (max-height:500px) and (orientation:landscape){.sticky-wrap:not(.tb-compact) .toolbar>.daytabs.daytabs{padding:4px;margin:-4px}}
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
@@ -2706,16 +2766,16 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
       <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University of Sydney. All times AEDT.</p>
       <dl class="facts">
-        <div><dt>Dates</dt><dd>Monday 7 to Friday 11 December 2026, registration from Sunday 6 December</dd></div>
-        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, The University of Sydney</dd></div>
-        <div><dt>Clock</dt><dd>All times AEDT (Australia/Sydney)<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
+        <div><dt>Dates</dt><dd>7&#8211;11 December 2026, registration Sunday 6</dd></div>
+        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney</dd></div>
+        <div><dt>Clock</dt><dd>All times AEDT<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
       </dl>
     </div>
     <div class="hero-side">
       <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
-    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:577.0;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 577.0 nm"></i><i style="--nm:579.1;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 579.1 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen H&#945;, 656.3 nm"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
+    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" title="Education and PEG: mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -2973,7 +3033,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     </div>
     <div class="colophon">
       <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG the mercury yellow doublet at 577 and 579&nbsp;nm; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events H&#945; and H&#948; mixed, a purple no single wavelength can make. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
+      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
@@ -6112,11 +6172,14 @@ function hzDayView(day){
     if (m < d1) mh += `<span class="hz-mlab" style="left:min(${pc(m)}%, calc(100% - 3.7em))"${(m - h0) % lstep ? ' hidden' : ''}>${hzHM(m)}</span>`;
   }
   const t = hzTargets(d0, d1, day.date);
-  const go = (k, label) => t[k] !== null ? `<button type="button" data-hzgo="${k}">${label}</button>` : '';
+  // (on the narrowest phones the presets read AM, PM and Eve; the full word stays their name)
+  const go = (k, label, short) => t[k] === null ? '' : short
+    ? `<button type="button" data-hzgo="${k}" aria-label="${label}"><span class="hz-lw">${label}</span><span class="hz-ls" aria-hidden="true">${short}</span></button>`
+    : `<button type="button" data-hzgo="${k}">${label}</button>`;
   return `<div class="hz-hd"><h2 class="cal-day-title">${esc(day.label)} 2026</h2>
     <div class="hz-ctl">
       <div class="hz-pre" role="group" aria-label="Zoom">${HZ_ZOOMS.map(([z, l]) => `<button type="button" data-hzzoom="${z}" aria-pressed="false">${l}</button>`).join('')}</div>
-      <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning')}${go('afternoon', 'Afternoon')}${go('evening', 'Evening')}${go('now', 'Now')}</div>
+      <div class="hz-pre" role="group" aria-label="Go to">${go('morning', 'Morning', 'AM')}${go('afternoon', 'Afternoon', 'PM')}${go('evening', 'Evening', 'Eve')}${go('now', 'Now')}</div>
     </div></div>
     ${agenda ? dvKey(ents) : ''}<div class="hz-day${agenda ? ' hz-agenda' : ''}" data-date="${day.date}"${agenda ? ` data-key="a:${day.date}"` : ''} data-d0="${d0}" data-d1="${d1}">
       <div class="hz-top">
@@ -6958,7 +7021,8 @@ const vtOpen = new Set();
 // My agenda's search opens a saved session on its matching talks; the ones folded by hand
 const vtShut = new Set();
 let vtWidth = 0;
-const VT_CX_ICO = '<svg class="vt-cxi" viewBox="0 0 12 11" width="11" height="10" aria-hidden="true"><path d="M6 1.2 11 10H1z M6 4.3v2.6 M6 8.3v.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+// the one clash mark, the fringe (.cx-fr), as in the list and My agenda
+const VT_CX_ICO = '<i class="cx-fr" aria-hidden="true"></i>';
 const VT_COLS = [
   { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
   { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
