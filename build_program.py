@@ -2658,6 +2658,26 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .schedule-nav .agenda-views{padding:2px 1px}
   .sticky-wrap.tb-compact .toolbar{padding-left:10px;padding-right:10px}
 }
+/* ---------- accessibility, touch, Streams panel, print (the review fixes; these win over the rules above) ---------- */
+/* Focus is never hidden under the sticky toolbar (WCAG 2.4.11): a focused control scrolls into
+   view below it. (:where keeps this at zero weight, so the calendars' own scroll margins on
+   bars and cards, and the deep-link ones on cards and talks, still apply where they exist.) */
+:where(#main :is(a[href],button,summary,input,select,textarea,[tabindex]):not(.vt-wrap.scroll *)){scroll-margin-top:calc(var(--toolbar-h,150px) + 12px);scroll-margin-bottom:16px}
+/* Windows high contrast (forced colours): a selected control is Highlight on HighlightText, the
+   data colours (stream lines, the sodium now marks, the spectral rule) keep their hue, and the
+   week's blocks and ticks get a text-colour edge. */
+@media (forced-colors:active){
+  :is(.seg input:checked+span,.daytab.on,.agenda-views button[aria-pressed="true"],.toggle[aria-pressed="true"],.toggle.on,.filter-menu.active .toggle,.chip.on,.chip-wrap.on,.hz-pre button[aria-pressed="true"],.hz-zb button[aria-pressed="true"],.vt-picker button[aria-pressed="true"],.bd-chip[aria-pressed="true"],.star.on,.talk-star.on){forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:Highlight}
+  :is(.seg input:checked+span,.daytab.on,.agenda-views button[aria-pressed="true"],.toggle[aria-pressed="true"],.toggle.on,.filter-menu.active .toggle,.chip.on,.chip-wrap.on,.hz-pre button[aria-pressed="true"],.vt-picker button[aria-pressed="true"],.bd-chip[aria-pressed="true"]) :is(small,span,b,i,svg){color:HighlightText}
+  .chip-wrap.on .chip,.chip-wrap.on .chip-only{color:HighlightText}
+  .chip-wrap.on :focus-visible,.daytab.on:focus-visible{outline-color:HighlightText}
+  .dd-switch[aria-pressed="true"] .sw-track{forced-color-adjust:none;background:Highlight;border-color:Highlight}
+  .dd-switch[aria-pressed="true"] .sw-track::after{forced-color-adjust:none;background:HighlightText}
+  .week-tk:hover,.week-tk:focus-visible{outline:2px solid CanvasText;outline-offset:1px}
+  .sp-scale i,.sp-scale::after,.na-glyph,.na-glyph::before,.na-glyph::after,.hz-nowl,.hz-nowl::before,.hz-nowl::after,.vt-nowl,.vt-nowl::before,.vt-nowl::after,.week-now,.week-now::before,.week-now::after,#nowBtn::before,.hz-pre button[data-hzgo="now"]::before,.talk.is-now::before,.talk.is-now::after,.card::before,.ag-row::before,.badge::before,.chip .dot,.chip-wrap .dot{forced-color-adjust:none}
+  .week-blk{border:1px solid CanvasText}
+  ::placeholder{color:GrayText}
+}
 </style>
 </head>
 <body>
