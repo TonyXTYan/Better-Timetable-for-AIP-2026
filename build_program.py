@@ -474,7 +474,17 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .sp-scale{position:relative;height:var(--sp-na);border-bottom:1px solid var(--ink-2)}
 .sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100% - 1px);left:round(down,calc((var(--nm) - 400) / 300 * 100% - 1px),1px);width:2px;height:var(--sp-h);background:var(--c)}
 .sp-scale i.sp-na{width:var(--doublet-w);height:var(--sp-na);left:calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2);left:round(down,calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2),1px);background:none}
-.sp-scale i[title]{cursor:help}
+/* hovering (or tapping) anywhere along the rule picks out the nearest line: the others
+   dim and a readout names its stream and its source, set like a line-list entry */
+.sp-scale{touch-action:manipulation}
+.sp-scale i{transition:opacity var(--dur-s,150ms) var(--ease,ease)}
+.sp-scale.sp-on i:not(.sp-hot){opacity:.28}
+.sp-tip{position:absolute;z-index:5;bottom:calc(100% + 6px);left:0;width:max-content;max-width:min(20rem,100%);padding:6px 10px 7px;border-radius:var(--r-seg);background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;font-variant-numeric:tabular-nums;box-shadow:0 12px 28px -8px var(--pop-shadow);pointer-events:none}
+.sp-tip[hidden]{display:none}
+.sp-tip b{display:block;font-weight:680}
+.sp-tip span{display:block;font-stretch:var(--stretch-cond);opacity:.86}
+.sp-tip::before{content:"";position:absolute;left:var(--ax,50%);top:100%;width:2px;height:6px;margin-left:-1px;background:var(--hc,currentColor)}
+@media (forced-colors:active){.sp-tip{border:1px solid CanvasText}.sp-scale.sp-on i:not(.sp-hot){opacity:.5}}
 /* (a hit area wider than the 2px line for its tooltip) */
 .sp-scale i::after{content:"";position:absolute;inset:0 -4px}
 .sp-na .na-glyph{display:block;height:100%}
@@ -2952,7 +2962,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
-    <div class="spectral" aria-hidden="true"><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" title="Education and PEG: mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
+    <div class="spectral" aria-hidden="true"><div class="sp-scale"><div class="sp-tip" hidden><b></b><span></span></div><i style="--nm:410.2;--c:var(--poster)" data-n="Posters" data-d="Hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" data-n="COMMAD" data-d="InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" data-n="Forums and special events" data-d="Ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" data-n="AIP sessions" data-d="Hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" data-n="Focus sessions" data-d="Mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" data-n="Education and PEG" data-d="Mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" data-n="ANZCOP" data-d="Helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" data-n="Congress events" data-d="Hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" data-n="Now" data-d="Sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -7337,6 +7347,37 @@ function hzPopScrolled(){
   if (keyed && h) hzPopRe = setTimeout(() => { if (document.activeElement === src && src.isConnected) hzPopShow(src, h, false); }, 140);
 }
 window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopScrolled(); }, { passive: true });
+// The spectral rule under the title: hover (or tap) near a line to name it.
+(function(){
+  const sc = document.querySelector('.sp-scale'); if (!sc) return;
+  const tip = sc.querySelector('.sp-tip'), lines = [...sc.querySelectorAll('i[data-n]')];
+  let hot = null, tapT = 0;
+  const hide = () => { if (!hot) return; hot.classList.remove('sp-hot'); hot = null; sc.classList.remove('sp-on'); tip.hidden = true; };
+  const show = (x, reach) => {
+    const r = sc.getBoundingClientRect(); let best = null, bd = 1e9;
+    for (const l of lines){ const b = l.getBoundingClientRect(), d = Math.abs(b.left + b.width / 2 - x); if (d < bd){ bd = d; best = l; } }
+    if (!best || bd > reach){ hide(); return; }
+    if (best !== hot){
+      if (hot) hot.classList.remove('sp-hot');
+      hot = best; hot.classList.add('sp-hot'); sc.classList.add('sp-on');
+      tip.firstChild.textContent = hot.dataset.n; tip.lastChild.textContent = hot.dataset.d;
+      tip.style.setProperty('--hc', hot.classList.contains('sp-na') ? 'var(--na)' : getComputedStyle(hot).backgroundColor);
+      tip.hidden = false;
+      const b = hot.getBoundingClientRect(), cx = b.left + b.width / 2 - r.left, w = tip.offsetWidth;
+      const left = Math.max(0, Math.min(r.width - w, cx - w / 2));
+      tip.style.left = left + 'px'; tip.style.setProperty('--ax', (cx - left) + 'px');
+    }
+  };
+  sc.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') show(e.clientX, 24); });
+  sc.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') hide(); });
+  sc.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch') return;
+    show(e.clientX, 28); clearTimeout(tapT); if (hot) tapT = setTimeout(hide, 3200);
+  });
+  document.addEventListener('pointerdown', e => { if (hot && !sc.contains(e.target)) hide(); }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  window.addEventListener('scroll', hide, { passive: true });
+})();
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hzPopHide(); });
 function hzInit(root){
   const h = root.querySelector('.hz-day');
