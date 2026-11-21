@@ -7686,8 +7686,15 @@ function hzPaintNow(h){
 // Full minimap at the top of the view, slim once its head sticks under the toolbar.
 function hzStuck(){
   const h = document.querySelector('#agenda .hz-day');
-  // (as the toolbar folds or unfolds the head moves with its edge; tbCompact looks again after)
-  if (!h || document.querySelector('.sticky-wrap.tb-anim')) return;
+  // (as the toolbar folds or unfolds the head moves with its edge; tbCompact looks again
+  // after. Meanwhile a head the page has taken well below the full bar's edge (Home, a
+  // jump) is loose whatever the edge does: it lets go at once)
+  if (!h) return;
+  if (document.querySelector('.sticky-wrap.tb-anim')){
+    const full = parseFloat(document.documentElement.style.getPropertyValue('--toolbar-full'));
+    if (full && h.classList.contains('stuck') && h.getBoundingClientRect().top > full + 1) h.classList.remove('stuck');
+    return;
+  }
   const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
   // Stuck once the head has reached its sticky place (its top part under the toolbar):
   // the head keeps its height either way, so toggling moves nothing on the page.
