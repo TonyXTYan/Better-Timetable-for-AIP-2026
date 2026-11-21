@@ -2515,6 +2515,10 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
   .seg-ind.seg-snap>button,.seg-ind.seg-snap label>span,.seg-ind.seg-snap small{transition:none}
+  /* (held until the new view shows, segWait: the indicator and the colours as they were) */
+  .agenda-views.seg-hold::before,.agenda-views.seg-hold>button{transition:none}
+  .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:transparent;color:var(--ink-2)}
+  .agenda-views.seg-hold>button.seg-was{color:var(--accent-ink)}
 }
 /* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
    tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
@@ -2840,11 +2844,6 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 :root[data-colour="vivid"] .vt-badge{color:var(--bar-ink)}
 :root[data-colour="vivid"] .dd-preview{background:var(--aip-bg)}
 }
-/* ---------- A segmented button that does nothing here (aria-disabled: Talks in All week) ----------
-   A fallback look (greyed, no hover or press) under the segmented controls' own styles. */
-.agenda-views button[aria-disabled="true"]{color:var(--muted);opacity:.6;cursor:not-allowed}
-.agenda-views button[aria-disabled="true"]:hover{background:transparent;color:var(--muted)}
-.agenda-views button[aria-disabled="true"]:active{scale:none;filter:none;background:transparent}
 </style>
 </head>
 <body>
@@ -4297,7 +4296,9 @@ function rerender(){
 
 // The toolbar's static position: offsetTop of a stuck sticky element is the scroll position.
 function programTop(){ return document.getElementById('toolbarAnchor').getBoundingClientRect().top + window.scrollY; }
-function scrollToProgramTop(){ window.scrollTo({ top: programTop() }); }
+// (inside a view change's redraw (inVT) at once: a smooth scroll would carry the page on
+// under the transition, the new view sliding away from what it grows out of or into)
+function scrollToProgramTop(){ window.scrollTo({ top: programTop(), behavior: inVT ? 'instant' : 'auto' }); }
 // A day tab keeps the page still where it can: above the program nothing moves (no
 // scroll down to it); in a day's calendar the scroll, and with it the folded toolbar,
 // stays, unless the new day ends above the view; a list (another day's sessions, or
@@ -11413,11 +11414,39 @@ syncToolbarHeight();
 // chosen option. A new choice moves it there (a CSS transition: at once with reduced
 // motion); a group that has just come into sight or changed size places it at once (snap).
 const SEG_GROUPS = '.agenda-views, .seg';
-function segPlace(g, snap){
+// A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
+// Calendar, the scope) slides only once the new view shows: until then the page is busy
+// redrawing (or frozen under a view transition's snapshot), and a slide started at the
+// press would be over before a frame of it is drawn. Meanwhile (seg-hold) the indicator
+// and the labels' colours stay as they were; then they move, alongside the view's own
+// change. (viewTx: a change pressed and waiting for its frame, or a transition not yet
+// showing)
+function segWait(g){
+  g._segHold = true;
+  g.classList.add('seg-hold');
+  g._segOn.classList.add('seg-was');
+  let n = 0;
+  const go = () => { if (g._segHold){ segUnhold(g); segPlace(g, false, true); } };
+  const tick = () => {
+    const t = viewTx;
+    if (t && t.vt){ t.vt.ready.then(go, go); return; }
+    if (!t || ++n > 90){ go(); return; }
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+function segUnhold(g){
+  g._segHold = false;
+  g.classList.remove('seg-hold');
+  for (const b of g.querySelectorAll(':scope > .seg-was')) b.classList.remove('seg-was');
+}
+function segPlace(g, snap, now){
   const on = g.classList.contains('seg') ? g.querySelector('input:checked')?.closest('label')
     : g.querySelector(':scope > button[aria-pressed="true"]:not([hidden])');
+  if (g._segHold){ if (!snap && on) return; segUnhold(g); }
   if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
   if (snap || !g._segOn || !g.classList.contains('seg-ind')) g.classList.add('seg-snap');
+  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
   else if (g._segOn !== on && !motionReduced()){
     // the slide: the chosen option's own fill waits until the indicator is under it
     g.classList.add('seg-moving');
