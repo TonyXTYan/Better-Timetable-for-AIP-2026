@@ -1059,6 +1059,7 @@ footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;col
 footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
+footer .colophon .na-glyph{margin-left:2px}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
 .foot-links li{margin:2px 0}
 @media(max-width:720px){.foot-links a{display:inline-block;padding:4px 0}}
@@ -2643,6 +2644,10 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
       <h2>Tips</h2>
       <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. <span class="on-fine">Click</span><span class="on-touch">Tap</span> a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
       <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
+    </div>
+    <div class="colophon">
+      <h2>Colour key</h2>
+      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG the mercury yellow doublet at 577 and 579&nbsp;nm; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events H&#945; and H&#948; mixed, a purple no single wavelength can make. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
