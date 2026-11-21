@@ -870,7 +870,9 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
    condensed and tabular); the chosen day is filled with ink; today carries the doublet. */
 @property --dt-fl{syntax:"<length>";inherits:false;initial-value:0px}
 @property --dt-fr{syntax:"<length>";inherits:false;initial-value:0px}
-.daytabs{display:flex;gap:0;overflow-x:auto;padding:0 0 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent);mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent)}
+/* (4px of room on every side, given back by the margin, so a cell's focus ring is not
+   cut off by the scroller) */
+.daytabs{display:flex;gap:0;overflow-x:auto;padding:4px 4px 10px;margin:-4px -4px 0;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent);mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent)}
 .daytabs::-webkit-scrollbar{display:none}
 /* (a strip that scrolls fades at the edge it can still scroll to) */
 @supports (animation-timeline:scroll()){.daytabs{animation:dt-fade linear both;animation-timeline:scroll(self inline)}}
@@ -880,11 +882,15 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .daytab{flex:1 1 0;position:relative;display:grid;grid-template-areas:"wd n" "dm dm";grid-template-columns:auto auto;justify-content:space-between;align-items:baseline;column-gap:10px;row-gap:1px;min-width:max-content;margin:0 0 0 -1px;padding:6px 12px 7px;border:1px solid var(--line);border-radius:0;background:var(--card);color:var(--ink);text-align:left;white-space:nowrap;line-height:1.2}
 .daytab:first-child{margin-left:0;border-radius:var(--r-ctl) 0 0 var(--r-ctl)}
 .daytab:last-child{border-radius:0 var(--r-ctl) var(--r-ctl) 0}
-.dt-wd{grid-area:wd;display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:550;color:var(--muted)}
+/* (a fixed-height line whose baseline is its text's, so today's glyph cannot move the
+   weekday off its neighbours' line) */
+.dt-wd{grid-area:wd;height:1rem;display:flex;align-items:baseline;gap:4px;font-size:.6875rem;font-weight:550;color:var(--muted)}
 .dt-dm{grid-area:dm;font-size:1rem;font-weight:700;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;letter-spacing:-.005em}
 .daytab .dt-count{grid-area:n;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
 .daytab:hover{z-index:1;border-color:var(--hover-line);background:var(--surface-2)}
-.daytab.on{z-index:2;background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.dt-wd .na-glyph{align-self:center}
+/* (the ink fill stays inside the strip's hairline) */
+.daytab.on{z-index:2;background:var(--accent);border-color:var(--line);color:var(--accent-ink)}
 .daytab.on .dt-wd,.daytab.on .dt-count{color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
 .daytab.on .na-glyph{--g:var(--na-sel)}
 /* relative: its hidden words stay inside the sideways-scrolling tabs */
@@ -1110,7 +1116,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .star.on,.star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 .card .meta{padding:8px 19px 0;font-size:.8125rem;font-weight:500;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
 .card .meta .m-time{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
-.card .meta .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-stretch:var(--stretch-cond);line-height:1.45}
+.card .meta .room{display:inline-block;padding:0 5px;border:1px solid var(--hover-line);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:600;font-stretch:var(--stretch-cond);line-height:1.45}
 .card .meta .m-conv{flex-basis:100%;color:var(--muted)}
 .card .meta .m-conv b{font-style:italic;font-weight:480;color:var(--ink-2)}
 .card .meta .m-n{font-variant-numeric:tabular-nums}
@@ -1184,7 +1190,11 @@ mark.hlm{background:var(--mark-bg);color:var(--mark-ink);border-radius:2px;paddi
 /* in the calendars' tight, clamped titles a match keeps to its own letters */
 :is(.hz-day,.vt-day,.week-ov) mark.hlm{padding:0;border-radius:2px;box-shadow:0 0 0 1px var(--mark-bg)}
 
-.empty-note{display:none;margin:8px 0 0;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
+/* (in the content column: the list's 1140px, inside the same 20px gutters) */
+.empty-note{display:none;box-sizing:border-box;width:min(1140px,calc(100% - 40px));margin:24px auto 56px;padding:40px 16px;border:1px dashed var(--hover-line);border-radius:var(--r-plate);text-align:center;color:var(--ink-2);font-size:.9375rem;text-wrap:balance}
+body.wide-view .empty-note{width:auto;margin-left:20px;margin-right:20px}
+/* (the empty list above it keeps only its top padding) */
+#agenda:has(+.empty-note.show){padding-bottom:0}
 .empty-note.show{display:block}
 
 footer{width:min(1140px,calc(100% - 40px));margin:0 auto;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;border-top:1px solid var(--line)}
@@ -2000,7 +2010,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-sub .ag-who{color:var(--ink-2);font-style:italic;font-weight:480}
 .ag-sub .ag-who .aff{font-style:normal;color:var(--muted);font-weight:420}
 .ag-sub .ag-who:has(.room){font-style:normal}
-.ag-sub .room{display:inline-block;padding:0 5px;border:1px solid var(--ink-2);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:650;font-style:normal;font-stretch:var(--stretch-cond);line-height:1.45}
+.ag-sub .room{display:inline-block;padding:0 5px;border:1px solid var(--hover-line);border-radius:var(--r-tag);color:var(--ink-2);font-size:.75rem;font-weight:600;font-style:normal;font-stretch:var(--stretch-cond);line-height:1.45}
 .ag-sub .ag-n{font-variant-numeric:tabular-nums}
 .ag-kind{margin-right:8px;vertical-align:.125rem}
 .ag-clash{display:flex;align-items:baseline;margin-top:10px;font-size:.8125rem;line-height:1.45;color:var(--clash-ink);background:var(--card);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:6px 10px}
@@ -2471,6 +2481,18 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .hz-ls{display:inline}
   .hz-pre button[data-hzgo="now"]{display:none}
 }
+/* Interval rows on the narrowest phones: the title and its times in a column, the star
+   centred on the right; the stream's tick moves into the title */
+@media (max-width:359px){
+  .card.iv{display:grid;grid-template-columns:minmax(0,1fr) 40px;grid-template-areas:'t s' 'm s';column-gap:8px;row-gap:2px;align-items:center;padding:6px 0 6px 2px}
+  .card.iv::before{display:none}
+  .card.iv h3{grid-area:t;min-width:0}
+  .card.iv h3::before{content:'';display:inline-block;width:3px;height:.95em;background:var(--c);margin-right:8px;vertical-align:-1px;border-radius:1px}
+  .card.iv .meta{grid-area:m;padding-left:11px}
+  .card.iv .star{grid-area:s;align-self:center;justify-self:end;margin-left:0}
+}
+/* (phones on their side: the day strip keeps its 4px of room for focus rings there too) */
+@media (max-height:500px) and (orientation:landscape){.sticky-wrap:not(.tb-compact) .toolbar>.daytabs.daytabs{padding:4px;margin:-4px}}
 /* ---------- display settings ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
