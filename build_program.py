@@ -1663,6 +1663,10 @@ button.hz-bar:focus-visible,.hz-head:focus-visible,.hz-talk:focus-visible{outlin
 @media print{.hz-ctl,.hz-map{display:none!important}.hz-top{position:static;box-shadow:none}.hz-day.stuck .hz-top{margin-bottom:0}.hz-vp{overflow:visible}.hz-nowl,.hz-nowpill{display:none!important}.hz-day,.hz-label,.hz-grp,.hz-grp .hz-label{background:none}.hz-day .hz-bar,.hz-day .hz-talk{background:none!important}
   /* the canvas prints from the day's start, so the ruler does too */
   .hz-ticks{transform:none!important}.hz-ticks span.t{visibility:visible!important;color:var(--ink)!important}}
+/* ---- Horizontal zoom motion (hzMorph): a ruler label or grid line the new zoom leaves
+   out moves on as a ghost and fades; it is never a target and never prints ---- */
+.hz-ghost{pointer-events:none}
+@media print{.hz-ghost{display:none!important}}
 /* print: the week stays light and clean, without the doublet */
 @media print{.week-ov{border-color:var(--line)}.week-now,.week-dayh .na-glyph,.week-rul .sx-more{display:none!important}.week-col{background-color:transparent}}
 @media (max-width:720px){
@@ -5712,7 +5716,7 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 // quick succession, recent redraws were slow or the view is slow to draw (txHeavy); and
 // a plain cross-fade while recent transitions were slow to start or janky (txWatch).
 const mxCap = () => PHONE_MQ.matches ? 28 : 56, mxNearCap = () => PHONE_MQ.matches ? 20 : 30, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
-const MX_NOOP = { after(){}, animate(){} };
+const MX_NOOP = { after(){}, animate(){}, done(){} };
 let txLast = -1e9, txSlow = 0;
 // Motion tokens (as in the CSS: --dur-s, --dur-l, --ease, --ease-em): a short and a long
 // duration (Fast's; times the speed setting), a standard ease-out and an emphasised one
@@ -5857,14 +5861,23 @@ function mxBegin(kind, from, opts){
     if (y0 !== null) seen = seen.filter(it => it.kind === 'cover' || it.r.bottom > y0 - 2)
       .sort((a, b) => (a.kind !== 'cover') - (b.kind !== 'cover') || Math.abs(a.r.top - y0) - Math.abs(b.r.top - y0));
     else seen.sort((a, b) => a.d - b.d || (a.kind === 'item') - (b.kind === 'item'));
-    const cap = y0 !== null ? mxNearCap() : mxCap() * .75;
+    // Sessions <-> talks (opts.nest): sessions are named before talks, and a talk only
+    // once its session has a name (else it could not fold into it, only fade), out of
+    // the whole budget, as the talks unfolding the other way get it (so folding and
+    // unfolding move as many talks).
+    if (opts.nest){
+      const rank = it => it.kind !== 'item' ? 0 : it.key.startsWith('s-') ? 1 : 2;
+      seen.sort((a, b) => rank(a) - rank(b) || a.d - b.d);
+    }
+    const cap = y0 !== null ? mxNearCap() : opts.nest ? mxCap() : mxCap() * .75;
     for (const it of seen){
       if (old.size >= cap) break;
+      if (opts.nest && it.p && !old.has(it.p)) continue;
       if (!old.has(it.key) && it.el !== from) old.set(it.key, it);
     }
   }
   for (const [key, it] of old) mxName(it.el, key, it.kind === 'cover' ? 'mx-cover' : 'mx');
-  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [] };
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [] }, live = [];
   return {
     after(target){
       const now = pop || mxMany() ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()));
@@ -5937,7 +5950,7 @@ function mxBegin(kind, from, opts){
       const root = document.documentElement, k = motionK();
       // durations and delays are Fast's, times the speed setting
       const run = (key, part, frames, o = {}) => {
-        try { root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MX_MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) }); } catch (e) {}
+        try { live.push(root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MX_MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) })); } catch (e) {}
       };
       const box = (r, s = 1) => ({ transform: `translate(${r.left}px,${r.top}px)`, width: r.width + 'px', height: Math.max(0, r.height * s) + 'px' });
       // a rect inside `a` taken to the same place inside `b`
@@ -5967,11 +5980,13 @@ function mxBegin(kind, from, opts){
         run(key, 'group', [{ ...box(from), clipPath: clip(from, po.c) }, { ...box(n.r), clipPath: clip(n.r, n.c) }]);
         run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: MO_S, delay: 25 + Math.min(i, 5) * 12, easing: EASE });
       });
-      for (const { key, o, po, pn } of plan.fold){
+      // folding is unfolding run backwards: each talk shrinks into its place in the
+      // session and only then fades (and lifts), the first to unfold the last to go
+      plan.fold.forEach(({ key, o, po, pn }, i) => {
         const to = map(o.r, po.r, pn.r);
         run(key, 'group', [{ ...box(o.r), clipPath: clip(o.r, o.c) }, { ...box(to), clipPath: clip(to, pn.c) }]);
-        run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
-      }
+        run(key, 'old', [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-4px)' }], { duration: MO_S, delay: Math.max(0, MX_MS - MO_S - 25 - Math.min(i, 5) * 12), easing: 'cubic-bezier(1,0,.8,1)' });
+      });
       for (const { key, o } of plan.fade){
         if (out(o)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
         if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S / 3, easing: 'linear' });
@@ -5997,6 +6012,9 @@ function mxBegin(kind, from, opts){
         run(key, 'old', [{ objectPosition: '0px 0px', opacity: 1 }, { opacity: 1, offset: .55 }, { objectPosition: at(o.r, to), opacity: 0 }]);
       }
     },
+    // (once the transition is over: its animations, which fill forwards, would otherwise
+    // outlive it and pin a later transition's parts of the same name where these ended)
+    done(){ for (const a of live.splice(0)) a.cancel(); },
   };
 }
 // The pressed control (opts.press) shows its new state in the very next frame: the
@@ -6026,7 +6044,8 @@ function txStart(kind, fn, from, opts){
   const root = document.documentElement;
   // A view slow to draw (going to one: opts.to, or leaving one) gets no snapshot at all,
   // only the short fade.
-  const heavy = kind !== 'dlg' && ((opts.to !== undefined && txHeavy(opts.to)) || pageHeavy());
+  // (opts.also: other views to judge it by, so a change and its reverse are treated alike)
+  const heavy = kind !== 'dlg' && ((opts.to !== undefined && [opts.to, ...(opts.also || [])].some(txHeavy)) || pageHeavy());
   const noTx = () => { if (!viewTx?.vt){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; } };
   if (motionReduced()){ txTimed(fn, opts)(); return; }
   // quick succession (another change under 450ms ago) or slow redraws: no morph; and
@@ -6053,7 +6072,7 @@ function txStart(kind, fn, from, opts){
   delete root.dataset.viewTxQuick;
   root.dataset.viewTx = kind;
   const mx = mxBegin(kind, from, opts);
-  let ran = false, done;
+  let ran = false, done, redraw = 0;
   const run = () => {
     if (ran) return done;
     ran = true;
@@ -6064,7 +6083,8 @@ function txStart(kind, fn, from, opts){
     let out;
     try { out = fn(); } finally { inVT = false; }
     void document.body.offsetHeight;
-    txNote(performance.now() - t0, opts.to);
+    redraw = performance.now() - t0;
+    txNote(redraw, opts.to);
     // a page that jumped (to the top of a new view): the old picture goes at once, so the
     // two never show doubled
     if (Math.abs(window.scrollY - y0) > 40) root.dataset.viewTxQuick = '';
@@ -6076,10 +6096,14 @@ function txStart(kind, fn, from, opts){
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
   const tx = viewTx = mxOwner = { vt, run };
-  vt.ready.then(() => { mx.animate(); txWatch(vt, t); }, () => {});
+  // (the wait is counted without the redraw itself: that is judged on its own, by txNote,
+  // the same with or without a transition, and a costly redraw (Talks) would otherwise
+  // cost the next change (back to Sessions) its morph)
+  vt.ready.then(() => { mx.animate(); txWatch(vt, t + redraw); }, () => {});
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
+    mx.done();
     if (mxOwner === tx){ mxOwner = null; mxClear(); }
     if (!viewTx || !viewTx.vt) clear();
   });
@@ -6649,6 +6673,7 @@ function hzDraw(root, left){
   const h = root.querySelector('.hz-day');
   if (!h) return;
   hzPopHide();
+  hzMorphStop(h);   // (a zoom still moving lands: this draw is the last word)
   const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);
   const d0 = +h.dataset.d0, d1 = +h.dataset.d1, full = d1 - d0;
   const vp = h.querySelector('.hz-vp'), lw = h.querySelector('.hz-corner').offsetWidth;
@@ -6675,7 +6700,7 @@ function hzDraw(root, left){
   for (let m = Math.ceil(d0 / mstep) * mstep; m <= d1; m += mstep){
     const major = m % lstep === 0;
     // the closing line sits just inside the canvas, so Fit day leaves no sideways overflow
-    gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px${m === d1 ? ';margin-left:-1px' : ''}"></i>`;
+    gl += `<i class="${major ? '' : 'm'}" style="left:${X(m)}px${m === d1 ? ';margin-left:-1px' : ''}" data-m="${m}"></i>`;
     // (quarter-hour labels only once an hour is wide, as at 1 h; elsewhere a bare tick)
     if (m < d1 && (major || px60 >= 900)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
     else if (m < d1 && m > d0) tk += `<span class="t m" style="left:${X(m)}px" data-m="${m}"></span>`;
@@ -6853,7 +6878,9 @@ function hzDraw(root, left){
   }
   h.querySelector('.hz-rows').innerHTML = rows;
   // the minute the canvas scrolls to: the one asked for, the kept one, else now on a
-  // congress day, else the first session
+  // congress day, else the first session (a glide under way lands where it was going)
+  if (left === undefined && h._glide) left = h._glide.m;
+  hzGlideStop(h);
   if (left === undefined) left = HZ.left[key];
   if (left === undefined){
     const n = aedtNow();
@@ -7221,9 +7248,12 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 // Scroll the canvas so minute m is at fraction `at` of the visible width.
+// Smooth: a glide of our own (hzGlide), at the animation speed setting; else at once.
 function hzScrollTo(h, m, at = 0, behavior = hzSmooth()){
-  const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm;
-  vp.scrollTo({ left: Math.max(0, (m - +h.dataset.d0) * ppm - at * +h.dataset.tw), behavior });
+  const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm, left = Math.max(0, (m - +h.dataset.d0) * ppm - at * +h.dataset.tw);
+  if (behavior === 'smooth') return hzGlide(h, left);
+  hzGlideStop(h);
+  vp.scrollTo({ left, behavior });
 }
 function hzGo(root, key){
   const h = root.querySelector('.hz-day');
@@ -7237,14 +7267,173 @@ function hzReveal(bar){
   const head = h.querySelector('.hz-ruler').offsetHeight + 18;
   window.scrollTo({ top: Math.max(0, scrollY + bar.getBoundingClientRect().top - th - head - 8), behavior: hzSmooth() });
 }
-// New zoom (minutes across), keeping minute `m` at fraction `at` of the visible width.
-function hzZoom(root, span, m, at){
+// New zoom (minutes across), keeping minute `m` at fraction `at` of the visible width
+// (by default the middle of what shows, or of where a glide under way is going). `ms`:
+// animated over that long (Fast's, times the speed setting: hzMorph); else at once.
+function hzZoom(root, span, m, at, ms){
   const h = root.querySelector('.hz-day'), d0 = +h.dataset.d0, d1 = +h.dataset.d1, cur = +h.dataset.span;
-  if (m === undefined){ at = 0.5; m = HZ.left[hzKey(h)] + cur * at; }
+  if (m === undefined){ at = 0.5; m = (h._glide ? h._glide.m : HZ.left[hzKey(h)]) + cur * at; }
   span = span === 'fit' ? 'fit' : Math.max(30, Math.min(d1 - d0, span));
   HZ.zoom[hzZoomKey(hzKey(h))] = span === 'fit' || span >= d1 - d0 - 0.5 ? 'fit' : span;
   const s = span === 'fit' ? d1 - d0 : span;
-  hzDraw(root, m - at * s);
+  hzMorph(h, () => hzDraw(root, m - at * s), ms);
+}
+
+/* ---------- zoom and go-to motion ----------
+   A new zoom moves the canvas from the old scale to the new (FLIP): what shows is
+   measured, the canvas is redrawn exactly as hzDraw draws it, and each piece then moves
+   and resizes from where it was on screen to where it now is: bars by translate and
+   width (never scaled, so their text stays crisp), ruler labels, grid lines and the now
+   line by translate, lane heights by height, and the minimap window by left and width.
+   A piece with nothing to come from starts where the old scale would have drawn it; a
+   ruler label or grid line the new scale leaves out stays as a ghost that moves with the
+   rest and fades. The animations only lead into the styles hzDraw wrote, and end there.
+   A zoom meanwhile starts from wherever things are on screen at that moment (the last
+   one's animations stop there), so quick clicks or a pinch never queue. */
+const HZ_ZOOM_MS = 300, HZ_WHEEL_MS = 180, HZ_GO_MS = 380;
+function hzMorphStop(h){
+  const z = h._zm;
+  if (!z) return;
+  h._zm = null;
+  for (const a of z.anims) a.cancel();
+  for (const g of z.ghosts) g.remove();
+}
+function hzMorph(h, redraw, ms){
+  if (!ms || motionReduced() || !h.animate || !h.isConnected){ hzMorphStop(h); redraw(); return; }
+  hzGlideStop(h);
+  const vp = h.querySelector('.hz-vp'), ticks = h.querySelector('.hz-ticks'), lines = h.querySelector('.hz-lines'), map = h.querySelector('.hz-map');
+  const keyOf = el => el.dataset.tid ? 't' + el.dataset.tid : 's' + el.dataset.sid;
+  const laneOf = tr => (tr.parentElement.getAttribute('aria-label') || '') + '|' + [...tr.parentElement.parentElement.children].indexOf(tr.parentElement);
+  // before: where everything shows now (mid-animation included), then the old animations go
+  const ppm0 = +h.dataset.ppm, bo0 = lines.getBoundingClientRect().left, to0 = ticks.getBoundingClientRect().left;
+  const bars0 = new Map(), tracks0 = new Map(), ticks0 = new Map(), lines0 = new Map();
+  for (const el of h.querySelectorAll('.hz-rows .hz-bar')){
+    const r = el.getBoundingClientRect();
+    bars0.set(keyOf(el), { r, top: r.top - el.parentElement.getBoundingClientRect().top });
+  }
+  for (const tr of h.querySelectorAll('.hz-rows .hz-track')) if (tr.style.height) tracks0.set(laneOf(tr), tr.offsetHeight);
+  // (the padding hzSync gives a bar cut by the left edge, which keeps its title in view:
+  // it changes with the scale too, and a bar is never narrower than its padding)
+  const pads0 = new Map();
+  for (const e of h._edge || []) pads0.set(keyOf(e.el.closest('.hz-bar')), getComputedStyle(e.el).paddingLeft);
+  for (const el of ticks.querySelectorAll('span.t[data-m]:not(.hz-ghost)')) ticks0.set(el.dataset.m, { x: el.getBoundingClientRect().left, el });
+  for (const el of lines.querySelectorAll('i[data-m]:not(.hz-ghost)')) lines0.set(el.dataset.m, { x: el.getBoundingClientRect().left, el });
+  const nowl = h.querySelector('.hz-nowl'), pill0 = (p => p && !p.hidden && p.getBoundingClientRect().left)(h.querySelector('.hz-nowpill'));
+  const now0 = !nowl.hidden && nowl.getBoundingClientRect().left;
+  const mw = map.clientWidth, br = h.querySelector('.hz-brush'), sl = h.querySelector('.hz-sl'), sr = h.querySelector('.hz-sr');
+  const pct = v => (v / (mw || 1) * 100) + '%';
+  const map0 = { bl: pct(br.offsetLeft), bw: pct(br.offsetWidth), sl: pct(sl.offsetWidth), sr: pct(sr.offsetLeft) };
+  hzMorphStop(h);
+  redraw();
+  if (!h.isConnected) return;
+  // after: the same pieces as drawn now, each animated from before
+  const ppm1 = +h.dataset.ppm, bo1 = lines.getBoundingClientRect().left, to1 = ticks.getBoundingClientRect().left, k = ppm0 / ppm1;
+  const z = h._zm = { anims: [], ghosts: [] };
+  const opt = { duration: ms * motionK(), easing: EASE_EM };
+  const go = (el, frames, o = opt) => z.anims.push(el.animate(frames, o));
+  const vr = vp.getBoundingClientRect(), lw = h.querySelector('.hz-corner').offsetWidth;
+  const xa = vr.left + lw - 40, xb = vr.right + 40, ya = -120, yb = innerHeight + 120;
+  const seen = (x, w, y, ht) => x + w > xa && x < xb && y + ht > ya && y < yb;
+  // lane heights (talks wrap anew at a new scale)
+  for (const tr of h.querySelectorAll('.hz-rows .hz-track')){
+    const h0 = tracks0.get(laneOf(tr));
+    if (h0 === undefined || !tr.style.height || Math.abs(h0 - tr.offsetHeight) < 0.5) continue;
+    const r = tr.getBoundingClientRect();
+    if (r.bottom < ya - h0 || r.top > yb) continue;
+    go(tr, [{ height: h0 + 'px' }, { height: tr.style.height }]);
+  }
+  const edge = new Map((h._edge || []).map(e => [e.el.closest('.hz-bar'), e]));
+  for (const el of h.querySelectorAll('.hz-rows .hz-bar')){
+    const r1 = el.getBoundingClientRect(), was = bars0.get(keyOf(el));
+    // (from nowhere: where the old scale had it, in its lane as it is now)
+    const x0 = was ? was.r.left : bo0 + (r1.left - bo1) * k, w0 = was ? was.r.width : r1.width * k;
+    // (up or down within its lane, the lane's own height animating below)
+    const dy = was ? was.top - (r1.top - el.parentElement.getBoundingClientRect().top) : 0;
+    if (!seen(r1.left, r1.width, r1.top, r1.height) && !seen(x0, w0, r1.top + dy, r1.height)) continue;
+    const f = { translate: `${(x0 - r1.left).toFixed(1)}px ${dy.toFixed(1)}px`, width: (parseFloat(el.style.width) + w0 - r1.width).toFixed(1) + 'px' }, t = { translate: '0px 0px', width: el.style.width };
+    if (was && Math.abs(was.r.height - r1.height) > 0.5){ f.height = (parseFloat(el.style.height) + was.r.height - r1.height) + 'px'; t.height = el.style.height; }
+    go(el, [f, t]);
+    const e = edge.get(el), p0 = pads0.get(keyOf(el));
+    if (e && p0){ const p1 = getComputedStyle(e.el).paddingLeft; if (p1 !== p0) go(e.el, [{ paddingLeft: p0 }, { paddingLeft: p1 }]); }
+  }
+  // collapsed groups' ticks and My agenda's clash spans: from where the old scale had them
+  for (const el of h.querySelectorAll('.hz-colt, .hz-lines i.cx, .hz-ticks .hz-cx')){
+    const r1 = el.getBoundingClientRect(), o0 = el.closest('.hz-ticks') ? to0 : bo0, o1 = el.closest('.hz-ticks') ? to1 : bo1;
+    const x0 = o0 + (r1.left - o1) * k;
+    if (!seen(r1.left, r1.width, r1.top, r1.height) && !seen(x0, r1.width * k, r1.top, r1.height)) continue;
+    go(el, [{ translate: `${(x0 - r1.left).toFixed(1)}px 0px`, width: (parseFloat(el.style.width) * k).toFixed(1) + 'px' }, { translate: '0px 0px', width: el.style.width }]);
+  }
+  // ruler labels and grid lines: each from where it was (or would have been); those the new
+  // scale leaves out move on as ghosts and fade
+  const marks = (box, was, o0, o1, sel) => {
+    const d0 = +h.dataset.d0, keep = new Set();
+    for (const el of box.querySelectorAll(sel)){
+      const m = el.dataset.m, x1 = el.getBoundingClientRect().left, w = was.get(m);
+      keep.add(m);
+      const x0 = w ? w.x : o0 + (x1 - o1) * k;
+      if ((x1 < xa || x1 > xb) && (x0 < xa || x0 > xb)) continue;
+      go(el, w ? [{ translate: `${(x0 - x1).toFixed(1)}px 0px` }, { translate: '0px 0px' }]
+        : [{ translate: `${(x0 - x1).toFixed(1)}px 0px`, opacity: 0 }, { translate: '0px 0px', opacity: 1 }]);
+    }
+    for (const [m, w] of was){
+      if (keep.has(m)) continue;
+      const x1 = o1 + (m - d0) * ppm1;
+      if ((x1 < xa || x1 > xb) && (w.x < xa || w.x > xb)) continue;
+      const g = w.el.cloneNode(true);
+      g.classList.add('hz-ghost');
+      g.setAttribute('aria-hidden', 'true');
+      g.style.left = ((m - d0) * ppm1).toFixed(1) + 'px';
+      g.style.marginLeft = '';
+      box.appendChild(g);
+      z.ghosts.push(g);
+      go(g, [{ translate: `${(w.x - x1).toFixed(1)}px 0px`, opacity: 1 }, { translate: '0px 0px', opacity: 0 }], { ...opt, fill: 'forwards' });
+    }
+  };
+  marks(ticks, ticks0, to0, to1, 'span.t[data-m]');
+  marks(lines, lines0, bo0, bo1, 'i[data-m]');
+  if (now0 !== false && !nowl.hidden) go(nowl, [{ translate: `${(now0 - nowl.getBoundingClientRect().left).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
+  const pill = h.querySelector('.hz-nowpill');   // (drawn anew with the ruler)
+  // (a pill that was showing moves; it does not fade in again as a new one would)
+  if (typeof pill0 === 'number' && pill && !pill.hidden) for (const a of pill.getAnimations()) a.finish();
+  if (typeof pill0 === 'number' && pill && !pill.hidden) go(pill, [{ translate: `${(pill0 - pill.getBoundingClientRect().left).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
+  // the minimap window follows (hzSync has set where it ends)
+  go(br, [{ left: map0.bl, width: map0.bw }, { left: br.style.left, width: br.style.width }]);
+  go(sl, [{ width: map0.sl }, { width: sl.style.width }]);
+  go(sr, [{ left: map0.sr }, { left: sr.style.left }]);
+  // done: ghosts go; the pieces are where hzDraw put them
+  Promise.all(z.anims.map(a => a.finished)).then(() => { if (h._zm === z) hzMorphStop(h); }, () => {});
+}
+// Go-to (Morning, Afternoon, Evening, Now, a click on the minimap): the canvas glides to
+// `left` (px) over HZ_GO_MS times the speed setting, on the standard ease; the ruler and
+// minimap follow it as they follow any scroll (hzSync). A new glide starts from wherever
+// this one is; a wheel, touch, drag or key on the canvas stops it where it is; a redraw
+// (a zoom, a resize) lands at its end.
+const hzEase = (() => {   // cubic-bezier(.2,0,0,1), as EASE
+  const bz = (a, b, t) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
+  return x => { let lo = 0, hi = 1; for (let i = 0; i < 18; i++){ const m = (lo + hi) / 2; if (bz(.2, 0, m) < x) lo = m; else hi = m; } return bz(0, 1, (lo + hi) / 2); };
+})();
+function hzGlideStop(h){
+  const g = h && h._glide;
+  if (!g) return;
+  h._glide = null;
+  cancelAnimationFrame(g.raf);
+}
+function hzGlide(h, left){
+  const vp = h.querySelector('.hz-vp');
+  hzGlideStop(h);
+  left = Math.max(0, Math.min(vp.scrollWidth - vp.clientWidth, left));
+  const from = vp.scrollLeft, d = left - from;
+  if (motionReduced() || Math.abs(d) < 1){ vp.scrollLeft = left; return; }
+  const dur = HZ_GO_MS * motionK(), t0 = performance.now();
+  const g = h._glide = { m: +h.dataset.d0 + left / +h.dataset.ppm, raf: 0 };
+  const step = now => {
+    if (h._glide !== g) return;
+    if (!vp.isConnected){ h._glide = null; return; }
+    const t = Math.min(1, (now - t0) / dur);
+    vp.scrollLeft = from + d * hzEase(t);
+    if (t < 1) g.raf = requestAnimationFrame(step); else h._glide = null;
+  };
+  g.raf = requestAnimationFrame(step);
 }
 
 // A horizontal card whose text is cut (a clamped or one-line title, speakers left out, a
@@ -7386,11 +7575,13 @@ function hzInit(root){
   const date = h.dataset.date, d0 = +h.dataset.d0, d1 = +h.dataset.d1;
   ctl.addEventListener('click', e => {
     const zb = e.target.closest('[data-hzzoom]'), gb = e.target.closest('[data-hzgo]');
-    if (zb) hzZoom(root, zb.dataset.hzzoom === 'fit' ? 'fit' : +zb.dataset.hzzoom);
+    if (zb) hzZoom(root, zb.dataset.hzzoom === 'fit' ? 'fit' : +zb.dataset.hzzoom, undefined, undefined, HZ_ZOOM_MS);
     else if (gb) hzGo(root, gb.dataset.hzgo);
   });
   let raf = 0;
   vp.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; hzSync(h); }); }, { passive: true });
+  // a hand on the canvas takes over from a glide (hzGlide)
+  for (const t of ['wheel', 'pointerdown', 'touchstart', 'keydown']) vp.addEventListener(t, () => hzGlideStop(h), { passive: true });
   // ctrl/cmd + wheel (a trackpad pinch arrives as ctrl + wheel) zooms around the pointer
   let zf = 1, zx = 0, zraf = 0;
   vp.addEventListener('wheel', e => {
@@ -7405,7 +7596,7 @@ function hzInit(root){
       const lw = h.querySelector('.hz-corner').offsetWidth;
       const at = Math.max(0, Math.min(1, (zx - rect.left - lw) / tw));
       const m = HZ.left[hzKey(h)] + at * cur;
-      hzZoom(root, cur * zf, m, at);
+      hzZoom(root, cur * zf, m, at, HZ_WHEEL_MS);
       zf = 1;
     });
   }, { passive: false });
@@ -7447,7 +7638,7 @@ function hzInit(root){
     if (st){
       const cur = +h.dataset.span, levels = [30, 60, 90, 120, 180, 240, 360, 480, 720, 1440];
       const next = +st.dataset.hzstep > 0 ? levels.find(v => v > cur + 1) : [...levels].reverse().find(v => v < cur - 1);
-      hzZoom(root, next || (d1 - d0));
+      hzZoom(root, next || (d1 - d0), undefined, undefined, HZ_ZOOM_MS);
       return;
     }
     const g = e.target.closest('[data-hzgrp]');
@@ -8071,12 +8262,16 @@ function paintLevel(){
 document.getElementById('programLevel').addEventListener('click', e => {
   const b = e.target.closest('[data-level]');
   if (!b || (b.dataset.level === 'talks') === state.programTalks) return;
-  // each session block turns into its talks (or folds them back in)
-  withTransition(state.layout === 'calendar' && state.day !== 'all' ? 'mx' : 'fade', () => {
-    state.programTalks = b.dataset.level === 'talks';
+  // each session block turns into its talks (or folds them back in). Both ways alike:
+  // judged by the Talks view's cost either way (also), sessions named before their talks
+  // (nest), and the blocks free to change shape (reshape: Vertical stretches its hours
+  // for the talks, which would otherwise read as a page too unlike to morph).
+  const talks = b.dataset.level === 'talks', day = state.layout === 'calendar' && state.day !== 'all';
+  withTransition(day ? 'mx' : 'fade', () => {
+    state.programTalks = talks;
     paintLevel();
     renderCalendar();
-  }, null, { to: { programTalks: b.dataset.level === 'talks' }, press: b });
+  }, null, { to: { programTalks: talks }, also: [{ programTalks: true }], press: b, ...(day ? { nest: true, reshape: true } : {}) });
 });
 function savedOrient(){
   try { return localStorage.getItem('aip2026-orient') === 'v' ? 'v' : 'h'; } catch (e) { return 'h'; }
