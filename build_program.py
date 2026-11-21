@@ -271,7 +271,7 @@ DARK_TOKENS = """\
   --business:#aab4c2; --business-bg:#262b33;
   --social:#c9bba9; --social-bg:#2f2b27;
   --plenary-fill:#454951;
-  --star:#ecedef;
+  --star:#ecedef; --cx-mark:#ecedef;
   --shadow:none;
   --na:#ffb13b; --na-text:#ffc061; --na-fill:#ffb13b; --na-ink:#121316; --na-bg:#402306; --na-sel:#b86400;
   --field-line:#6f757e; --danger-ink:#ff9a92; --fill-ink:#ffffff;
@@ -362,7 +362,7 @@ window.applyDisplay = function(d){
   --special:#006ca0; --special-bg:#e2f3ff;
   --business:#4a5563; --business-bg:#e6eaef;
   --social:#6b5f52; --social-bg:#efebe6;
-  --star:#16181c;
+  --star:#16181c; --cx-mark:#16181c;
   --shadow:none;
   --radius:10px;
   /* sodium D, the only mark of "now": line (marks only), text, lamp fill with ink on it, tint */
@@ -3298,7 +3298,7 @@ function slotDurLabel(slots){
 // A Congress event's note and official links (s.info, s.links from the build).
 function eventInfoHtml(s, fmt = hl){
   if (!s.info && !(s.links || []).length) return '';
-  const links = (s.links || []).map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.l)}&nbsp;&#8599;<span class="visually-hidden"> (official page, opens in a new tab)</span></a>`).join('');
+  const links = (s.links || []).map(l => `<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.l)}<span class="visually-hidden"> (official page, opens in a new tab)</span></a>`).join('');
   return `<div class="ev-info">${s.info ? `<p>${fmt(s.info)}</p>` : ''}${links ? `<p class="ev-links">${links}</p>` : ''}</div>`;
 }
 // Sessions without a page of their own on Indico link to the bare site; leave those out.
@@ -3326,7 +3326,7 @@ function cardHtml(s){
           <div class="t-body">
             ${t.d ? `<div class="abstract">${paras(t.d)}</div>` : '<p class="abstract none">No abstract provided.</p>'}
             <div class="tools">
-              <a href="${t.u}" target="_blank" rel="noopener">View on Indico &#8599;</a>
+              <a href="${t.u}" target="_blank" rel="noopener">Open in Indico</a>
               <button type="button" class="linkish t-share" data-share="t=${t.id}" data-share-title="${esc(t.t)}">Share link</button>
             </div>
           </div>
@@ -3349,7 +3349,7 @@ function cardHtml(s){
       ${s.room ? `<span>${hl(s.room)}</span>` : ''}
       ${conv}
       ${s.talks.length ? `<span>${s.talks.length} talk${s.talks.length>1?'s':''}</span>` : ''}
-      ${indicoUrl(s.url) ? `<span><a href="${s.url}" target="_blank" rel="noopener">Indico &#8599;</a></span>` : ''}
+      ${indicoUrl(s.url) ? `<span><a href="${s.url}" target="_blank" rel="noopener">Open in Indico</a></span>` : ''}
       ${s.talks.length || s.desc || s.info ? `<button type="button" class="linkish t-share" data-share="s=${s.id}" data-share-title="${esc(s.title)}">Share</button>` : ''}
     </div>
     ${eventInfoHtml(s)}
@@ -3821,7 +3821,7 @@ function agendaNoMatchHtml(items){
   const where = state.day === 'all' ? 'in your agenda' : `on ${esc(DATA.days[state.day].label)}`;
   const days = state.day === 'all' ? '' : agendaDayButtons(items);
   return `<div class="ag-empty ag-nomatch">
-      <div class="ag-empty-icon" aria-hidden="true">&#128269;</div>
+      <div class="ag-empty-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 16 16" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg></div>
       <h3>${nCats ? `Nothing ${where} matches ${what}` : 'No streams selected'}</h3>
       <p>${!nCats ? 'Pick streams in the Streams menu, or clear the filters.' : days ? 'These days have matches:' : 'Your saved items are all still there; the search and stream filters hide them.'}</p>
       ${days ? `<div class="ag-empty-actions ag-days" role="group" aria-label="Days with matches">${days}</div>` : ''}
@@ -3996,7 +3996,7 @@ function agRow(it){
   const clashes = state.hideClashes ? [] : [...new Map(it.clashes.map(x => [itemTitle(x), x])).values()];
   const nOff = clashes.filter(x => x.off).length;
   const clash = clashes.length
-    ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}>&#9888;&#65039; Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
+    ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}>&#9888; Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
     : '';
   // the search matched talks in this session that are not starred: name them
   const hits = (it.hits || []).filter(t => !(it.inner || []).includes(t));
@@ -4697,7 +4697,7 @@ function renderClashes(items){
   const allWords = clashWords(all, nItems(groups));
   const label = state.hideClashes ? `${allWords} hidden`
     : !n ? (day === null ? 'No clashes shown' + cxWk(allWords + ' in all') : `No clashes on ${where}` + cxWk('week: ' + allWords))
-    : `&#9888;&#65039; ${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
+    : `&#9888; ${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
   slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !scoped.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox"><span>${label}</span>${caret}</button>`;
   box.hidden = !clashPanelOpen;
   const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button></span>`;
@@ -7917,7 +7917,7 @@ function bdRenderSlot(){
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
       <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
-      ${clashes ? `<br><span class="ag-warn">&#9888;&#65039; ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
+      ${clashes ? `<br><span class="ag-warn">&#9888; ${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -7987,7 +7987,7 @@ function bdPaintChecks(){
   const note = bdEl('bdSlotCx');
   note.hidden = !pairs.length;
   note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
-  note.innerHTML = pairs.length ? '&#9888;&#65039; Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
+  note.innerHTML = pairs.length ? '&#9888; Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
   // the key to the slider's marks, which steps to the next slot with a clash
   const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
   const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
