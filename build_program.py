@@ -258,29 +258,52 @@ def build_payload(raw):
 # Dark-theme tokens, used twice in the page: under prefers-color-scheme: dark (unless
 # Light is picked in Display settings) and under data-theme="dark".
 DARK_TOKENS = """\
-  --bg:#0f1218; --card:#171b23; --ink:#e6e9ef; --muted:#9aa3b2; --line:#2a303c; --accent:#2563eb; --accent-ink:#ffffff;
-  --plenary:#ff8a9a; --plenary-bg:#43141f;
-  --aip:#93acf1; --aip-bg:#142043;
-  --anzcop:#6ee7b7; --anzcop-bg:#123d2e;
-  --commad:#f7a17d; --commad-bg:#432114;
-  --focus:#74d6f1; --focus-bg:#143943;
-  --edu:#fbbf24; --edu-bg:#352a0c;
-  --poster:#a78bfa; --poster-bg:#251a4a;
-  --events:#f9a8d4; --events-bg:#3d1430;
-  --special:#c8ea4c; --special-bg:#2a330f;
-  --business:#a5b9d4; --business-bg:#232a34;
-  --social:#cdb598; --social-bg:#312c26;
-  --star:#fbbf24; --cx-mark:#f97316;
-  --shadow:0 1px 2px rgba(0,0,0,.45),0 4px 16px rgba(0,0,0,.4);
-  --link:#8ab4ff; --surface:#171b23; --surface-2:#1c212b; --surface-3:#232935; --sunken:#1d222c; --sunken-2:#1d2430; --sticky-bg:rgba(15,18,24,.9); --hover-line:#3a4252; --ink-2:#b4bccb; --ink-3:#c9d0db; --faint:#8a93a3; --caret:#4b5563; --cnt-ink:#1f2937; --pop-shadow:rgba(0,0,0,.5); --flash:#3a3412; --mark-bg:#6b4a0f; --mark-ink:#fef3c7; --toast-bg:#232935; --toast-ink:#e6e9ef; --toast-ring:#3a4252; --day-rule:#3a4252; --warn-ink:#fbbf24; --ok-ink:#4ade80; --now-text:#fca5a5; --live-ink:#f87171; --now-bg:#2b1417; --now-line:#7f1d1d; --next-bg:#172554; --next-ink:#bfdbfe; --danger-bg:#3b1419; --danger-line:#7f1d1d; --today-bg:#3b1419; --today-ink:#fecaca; --clash-bg:#3a2a0b; --clash-line:#78520e; --clash-ink:#fde68a; --clash-row-bg:#2a200c; --clash-row-line:#92400e; --warm-bg:#2b1b0e; --warm-line:#9a3412; --warm-ink:#fdba74; --starOn-bg:#2b2010; --starOn-line:#b45309; --starOn-ink:#fcd34d; --active-bg:#13233f; --active-ink:#bfdbfe; --grp-bg:#1e1b4b; --grp-line:#3730a3; --grp-ink:#c7d2fe; --grp-btn:#3730a3; --ok-bg:#0f2a20; --ok-line:#14532d; --ok-strong:#bbf7d0; --ok-btn:#6ee7b7; --info-bg:#132340; --info-line:#1e3a6a; --info-ink:#cfe0ff; --info-strong:#e0ebff; --info-btn:#93c5fd; --info-hover:#1a2d4d; --backdrop:rgba(0,0,0,.62); --switch-off:#3a4252;
-  color-scheme:dark;  --focus-ring:rgba(138,180,255,.42);
-  --bar-ink:#e6e9ef; --bar-meta:#b4bccb; --sx-shade:rgba(0,0,0,.6); --past-ink:#c3cad6;
+  --bg:#0f1012; --card:#17181b; --ink:#ecedef; --muted:#9ca2ab; --line:#2e3136; --accent:#ecedef; --accent-ink:#121316;
+  --plenary:#ecedef; --plenary-bg:#2a2c30;
+  --aip:#2ed6dd; --aip-bg:#003436;
+  --anzcop:#ff8783; --anzcop-bg:#44211f;
+  --commad:#a9bbff; --commad-bg:#232a48;
+  --focus:#5dbe5f; --focus-bg:#1a341a;
+  --edu:#d6a800; --edu-bg:#382b00;
+  --poster:#dcbcff; --poster-bg:#332542;
+  --events:#ec7cbb; --events-bg:#402132;
+  --special:#3aa8f0; --special-bg:#0d3045;
+  --business:#aab4c2; --business-bg:#262b33;
+  --social:#c9bba9; --social-bg:#2f2b27;
+  --plenary-fill:#454951;
+  --star:#ecedef;
+  --shadow:none;
+  --na:#ffb13b; --na-text:#ffc061; --na-fill:#ffb13b; --na-ink:#121316; --na-bg:#402306; --na-sel:#b86400;
+  --field-line:#6f757e; --danger-ink:#ff9a92; --fill-ink:#ffffff;
+  --dlg-shadow:0 24px 48px -12px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.4);
+  --link:#ecedef; --surface:#17181b; --surface-2:#1c1d21; --surface-3:#24262a; --sunken:#1e2024; --sunken-2:#202327; --sticky-bg:rgba(15,16,18,.9); --hover-line:#4a4f57; --ink-2:#b9bec6; --ink-3:#d3d7dd; --faint:#6f757e; --caret:#6f757e; --cnt-ink:#121316; --pop-shadow:rgba(0,0,0,.55); --flash:#2a2c30; --mark-bg:#4a4e56; --mark-ink:#ffffff; --toast-bg:#ecedef; --toast-ink:#121316; --toast-ring:transparent; --day-rule:#ecedef; --warn-ink:#ecedef; --ok-ink:#d3d7dd; --now-text:#ffc061; --live-ink:#ffb13b; --now-bg:#402306; --now-line:#ffb13b; --next-bg:#2a2c30; --next-ink:#d3d7dd; --danger-bg:#3a1517; --danger-line:#7a2a2c; --today-bg:#402306; --today-ink:#ffc061; --clash-bg:#24262a; --clash-line:#6f757e; --clash-ink:#ecedef; --clash-row-bg:#1e2024; --clash-row-line:#4a4f57; --warm-bg:#2a2c30; --warm-line:#ecedef; --warm-ink:#ecedef; --starOn-bg:#ecedef; --starOn-line:#ecedef; --starOn-ink:#121316; --active-bg:#2a2c30; --active-ink:#ecedef; --grp-bg:#24262a; --grp-line:#4a4f57; --grp-ink:#ecedef; --grp-btn:#3a3e45; --ok-bg:#1e2024; --ok-line:#2e3136; --ok-strong:#ecedef; --ok-btn:#ecedef; --info-bg:#1e2024; --info-line:#2e3136; --info-ink:#d3d7dd; --info-strong:#ecedef; --info-btn:#ecedef; --info-hover:#24262a; --backdrop:rgba(0,0,0,.66); --switch-off:#3a3e45;
+  color-scheme:dark;  --focus-ring:rgba(236,237,239,.35);
+  --bar-ink:#ecedef; --bar-meta:#b9bec6; --sx-shade:rgba(0,0,0,.6); --past-ink:#d3d7dd;
   --tk-mix:13%;
   --press:brightness(1.75); --press-sum:var(--surface-3);
 """
+# (every token set in the light high-contrast block must be set here too: in a dark theme
+# the light block would otherwise win)
 DARK_HC_TOKENS = """\
-  --press:brightness(2.1); --press-sum:#2c3444;
-  --ink:#ffffff; --muted:#cbd2dd; --line:#5b6578; --hover-line:#8a93a3; --ink-2:#e2e8f0; --ink-3:#f1f5f9; --faint:#b4bccb; --caret:#8a93a3;"""
+  --press:brightness(2.1); --press-sum:#2a2c30;
+  --ink:#ffffff; --muted:#c8cdd4; --line:#656b74; --hover-line:#8e949c; --ink-2:#e2e5ea; --ink-3:#f1f3f5; --faint:#9ca2ab; --caret:#8e949c;
+  --accent:#ffffff; --link:#ffffff; --star:#ffffff; --day-rule:#ffffff; --field-line:#8e949c;
+  --plenary:#ffffff; --aip:#39dde4; --anzcop:#ffb5b0; --commad:#b6c6ff; --focus:#7cdd7d; --edu:#f0c239; --poster:#dcbcff; --events:#ffb1da; --special:#8eceff; --business:#bec9d7; --social:#d4c6b4;
+  --na:#ffb13b; --na-text:#ffc061; --doublet-w:8px;"""
+
+def font_faces(root):
+    """@font-face rules for the Archivo subsets in fonts/ (made by fonts/make_fonts.py), as
+    base64 data URIs so the page needs no network for its type."""
+    import base64
+    fonts = root / 'fonts'
+    rules = []
+    for f in json.loads((fonts / 'fonts.json').read_text(encoding='utf-8')):
+        data = base64.b64encode((fonts / f['file']).read_bytes()).decode('ascii')
+        rules.append('@font-face{font-family:"Archivo";font-style:%s;font-weight:%s;font-stretch:%s;'
+                     'font-display:swap;src:url(data:font/woff2;base64,%s) format("woff2");unicode-range:%s}'
+                     % (f['style'], f['weight'], f['stretch'], data, f['unicode_range']))
+    return '\n'.join(rules)
+
 
 HTML = r'''<!DOCTYPE html>
 <html lang="en">
@@ -293,8 +316,8 @@ HTML = r'''<!DOCTYPE html>
 <meta property="og:title" content="AIP Congress 2026 — Program Explorer">
 <meta property="og:description" content="Search the program, plan your agenda and see what is on now. Sydney, 7–11 December 2026.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#1d4ed8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <script>
 // Display settings (text size, theme, contrast, motion, animation speed) go on <html> before the first
 // paint, so the page never flashes the wrong theme. Only overrides are stored.
@@ -309,7 +332,7 @@ window.applyDisplay = function(d){
   var metas = document.querySelectorAll('meta[name="theme-color"]');
   for (var i = 0; i < metas.length; i++){
     var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
-    metas[i].content = dark ? '#0f1218' : '#1d4ed8';
+    metas[i].content = dark ? '#0F1012' : '#F3F4F5';
   }
 };
 (function(){
@@ -320,36 +343,55 @@ window.applyDisplay = function(d){
 </script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%232563eb'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2' transform='rotate(60 16 16)'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%232563eb' stroke-width='2' transform='rotate(120 16 16)'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316181C'/%3E%3Crect x='12.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3Crect x='17.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3C/svg%3E">
 <style>
+@@FONTS@@
 :root{
-  --bg:#f6f7fb; --card:#ffffff; --ink:#1e2433; --muted:#667085; --line:#e4e7ee;
-  --accent:#2563eb; --accent-ink:#ffffff;
-  --plenary:#be123c; --plenary-bg:#ffe4e6;
-  --aip:#1d4ed8; --aip-bg:#dbeafe;
-  --anzcop:#047857; --anzcop-bg:#d1fae5;
-  --commad:#c2410c; --commad-bg:#ffedd5;
-  --focus:#0e7490; --focus-bg:#cffafe;
-  --edu:#906100; --edu-bg:#fef9c3;
-  --poster:#5b21b6; --poster-bg:#ede9fe;
-  --events:#b5179e; --events-bg:#fce7f6;
-  --special:#5b7500; --special-bg:#ecfccb;
-  --business:#475569; --business-bg:#e2e8f0;
-  --social:#57534e; --social-bg:#f5f5f4;
-  --star:#f59e0b;
-  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
-  --radius:14px;
-  /* surfaces and text (light values equal the original hard-coded colours) */
-  --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9; --sunken:#eef1f6; --sunken-2:#eef2fa; --sticky-bg:rgba(246,247,251,.92); --hover-line:#c7cede; --ink-2:#4b5563; --ink-3:#374151; --faint:#94a3b8; --caret:#b6c0cf; --cnt-ink:#ffffff; --pop-shadow:rgba(16,24,40,.18); --flash:#fef9c3; --mark-bg:#fde68a; --mark-ink:#1f2937; --toast-bg:#1e2433; --toast-ink:#ffffff; --warn-ink:#b45309; --ok-ink:#15803d; --now-text:#b91c1c; --live-ink:#dc2626; --now-bg:#fef2f2; --now-line:#fecaca; --next-bg:#dbeafe; --next-ink:#1e40af; --danger-bg:#fee2e2; --danger-line:#fecaca; --today-bg:#fee2e2; --today-ink:#991b1b; --clash-bg:#fef3c7; --clash-line:#fde68a; --clash-ink:#92400e; --clash-row-bg:#fffbeb; --clash-row-line:#fcd34d; --warm-bg:#fff7ed; --warm-line:#fdba74; --warm-ink:#9a3412; --starOn-bg:#fff7eb; --starOn-line:#fcd34d; --starOn-ink:#92400e; --active-bg:#eff6ff; --active-ink:#1e40af; --grp-bg:#eef2ff; --grp-line:#c7d2fe; --grp-ink:#3730a3; --grp-btn:#c7d2fe; --ok-bg:#ecfdf5; --ok-line:#a7f3d0; --ok-strong:#064e3b; --ok-btn:#047857; --info-bg:#eef4ff; --info-line:#c7d8f7; --info-ink:#1e3a5f; --info-strong:#12306b; --info-btn:#1d4ed8; --info-hover:#f3f8ff; --link:#2563eb; --day-rule:#1e2433; --toast-ring:transparent; --backdrop:rgba(22,35,55,.53); --switch-off:#cbd2dd; --focus-ring:rgba(37,99,235,.3);
+  /* Line List: calm achromatic ink on a neutral grey ground; colour only where it is data
+     (each stream takes its hue from a spectral line) and sodium amber only for "now". */
+  --bg:#f3f4f5; --card:#ffffff; --ink:#16181c; --muted:#5d636d; --line:#dadde2;
+  --accent:#16181c; --accent-ink:#ffffff;
+  --plenary:#16181c; --plenary-bg:#eceef0;
+  --aip:#006b6f; --aip-bg:#d0f9fb;
+  --anzcop:#c71f31; --anzcop-bg:#ffebe9;
+  --commad:#4a57db; --commad-bg:#ebf0ff;
+  --focus:#006313; --focus-bg:#e0f8df;
+  --edu:#7e6300; --edu-bg:#ffefc5;
+  --poster:#8b41c7; --poster-bg:#f5ecff;
+  --events:#b92684; --events-bg:#ffe9f4;
+  --special:#006ca0; --special-bg:#e2f3ff;
+  --business:#4a5563; --business-bg:#e6eaef;
+  --social:#6b5f52; --social-bg:#efebe6;
+  --star:#16181c;
+  --shadow:none;
+  --radius:10px;
+  /* sodium D, the only mark of "now": line (marks only), text, lamp fill with ink on it, tint */
+  --na:#b86400; --na-text:#8c4c00; --na-fill:#ffb224; --na-ink:#16181c; --na-bg:#ffecde;
+  /* the doublet on an ink-filled (selected) control */
+  --na-sel:#ffb224;
+  /* the doublet: two lines with a gap of the same width, across (x) or down (y) */
+  --doublet-w:6px;
+  --doublet-x:linear-gradient(90deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));
+  --doublet-y:linear-gradient(180deg,var(--na) 0 calc((var(--doublet-w) - 2px) / 2),transparent 0 calc((var(--doublet-w) + 2px) / 2),var(--na) 0 var(--doublet-w));
+  /* borders of text fields (3:1 on white); destructive and error text; text on a stream fill */
+  --field-line:#8b919a; --danger-ink:#a3162a; --fill-ink:#ffffff;
+  /* radii, strictly by kind: lines, tags, segments and chips, controls, plates, dialogs */
+  --r-line:2px; --r-tag:3px; --r-seg:6px; --r-ctl:8px; --r-plate:10px; --r-dialog:12px;
+  --dlg-shadow:0 24px 48px -12px rgba(12,13,15,.28),0 2px 6px rgba(12,13,15,.08);
+  /* one family; its width axis does the work of a second face */
+  --font:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --stretch-cond:87.5%; --stretch-wide:118%;
+  /* surfaces and text */
+  --surface:#ffffff; --surface-2:#f8f9fa; --surface-3:#eef0f2; --sunken:#e8eaed; --sunken-2:#e5e8ec; --sticky-bg:rgba(243,244,245,.92); --hover-line:#b4bac2; --ink-2:#40454d; --ink-3:#2b2f35; --faint:#8b919a; --caret:#8b919a; --cnt-ink:#ffffff; --pop-shadow:rgba(12,13,15,.2); --flash:#e4e7eb; --mark-bg:#d3d5d8; --mark-ink:#16181c; --toast-bg:#16181c; --toast-ink:#ffffff; --warn-ink:#16181c; --ok-ink:#2b2f35; --now-text:#8c4c00; --live-ink:#b86400; --now-bg:#ffecde; --now-line:#b86400; --next-bg:#e6e8eb; --next-ink:#2b2f35; --danger-bg:#fcebea; --danger-line:#f0b7b3; --today-bg:#ffecde; --today-ink:#8c4c00; --clash-bg:#f1f2f4; --clash-line:#8b919a; --clash-ink:#16181c; --clash-row-bg:#f6f7f8; --clash-row-line:#b4bac2; --warm-bg:#e6e8eb; --warm-line:#16181c; --warm-ink:#16181c; --starOn-bg:#16181c; --starOn-line:#16181c; --starOn-ink:#ffffff; --active-bg:#e6e8eb; --active-ink:#16181c; --grp-bg:#e9ebee; --grp-line:#c4c9d0; --grp-ink:#16181c; --grp-btn:#d3d6da; --ok-bg:#eef0f2; --ok-line:#dadde2; --ok-strong:#16181c; --ok-btn:#16181c; --info-bg:#eef0f2; --info-line:#dadde2; --info-ink:#2b2f35; --info-strong:#16181c; --info-btn:#16181c; --info-hover:#f8f9fa; --link:#16181c; --day-rule:#16181c; --toast-ring:transparent; --backdrop:rgba(12,13,15,.5); --switch-off:#c4c9d0; --focus-ring:rgba(22,24,28,.28);
   /* calendar engines: text on every --<cat>-bg tint (at least 4.5:1 on all of them, light
      and dark), the edge shade of a sideways scroller, and text on past week blocks */
-  --bar-ink:#1e2433; --bar-meta:#4b5563; --sx-shade:rgba(16,24,40,.2); --past-ink:#374151;
+  --bar-ink:#16181c; --bar-meta:#40454d; --sx-shade:rgba(12,13,15,.18); --past-ink:#2b2f35;
   /* QR codes stay dark on light in both modes so phone cameras can read them */
   --qr-dark:#000000; --qr-light:#ffffff;
   /* a pressed control's tint (lighter in the dark theme) */
-  --press:brightness(.92); --press-sum:var(--surface-2);
-  /* solid fills for selected chips: white text on these in both modes */
-  --plenary-fill:#be123c; --aip-fill:#1d4ed8; --anzcop-fill:#047857; --commad-fill:#c2410c; --focus-fill:#0e7490; --edu-fill:#906100; --poster-fill:#5b21b6; --events-fill:#b5179e; --special-fill:#5b7500; --business-fill:#475569; --social-fill:#57534e;
+  --press:brightness(.94); --press-sum:var(--surface-2);
+  /* solid fills for selected chips: white text (--fill-ink) on these in both modes */
+  --plenary-fill:#16181c; --aip-fill:#006b6f; --anzcop-fill:#c71f31; --commad-fill:#4a57db; --focus-fill:#006313; --edu-fill:#7e6300; --poster-fill:#8b41c7; --events-fill:#b92684; --special-fill:#006ca0; --business-fill:#4a5563; --social-fill:#6b5f52;
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
    Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
@@ -368,7 +410,10 @@ window.applyDisplay = function(d){
 /* High-contrast text (Display settings): darker text and stronger lines in light,
    lighter text and stronger lines in dark. */
 :root[data-contrast="high"]{
-  --ink:#0b0f19; --muted:#3b4252; --line:#9aa3b2; --hover-line:#5b6578; --ink-2:#1f2937; --ink-3:#111827; --faint:#4b5563; --caret:#5b6578;
+  --ink:#0b0c0e; --muted:#33373d; --line:#8e949c; --hover-line:#4b5058; --ink-2:#1f2226; --ink-3:#121418; --faint:#5d636d; --caret:#4b5058;
+  --accent:#0b0c0e; --link:#0b0c0e; --star:#0b0c0e; --day-rule:#0b0c0e; --field-line:#4b5058;
+  --plenary:#0b0c0e; --aip:#005d61; --anzcop:#aa0021; --commad:#3940c3; --focus:#006112; --edu:#675000; --poster:#7628b0; --events:#a0006f; --special:#005783; --business:#495462; --social:#5d5144;
+  --na:#8a4a00; --na-text:#7a4100; --doublet-w:8px;
 }
 @media screen and (prefers-color-scheme: dark){
 :root[data-contrast="high"]:not([data-theme="light"]){
@@ -380,23 +425,58 @@ window.applyDisplay = function(d){
 @@DARK_HC_TOKENS@@
 }
 }
-input,select,textarea{color:var(--ink)}
+input,select,textarea{color:var(--ink);font-family:inherit}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--link);text-decoration:none}
-a:hover{text-decoration:underline}
+body{margin:0;background:var(--bg);color:var(--ink);font:420 1rem/1.55 var(--font);font-synthesis-weight:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* Links are ink and underlined (a quiet underline that turns ink on hover) */
+a{color:var(--link);text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:.2em}
+a:hover{text-decoration-color:currentColor}
+b,strong{font-weight:650}
 button{font:inherit;cursor:pointer}
 
 /* ---------- header ---------- */
-header.hero{background:linear-gradient(135deg,#0f2b6b 0%,#1d4ed8 55%,#3b82f6 100%);color:#fff;padding:26px 20px 22px}
-.hero-inner{max-width:1180px;margin:0 auto}
-.hero h1{margin:0 0 6px;font-size:clamp(1.375rem,calc(.6rem + 2.4vw),2rem);letter-spacing:-.02em;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.hero .tag{font-size:.75rem;font-weight:600;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:3px 10px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
-.hero p.sub{margin:2px 0 0;opacity:.94;font-size:.9688rem;max-width:72ch}
-.hero .facts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:.8438rem;opacity:.95}
-.hero .facts span{display:inline-flex;align-items:center;gap:6px}
-
+/* A calm typographic header on the page's grey: the wordmark, one sentence, three facts;
+   Display and the countdown on the right; and along its foot the spectral rule, the
+   program's legend: each stream's line standing at its wavelength, with "now" (the sodium
+   D doublet) among them. */
+header.hero{background:var(--bg);color:var(--ink);padding:28px 0 0}
+.hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
+.hero-main{min-width:0}
+.hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
+.hero p.sub{margin:12px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
+.hero .facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 14px;margin:14px 0 0;font-size:.875rem;line-height:1.45}
+.hero .facts>div{display:contents}
+.hero .facts dt{color:var(--muted);font-weight:500}
+.hero .facts dd{margin:0;color:var(--ink);font-weight:560}
+.hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;padding-top:2px}
+.hero-when{display:flex;align-items:center;gap:8px;margin:0;font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hero-when .na-glyph{display:none}
+.hero-when.is-today .na-glyph{display:inline-block}
+.facts-short{display:none}
+/* the spectral rule: 400 to 700 nm across the content width */
+.spectral{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:end;column-gap:12px;margin:22px 0 0;grid-column:1/-1}
+.sp-end{font-size:.6875rem;line-height:1;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap;padding-bottom:0;transform:translateY(50%)}
+.sp-scale{position:relative;height:28px;border-bottom:1px solid var(--hover-line)}
+.sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100%);width:2px;height:68%;margin-left:-1px;border-radius:1px 1px 0 0;background:var(--c)}
+.sp-scale i.sp-na{width:var(--doublet-w);height:100%;margin-left:calc(var(--doublet-w) / -2);background:none}
+.sp-scale i[title]{cursor:help}
+/* (a hit area wider than the 2px line for its tooltip) */
+.sp-scale i::after{content:"";position:absolute;inset:0 -4px}
+/* ---------- the sodium D doublet: the mark of "now" ----------
+   .na-glyph is the inline mark (two lines and a gap of 2px; 3px lines with high-contrast
+   text). --g recolours it (e.g. on an ink-filled control). .na-resolve makes the two lines
+   start fused at the centre and part to the gap, once, as the mark appears (a spectrometer
+   coming into focus); with motion reduced it is drawn resolved. Another element can resolve
+   the same way: give its two lines (::before and ::after, or two children) the animation
+   na-part with --na-from set to the offset each starts at (see below). */
+.na-glyph{display:inline-block;flex:none;position:relative;width:var(--doublet-w);height:.75rem;vertical-align:-.0625rem}
+.na-glyph::before,.na-glyph::after{content:"";position:absolute;top:0;bottom:0;width:calc((var(--doublet-w) - 2px) / 2);background:var(--g,var(--na))}
+.na-glyph::before{left:0;--na-from:calc(var(--doublet-w) / 4 + .5px) 0}
+.na-glyph::after{right:0;--na-from:calc(var(--doublet-w) / -4 - .5px) 0}
+.na-resolve::before,.na-resolve::after{animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
+@keyframes na-part{from{translate:var(--na-from,0 0)}}
+.sp-na .na-glyph{display:block;height:100%}
 /* ---------- Congress events: note and official links on cards and in details ---------- */
 .ev-info{margin:8px 0 2px;padding:7px 10px;border-left:3px solid var(--events);border-radius:0 8px 8px 0;background:var(--events-bg);font-size:.8438rem;color:var(--ink)}
 .ev-info p{margin:0}
@@ -617,7 +697,7 @@ html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition{background:var(--bg)}
-html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop,rgba(22,35,55,.53)),var(--backdrop,rgba(22,35,55,.53))),var(--bg)}
+html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -625,7 +705,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 @keyframes week-tx-zoom{from{opacity:0;transform:scale(.97)}}
 @keyframes week-tx-fade{from{opacity:0}}
 #eventDialog,#moveDialog{border:1px solid var(--line);border-radius:14px;max-height:85vh;width:min(640px,94vw);padding:18px;color:var(--ink);background:var(--card)}
-#eventDialog::backdrop,#moveDialog::backdrop{background:#16233788}
+#eventDialog::backdrop,#moveDialog::backdrop{background:var(--backdrop)}
 #eventDialog>form,#moveDialog>form{position:sticky;top:-18px;text-align:right;pointer-events:none;background:var(--card);margin:-18px -18px 0;padding:18px 18px 0;z-index:1}
 #eventDialog>form .toggle,#moveDialog>form .toggle{border-radius:999px;padding:4px 12px;font-size:.7812rem;min-height:0}
 #eventDialog>form button,#moveDialog>form button{pointer-events:auto}
@@ -653,25 +733,25 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .qr-box .qr-fg{fill:var(--qr-dark)}
 .qr-cap{text-align:center;font-size:0.8125rem;color:var(--muted);margin:0 0 6px}
 .md-label{display:block;font-weight:600;font-size:0.875rem;margin:10px 0 4px}
-#importText,.md-copy-fallback input{width:100%;font:0.8125rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
+#importText,.md-copy-fallback input{width:100%;font:0.8125rem/1.45 var(--font);font-stretch:var(--stretch-cond);border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .md-copy-fallback{margin:6px 0}
 .md-copy-fallback label{display:block;font-size:0.8125rem;color:var(--muted);margin-bottom:4px}
 .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .import-result:empty{display:none}
 .import-result{margin:10px 0 4px;padding:10px 12px;border-radius:10px;font-size:0.875rem;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-strong)}
-.import-result.error{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
+.import-result.error{background:var(--danger-bg);border-color:var(--danger-line);color:var(--danger-ink)}
 .import-result p{margin:0 0 8px}
 .import-result ul{margin:6px 0 0;padding-left:18px;font-size:0.8125rem;max-height:180px;overflow:auto}
 .import-result summary{cursor:pointer;font-weight:600;font-size:0.8125rem}
 .toggle.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.toggle.primary:hover{filter:brightness(1.08)}
+.toggle.primary:hover{background:var(--ink-3);border-color:var(--ink-3)}
 .detail-text{overflow-wrap:anywhere}
 .detail-text p,.abstract p,.card .desc p{margin:0 0 .65em}
 .detail-text p:last-child,.abstract p:last-child,.card .desc p:last-child{margin-bottom:0}
 .detail-save.on{color:var(--starOn-ink);background:var(--starOn-bg)}
 /* ---------- toolbar ---------- */
-.sticky-wrap{position:sticky;top:0;z-index:50;background:var(--sticky-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:18px}
-.toolbar{max-width:1180px;margin:0 auto;padding:10px 20px 0}
+.sticky-wrap{position:sticky;top:0;z-index:50;background:var(--sticky-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-top:16px}
+.toolbar{max-width:1180px;margin:0 auto;padding:12px 20px 0}
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
@@ -683,12 +763,14 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
 .sticky-wrap.tb-compact .daytabs{flex:1 1 auto;min-width:0;padding-bottom:0;scrollbar-width:none}
 .sticky-wrap.tb-compact .daytabs::-webkit-scrollbar{display:none}
-.sticky-wrap.tb-compact .daytab{padding-top:5px;padding-bottom:5px}
+.sticky-wrap.tb-compact .daytab{grid-template-areas:"wd dm n";grid-template-columns:auto auto auto;column-gap:5px;padding-top:5px;padding-bottom:5px}
+.sticky-wrap.tb-compact .dt-dm{font-size:.875rem}
 .sticky-wrap.tb-compact .controls{flex:none;flex-wrap:nowrap;padding:0;margin-left:auto}
 .sticky-wrap.tb-compact .controls .tb-mini{display:inline-flex}
 .sticky-wrap.tb-compact.tb-notabs .toolbar>.schedule-nav{display:flex!important;margin:0;flex:1 1 auto;min-width:0}
 .sticky-wrap.tb-compact.tb-notabs .schedule-nav>:not(.nav-main),.sticky-wrap.tb-compact.tb-notabs #scheduleLayout{display:none}
 .tb-mini .tb-q{max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:var(--muted)}
+.tb-mini .ic{flex:none;color:var(--ink-2)}
 .tb-mini .tb-q:empty{display:none}
 @media (max-width:720px){.sticky-wrap.tb-compact .toolbar{gap:6px;padding-top:4px;padding-bottom:4px}.tb-mini .tb-q{max-width:4.5rem}}
 /* Phones, while the search box has the focus (the keyboard is up): the view switches
@@ -701,72 +783,92 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
   .sticky-wrap.tb-typing:not(.tb-compact) .result-row{padding-bottom:6px}
   .sticky-wrap.tb-typing:not(.tb-compact) .result-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-.daytabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
-.daytab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 15px;border-radius:999px;font-size:.875rem;font-weight:600;white-space:nowrap}
-.daytab .dt-count{font-weight:500;color:var(--muted);font-size:.75rem;margin-left:5px}
-.daytab:hover{border-color:var(--hover-line)}
-.daytab.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.daytab.on .dt-count{color:#fff}
+/* The day strip: one connected ruler of cells (weekday and count small, the date large,
+   condensed and tabular); the chosen day is filled with ink; today carries the doublet. */
+@property --dt-fl{syntax:"<length>";inherits:false;initial-value:0px}
+@property --dt-fr{syntax:"<length>";inherits:false;initial-value:0px}
+.daytabs{display:flex;gap:0;overflow-x:auto;padding:0 0 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent);mask-image:linear-gradient(to right,transparent,#000 var(--dt-fl),#000 calc(100% - var(--dt-fr)),transparent)}
+.daytabs::-webkit-scrollbar{display:none}
+/* (a strip that scrolls fades at the edge it can still scroll to) */
+@supports (animation-timeline:scroll()){.daytabs{animation:dt-fade linear both;animation-timeline:scroll(self inline)}}
+@keyframes dt-fade{0%{--dt-fl:0px;--dt-fr:28px}6%{--dt-fl:28px;--dt-fr:28px}94%{--dt-fl:28px;--dt-fr:28px}100%{--dt-fl:28px;--dt-fr:0px}}
+.daytab{flex:1 1 0;position:relative;display:grid;grid-template-areas:"wd n" "dm dm";grid-template-columns:auto auto;justify-content:space-between;align-items:baseline;column-gap:10px;row-gap:1px;min-width:max-content;margin:0 0 0 -1px;padding:6px 12px 7px;border:1px solid var(--line);border-radius:0;background:var(--card);color:var(--ink);text-align:left;white-space:nowrap;line-height:1.2}
+.daytab:first-child{margin-left:0;border-radius:var(--r-ctl) 0 0 var(--r-ctl)}
+.daytab:last-child{border-radius:0 var(--r-ctl) var(--r-ctl) 0}
+.dt-wd{grid-area:wd;display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:550;color:var(--muted)}
+.dt-dm{grid-area:dm;font-size:1rem;font-weight:700;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;letter-spacing:-.005em}
+.daytab .dt-count{grid-area:n;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+.daytab:hover{z-index:1;border-color:var(--hover-line);background:var(--surface-2)}
+.daytab.on{z-index:2;background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.daytab.on .dt-wd,.daytab.on .dt-count{color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
+.daytab.on .na-glyph{--g:var(--na-sel)}
 /* relative: its hidden words stay inside the sideways-scrolling tabs */
 .dt-of{position:relative;font-weight:400;opacity:.85}
 .daytab.zero:not(.on){color:var(--muted);background:var(--surface-2)}
-.daytab.today::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;margin-right:6px;vertical-align:1px}
+.daytab.today:not(.on) .dt-wd{color:var(--na-text)}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 0 10px}
 .searchbox{flex:1 1 220px;position:relative;min-width:0}
-.searchbox input{width:100%;min-height:40px;padding:9px 36px 9px 2.375rem;border-radius:12px;border:1px solid var(--line);font-size:.9062rem;background:var(--surface);color:var(--ink)}
+.searchbox input{width:100%;min-height:40px;padding:8px 36px 8px 2.25rem;border-radius:var(--r-ctl);border:1px solid var(--field-line);font-size:.9375rem;font-weight:450;background:var(--card);color:var(--ink)}
 .searchbox input::placeholder{color:var(--muted);opacity:1}
 .searchbox input:placeholder-shown{padding-right:10px}
-.searchbox input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.searchbox input:focus{outline:2px solid var(--ink);outline-offset:2px;border-color:var(--ink)}
 .searchbox input[type="search"]::-webkit-search-cancel-button,
 .searchbox input[type="search"]::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
-.searchbox .mag{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9375rem}
-.searchbox .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:var(--sunken);border-radius:50%;width:22px;height:22px;line-height:1;color:var(--muted);display:none}
-.toggle{border:1px solid var(--line);background:var(--surface);min-height:40px;padding:8px 13px;border-radius:12px;font-size:.8438rem;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
-.toggle:hover{border-color:var(--hover-line)}
+.searchbox .mag{position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;color:var(--ink-2);pointer-events:none}
+.searchbox .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:var(--sunken);border-radius:var(--r-seg);width:22px;height:22px;padding:0;line-height:0;color:var(--ink-2);display:none}
+.searchbox .clr .ic,#grpclr .ic{display:block;margin:auto}
+.searchbox .clr:hover{background:var(--surface-3);color:var(--ink)}
+.toggle{border:1px solid var(--line);background:var(--card);min-height:40px;padding:8px 14px;border-radius:var(--r-ctl);font-size:.8125rem;font-weight:650;line-height:1.2;color:var(--ink);display:inline-flex;align-items:center;gap:7px}
+.toggle:hover{border-color:var(--hover-line);background:var(--surface-2)}
 .toggle.on{background:var(--warm-bg);border-color:var(--warm-line);color:var(--warm-ink)}
-.toggle .cnt{background:var(--star);color:var(--cnt-ink);border-radius:999px;font-size:.6875rem;padding:1px 7px;font-weight:700}
+.toggle .cnt{background:var(--star);color:var(--cnt-ink);border-radius:var(--r-tag);font-size:.6875rem;padding:1px 6px;font-weight:700;font-variant-numeric:tabular-nums}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.7812rem;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
-.chip .dot{width:8px;height:8px;border-radius:50%}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:var(--r-seg);padding:5px 10px;font-size:.8125rem;font-weight:620;color:var(--ink-2);display:inline-flex;align-items:center;gap:7px}
+.chip .dot{flex:none;width:3px;height:12px;border-radius:1px}
 .chip:hover{border-color:var(--hover-line);color:var(--ink)}
-.chip.on{color:#fff}
-.grpill{display:none;align-items:center;gap:8px;background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.8125rem;font-weight:600;border-radius:999px;padding:5px 8px 5px 12px;margin:0 0 10px}
-.grpill button{border:0;background:var(--grp-btn);color:var(--grp-ink);border-radius:50%;width:20px;height:20px;line-height:1;font-size:.75rem}
+.chip.on{color:var(--fill-ink)}
+.grpill{display:none;align-items:center;gap:8px;background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.8125rem;font-weight:600;border-radius:var(--r-ctl);padding:4px 6px 4px 12px;margin:0 0 10px}
+.grpill button{border:0;background:var(--grp-btn);color:var(--grp-ink);border-radius:var(--r-seg);width:20px;height:20px;padding:0;line-height:0}
 .result-row{display:flex;align-items:baseline;gap:4px 14px;padding:0 0 9px;flex-wrap:wrap}
-.result-line{font-size:.8125rem;color:var(--muted);flex:1 1 auto;min-width:0}
-.linkish{border:0;background:none;padding:0;color:var(--link);font-size:.8125rem;font-weight:600}
-.linkish:hover{text-decoration:underline}
+.result-line{font-size:.8125rem;color:var(--muted);flex:1 1 auto;min-width:0;font-variant-numeric:tabular-nums}
+.result-line .rl-act{margin-left:.75em}
+.linkish{border:0;background:none;padding:0;color:var(--link);font-size:.8125rem;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:var(--hover-line);text-underline-offset:.2em}
+.linkish:hover{text-decoration-color:currentColor}
 .filter-menu{position:relative}
 .toggle .caret{font-size:.625rem;color:var(--muted)}
+.toggle svg.caret{flex:none;margin:0 -2px 0 -1px;color:var(--ink-2)}
 .fs-sum{font-weight:500;color:var(--muted)}
 /* the Streams button keeps to one line; a long single stream name is cut short */
 #filterBtn{white-space:nowrap}
 #filterBtn .fs-sum{display:inline-block;max-width:10em;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
 @media (max-width:720px){#filterBtn .fs-sum{max-width:5.5em}}
-.filter-menu.active .toggle{border-color:var(--accent);background:var(--active-bg);color:var(--active-ink)}
+.filter-menu.active .toggle{border-color:var(--ink);background:var(--active-bg);color:var(--active-ink)}
 .filter-menu.active .fs-sum{color:var(--active-ink)}
-.filter-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(540px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px var(--pop-shadow);padding:12px 14px}
-.fp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.875rem}
-.fp-all{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:.7812rem;font-weight:600;color:var(--link)}
+.filter-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:min(540px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);box-shadow:0 12px 28px -8px var(--pop-shadow),0 1px 3px var(--pop-shadow);padding:14px 16px}
+.fp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:.875rem}
+.fp-head>b{font-weight:700}
+.fp-all{border:1px solid var(--line);background:var(--card);border-radius:var(--r-seg);padding:4px 10px;font-size:.75rem;font-weight:620;color:var(--ink)}
+.fp-all:hover{border-color:var(--hover-line);background:var(--surface-2)}
 .fp-tip{margin:10px 0 0;font-size:.75rem;color:var(--muted)}
 .fp-agenda .fp-grp{display:none}
 .fp-head{flex-wrap:wrap;gap:8px}
 .fp-actions{display:flex;flex-wrap:wrap;gap:6px}
-.fp-none{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:var(--clash-bg);border:1px solid var(--clash-line);color:var(--clash-ink);font-size:0.8125rem;font-weight:600}
+.fp-none{margin:10px 0 0;padding:8px 12px;border-radius:var(--r-ctl);background:var(--clash-bg);border:1px solid var(--clash-line);color:var(--clash-ink);font-size:0.8125rem;font-weight:600}
 .fp-none .linkish{font-size:0.8125rem}
 .empty-action{font-size:inherit}
 /* a stream chip: toggle button plus an "only" button, sharing one pill */
-.chip-wrap{display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:999px;background:var(--surface);overflow:hidden}
+.chip-wrap{display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);overflow:hidden}
 .chip-wrap:hover{border-color:var(--hover-line)}
 .chip-wrap .chip{border:0;border-radius:0;background:transparent;padding-right:9px}
 .chip-wrap .dot{background:var(--chip-c)}
 .chip-only{border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font-size:0.6875rem;font-weight:600;padding:0 10px 0 8px;cursor:pointer}
 .chip-only:hover,.chip-only:focus-visible{color:var(--ink);text-decoration:underline}
 .chip-wrap.on{background:var(--chip-fill);border-color:var(--chip-fill)}
-.chip-wrap.on .chip,.chip-wrap.on .chip-only{color:var(--accent-ink)}
+.chip-wrap.on .chip,.chip-wrap.on .chip-only{color:var(--fill-ink)}
 .chip-wrap.on .dot{background:currentColor}
 .chip-wrap.on .chip-only{border-left-color:color-mix(in srgb,currentColor 40%,transparent)}
-.chip-wrap :focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:999px}
+.chip-wrap :focus-visible{outline:2px solid var(--ink);outline-offset:-2px;border-radius:var(--r-seg)}
+.chip-wrap.on :focus-visible{outline-color:var(--fill-ink)}
 /* ---------- participants ---------- */
 .people{max-width:1180px;margin:0 auto;padding:14px 20px 60px}
 .people-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin:6px 0 2px}
@@ -831,9 +933,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-bubble{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:5.5rem;height:5.5rem;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;background:var(--toast-bg);color:var(--toast-ink);box-shadow:0 10px 30px var(--pop-shadow);pointer-events:none}
 .pp-bubble[hidden]{display:none}
 .participants-view #nowBtn{display:none}
-#nowBtn{color:var(--now-text);border-color:var(--now-line);background:var(--now-bg)}
-#nowBtn::before{content:"";width:8px;height:8px;border-radius:50%;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.18)}
-.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:999px;font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 6px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity calc(.2s * var(--mo)),transform calc(.2s * var(--mo));max-width:calc(100vw - 32px)}
+#nowBtn{color:var(--na-text);border-color:var(--na);background:var(--na-bg)}
+#nowBtn:hover{border-color:var(--na);background:color-mix(in srgb,var(--na-bg) 70%,var(--na-fill))}
+#nowBtn::before{content:"";flex:none;width:var(--doublet-w);height:.75rem;background:var(--doublet-x)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:200;background:var(--toast-bg);color:var(--toast-ink);padding:9px 16px;border-radius:var(--r-ctl);font-size:.875rem;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 24px -6px var(--pop-shadow);opacity:0;pointer-events:none;transition:opacity calc(.2s * var(--mo)),transform calc(.2s * var(--mo));max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 /* Share without a clipboard: the link in a selected field to copy, never a blocking prompt */
 .share-box{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:210;width:min(560px,calc(100vw - 24px));padding:10px 12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 32px var(--pop-shadow);font-size:.875rem}
@@ -852,18 +955,18 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 /* ---------- live "now" markers ---------- */
 .block.past .card h3,.block.past .t-title,.block.past .block-time .bt,.block.past .block-time .bd{color:var(--muted)}
 .block.past .card::before{opacity:.45}
-.block-time .live{display:none;margin-top:4px;font-size:.6562rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:1px 8px;width:max-content;margin-left:auto}
-.block.is-now .live-now{display:block;background:#dc2626;color:#fff}
+.block-time .live{display:none;margin-top:4px;font-size:.6875rem;font-weight:750;line-height:1.35;border-radius:var(--r-tag);padding:0 5px;width:max-content;margin-left:auto}
+.block.is-now .live-now{display:block;background:var(--na-fill);color:var(--na-ink);box-shadow:inset 0 0 0 1px var(--na)}
 .block.is-next .live-next{display:block;background:var(--next-bg);color:var(--next-ink)}
-.talk.is-now{background:var(--now-bg)}
-.talk.is-now .t-time{color:var(--live-ink)}
-.talk.is-now .t-time::after{content:"NOW";display:block;font-size:.5938rem;letter-spacing:.06em}
-.up-next{margin:14px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid #dc2626;border-radius:12px;padding:10px 14px;font-size:.875rem}
+.talk.is-now{background:var(--now-bg);box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--now-bg),inset 6px 0 var(--na)}
+.talk.is-now .t-time{color:var(--na-text)}
+.talk.is-now .t-time::after{content:"Now";display:block;font-size:.6875rem;font-weight:750}
+.up-next{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:10px 14px 10px 18px;font-size:.875rem;box-shadow:inset 2px 0 var(--na),inset 4px 0 var(--card),inset 6px 0 var(--na)}
 .up-next b{font-weight:700}
 .up-next>div+div{margin-top:4px}
 .up-next .linkish{font-size:.875rem;text-align:left}
 .up-next .un-when{color:var(--muted);font-size:.8125rem}
-.up-next .un-k{font-size:.6875rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--now-text);margin-right:6px}
+.up-next .un-k{font-size:.75rem;font-weight:750;color:var(--na-text);margin-right:8px}
 .result-line b{color:var(--ink)}
 
 /* ---------- agenda ---------- */
@@ -888,13 +991,14 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
 .card.hidden{display:none}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--faint))}
 /* The star sits in the corner, so a long stream badge or larger text moves the title
    under the badge instead of squeezing or overflowing it. */
 .card-head{position:relative;padding:13px calc(1.5rem + 20px) 0 17px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
 .card-head .star{position:absolute;top:11px;right:12px}
-.badge{flex:0 0 auto;font-size:.6562rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--cbg,#eef);color:var(--c,#555);cursor:pointer;border:0;white-space:nowrap;margin-top:2px}
-.badge:hover{filter:brightness(.95)}
+.badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:720;font-stretch:92%;line-height:1.25;letter-spacing:0;padding:2px 0;border-radius:0;background:none;color:var(--c,var(--ink-2));cursor:pointer;border:0;white-space:nowrap;margin-top:2px}
+.badge::before{content:"";flex:none;width:3px;height:.95em;border-radius:1px;background:currentColor}
+.badge:hover{text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:1px}
 .card h3{margin:0;font-size:.9688rem;line-height:1.35;letter-spacing:-.01em;flex:1 1 7em;min-width:0;overflow-wrap:break-word}
 .star{flex:0 0 auto;border:0;background:transparent;font-size:1.125rem;line-height:1;padding:2px 3px;color:var(--muted);border-radius:8px}
 .star:hover{background:var(--surface-3)}
@@ -1030,7 +1134,7 @@ footer p{margin:4px 0}
 .ag-menu-sep{height:1px;margin:5px 6px;background:var(--line)}
 .toggle.danger:not(:disabled):hover{background:var(--danger-bg);border-color:var(--danger-line);color:var(--now-text)}
 /* Undo after a removal: a bar at the foot of the screen, wherever the list is scrolled */
-.undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 28px rgba(0,0,0,.28);font-size:0.875rem}
+.undo-bar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:150;display:flex;align-items:center;gap:8px 14px;width:max-content;max-width:calc(100vw - 32px);padding:6px 6px 6px 16px;background:var(--toast-bg);color:var(--toast-ink);border-radius:14px;box-shadow:inset 0 0 0 1px var(--toast-ring),0 8px 28px -6px var(--pop-shadow);font-size:0.875rem}
 .undo-bar[hidden]{display:none}
 /* An open dialog (details, Build, Display, Move) would sit under the bar: the Undo offer
    steps aside while it is open and comes back, its time paused, when it closes. */
@@ -1065,9 +1169,10 @@ html:has(dialog[open]) .undo-bar{display:none}
 .cp-hid{font-style:italic;font-weight:600;color:var(--ink-2)}
 .cp-off .cp-open{color:var(--ink-2)}
 .print-doc{display:none}
-.agenda-views{display:flex;gap:4px;width:max-content;margin-top:16px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--sunken)}
-.agenda-views button{border:1px solid transparent;border-radius:9px;background:transparent;padding:6px 14px;color:var(--ink-2);font-size:.875rem;font-weight:650}
-.agenda-views button[aria-pressed="true"]{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.agenda-views{display:flex;gap:2px;width:max-content;margin-top:16px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
+.agenda-views button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;border:0;border-radius:var(--r-seg);background:transparent;padding:0 13px;color:var(--ink-2);font-size:.875rem;font-weight:620;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
+.agenda-views button:hover{background:var(--surface-3);color:var(--ink)}
+.agenda-views button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .cal-days{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px}
 .cal-days button{flex:none;padding:6px 10px}
 .agenda.wide{max-width:none}
@@ -1614,7 +1719,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-row{content-visibility:auto;contain-intrinsic-size:auto 600px auto var(--cih,210px)}
 @media (max-width:720px){.ag-row{contain-intrinsic-size:auto 350px auto var(--cih,430px)}}
 @media print{.ag-row{content-visibility:visible}}
-.ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#94a3b8)}
+.ag-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--faint))}
 /* the list speaks as the calendars do: a session row is tinted (its saved talks nested in
    it as white talk cards), a talk row is a white card outlined in its stream colour; a
    clash adds an orange outline and a hatched band, keeping the stream colours */
@@ -1644,7 +1749,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .ag-empty h3{margin:8px 0 4px;font-size:1.1875rem}
 .ag-empty p{margin:0 auto 16px;max-width:44ch;color:var(--muted);font-size:.875rem}
 .ics-note{margin-top:18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:.8125rem;color:var(--muted)}
-.ics-note textarea{width:100%;margin-top:8px;font:.7188rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
+.ics-note textarea{width:100%;margin-top:8px;font:.7188rem/1.5 var(--font);font-stretch:var(--stretch-cond);border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .ag-empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
 .ag-empty h3,.ag-empty p{overflow-wrap:anywhere}
 .ag-empty .ag-days{margin:0 auto 12px;max-width:40rem}
@@ -2047,13 +2152,11 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 :root[data-text="xl"]{font-size:130%}
 /* On phones the sticky toolbar keeps its default size, so larger text doesn't eat the screen. */
 @media (max-width:720px){:root[data-text="lg"] .sticky-wrap{zoom:.8696}:root[data-text="xl"] .sticky-wrap{zoom:.7692}}
-.hero-inner{position:relative}
-.display-btn{position:absolute;top:0;right:0;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:600}
-.display-btn:hover{background:rgba(255,255,255,.26)}
-.hero h1{padding-right:7.5rem}
-.display-btn .aa{font-weight:800;letter-spacing:-.03em;font-size:1.05em;line-height:1}
+.display-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:.8125rem;font-weight:650}
+.display-btn:hover{border-color:var(--hover-line);background:var(--surface-2)}
+.display-btn .aa{font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.02em;font-size:1.0625rem;line-height:1}
 #displayDialog{border:1px solid var(--line);border-radius:16px;max-height:90vh;width:min(30rem,94vw);padding:0;color:var(--ink);background:var(--card);box-shadow:0 12px 40px var(--pop-shadow)}
-#displayDialog::backdrop,#eventDialog::backdrop{background:var(--backdrop,rgba(22,35,55,.53))}
+#displayDialog::backdrop,#eventDialog::backdrop{background:var(--backdrop)}
 .dd-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--card);border-bottom:1px solid var(--line)}
 .dd-head h2{margin:0;font-size:1.125rem;letter-spacing:-.01em}
 .dd-head form{margin:0}
@@ -2092,8 +2195,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .dd-foot p{margin:0;color:var(--muted);font-size:.75rem}
 @media (max-width:720px){
   .display-btn .display-word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .display-btn{min-width:44px;justify-content:center}
-  .hero h1{padding-right:3.5rem}
+  .display-btn{width:40px;padding:0;justify-content:center}
   .seg.sizes{--n:2!important}
   .dd-head .toggle{min-height:40px}
   .dd-foot .linkish{min-height:40px}
@@ -2110,9 +2212,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .hz-stick,.vt-head,.vt-corner,.vt-lh,.vt-hbar{position:static;box-shadow:none}
   #builderList[hidden]{display:block!important}
   .talk{grid-template-columns:minmax(0,1fr)}
-  body{background:#fff}
+  body{background:var(--card)}
   .card,.ag-row{box-shadow:none;break-inside:avoid}
-  header.hero{background:#0f2b6b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .na-glyph,#nowBtn::before,.hero-when .na-glyph,.sp-na{display:none!important}
   /* My agenda prints from its own list (#printDoc), not from the page */
   body.print-agenda>*:not(#printDoc){display:none!important}
   body.print-agenda #printDoc{display:block}
@@ -2139,16 +2241,16 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
 .print-doc .pd-foot{margin-top:14pt;color:var(--muted);font-size:8.5pt}
 /* ---------- page-wide: skip link, focus ring, hit areas, compact header ---------- */
-.skip-link{position:absolute;left:12px;top:-200px;z-index:300;padding:10px 16px;border-radius:10px;background:var(--card);color:var(--link);font-weight:700;text-decoration:underline;box-shadow:0 6px 24px var(--pop-shadow)}
+.skip-link{position:absolute;left:12px;top:-200px;z-index:300;padding:10px 16px;border-radius:var(--r-ctl);background:var(--card);color:var(--link);font-weight:700;text-decoration:underline;box-shadow:0 8px 24px -6px var(--pop-shadow)}
 .skip-link:focus{top:12px}
 #main:focus{outline:none}
-/* One focus ring for every control outside the calendars (they draw their own): it sits
-   just outside the control, in white on the blue header. */
-:where(a,button,input,select,textarea,summary,[tabindex]:not(#main)):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.hero :focus-visible,.skip-link:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.skip-link:focus-visible{outline-color:var(--accent)}
-.card summary:focus-visible,.pp-role:focus-visible,.pp-pi:focus-visible,.chip-wrap :focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.daytab:focus-visible,.toggle:focus-visible,.agenda-views button:focus-visible,.dh-focus:focus-visible,.fp-all:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* One focus ring for every control outside the calendars (they draw their own): solid ink,
+   just outside the control (3px with high-contrast text). */
+:where(a,button,input,select,textarea,summary,[tabindex]:not(#main)):focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.card summary:focus-visible,.pp-role:focus-visible,.pp-pi:focus-visible,.chip-wrap :focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.chip-wrap.on :focus-visible{outline-color:var(--fill-ink)}
+.daytab:focus-visible,.toggle:focus-visible,.agenda-views button:focus-visible,.dh-focus:focus-visible,.fp-all:focus-visible{outline:2px solid var(--ink);outline-offset:2px;z-index:3}
+:root[data-contrast="high"] :focus-visible{outline-width:3px}
 /* Links inside running text are underlined, so they don't rely on colour alone. */
 footer p a,main p a:not(.toggle),dialog p a:not(.toggle),.ev-info a{text-decoration:underline;text-underline-offset:.15em}
 .ev-info a{color:var(--ink)}
@@ -2179,28 +2281,40 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 /* Mouse and keyboard wording versus touch wording */
 .on-touch{display:none}
 @media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
-.kbd-hint kbd{font:inherit;font-weight:700;background:rgba(255,255,255,.2);border-radius:5px;padding:0 6px}
+.hero kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
 @media (hover:none),(pointer:coarse){.kbd-hint{display:none!important}}
 /* Result line: a quick "Search all week" and what a short form matched */
 .result-line{overflow-wrap:anywhere}
 .rl-n{font-weight:500}
 @media (max-width:720px){.xa-word{display:none}}
-.alias-chip{display:inline-block;margin:2px 0 0 6px;padding:1px 9px;border-radius:999px;background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.75rem;font-weight:600;line-height:1.5}
+.alias-chip{display:inline-block;margin:2px 0 0 6px;padding:1px 8px;border-radius:var(--r-tag);background:var(--grp-bg);border:1px solid var(--grp-line);color:var(--grp-ink);font-size:.75rem;font-weight:600;line-height:1.5}
 .alias-chip b{color:inherit}
 .fallback-banner,#peopleList .ag-empty h3{overflow-wrap:anywhere}
 /* A calendar uses the full width; the header and toolbar line up with it. */
 body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
-/* Compact header on phones and in landscape on phones: title, countdown and one line of facts */
-.facts-short{display:none}
+/* Compact header on phones and in landscape on phones (about 120px): the wordmark with Aa,
+   the countdown, one line of facts and the spectral rule */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
-  header.hero{padding:12px 16px 12px}
-  .hero h1{font-size:1.25rem;line-height:1.25;gap:4px 10px;margin:0}
-  .hero h1 svg{width:26px;height:26px}
-  .hero .tag{font-size:.6875rem;padding:2px 9px}
-  .hero .h1-more{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  header.hero{padding:14px 0 0}
+  .hero-inner{padding:0 16px;column-gap:12px}
+  .hero-main,.hero-side{display:contents}
+  .hero h1{grid-row:1;grid-column:1;align-self:center;font-size:1.375rem;font-stretch:112%;letter-spacing:-.015em}
+  .display-btn{grid-row:1;grid-column:2}
+  .hero-when{grid-row:2;grid-column:1/-1;margin-top:2px}
   .hero p.sub,.hero .facts{display:none}
-  .facts-short{display:block;margin:6px 0 0;font-size:.8125rem;line-height:1.4;opacity:.95}
+  .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
+  .spectral{grid-row:4;grid-template-columns:minmax(0,1fr);margin-top:12px}
+  .sp-end{display:none}
+  .sp-scale{height:12px}
   .sticky-wrap{margin-top:10px}
+}
+/* landscape phones: the countdown and the facts share a line */
+@media (max-height:500px) and (orientation:landscape){
+  header.hero{padding-top:10px}
+  .hero-when{grid-row:1;grid-column:1;justify-self:end;margin:0}
+  .hero h1{grid-column:1}
+  .facts-short{grid-row:2}
+  .spectral{grid-row:3;margin-top:8px}
 }
 @media (max-height:500px) and (orientation:landscape){
   /* the toolbar in two rows: the switches, then the day tabs with the search box,
@@ -2218,7 +2332,8 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:8;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
   .schedule-nav .agenda-views button{padding:5px 9px}
-  .daytab{padding-top:4px;padding-bottom:4px}
+  .daytab{grid-template-areas:"wd dm n";grid-template-columns:auto auto auto;column-gap:5px;padding-top:4px;padding-bottom:4px}
+  .dt-dm{font-size:.875rem}
   /* My agenda's one stream column needs no sticky head: it would cover the cards under it
      (so an item scrolled to, by a jump or Now, lands just under the toolbar) */
   .favourites-calendar .vt-grid>.vt-head{position:relative;top:auto}
@@ -2247,20 +2362,21 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
 <a class="skip-link" href="#main" id="skipLink">Skip to program</a>
 <header class="hero">
   <div class="hero-inner">
-    <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
-    <h1>
-      <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="4" fill="#fff"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2" transform="rotate(60 16 16)"/><ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke="#fff" stroke-width="2" transform="rotate(120 16 16)"/></svg>
-      <span>AIP Congress 2026<span class="h1-more"> — Program Explorer</span></span>
-      <span class="tag" id="countdown">7–11 Dec 2026</span>
-    </h1>
-    <p class="sub">26th Australian Institute of Physics Congress, co-locating with the Australian &amp; New Zealand Conference on Optics and Photonics (ANZCOP), with COMMAD as a dedicated topical track.</p>
-    <p class="facts-short"><span aria-hidden="true">&#128197;</span> Mon 7 – Fri 11 Dec · University of Sydney · times AEDT</p>
-    <div class="facts">
-      <span>&#128197; Monday 7 – Friday 11 December 2026 (registration from Sunday 6 Dec)</span>
-      <span>&#128205; Belinda Hutchinson Building, The University of Sydney</span>
-      <span>&#128337; All times AEDT (Australia/Sydney)</span>
-      <span class="kbd-hint">&#128269; Press <kbd>/</kbd> to search</span>
+    <div class="hero-main">
+      <h1>AIP Congress 2026</h1>
+      <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
+      <p class="facts-short">7&#8211;11 December 2026, University of Sydney. All times AEDT.</p>
+      <dl class="facts">
+        <div><dt>Dates</dt><dd>Monday 7 to Friday 11 December 2026, registration from Sunday 6 December</dd></div>
+        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, The University of Sydney</dd></div>
+        <div><dt>Clock</dt><dd>All times AEDT (Australia/Sydney)<span class="kbd-hint">. Press <kbd>/</kbd> to search</span></dd></div>
+      </dl>
     </div>
+    <div class="hero-side">
+      <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
+      <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
+    </div>
+    <div class="spectral" aria-hidden="true"><span class="sp-end">400 nm</span><div class="sp-scale"><i style="--nm:410.2;--c:var(--poster)" title="Posters: hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" title="COMMAD: InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" title="Forums and special events: ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" title="AIP sessions: hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" title="Focus sessions: mercury e-line, 546.1 nm"></i><i style="--nm:577.0;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 577.0 nm"></i><i style="--nm:579.1;--c:var(--edu)" title="Education and PEG: mercury yellow doublet, 579.1 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" title="ANZCOP: helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" title="Congress events: hydrogen H&#945;, 656.3 nm"></i><i class="sp-na" style="--nm:589.3" title="Now: sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><span class="sp-end">700 nm</span></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -2292,24 +2408,24 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     </div>
     <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"></div>
     <div class="controls">
-      <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><span aria-hidden="true">&#128269;</span><span class="tb-q" id="searchMiniQ"></span></button>
+      <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span class="tb-q" id="searchMiniQ"></span></button>
       <div class="searchbox" role="search">
-        <span class="mag" aria-hidden="true">&#128269;</span>
+        <span class="mag" aria-hidden="true"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg></span>
         <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program" autocomplete="off" spellcheck="false" maxlength="200">
-        <button class="clr" id="clr" aria-label="Clear search">&#10005;</button>
+        <button class="clr" id="clr" aria-label="Clear search"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button>
       </div>
       <div class="filter-menu" id="filterMenu">
-        <button class="toggle" id="filterBtn" type="button" aria-expanded="false" aria-controls="filterPanel">Streams <span id="filterSummary" class="fs-sum">All</span><span aria-hidden="true" class="caret">&#9662;</span></button>
+        <button class="toggle" id="filterBtn" type="button" aria-expanded="false" aria-controls="filterPanel">Streams <span id="filterSummary" class="fs-sum">All</span><svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></button>
         <div class="filter-panel" id="filterPanel" hidden>
           <div class="fp-head"><b>Show streams</b><div class="fp-actions"><button type="button" class="fp-all" id="filterAll">Select all</button><button type="button" class="fp-all" id="filterNone">Deselect all</button><button type="button" class="fp-all" id="filterReset" title="Show every stream and clear the group filter and search">Reset filters</button></div></div>
           <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
-          <p class="fp-none" id="filterEmpty" hidden>No streams selected &mdash; <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
+          <p class="fp-none" id="filterEmpty" hidden>No streams selected. <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
           <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream.<span class="fp-grp"> Click a group badge on a session (e.g. QST) to show only that group.</span></span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream.<span class="fp-grp"> Tap a group badge on a session (e.g. QST) to show only that group.</span></span></p>
         </div>
       </div>
       <button class="toggle" id="nowBtn" type="button" hidden>Now</button>
     </div>
-    <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter">&#10005;</button></div>
+    <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button></div>
     <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
   </div>
 </nav>
@@ -2622,10 +2738,17 @@ function renderTabs(counts = programCounts(), totals = null){
   const allOn = state.day === 'all';
   const ti = todayIdx();
   const of = (n, t) => totals && t !== n ? `<span class="dt-of"><span aria-hidden="true">/</span><span class="visually-hidden"> of </span>${t}<span class="visually-hidden"> matching</span></span>` : '';
+  // a cell of the day ruler: the weekday (or the week's dates) small, the date large, the count
+  const cell = (wd, dm) => `<span class="dt-wd">${wd}</span> <span class="dt-dm">${dm}</span>`;
+  const dayCell = (label, today) => {
+    const i = label.indexOf(' ');
+    return cell((today ? '<span class="na-glyph" aria-hidden="true"></span>' : '') + esc(label.slice(0, i)), esc(label.slice(i + 1)));
+  };
+  const span = DATA.days.length ? DATA.days[0].label.replace(/^\S+ (\d+).*$/, '$1') + '&#8211;' + DATA.days[DATA.days.length - 1].label.replace(/^\S+ /, '') : '';
   const tab = (key, label, n, on, today, t) =>
     `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
-  el.innerHTML = tab('all', 'All week', total, allOn, false, totals && sum(totals)) +
-    DATA.days.map((d,i) => tab(i, d.label, counts[i], state.day === i, i === ti, totals && totals[i])).join('');
+  el.innerHTML = tab('all', cell(span, 'All week'), total, allOn, false, totals && sum(totals)) +
+    DATA.days.map((d,i) => tab(i, dayCell(d.label, i === ti), counts[i], state.day === i, i === ti, totals && totals[i])).join('');
   // (only a new choice of day moves the strip: a redraw for new counts leaves it where
   // the user scrolled it)
   if (revealDayTab.day !== state.day){ revealDayTab(revealDayTab.day === undefined); revealDayTab.day = state.day; }
@@ -3320,11 +3443,11 @@ function applyFilters(){
 
   const rl = document.getElementById('resultLine');
   if (fbCount){
-    rl.innerHTML = `No matches on <b>${DATA.days[state.day].label}</b> · <b>${fbCount}</b> matching session${fbCount>1?'s':''} from the rest of the week below` + aliasChipsHtml();
+    rl.innerHTML = `No matches on <b>${DATA.days[state.day].label}</b>. <b>${fbCount}</b> matching session${fbCount>1?'s':''} from the rest of the week below` + aliasChipsHtml();
   } else {
     const filtered = shownSlots !== totalSlots || shownTalks !== totalTalks;
     const of = n => filtered ? ` of ${n}` : '';
-    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'} · <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'} · <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`
+    rl.innerHTML = `${all ? 'All week' : '<b>' + DATA.days[state.day].label + '</b>'}: <b>${shownSlots}</b>${of(totalSlots)} session${totalSlots === 1 && shownSlots === 1 ? '' : 's'}, <b>${shownTalks}</b>${of(totalTalks)} talk${totalTalks === 1 && shownTalks === 1 ? '' : 's'}`
       + searchWeekHtml(shownSlots) + aliasChipsHtml();
   }
   paintStarCount();
@@ -3355,7 +3478,7 @@ function filterCard(card, s, autoOpen){
 function searchWeekHtml(shown){
   if (!state.q || state.day === 'all' || !shown || shown > 10) return '';
   const others = DATA.days.reduce((n, d, i) => i === state.day ? n : n + d.slots.filter(slotMatches).length, 0);
-  return others ? ` · <button type="button" class="linkish rl-act" data-search-week>Search all week <span class="rl-n">(${others} more)</span></button>` : '';
+  return others ? ` <button type="button" class="linkish rl-act" data-search-week>Search all week <span class="rl-n">(${others} more)</span></button>` : '';
 }
 // "Matched UNSW → University of New South Wales": a short form whose institution's
 // name doesn't spell it out.
@@ -3677,9 +3800,9 @@ document.addEventListener('click', e => {
 function agendaFilterLine(shown, total, otherDays){
   const day = state.day === 'all' ? '' : ` on ${esc(DATA.days[state.day].label)}`;
   const clear = '<button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>';
-  if (!total) return `Nothing saved${day}${otherDays ? ` · <button type="button" class="linkish rl-act" data-search-week>${otherDays} match${otherDays === 1 ? '' : 'es'} on other days</button>` : ''} · ${clear}`;
-  const more = otherDays ? ` · <button type="button" class="linkish rl-act" data-search-week>All week <span class="rl-n">(${otherDays} more)</span></button>` : '';
-  return `Showing <b>${shown}</b> of ${countWord(total, 'agenda item')}${day}${more} · <button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>` + aliasChipsHtml();
+  if (!total) return `Nothing saved${day}${otherDays ? ` <button type="button" class="linkish rl-act" data-search-week>${otherDays} match${otherDays === 1 ? '' : 'es'} on other days</button>` : ''} ${clear}`;
+  const more = otherDays ? ` <button type="button" class="linkish rl-act" data-search-week>All week <span class="rl-n">(${otherDays} more)</span></button>` : '';
+  return `Showing <b>${shown}</b> of ${countWord(total, 'agenda item')}${day}${more} <button type="button" class="linkish rl-act" data-clear-agenda-filters>Clear filters</button>` + aliasChipsHtml();
 }
 // The days with something shown, but the one open, as buttons: "Mon 7 Dec (3)".
 function agendaDayButtons(items){
@@ -4635,7 +4758,7 @@ function renderBuilder(){
     document.querySelector('.result-row').hidden = !filtered;
     // always for this view, shown or not: never a line left over from another view
     document.getElementById('resultLine').innerHTML = filtered ? agendaFilterLine(onDay.length, total, !total || onDay.length < 10 ? items.length - onDay.length : 0)
-      : `${state.day === 'all' ? 'All week' : '<b>' + esc(DATA.days[state.day].label) + '</b>'} · ${countWord(onDay.length, 'agenda item', true)}`;
+      : `${state.day === 'all' ? 'All week' : '<b>' + esc(DATA.days[state.day].label) + '</b>'}: ${countWord(onDay.length, 'agenda item', true)}`;
   }
   // the calendar hides the list: it is built when the list is shown (showView rerenders)
   if (state.layout === 'calendar'){ body.innerHTML = ''; return; }
@@ -6975,7 +7098,7 @@ function renderCalendar(){
     vtPopHide();
     main.classList.toggle('wide', true);
     result.innerHTML = filtered ? agendaFilterLine(shownSel.length, wholeSel.length, !wholeSel.length || shownSel.length && shownSel.length < 10 ? others : 0)
-      : (favourites ? countWord(shownSel.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ' · All times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
+      : (favourites ? countWord(shownSel.length, 'agenda item') : selected.length + (state.programTalks ? ' matching events' : ' matching sessions')) + ', all times AEDT' + (favourites ? '' : searchWeekHtml(selected.length) + aliasChipsHtml());
   }
   document.getElementById('emptyNote').classList.remove('show');
   // with no search or stream filter the line only repeats the counts: phones keep it for
@@ -8455,11 +8578,11 @@ function renderPeople(){
   // Affiliations count institutions only; people with none listed are counted apart.
   const total = people.length, totalGroups = groups.filter(g => g.g).length;
   const filtered = nPeople !== total;
-  const none = nNone ? ` · <b>${nNone}</b> with no institution listed` : '';
-  const where = (cat ? ` · in <b>${esc(catName)}</b>` : '') + (alias ? ` · at <b>${esc(groupLabel(alias))}</b>` : '');
+  const none = nNone ? `, <b>${nNone}</b> with no institution listed` : '';
+  const where = (cat ? `, in <b>${esc(catName)}</b>` : '') + (alias ? `, at <b>${esc(groupLabel(alias))}</b>` : '');
   document.getElementById('resultLine').innerHTML = filtered
-    ? `<b>${nPeople}</b> of ${total} people · <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
-    : `<b>${total}</b> people · <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none + ` · speakers and conveners`;
+    ? `<b>${nPeople}</b> of ${total} people, <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
+    : `<b>${total}</b> speakers and conveners, <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none;
 }
 
 // The people list's sections go in a few at a time (renderPeople puts in the first
@@ -8705,9 +8828,11 @@ function paintCountdown(){
   const n = aedtNow(), ti = todayIdx();
   const days = Math.ceil((new Date('2026-12-07T09:00:00+11:00') - (NOW_OVERRIDE || new Date())) / 864e5);
   el.textContent = ti >= 0 ? 'Today: ' + DATA.days[ti].label
-    : n.date > DATA.days[DATA.days.length - 1].date ? '7–11 Dec 2026 · finished'
+    : n.date > DATA.days[DATA.days.length - 1].date ? '7–11 Dec 2026, finished'
     : days > 1 ? 'Starts in ' + days + ' days'
     : days === 1 ? 'Starts tomorrow!' : '7–11 Dec 2026';
+  // (the sodium doublet marks "now": it stands beside the countdown only on a congress day)
+  el.parentNode.classList.toggle('is-today', ti >= 0);
 }
 
 // Marks what is on now and next. It only toggles classes, so a timer can run it.
@@ -9932,7 +10057,7 @@ def main():
     print(f"affiliations: {len(page_data['affs']['map'])} distinct strings "
           f"in {len(page_data['affs']['groups'])} groups")
     embedded = json.dumps(page_data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-    html = HTML.replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
+    html = HTML.replace('@@FONTS@@', font_faces(root)).replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
         (root / name).write_text(html, encoding='utf-8')
         print(f'wrote {name}')
