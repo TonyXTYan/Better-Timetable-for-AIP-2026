@@ -12,14 +12,15 @@
 <meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <script>
-// Display settings (text size, theme, contrast, motion, animation speed) go on <html> before the first
-// paint, so the page never flashes the wrong theme. Only overrides are stored.
+// Display settings (text size, theme, contrast, colour, motion, animation speed) go on <html> before
+// the first paint, so the page never flashes the wrong theme. Only overrides are stored.
 window.applyDisplay = function(d){
   var r = document.documentElement;
   function set(name, value, ok){ if (ok.indexOf(value) >= 0) r.setAttribute(name, value); else r.removeAttribute(name); }
   set('data-text', d.text, ['sm','lg','xl']);
   set('data-theme', d.theme, ['light','dark']);
   set('data-contrast', d.contrast, ['high']);
+  set('data-colour', d.colour, ['vivid']);
   set('data-motion', d.motion, ['reduce','full']);
   set('data-speed', d.speed, ['slow','xslow']);
   var metas = document.querySelectorAll('meta[name="theme-color"]');
@@ -94,6 +95,37 @@ window.applyDisplay = function(d){
   --wk-mix:100%;
   /* solid fills for selected chips: white text (--fill-ink) on these in both modes */
   --plenary-fill:#16181c; --aip-fill:#006b6f; --anzcop-fill:#c71f31; --commad-fill:#4a57db; --focus-fill:#006313; --edu-fill:#6b6a00; --poster-fill:#8b41c7; --events-fill:#b92684; --special-fill:#006ca0; --business-fill:#4a5563; --social-fill:#6b5f52;
+}
+/* Colour: Vivid (Display settings). Quiet, the default, keeps colour to marks: a 3px stream
+   line and 10% tints. Vivid lets each stream colour fill its sessions: stronger stream tints
+   (18% of the line colour over the card in light; in dark, about 38% of the deep light-theme
+   hue over the card, so the tints are jewel tones rather than grey pastels: VIVID_DARK_TOKENS),
+   session heads and lane labels filled with them, solid stream tags (in dark, the line colour
+   brought down to OKLCH lightness .48 with its chroma raised, so white text holds 4.5:1 and the
+   tag stays a saturated mark on its jewel tint), and a warmer sodium "now" tint so now still
+   leads. Muted text on a tint steps darker (--tint-muted) to keep 4.5:1. Plenaries stay ink
+   and meals and meetings stay grey. Screen only: print is ink. This block must come before the
+   dark blocks (same weight), which put back their own tints in dark. */
+@media screen{
+:root[data-colour="vivid"]{
+  --tint:18%;
+  --plenary-bg:color-mix(in srgb,var(--plenary) 8%,var(--card));
+  --aip-bg:color-mix(in srgb,var(--aip) var(--tint),var(--card));
+  --anzcop-bg:color-mix(in srgb,var(--anzcop) var(--tint),var(--card));
+  --commad-bg:color-mix(in srgb,var(--commad) var(--tint),var(--card));
+  --focus-bg:color-mix(in srgb,var(--focus) var(--tint),var(--card));
+  --edu-bg:color-mix(in srgb,var(--edu) var(--tint),var(--card));
+  --poster-bg:color-mix(in srgb,var(--poster) var(--tint),var(--card));
+  --events-bg:color-mix(in srgb,var(--events) var(--tint),var(--card));
+  --special-bg:color-mix(in srgb,var(--special) var(--tint),var(--card));
+  --business-bg:color-mix(in srgb,var(--business) 12%,var(--card));
+  --social-bg:color-mix(in srgb,var(--social) 12%,var(--card));
+  --now-bg:#ffeedd; --na-bg:#ffeedd; --today-bg:#ffeedd;
+  --tint-muted:#4c525b;
+  /* a stream tag's fill, from its line colour in OKLCH: in light the line colour itself */
+  --tag-l:l; --tag-k:1;
+}
+:root[data-colour="vivid"][data-contrast="high"]{--tint-muted:var(--muted)}
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
    Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
@@ -183,6 +215,25 @@ window.applyDisplay = function(d){
   --wk-mix:38%;
 }
 }
+/* Vivid in dark (and dark high contrast, which keeps these tints) */
+@media screen and (prefers-color-scheme: dark){
+:root[data-colour="vivid"]:not([data-theme="light"]){
+  --plenary-bg:#2f3136; --aip-bg:#0e3c40; --anzcop-bg:#581b23; --commad-bg:#2a2f62; --focus-bg:#0e3418; --edu-bg:#363611; --poster-bg:#42285b; --events-bg:#531d43; --special-bg:#0e374d;
+  --business-bg:#303237; --social-bg:#353331;
+  --now-bg:#3a2a14; --na-bg:#3a2a14; --today-bg:#3a2a14;
+  --tint-muted:var(--muted);
+  --tag-l:.48; --tag-k:1.4;
+}
+}
+@media screen{
+:root[data-colour="vivid"][data-theme="dark"]{
+  --plenary-bg:#2f3136; --aip-bg:#0e3c40; --anzcop-bg:#581b23; --commad-bg:#2a2f62; --focus-bg:#0e3418; --edu-bg:#363611; --poster-bg:#42285b; --events-bg:#531d43; --special-bg:#0e374d;
+  --business-bg:#303237; --social-bg:#353331;
+  --now-bg:#3a2a14; --na-bg:#3a2a14; --today-bg:#3a2a14;
+  --tint-muted:var(--muted);
+  --tag-l:.48; --tag-k:1.4;
+}
+}
 input,select,textarea{color:var(--ink);font-family:inherit}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -195,9 +246,8 @@ button{font:inherit;cursor:pointer}
 
 /* ---------- header ---------- */
 /* A calm typographic header on the page's grey: the wordmark, one sentence, three facts;
-   Display and the countdown on the right; and along its foot the spectral rule, the
-   program's legend: each stream's line standing at its wavelength, with "now" (the sodium
-   D doublet) among them. */
+   Display and the countdown on the right. (The colour key, the spectral rule, lives in
+   Display settings beside the Colour setting.) */
 header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
@@ -216,18 +266,37 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-when .na-glyph{display:none}
 .hero-when.is-today .na-glyph{display:inline-block}
 .facts-short{display:none}
-/* The spectral rule, 400 to 700 nm across the content width, drawn like a spectrometer's
-   scale: a baseline with the lines standing on it and ticks hanging under it (every 10 nm,
-   longer every 50 nm), labelled at the hundreds. Each line is 2px, snapped to whole pixels so
-   it stays crisp; the sodium doublet (now) stands taller than the rest and resolves as it
-   appears. --sp-h is the height of a line, --sp-tk of a long tick. */
-.spectral{grid-column:1/-1;margin:16px 0 0;--sp-h:20px;--sp-na:26px;--sp-tk:6px}
+/* The colour key (in Display settings, under Colour): the spectral rule, 400 to 700 nm across
+   the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
+   ticks hanging under it (every 10 nm, longer every 50 nm), labelled at the hundreds. Each
+   line is 2px, snapped to whole pixels so it stays crisp; the sodium doublet (now) stands
+   taller than the rest. --sp-h is the height of a line, --sp-tk of a long tick. Under it, the
+   legend names every stream and its source; with Vivid on, each entry wears its tint. */
+.sp-key{margin:-8px 0 20px;padding:14px 14px 12px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--surface-2)}
+.sp-key h3{margin:0;font-size:.8125rem;font-weight:700;line-height:1.3}
+.sp-intro{margin:2px 0 0;font-size:.75rem;line-height:1.4;color:var(--muted);text-wrap:pretty}
+.spectral{margin:22px 0 0;--sp-h:20px;--sp-na:26px;--sp-tk:6px}
+.sp-legend{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px;margin:10px 0 0;padding:0}
+.sp-legend li{display:grid;grid-template-columns:6px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:7px;align-items:start;padding:5px 6px 6px;border-radius:var(--r-tag);transition:background-color var(--dur-s,150ms) var(--ease,ease)}
+.sp-legend li>i,.sp-legend li>.na-glyph{grid-row:1/3;align-self:stretch;width:3px;height:auto;min-height:1.75rem;border-radius:1px;background:var(--c)}
+.sp-legend li>.na-glyph{width:var(--doublet-w);background:none;border-radius:0}
+.sp-legend .sp-grey>i{background:linear-gradient(var(--social) 0 50%,var(--business) 0)}
+.sp-legend b{font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink)}
+.sp-legend span:not(.na-glyph){grid-column:2;font-size:.75rem;font-weight:480;line-height:1.3;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
+.sp-legend li.sp-hot{background:var(--surface-3)}
+/* the neutrals and now follow the streams, a little apart */
+.sp-legend li[data-k="plenary"],.sp-legend li[data-k="greys"]{margin-top:6px}
+.sp-legend .sp-now{grid-column:1/-1}
+:root[data-colour="vivid"] .sp-legend li:not(.sp-now){background:var(--cbg)}
+:root[data-colour="vivid"] .sp-legend{gap:4px 6px}
+:root[data-colour="vivid"] .sp-legend li.sp-hot:not(.sp-now){box-shadow:inset 0 0 0 1px var(--c)}
+@media (max-width:359px){.sp-legend{grid-template-columns:minmax(0,1fr)}}
 .sp-scale{position:relative;height:var(--sp-na);border-bottom:1px solid var(--ink-2)}
 .sp-scale i{position:absolute;bottom:0;left:calc((var(--nm) - 400) / 300 * 100% - 1px);left:round(down,calc((var(--nm) - 400) / 300 * 100% - 1px),1px);width:2px;height:var(--sp-h);background:var(--c)}
 .sp-scale i.sp-na{width:var(--doublet-w);height:var(--sp-na);left:calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2);left:round(down,calc((var(--nm) - 400) / 300 * 100% - var(--doublet-w) / 2),1px);background:none}
 /* hovering (or tapping) anywhere along the rule picks out the nearest line: the others
    dim and a readout names its stream and its source, set like a line-list entry */
-.sp-scale{touch-action:manipulation}
+.sp-scale{touch-action:pan-y}
 .sp-scale i{transition:opacity var(--dur-s,150ms) var(--ease,ease)}
 .sp-scale.sp-on i:not(.sp-hot){opacity:.28}
 .sp-tip{position:absolute;z-index:5;bottom:calc(100% + 6px);left:0;width:max-content;max-width:min(20rem,100%);padding:6px 10px 7px;border-radius:var(--r-seg);background:var(--toast-bg);color:var(--toast-ink);font-size:.75rem;line-height:1.35;font-variant-numeric:tabular-nums;box-shadow:0 12px 28px -8px var(--pop-shadow);pointer-events:none}
@@ -2398,6 +2467,19 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .seg input:checked+span small{color:var(--accent-ink);opacity:.8}
 .seg input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
 .seg .sz-a{font-weight:800;line-height:1.1}
+/* Colour's two choices each carry a small sample of the look: Quiet, three stream lines;
+   Vivid, three stream fills (on a card-coloured tile, so it reads the same when selected) */
+.cs-sw{display:flex;gap:6px;height:14px;margin:2px 0 5px;padding:4px 8px;border-radius:var(--r-tag);background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.cs-sw i{width:2px;border-radius:1px}
+.cs-sw i:nth-child(1){background:var(--commad)}
+.cs-sw i:nth-child(2){background:var(--aip)}
+.cs-sw i:nth-child(3){background:var(--anzcop)}
+.cs-vivid{gap:3px;padding:4px 5px}
+.cs-vivid i{width:10px}
+.cs-vivid i:nth-child(1){background:var(--commad-fill)}
+.cs-vivid i:nth-child(2){background:var(--aip-fill)}
+.cs-vivid i:nth-child(3){background:var(--anzcop-fill)}
+@media (forced-colors:active){.cs-sw,.cs-sw i{forced-color-adjust:none}}
 .seg.sizes label>span{justify-content:flex-end;min-height:48px}
 @media (pointer:coarse){.seg label>span{min-height:40px}.seg.sizes label>span{min-height:52px}}
 .dd-switch{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;margin:0 0 8px;padding:10px 12px 10px 14px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);color:var(--ink);text-align:left;min-height:52px}
@@ -2531,8 +2613,8 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 .fallback-banner,#peopleList .ag-empty h3{overflow-wrap:anywhere}
 /* A calendar uses the full width; the header and toolbar line up with it. */
 body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
-/* Compact header on phones and in landscape on phones (about 120px): the wordmark with Aa,
-   the countdown, one line of facts and the spectral rule */
+/* Compact header on phones and in landscape on phones (about 100px): the wordmark with Aa,
+   the countdown and one line of facts */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
   header.hero{padding:14px 0 0}
   .hero-inner{padding:0 20px;column-gap:12px}
@@ -2542,10 +2624,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .hero-when{grid-row:2;grid-column:1/-1;margin-top:2px}
   .hero p.sub,.hero .facts{display:none}
   .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
-  .spectral{grid-row:4;margin-top:12px;--sp-h:12px;--sp-na:16px;--sp-tk:3px}
-  .sp-axis{display:none}
-  .sp-scale::after{background-size:0 0,100% var(--sp-tk)}
-  .sticky-wrap{margin-top:10px}
+  .sticky-wrap{margin-top:12px}
 }
 /* (the narrowest phones keep the facts to one line) */
 @media (max-width:359px){.facts-short{font-stretch:var(--stretch-cond)}.facts-short .fs-x{display:none}}
@@ -2555,7 +2634,6 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .hero-when{grid-row:1;grid-column:1;justify-self:end;margin:0}
   .hero h1{grid-column:1}
   .facts-short{grid-row:2}
-  .spectral{grid-row:3;margin-top:8px}
 }
 @media (max-height:500px) and (orientation:landscape){
   /* the toolbar in two rows: the switches, then the day tabs with the search box,
@@ -2612,7 +2690,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .dd-switch[aria-pressed="true"] .sw-track{forced-color-adjust:none;background:Highlight;border-color:Highlight}
   .dd-switch[aria-pressed="true"] .sw-track::after{forced-color-adjust:none;background:HighlightText}
   .week-tk:hover,.week-tk:focus-visible{outline:2px solid CanvasText;outline-offset:1px}
-  .sp-scale i,.sp-scale::after,.na-glyph,.na-glyph::before,.na-glyph::after,.hz-nowl,.hz-nowl::before,.hz-nowl::after,.vt-nowl,.vt-nowl::before,.vt-nowl::after,.week-now,.week-now::before,.week-now::after,#nowBtn::before,.hz-pre button[data-hzgo="now"]::before,.talk.is-now::before,.talk.is-now::after,.card::before,.ag-row::before,.badge::before,.chip .dot,.chip-wrap .dot{forced-color-adjust:none}
+  .sp-scale i,.sp-scale::after,.sp-legend li>i,.na-glyph,.na-glyph::before,.na-glyph::after,.hz-nowl,.hz-nowl::before,.hz-nowl::after,.vt-nowl,.vt-nowl::before,.vt-nowl::after,.week-now,.week-now::before,.week-now::after,#nowBtn::before,.hz-pre button[data-hzgo="now"]::before,.talk.is-now::before,.talk.is-now::after,.card::before,.ag-row::before,.badge::before,.chip .dot,.chip-wrap .dot{forced-color-adjust:none}
   .week-blk{border:1px solid CanvasText}
   ::placeholder{color:GrayText}
 }
@@ -2675,8 +2753,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   /* paper type: about 9.5pt, whatever the screen's text size (the list is long: abstracts open) */
   html,html[data-text]{font-size:12.5px!important}
   header.hero{background:none}
-  /* the colour key describes the spectral rule, and the tips describe the screen: neither belongs on paper */
-  .spectral,footer .colophon,footer .cols>div:nth-child(3){display:none}
+  /* the colour key points to Display settings, and the tips describe the screen: neither belongs on paper */
+  footer .colophon,footer .cols>div:nth-child(3){display:none}
   footer{padding:10px 0 0;margin-top:0}
   .cards{display:block!important;overflow:visible!important;border:0!important}
   .card{break-inside:auto!important;border-left:3px solid var(--c,var(--ink-2));box-shadow:none!important}
@@ -2697,6 +2775,27 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   .week-tk.ctx::before{background:var(--c)}
 }
 @media (max-width:359px){.filter-panel .fp-actions{gap:4px}.filter-panel .fp-all{padding-left:7px;padding-right:7px}}
+/* ---------- Colour: Vivid (the tokens are at the top; these put the tints where they show) ----------
+   A session cell in the list is filled with its stream and its talks sit on the card under it
+   (as a session bar and its talk cards do in the calendars); a cell that has ended keeps half
+   its tint. My agenda's session rows, the details' head and the calendar's lane labels fill
+   the same way. Stream tags turn solid (white on the stream fill: the opposite polarity to the
+   sodium Now tag, ink on amber). Screen only. */
+@media screen{
+:root[data-colour="vivid"] :is(.card:not(.iv),.ed-head,.ag-row.is-sess,.hz-lane>.hz-label,.sp-legend li,.dd-preview){--muted:var(--tint-muted)}
+:root[data-colour="vivid"] .card:not(.iv){background:var(--cbg)}
+:root[data-colour="vivid"] .card:not(.iv)>:is(.talks,.ev-info){background:var(--card)}
+:root[data-colour="vivid"] .card:not(.iv)>.talks{flex:1 0 auto}
+:root[data-colour="vivid"] .block.past .card:not(.iv){background:color-mix(in srgb,var(--cbg) 45%,var(--card))}
+:root[data-colour="vivid"] .badge{padding:2px 6px;border-radius:var(--r-tag);background:color-mix(in srgb,var(--c,var(--ink-2)) var(--wk-mix),var(--card));background:oklch(from var(--c,var(--ink-2)) var(--tag-l) calc(c * var(--tag-k)) h);color:var(--fill-ink)}
+:root[data-colour="vivid"] .badge::before{display:none}
+:root[data-colour="vivid"] .ed-head{background:var(--cbg)}
+:root[data-colour="vivid"] .ag-row.is-sess:not(.is-now,.has-clash){background:var(--cbg)}
+:root[data-colour="vivid"] .ag-row.is-sess .ag-inner li{background:var(--card)}
+:root[data-colour="vivid"] .hz-lane>.hz-label{background:var(--cbg,var(--card))}
+:root[data-colour="vivid"] .vt-badge{color:var(--bar-ink)}
+:root[data-colour="vivid"] .dd-preview{background:var(--aip-bg)}
+}
 </style>
 </head>
 <body>
@@ -2717,7 +2816,6 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
-    <div class="spectral" aria-hidden="true"><div class="sp-scale"><div class="sp-tip" hidden><b></b><span></span></div><i style="--nm:410.2;--c:var(--poster)" data-n="Posters" data-d="Hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" data-n="COMMAD" data-d="InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" data-n="Forums and special events" data-d="Ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" data-n="AIP sessions" data-d="Hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" data-n="Focus sessions" data-d="Mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" data-n="Education and PEG" data-d="Mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" data-n="ANZCOP" data-d="Helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" data-n="Congress events" data-d="Hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" data-n="Now" data-d="Sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph na-resolve"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
   </div>
 </header>
 <section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
@@ -2876,6 +2974,19 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <label><input type="radio" name="dsTheme" value="dark"><span>Dark</span></label>
       </div>
     </fieldset>
+    <fieldset class="dd-group dd-colour">
+      <legend>Colour</legend>
+      <div class="seg" style="--n:2">
+        <label><input type="radio" name="dsColour" value=""><span><span class="cs-sw cs-quiet" aria-hidden="true"><i></i><i></i><i></i></span>Quiet<small>Colour marks the streams</small></span></label>
+        <label><input type="radio" name="dsColour" value="vivid"><span><span class="cs-sw cs-vivid" aria-hidden="true"><i></i><i></i><i></i></span>Vivid<small>Colour fills the streams</small></span></label>
+      </div>
+    </fieldset>
+    <section class="sp-key" id="colourKey" aria-labelledby="spKeyTitle">
+      <h3 id="spKeyTitle">Colour key</h3>
+      <p class="sp-intro">Each stream takes its colour from a real spectral line, set here at its wavelength. Point at the scale or tap it to name a line.</p>
+      <div class="spectral" aria-hidden="true"><div class="sp-scale"><div class="sp-tip" hidden><b></b><span></span></div><i style="--nm:410.2;--c:var(--poster)" data-k="poster" data-n="Posters" data-d="Hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" data-k="commad" data-n="COMMAD" data-d="InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" data-k="special" data-n="Forums &amp; Special Events" data-d="Ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" data-k="aip" data-n="AIP Sessions" data-d="Hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" data-k="focus" data-n="Focus Sessions" data-d="Mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" data-k="edu" data-n="Education &amp; PEG" data-d="Mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" data-k="anzcop" data-n="ANZCOP" data-d="Helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" data-k="events" data-n="Congress events" data-d="Hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" data-k="now" data-n="Now" data-d="Sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
+      <ul class="sp-legend"><li data-k="poster" style="--c:var(--poster);--cbg:var(--poster-bg)"><i aria-hidden="true"></i><b>Posters</b><span>Hydrogen H&#948;, 410.2&nbsp;nm</span></li><li data-k="commad" style="--c:var(--commad);--cbg:var(--commad-bg)"><i aria-hidden="true"></i><b>COMMAD</b><span>InGaN blue LED, 455&nbsp;nm</span></li><li data-k="special" style="--c:var(--special);--cbg:var(--special-bg)"><i aria-hidden="true"></i><b>Forums &amp; Special Events</b><span>Ytterbium-ion clock, 467&nbsp;nm</span></li><li data-k="aip" style="--c:var(--aip);--cbg:var(--aip-bg)"><i aria-hidden="true"></i><b>AIP Sessions</b><span>Hydrogen H&#946;, 486.1&nbsp;nm</span></li><li data-k="focus" style="--c:var(--focus);--cbg:var(--focus-bg)"><i aria-hidden="true"></i><b>Focus Sessions</b><span>Mercury e-line, 546.1&nbsp;nm</span></li><li data-k="edu" style="--c:var(--edu);--cbg:var(--edu-bg)"><i aria-hidden="true"></i><b>Education &amp; PEG</b><span>Mercury yellow pair, 577 and 579&nbsp;nm</span></li><li data-k="anzcop" style="--c:var(--anzcop);--cbg:var(--anzcop-bg)"><i aria-hidden="true"></i><b>ANZCOP</b><span>Helium&#8211;neon laser, 632.8&nbsp;nm</span></li><li data-k="events" style="--c:var(--events);--cbg:var(--events-bg)"><i aria-hidden="true"></i><b>Congress events</b><span>Hydrogen lamp, H&#945; 656.3&nbsp;nm</span></li><li data-k="plenary" class="sp-x" style="--c:var(--plenary);--cbg:var(--plenary-bg)"><i aria-hidden="true"></i><b>Plenary &amp; Welcome</b><span>White light, every line at once</span></li><li data-k="greys" class="sp-x sp-grey" style="--c:var(--social);--cbg:var(--social-bg)"><i aria-hidden="true"></i><b>Meals and meetings</b><span>Neutral greys</span></li><li data-k="now" class="sp-x sp-now"><span class="na-glyph" aria-hidden="true"></span><b>Now</b><span>Sodium D doublet, 589.0 and 589.6&nbsp;nm</span></li></ul>
+    </section>
     <button type="button" class="dd-switch" id="dsContrast" aria-pressed="false"><span><b>High-contrast text</b><small>Stronger text and lines, in both themes</small></span><span class="sw-track" aria-hidden="true"></span></button>
     <button type="button" class="dd-switch" id="dsMotion" aria-pressed="false"><span><b>Reduce motion</b><small id="dsMotionNote">Follows your device setting</small></span><span class="sw-track" aria-hidden="true"></span></button>
     <fieldset class="dd-group" id="dsSpeedGroup" aria-describedby="dsSpeedNote">
@@ -2975,7 +3086,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </div>
     <div class="colophon">
       <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line, drawn under the title at its wavelength. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
+      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <button type="button" class="linkish" data-colour-key>Display settings</button>, beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
@@ -7101,36 +7212,66 @@ function hzPopScrolled(){
   if (keyed && h) hzPopRe = setTimeout(() => { if (document.activeElement === src && src.isConnected) hzPopShow(src, h, false); }, 140);
 }
 window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopScrolled(); }, { passive: true });
-// The spectral rule under the title: hover (or tap) near a line to name it.
+// The colour key's spectral rule (in Display settings): hover near a line, or touch the
+// scale and slide along it, to name the nearest line; the legend entry for it lights up too,
+// and pointing at a legend entry lights its line. The dialog is in the page from the start
+// (only hidden while closed), so its parts are found once; positions are measured as needed.
 (function(){
-  const sc = document.querySelector('.sp-scale'); if (!sc) return;
+  const sc = document.querySelector('#colourKey .sp-scale'); if (!sc) return;
   const tip = sc.querySelector('.sp-tip'), lines = [...sc.querySelectorAll('i[data-n]')];
-  let hot = null, tapT = 0;
-  const hide = () => { if (!hot) return; hot.classList.remove('sp-hot'); hot = null; sc.classList.remove('sp-on'); tip.hidden = true; };
+  const legend = [...document.querySelectorAll('#colourKey .sp-legend li[data-k]')];
+  const entry = k => legend.find(li => li.dataset.k === k);
+  let hot = null, tapT = 0, scrub = false;
+  const hide = () => {
+    clearTimeout(tapT); scrub = false;
+    if (!hot) return;
+    hot.classList.remove('sp-hot'); entry(hot.dataset.k)?.classList.remove('sp-hot');
+    hot = null; sc.classList.remove('sp-on'); tip.hidden = true;
+  };
+  const pick = best => {
+    if (best === hot) return;
+    if (hot){ hot.classList.remove('sp-hot'); entry(hot.dataset.k)?.classList.remove('sp-hot'); }
+    hot = best; hot.classList.add('sp-hot'); sc.classList.add('sp-on');
+    entry(hot.dataset.k)?.classList.add('sp-hot');
+    tip.firstChild.textContent = hot.dataset.n; tip.lastChild.textContent = hot.dataset.d;
+    tip.style.setProperty('--hc', hot.classList.contains('sp-na') ? 'var(--na)' : getComputedStyle(hot).backgroundColor);
+    tip.hidden = false;
+    const r = sc.getBoundingClientRect(), b = hot.getBoundingClientRect(), cx = b.left + b.width / 2 - r.left, w = tip.offsetWidth;
+    const left = Math.max(0, Math.min(r.width - w, cx - w / 2));
+    tip.style.left = left + 'px'; tip.style.setProperty('--ax', (cx - left) + 'px');
+  };
   const show = (x, reach) => {
-    const r = sc.getBoundingClientRect(); let best = null, bd = 1e9;
+    let best = null, bd = 1e9;
     for (const l of lines){ const b = l.getBoundingClientRect(), d = Math.abs(b.left + b.width / 2 - x); if (d < bd){ bd = d; best = l; } }
     if (!best || bd > reach){ hide(); return; }
-    if (best !== hot){
-      if (hot) hot.classList.remove('sp-hot');
-      hot = best; hot.classList.add('sp-hot'); sc.classList.add('sp-on');
-      tip.firstChild.textContent = hot.dataset.n; tip.lastChild.textContent = hot.dataset.d;
-      tip.style.setProperty('--hc', hot.classList.contains('sp-na') ? 'var(--na)' : getComputedStyle(hot).backgroundColor);
-      tip.hidden = false;
-      const b = hot.getBoundingClientRect(), cx = b.left + b.width / 2 - r.left, w = tip.offsetWidth;
-      const left = Math.max(0, Math.min(r.width - w, cx - w / 2));
-      tip.style.left = left + 'px'; tip.style.setProperty('--ax', (cx - left) + 'px');
-    }
+    pick(best);
   };
-  sc.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') show(e.clientX, 24); });
-  sc.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') hide(); });
-  sc.addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'touch') return;
-    show(e.clientX, 28); clearTimeout(tapT); if (hot) tapT = setTimeout(hide, 3200);
+  const mouse = e => e.pointerType === 'mouse' || e.pointerType === 'pen';
+  sc.addEventListener('pointermove', e => {
+    if (mouse(e)) show(e.clientX, 24);
+    else if (scrub) show(e.clientX, 40);
   });
+  sc.addEventListener('pointerleave', e => { if (mouse(e)) hide(); });
+  // (a touch picks the nearest line and may slide along the scale; the readout stays a
+  // moment after the finger lifts. The scale lets vertical pans through to the sheet.)
+  sc.addEventListener('pointerdown', e => {
+    if (mouse(e)) return;
+    clearTimeout(tapT); scrub = true; show(e.clientX, 40);
+  });
+  const lift = () => { if (!scrub) return; scrub = false; clearTimeout(tapT); if (hot) tapT = setTimeout(hide, 3200); };
+  sc.addEventListener('pointerup', lift);
+  sc.addEventListener('pointercancel', lift);
+  for (const li of legend){
+    const l = lines.find(x => x.dataset.k === li.dataset.k);
+    if (!l) continue;
+    li.addEventListener('pointerenter', e => { if (mouse(e)) pick(l); });
+    li.addEventListener('pointerleave', e => { if (mouse(e) && hot === l) hide(); });
+  }
   document.addEventListener('pointerdown', e => { if (hot && !sc.contains(e.target)) hide(); }, true);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
-  window.addEventListener('scroll', hide, { passive: true });
+  // (the readout is placed when shown: any scroll, of the page or the dialog, puts it away)
+  document.addEventListener('scroll', hide, { passive: true, capture: true });
+  sc.closest('dialog')?.addEventListener('close', hide);
 })();
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hzPopHide(); });
 function hzInit(root){
@@ -10227,7 +10368,7 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 });
 
 // ---------- display settings ----------
-// Text size, theme, high-contrast text and reduced motion. Only choices that differ from
+// Text size, theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
 // the defaults are stored (localStorage 'aip2026-display'); the inline script in <head>
 // applies them before the first paint, and applyDisplay() keeps <html> and theme-color in step.
 const DISPLAY_KEY = 'aip2026-display';
@@ -10235,7 +10376,7 @@ const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], theme:['light','dark'], contrast:['high'], motion:['reduce','full'], speed:['slow','xslow'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['slow','xslow'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
@@ -10254,6 +10395,7 @@ function motionReduced(){ return display.motion ? display.motion === 'reduce' : 
 function syncDisplayForm(){
   displayDialog.querySelectorAll('input[name="dsText"]').forEach(r => r.checked = r.value === (display.text || ''));
   displayDialog.querySelectorAll('input[name="dsTheme"]').forEach(r => r.checked = r.value === (display.theme || ''));
+  displayDialog.querySelectorAll('input[name="dsColour"]').forEach(r => r.checked = r.value === (display.colour || ''));
   displayDialog.querySelectorAll('input[name="dsSpeed"]').forEach(r => r.checked = r.value === (display.speed || ''));
   // (no speed to choose while nothing moves)
   document.getElementById('dsSpeedGroup').disabled = motionReduced();
@@ -10324,9 +10466,16 @@ function openDisplay(fromHistory){
   if (!fromHistory) pnlHistoryOpen('display');
 }
 displayBtn.addEventListener('click', () => openDisplay());
+// (the footer's Colour key opens Display settings at the key)
+document.addEventListener('click', e => {
+  if (!e.target.closest('[data-colour-key]')) return;
+  openDisplay();
+  document.getElementById('colourKey').scrollIntoView({ block: 'nearest' });
+});
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
   else if (e.target.name === 'dsTheme') setDisplay('theme', e.target.value);
+  else if (e.target.name === 'dsColour') setDisplay('colour', e.target.value);
   else if (e.target.name === 'dsSpeed'){ setDisplay('speed', e.target.value); speedDemo(); }
 });
 lightDismiss(displayDialog, () => displayDialog.close());
