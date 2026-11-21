@@ -2872,13 +2872,16 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
    session's is (and its hover the same 28px fill), inside its 36px button; the star column
    of a plate, its talks and the interval rows share one axis */
 @media (forced-colors:none) and (not (pointer:coarse)){
-  .talk-star{position:relative;isolation:isolate}
-  .talk-star:hover,.talk-star.on,.talk-star.on:hover{background:transparent;border-color:transparent}
-  .talk-star::before{content:"";position:absolute;inset:3px;z-index:-1;border-radius:var(--r-ctl);transition:background-color var(--dur-s) var(--ease)}
-  .talk-star:hover::before{background:var(--surface-3)}
-  .talk-star.on::before{background:var(--starOn-bg)}
+  .talk-star{border:4px solid transparent;border-radius:12px;background-clip:padding-box}
+  .talk-star:hover{border-color:transparent;background:var(--surface-3) padding-box}
+  .talk-star.on,.talk-star.on:hover{border-color:transparent;background:var(--starOn-bg) padding-box}
+  .talk-star:focus-visible{outline-offset:-2px}
 }
-@media (pointer:coarse){.card-head span.badge{min-height:23px}}
+@media (pointer:coarse){
+  .card-head span.badge{min-height:23px}
+  /* My agenda's Now/Next names: 40px to tap, grown into the space around them */
+  .up-next>div>.linkish{padding:9px 0;margin:-9px 0}
+}
 @media (pointer:coarse),(max-width:720px){
   .pp-rail-in{height:min(calc(var(--n,26) * 1.5rem + 8px),100%)}
 }
