@@ -2321,6 +2321,8 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
   .sp-scale::after{background-size:0 0,100% var(--sp-tk)}
   .sticky-wrap{margin-top:10px}
 }
+/* (the narrowest phones keep the facts to one line) */
+@media (max-width:359px){.facts-short{font-stretch:var(--stretch-cond)}.facts-short .fs-x{display:none}}
 /* landscape phones: the countdown and the facts share a line */
 @media (max-height:500px) and (orientation:landscape){
   header.hero{padding-top:10px}
@@ -2378,7 +2380,7 @@ body.wide-view .toolbar,body.wide-view .hero-inner{max-width:none}
     <div class="hero-main">
       <h1>AIP Congress 2026</h1>
       <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
-      <p class="facts-short">7&#8211;11 December 2026, University of Sydney. All times AEDT.</p>
+      <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University of Sydney. All times AEDT.</p>
       <dl class="facts">
         <div><dt>Dates</dt><dd>Monday 7 to Friday 11 December 2026, registration from Sunday 6 December</dd></div>
         <div><dt>Venue</dt><dd>Belinda Hutchinson Building, The University of Sydney</dd></div>
