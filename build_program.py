@@ -968,7 +968,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .controls .tb-mini{display:none}
 .sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent}
 /* the clip would hide the bar's own bottom edge: a line that rides the clip's edge stands in (tbCompact) */
-.sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none}
+.sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none;transform:translateY(var(--tb-edge,0))}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -2747,6 +2747,29 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media (forced-colors:active){.cs-sw,.cs-sw i{forced-color-adjust:none}}
 .seg.sizes label>span{justify-content:flex-end;min-height:48px}
 @media (pointer:coarse){.seg label>span{min-height:40px}.seg.sizes label>span{min-height:52px}}
+/* ---------- segmented controls: the selection slides ----------
+   (the view switches in the toolbar, the participants' sort, the Display dialog's choices)
+   One ink indicator per group, its ::before, sits under the chosen option at --seg-x/-y/-w/-h
+   (set by segPlace) and slides to a new choice while the labels' colours cross over; while
+   it moves (seg-moving) the chosen option's own fill steps aside for it, and at rest the two
+   lie exactly over each other. Before the script has placed it, and in forced colours, the
+   chosen option just keeps its own fill. Reduced motion: it moves at once. */
+@media (forced-colors:none){
+  .agenda-views.seg-ind,.seg.seg-ind{position:relative;isolation:isolate}
+  .agenda-views.seg-ind::before,.seg.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease)}
+  .seg-ind.seg-snap::before{transition:none}
+  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
+  .seg.seg-ind label{z-index:1}
+  .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
+  .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
+  .seg-ind.seg-snap>button,.seg-ind.seg-snap label>span,.seg-ind.seg-snap small{transition:none}
+}
+/* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
+   tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
+.agenda-views>button[aria-disabled="true"],.agenda-views>button[aria-disabled="true"]:hover{background:transparent;color:var(--faint);cursor:not-allowed}
+.agenda-views>button[aria-disabled="true"]:active{scale:none;filter:none}
+@media (forced-colors:active){.agenda-views>button[aria-disabled="true"]{color:GrayText}}
 .dd-switch{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;margin:0 0 8px;padding:10px 12px 10px 14px;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--card);color:var(--ink);text-align:left;min-height:52px}
 .dd-switch:hover{border-color:var(--hover-line)}
 .dd-switch:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -7556,7 +7579,8 @@ function hzPaintNow(h){
 // Full minimap at the top of the view, slim once its head sticks under the toolbar.
 function hzStuck(){
   const h = document.querySelector('#agenda .hz-day');
-  if (!h) return;
+  // (as the toolbar folds or unfolds the head moves with its edge; tbCompact looks again after)
+  if (!h || document.querySelector('.sticky-wrap.tb-anim')) return;
   const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
   // Stuck once the head has reached its sticky place (its top part under the toolbar):
   // the head keeps its height either way, so toggling moves nothing on the page.
@@ -11072,6 +11096,7 @@ function syncDisplayForm(){
   document.getElementById('dsSystemNote').textContent = 'Now ' + (darkQuery.matches ? 'dark' : 'light');
   document.getElementById('dsContrast').setAttribute('aria-pressed', display.contrast === 'high');
   document.getElementById('dsMotion').setAttribute('aria-pressed', motionReduced());
+  displayDialog.querySelectorAll('.seg').forEach(g => segPlace(g));
   document.getElementById('dsMotionNote').textContent = display.motion
     ? 'Set here (your device setting is ' + (motionQuery.matches ? 'on' : 'off') + ')'
     : 'Follows your device setting (' + (motionQuery.matches ? 'on' : 'off') + ')';
@@ -11397,8 +11422,9 @@ document.getElementById('importFile').addEventListener('change', async e => {
 const stickyWrap = document.querySelector('.sticky-wrap');
 // --toolbar-h is what the toolbar covers: sticky rulers and heads sit right under it.
 // --toolbar-full is its unfolded height, for sizes that should not change as it folds.
+// (While it folds or unfolds, the edge it is moving to: tbCompact moves the heads under it.)
 function syncToolbarHeight(){
-  const h = Math.round(stickyWrap.getBoundingClientRect().height) + 'px', root = document.documentElement.style;
+  const h = Math.round(TB.anim ? TB.anim.px : stickyWrap.getBoundingClientRect().height) + 'px', root = document.documentElement.style;
   root.setProperty('--toolbar-h', h);
   if (!TB.on && !stickyWrap.classList.contains('tb-anim')) root.setProperty('--toolbar-full', h);
 }
@@ -11408,7 +11434,8 @@ function syncToolbarHeight(){
 // the reader's own scrolling (wheel, touch, keys, scrollbar) folds or unfolds it, so jumps
 // made by the page (deep links, the A–Z rail, View in program) land under the bar as it is.
 // While folded, a bottom margin makes up the height it lost, so nothing below it moves.
-// (tbCompact: the fold and unfold move a clip, not the height)
+// (tbCompact: the fold and unfold move a clip, not the height, and the heads stuck under
+// the bar move with its edge)
 const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null };
 const searchMini = document.getElementById('searchMini');
 function tbPaintMini(){
@@ -11416,25 +11443,83 @@ function tbPaintMini(){
   document.getElementById('searchMiniQ').textContent = q;
   searchMini.setAttribute('aria-label', q ? `Search: ${q}` : (state.scope === 'participants' ? 'Search participants' : state.scope === 'agenda' ? 'Search my agenda' : 'Search the program'));
 }
+// What sticks under the toolbar (its top is var(--toolbar-h) plus or minus a constant). As
+// the bar folds or unfolds, each of these in sight moves with its edge, frame by frame (an
+// animation of its own top, from where it was to where it will be), instead of jumping
+// when the fold ends: --toolbar-h itself is set once, to the edge the bar is moving to.
+const TB_FOLLOW = '.hz-top, .vt-head, .vt-corner, .vt-hbar, .vt-picker, .vt-lh, .week-rul, .block-time, .pp-rail';
+function tbFollowers(){
+  const out = [];
+  for (const el of document.querySelectorAll(TB_FOLLOW)){
+    const cs = getComputedStyle(el);
+    if (cs.position !== 'sticky') continue;
+    const top = parseFloat(cs.top), r = el.getBoundingClientRect();
+    if (!Number.isFinite(top) || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
+    out.push({ el, top, h: parseFloat(cs.height), y: r.top });
+  }
+  return out;
+}
+// The view's own head (the day calendars' heads and the week's ruler: each the first thing
+// in its box): the toolbar folds only once the head has scrolled up to where it sits under
+// the slim bar, and scrolling back up it unfolds before the head would come loose. So a
+// head stuck under the bar rides up and down with the bar's edge and stays stuck (and the
+// horizontal calendar's minimap stays slim) through every fold. (null: no head in sight)
+const TB_HEADS = '#agenda .hz-day > .hz-top, .week-sx > .week-rul, .vt-sx > .vt-hbar, .vt-grid > .vt-head';
+function tbHeadState(slimH, fullH){
+  let loose = false, near = Infinity, any = false;
+  const th = parseFloat(document.documentElement.style.getPropertyValue('--toolbar-h')) || 0;
+  for (const el of document.querySelectorAll(TB_HEADS)){
+    const box = el.parentElement, r = box.getBoundingClientRect();
+    if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
+    // its place under the bar, relative to the bar's edge (a constant: read while still)
+    if (!el.getAnimations().length) el._tbOff = parseFloat(getComputedStyle(el).top) - th;
+    const off = el._tbOff;
+    if (!Number.isFinite(off)) continue;
+    const sFull = fullH + off, sSlim = slimH + off;
+    // (near its box's end, the box pushes it out: that is not the bar's doing)
+    if (r.bottom < sFull + el.offsetHeight + 2) continue;
+    any = true;
+    // stuck under the full bar now, it would come loose under the slim one
+    if (r.top < sFull - 0.5 && r.top >= sSlim - 0.5) loose = true;
+    near = Math.min(near, sSlim - 0.5 - r.top);
+  }
+  return any ? { loose, near } : null;
+}
+// The slim bar's height, kept from its last fold (a guess on the low side before that:
+// the fold then waits a little longer, never less).
+function tbSlimH(){
+  const key = innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
+  return TB.slimKey === key ? TB.slim : 40;
+}
+// A fold's animations stop, and the values they started from inline go
+function tbAnimEnd(run){
+  for (const x of [run.a, run.e, run.t, ...run.f]) if (x) x.cancel();
+  stickyWrap.style.clipPath = '';
+  stickyWrap.style.removeProperty('--tb-edge');
+  stickyWrap.querySelector('.toolbar').style.opacity = '';
+  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; }
+  if (TB.anim === run) TB.anim = null;
+}
+// the bar's height in its own pixels, fractions kept (so holding it moves nothing below)
+const tbBoxH = () => parseFloat(getComputedStyle(stickyWrap).height) || stickyWrap.offsetHeight;
 function tbCompact(on){
   if (on === TB.on) return;
-  // Mid-way through a fold or unfold: the edge it had reached (the new one starts there).
-  const run = TB.anim;
+  // Mid-way through a fold or unfold: the edge it had reached (the new one starts there),
+  // and the heads where they had got to.
+  const run = TB.anim, follow = tbFollowers();
   let vis = null;
   if (run){
     const p = run.a.effect.getComputedTiming().progress;
     vis = p === null ? run.to : run.from + (run.to - run.from) * p;
-    run.a.cancel();
-    if (run.e) run.e.cancel();
-    TB.anim = null;
+    tbAnimEnd(run);
   }
   stickyWrap.classList.remove('tb-anim');
   stickyWrap.style.height = '';
   if (run) stickyWrap.style.marginBottom = '';
-  const h0 = vis ?? stickyWrap.offsetHeight;
+  const h0 = vis ?? tbBoxH();
   if (on){
     const m0 = parseFloat(stickyWrap.style.marginBottom) || 0;
-    TB.full = stickyWrap.offsetHeight + m0;
+    TB.full = tbBoxH() + m0;
     TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
   }
   TB.on = on;
@@ -11444,35 +11529,59 @@ function tbCompact(on){
     tbPaintMini();
   }
   stickyWrap.classList.toggle('tb-compact', on);
-  const h1 = stickyWrap.offsetHeight, m1 = on ? Math.max(0, TB.full - h1) : 0;
+  const h1 = tbBoxH(), m1 = on ? Math.max(0, TB.full - h1) : 0, h1px = stickyWrap.getBoundingClientRect().height;
   if (on){
+    TB.slim = h1px;
+    TB.slimKey = innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
     // the chosen day stays in view in the sideways-scrolling tabs
     const tabs = document.getElementById('daytabs'), t = tabs.querySelector('[aria-pressed="true"]');
     if (t) tabs.scrollLeft = Math.max(0, t.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2);
   }
   const done = () => {
-    TB.anim = null;
+    if (TB.anim) tbAnimEnd(TB.anim);
     stickyWrap.classList.remove('tb-anim');
     stickyWrap.style.height = '';
     stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
     syncToolbarHeight();
+    hzStuck();
   };
   if (!motionReduced() && Math.abs(h1 - h0) > 1 && stickyWrap.animate){
     // While it moves, the bar keeps its full height in the page (folding, the slim row at
     // its top) and only the part of it that shows changes (a clip: no layout per frame);
     // the bottom margin takes over the height it lost when it has folded. The space it
     // takes in the page stays the same throughout.
-    const full = on ? TB.full : h1;
+    const full = on ? TB.full : h1, ms = MO_L * motionK();
     if (on) stickyWrap.style.height = full + 'px';
     stickyWrap.style.marginBottom = '';
     stickyWrap.classList.add('tb-anim');
-    const a = stickyWrap.animate([{ clipPath: `inset(0 0 ${full - h0}px 0)` }, { clipPath: `inset(0 0 ${full - h1}px 0)` }],
-      { duration: MO_S * motionK(), easing: EASE });
+    // (each animated value is also set inline where it starts, held at its end until done:
+    // the frame the animations are made in may be drawn before they apply)
+    const opt = { duration: ms, easing: EASE, fill: 'forwards' }, bar = stickyWrap.querySelector('.toolbar');
+    stickyWrap.style.clipPath = `inset(0 0 ${full - h0}px 0)`;
+    const a = stickyWrap.animate([{ clipPath: `inset(0 0 ${full - h0}px 0)` }, { clipPath: `inset(0 0 ${full - h1}px 0)` }], opt);
     // the edge: the bar's own border sits at the bottom of its full box, under the clip
+    stickyWrap.style.setProperty('--tb-edge', (h0 - 1) + 'px');
     let e = null;
     try { e = stickyWrap.animate([{ transform: `translateY(${h0 - 1}px)` }, { transform: `translateY(${h1 - 1}px)` }],
-      { duration: MO_S * motionK(), easing: EASE, pseudoElement: '::after' }); } catch (_) {}
-    TB.anim = { a, e, from: h0, to: h1 };
+      { ...opt, pseudoElement: '::after' }); } catch (_) {}
+    // the row it changes to comes in softly, rather than replacing the old one in a frame
+    bar.style.opacity = '0.2';
+    const t = bar.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: ms * 0.7, easing: 'ease-out', fill: 'forwards' });
+    TB.anim = { a, e, t, f: [], fe: [], from: h0, to: h1, px: h1px };
+    // the heads under it: from where they are to where the new edge puts them
+    syncToolbarHeight();
+    for (const f of follow){
+      const cs = getComputedStyle(f.el), top = parseFloat(cs.top), h = parseFloat(cs.height);
+      // (only what sits at the edge or will: one lower down is in its own place either way)
+      if (f.y > Math.max(f.top, top) + 1) continue;
+      const k0 = { top: f.top + 'px' }, k1 = { top: top + 'px' };
+      if (Math.abs(h - f.h) > 0.5){ k0.height = f.h + 'px'; k1.height = h + 'px'; }
+      if (Math.abs(top - f.top) > 0.5 || k0.height){
+        Object.assign(f.el.style, k0);
+        TB.anim.fe.push(f.el);
+        TB.anim.f.push(f.el.animate([k0, k1], opt));
+      }
+    }
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
 }
@@ -11504,8 +11613,14 @@ window.addEventListener('scroll', () => {
     if (y < past){ TB.acc = 0; tbCompact(false); return; }
     if (!tbUserScroll() || !dy){ TB.acc = 0; return; }
     TB.acc = (Math.sign(dy) === Math.sign(TB.acc) ? TB.acc : 0) + dy;
-    if (TB.acc > 10 && !TB.on && tbMayFold()) tbCompact(true);
-    else if (TB.acc < -20 && TB.on) tbCompact(false);
+    if (TB.acc > 10 && !TB.on && tbMayFold()){
+      const hs = tbHeadState(tbSlimH(), stickyWrap.getBoundingClientRect().height);
+      if (!hs || !hs.loose) tbCompact(true);
+    } else if (TB.on && dy < 0){
+      // (scrolling up, it unfolds before the view's head would come loose from the slim bar)
+      const hs = TB.acc < -20 ? null : tbHeadState(TB.anim ? TB.anim.px : stickyWrap.getBoundingClientRect().height, TB.fullPx);
+      if (TB.acc < -20 || (hs && hs.near < Math.min(40, -dy) + 2)) tbCompact(false);
+    }
   });
 }, { passive:true });
 stickyWrap.addEventListener('focusin', e => {
@@ -11535,6 +11650,58 @@ searchMini.addEventListener('click', () => {
 PHONE_MQ.addEventListener('change', () => tbCompact(false));
 if (window.ResizeObserver) new ResizeObserver(syncToolbarHeight).observe(stickyWrap);
 syncToolbarHeight();
+
+// ---------- segmented controls: the selection slides ----------
+// Each group of options (the toolbar's view switches, the participants' sort, the Display
+// dialog's choices) has one ink indicator, its ::before at --seg-x/-y/-w/-h, under the
+// chosen option. A new choice moves it there (a CSS transition: at once with reduced
+// motion); a group that has just come into sight or changed size places it at once (snap).
+const SEG_GROUPS = '.agenda-views, .seg';
+function segPlace(g, snap){
+  const on = g.classList.contains('seg') ? g.querySelector('input:checked')?.closest('label')
+    : g.querySelector(':scope > button[aria-pressed="true"]:not([hidden])');
+  if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
+  if (snap || !g._segOn || !g.classList.contains('seg-ind')) g.classList.add('seg-snap');
+  else if (g._segOn !== on && !motionReduced()){
+    // the slide: the chosen option's own fill waits until the indicator is under it
+    g.classList.add('seg-moving');
+    clearTimeout(g._segT);
+    g._segT = setTimeout(() => g.classList.remove('seg-moving'), 200 * motionK() + 60);
+  }
+  g.classList.add('seg-ind');
+  // (offsets: the group is the indicator's containing block once seg-ind is on; and the
+  // option's own press scale does not count)
+  const s = g.style;
+  s.setProperty('--seg-x', on.offsetLeft + 'px');
+  s.setProperty('--seg-y', on.offsetTop + 'px');
+  s.setProperty('--seg-w', on.offsetWidth + 'px');
+  s.setProperty('--seg-h', on.offsetHeight + 'px');
+  g._segOn = on;
+  if (g.classList.contains('seg-snap')){
+    getComputedStyle(g, '::before').transform;
+    g.classList.remove('seg-snap', 'seg-moving');
+  }
+}
+(() => {
+  const ro = window.ResizeObserver ? new ResizeObserver(es => {
+    const seen = new Set();
+    for (const e of es){ const g = e.target.closest(SEG_GROUPS); if (g && !seen.has(g)){ seen.add(g); segPlace(g, true); } }
+  }) : null;
+  const mo = new MutationObserver(ms => {
+    const seen = new Map();
+    for (const m of ms){
+      const g = m.target.closest(SEG_GROUPS);
+      if (g) seen.set(g, seen.get(g) || (m.target === g && m.attributeName === 'hidden'));
+    }
+    for (const [g, snap] of seen) segPlace(g, snap);
+  });
+  for (const g of document.querySelectorAll(SEG_GROUPS)){
+    segPlace(g, true);
+    if (ro){ ro.observe(g); for (const c of g.children) ro.observe(c); }
+    mo.observe(g, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden'] });
+  }
+  document.addEventListener('change', e => { const g = e.target.closest && e.target.closest('.seg'); if (g) segPlace(g); });
+})();
 
 // "Skip to program" moves the focus past the header and toolbar to the main area (the
 // address keeps its view: a #main hash would be read as a view).
