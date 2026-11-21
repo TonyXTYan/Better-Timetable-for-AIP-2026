@@ -1440,7 +1440,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 #vtPop .vt-title,#vtPop .vt-ttl{display:block;-webkit-line-clamp:none;overflow:visible}
 #vtPop .vt-tsp{white-space:normal}
 #vtPop .vt-pfoot{color:var(--bar-meta)}
-@media print{#vtPop,.sx-more,.sx-fade{display:none!important}}
+@media print{#vtPop,.sx-more,.sx-fade,.vt-nowl,.vt-nowd{display:none!important}.vt-grid .vt-card.now-in{background-image:none}.vt-card.is-now .vt-time::before{display:none}}
 .vt-wrap .vt-grid{margin:0}
 /* sideways only: vertical scrolling stays with the page */
 .vt-wrap.scroll{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:var(--r-plate);background:var(--bg)}
@@ -1453,6 +1453,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-wrap.scroll .vt-tcol{display:block;grid-column:1;position:sticky;left:0;z-index:2;background:var(--bg);margin-right:-6px}
 .vt-wrap.scroll .vt-t{position:sticky;left:0;z-index:3;padding-left:4px}
 .vt-card{display:flex;flex-direction:column;min-width:0;z-index:1;margin:2px 0;border:1px solid color-mix(in srgb,var(--c) 28%,transparent);border-left:3px solid var(--c);border-radius:5px;background:var(--cbg);color:var(--bar-ink);font-size:.75rem;line-height:1.3;overflow-wrap:break-word;box-shadow:var(--shadow);scroll-margin-top:calc(var(--toolbar-h,150px) + 3rem)}
+:root[data-contrast="high"] .vt-card{border-color:var(--c)}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
 .vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
@@ -1472,7 +1473,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-conv.rm{font-style:normal;font-weight:520}
 .vt-count{flex:0 0 auto;white-space:nowrap}
 .vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 8px;font:inherit;font-weight:650;color:var(--bar-ink);cursor:pointer;border-radius:4px;white-space:nowrap;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}.vt-go{min-height:40px}.dv-keyb{min-height:40px}}
+@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}.vt-go,.vt-picker button,.dv-keyb{min-height:40px}}
 .vt-tog:hover{border-color:var(--ink)}
 .vt-tog:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 /* a closed card's footer (convener, "N talks") sits at its bottom, so the buttons of
@@ -1626,7 +1627,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
 .hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
 .hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
-.vt-cx{flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
+.vt-cxi{flex:none;vertical-align:-1px;margin-right:3px}
+.vt-cx{display:inline-flex;align-items:center;flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
 .vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 40%,var(--line));border-left-color:var(--c)}
 .vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:4px 4px 0 0}
 .vt-agenda .vt-card.open .vt-hd{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent);margin-bottom:3px}
@@ -1740,6 +1742,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:2px;font-size:.6875rem;letter-spacing:0;tex
 .vt-go:hover{border-color:var(--hover-line)}
 .vt-go:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .vt-go.none{visibility:hidden}
+@media (pointer:coarse){.vt-go,.vt-picker button{min-height:40px}}
 .agenda.vt-sliding{position:relative;overflow:clip}
 .vt-ghost{position:absolute;left:0;right:0;padding:inherit;padding-bottom:0;pointer-events:none}
 @media (max-width:720px){.vt-god{display:none}.vt-go{padding:0 12px}}
@@ -6627,6 +6630,7 @@ const vtOpen = new Set();
 // My agenda's search opens a saved session on its matching talks; the ones folded by hand
 const vtShut = new Set();
 let vtWidth = 0;
+const VT_CX_ICO = '<svg class="vt-cxi" viewBox="0 0 12 11" width="11" height="10" aria-hidden="true"><path d="M6 1.2 11 10H1z M6 4.3v2.6 M6 8.3v.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 const VT_COLS = [
   { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
   { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
@@ -6711,7 +6715,7 @@ function vtDayView(day){
     }
     const cls = 'vt-card' + (o.band ? ' band' : '') + (open && o.rows && !listOnly(e) ? ' sub' : '') + (open ? ' open' : '')
       + (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '') + (e.t ? ' is-talk' : '');
-    const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">&#9888; Clash</span>` : '';
+    const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">${VT_CX_ICO}Clash</span>` : '';
     const what = e.ctx ? ' title="Shown for your starred talks; the session is not in My agenda"' : '';
     const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
     return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" ${ids} data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
@@ -6784,7 +6788,7 @@ function vtDayView(day){
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
   const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
   const cx = nClash && agendaClashWords(DATA.days.indexOf(day));
-  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? `, <span class="vt-hcx">&#9888; ${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
+  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? `, <span class="vt-hcx">${VT_CX_ICO}${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
   const heads = `<div class="vt-corner">${agenda && !scroll ? DV_KEY_BTN : ''}</div>` + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
