@@ -1067,12 +1067,13 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
    sessions (or a break) stops at --plate-max, about what the page's old content column
    held, so a star stays near its text and lines keep a readable length; long text inside
    keeps a narrower measure still. My agenda is all one column, so its title bar (Build
-   and Export), its Now and Up next plate and each day (its heading, with Open in
-   program, and its rows) stop there too, lined up with each other. The cap applies only
+   and Export, with the notes under it), its Now and Up next plate, each day (its
+   heading, with Open in program, and its rows) and the note shown when nothing is
+   saved or nothing matches stop there too, lined up with each other. The cap applies only
    where it saves over 15% of the width: just short of that, a capped plate would read
    as one out of line with the rest, not as a column of its own. */
 :root{--plate-max:72rem}
-.cards:is(.single,.ivs,[data-n="1"],[data-n="2"]),#builderList>.up-next,#builderList>.ag-day,body:not(.wide-view) #builder>:is(.ag-bar,.clash-box){max-width:calc(var(--plate-max) + max(0px,var(--plate-max) * 1.15 - 100%) * 10000)}
+.cards:is(.single,.ivs,[data-n="1"],[data-n="2"]),#builderList>:is(.up-next,.ag-day,.ag-empty),body:not(.wide-view) #builder>:is(.ag-bar,.clash-box,.export-status,.ics-note){max-width:calc(var(--plate-max) + max(0px,var(--plate-max) * 1.15 - 100%) * 10000)}
 .cards.single{grid-template-columns:minmax(0,1fr)}
 .cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
 
@@ -8742,9 +8743,9 @@ function layAnchor(){
       return rows.get(row);
     };
     for (const x of main.querySelectorAll(LAY_CAL)){
-      if (!x.dataset.sid && !x.dataset.tid) continue;
+      if (!x.dataset.sid && !x.dataset.tid && !x.dataset.weekSid) continue;
       // (what sticks under the toolbar over it: Horizontal's ruler, Vertical's heads)
-      const r = x.getBoundingClientRect(), hz = x.closest('.hz-day'), stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : vtStick(x);
+      const r = x.getBoundingClientRect(), hz = x.closest('.hz-day'), stick = hz ? layStick(x) : vtStick(x);
       if (r.width < 2 || r.bottom < bar + stick + 24 || r.top > vh - 24) continue;
       const sc = x.closest('.hz-vp, .vt-wrap.scroll, .week-sc'), c = sc && sc.getBoundingClientRect();
       const lw = sc && sc.matches('.hz-vp') ? sc.querySelector('.hz-label')?.offsetWidth || 0 : sc ? sc.querySelector('.vt-tcol')?.offsetWidth || 0 : 0;
@@ -8759,7 +8760,7 @@ function layAnchor(){
     el = cand.length ? cand[0].x : null;
   }
   if (!el) return null;
-  const tid = el.dataset.tid, sid = el.dataset.sid || el.dataset.inSid;
+  const { tid, sid } = layIds(el);
   const s = sid && slotById(sid), t = tid && talkById(tid);
   if (!s && !t) return null;
   const slot = s || t.s, start = t ? t.t.s : s.start, day = DATA.days.findIndex(d => d.slots.includes(slot));
@@ -8772,6 +8773,25 @@ function layAnchor(){
   const top = !back && window.scrollY <= programTop() + 8;
   const again = !!(back && back.key === key);
   return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
+}
+// A calendar item's session and talk; a week's "+N" chip stands for the first item it folds.
+const layIds = el => el.matches('.week-nmore') ? { tid: el.dataset.weekTid || undefined, sid: el.dataset.weekSid }
+  : { tid: el.dataset.tid, sid: el.dataset.sid || el.dataset.inSid };
+// How far below the toolbar an item must start to be clear of what sticks over it: a
+// Horizontal day's ruler; the week's ruler (Horizontal) or day heads (Vertical), with the
+// Earlier and Later buttons that hang under them while the week scrolls sideways; a
+// Vertical day's heads.
+function layStick(el){
+  const hz = el.closest('.hz-day');
+  if (hz) return hz.querySelector('.hz-ruler').offsetHeight + 18;
+  const wk = el.closest('.week-sx');
+  if (wk){
+    const rul = wk.querySelector(':scope > .week-rul'), sc = wk.querySelector(':scope > .week-sc');
+    if (!rul || getComputedStyle(rul).position !== 'sticky') return 0;
+    const more = sc && sc.scrollWidth > sc.clientWidth + 1 ? Math.max(0, ...[...rul.querySelectorAll(':scope > .sx-more')].map(b => parseFloat(getComputedStyle(b).minHeight) || 0)) + 4 : 0;
+    return rul.offsetHeight + more;
+  }
+  return el.closest('.vt-day, .vt-grid, .vt-sx') ? vtStick(el) : 0;
 }
 // Before the other layout is drawn: a Horizontal day opens with the item near its left
 // edge (as from the week), so it is drawn there at once; straight back, where you had it.
@@ -8801,6 +8821,20 @@ function layLand(a){
   if (a && state.layout === 'list' && a.key[0] === 's') listFill(a.key.slice(2));   // (its block, if not drawn yet)
   let el = null;
   for (const k of a ? a.keys : []) if ((el = find(k))) break;
+  // (a phone's week folds what has no room into "+N" chips: the chip holding it; failing
+  // that, the item that day starting nearest it)
+  if (!el && a && state.layout === 'calendar'){
+    const ids = new Set(a.keys.map(k => k[0] === 't' ? '/' + k.slice(2) : k.slice(2) + '/'));
+    const vis = x => x.getClientRects().length > 0;
+    el = [...main.querySelectorAll('.week-nmore')].find(c => vis(c) && c.dataset.more.split(' ').some(m => ids.has(m.slice(0, m.indexOf('/') + 1)) || ids.has(m.slice(m.indexOf('/')))));
+    if (!el){
+      let best = Infinity;
+      for (const x of main.querySelectorAll(`.week-blk[data-day="${a.day}"]:not(.week-off)`)){
+        const d = Math.abs(+x.dataset.start - a.min);
+        if (d < best && vis(x) && layIds(x).sid){ best = d; el = x; }
+      }
+    }
+  }
   if (!el){
     if (window.scrollY > programTop()) scrollToProgramTop();
     return null;
@@ -8820,7 +8854,7 @@ function layLand(a){
       else if (r.right > c.right) sc.scrollLeft += Math.min(r.right - c.right + 8, r.left - c.left - lead - 8);
     }
   }
-  const stick = hz ? hz.querySelector('.hz-ruler').offsetHeight + 18 : el.closest('.vt-day, .vt-grid, .vt-sx') ? vtStick(el) : 0;
+  const stick = layStick(el);
   // (in sight, and in the upper part of it: where reading goes on; but straight back,
   // exactly where it was)
   const place = () => {
@@ -8843,7 +8877,7 @@ function layLand(a){
   TB.input = -1e9; TB.last = window.scrollY;
   // (straight back: from it to where the item you were at was; if this is a session beside
   // that item (a phone's week leaves some out), to that item, not this)
-  const key = el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, r = el.getBoundingClientRect();
+  const ids = layIds(el), key = ids.tid ? 't-' + ids.tid : 's-' + ids.sid, r = el.getBoundingClientRect();
   layBack = { key, el, top: r.top, left: r.left, y: a.from, layout: state.layout, ret: key !== a.keys[0] ? a.keys[0] : null };
   return el;
 }
