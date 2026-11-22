@@ -6281,7 +6281,7 @@ function mxBegin(kind, from, opts){
     // (opts.lite: half as many as it would name, but never fewer than the covers and the
     // sessions in sight)
     let cap = y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75;
-    if (only) cap = Math.min(only.size, PHONE_MQ.matches ? 6 : 12);
+    if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
     else if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
     for (const it of seen){
       if (old.size >= cap) break;
@@ -6290,7 +6290,7 @@ function mxBegin(kind, from, opts){
     }
   }
   for (const [key, it] of old) mxName(it.el, key, it.kind === 'cover' ? 'mx-cover' : 'mx');
-  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [] }, live = [];
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [], rise: [] }, live = [];
   return {
     after(target){
       mxNew = true;
@@ -6402,6 +6402,31 @@ function mxBegin(kind, from, opts){
           plan.added.push({ key, n });
         }
       }
+      // List <-> Calendar: every other session in sight in the new layout, with no card or
+      // bar of its own to come from on the old screen, rises into its place, nearest the
+      // item you were at first, so the whole screen moves as one, not one item alone
+      if (kind === 'lay' && !opts.lite && !pop){
+        const under = mxUnderHeads(), vh = innerHeight, vw = innerWidth, y = old.size ? [...old.values()][0].r.top : 0;
+        const rise = [];
+        for (const el of document.getElementById('main').querySelectorAll(state.layout === 'list' ? '.card[data-sid], .ag-row[data-sid]' : LAY_CAL)){
+          const sid = el.dataset.sid;
+          if (!sid || named.has(el) || el.dataset.tid) continue;
+          const key = mxSafe('s-' + sid);
+          if (old.has(key)) continue;
+          const r = el.getBoundingClientRect();
+          if (r.height < 2 || r.bottom <= 0 || r.top >= vh || r.left < 0 || r.right > vw || under(r)) continue;
+          // (whole in its scroll box: a named item is drawn above the page, unclipped)
+          const sb = el.closest('.hz-vp, .vt-wrap.scroll, .week-scroll, .sx-box');
+          if (sb){ const c = sb.getBoundingClientRect(); if (r.left < c.left - 1 || r.right > c.right + 1 || r.top < c.top - 1 || r.bottom > c.bottom + 1) continue; }
+          rise.push({ key, el, r, d: Math.abs(r.top - y) + Math.abs(r.left) / 4 });
+        }
+        rise.sort((p, q) => p.d - q.d);
+        for (const x of rise){
+          if (count >= mxCap()) break;
+          mxName(x.el, x.key, 'mx'); named.add(x.el); count++;
+          plan.rise.push({ key: x.key, r: x.r, i: plan.rise.length });
+        }
+      }
     },
     // (rect: All week <-> a day, the day's row or column in the week, on screen)
     animate(rect){
@@ -6479,6 +6504,11 @@ function mxBegin(kind, from, opts){
       for (const { key, n } of plan.added){
         run(key, 'group', [box(n.r, 0), box(n.r)]);
         run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S, delay: MO_S / 3, easing: EASE });
+      }
+      for (const { key, r, i } of plan.rise){
+        const delay = Math.min(i, 10) * 16, from = { left: r.left, top: r.top + Math.min(32, r.height * .25 + 12), width: r.width, height: r.height };
+        run(key, 'group', [box(from), box(r)], { delay });
+        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: MS * .7, delay, easing: EASE });
       }
       // the session's box grows from its talks' to its own, and its picture stays put on
       // the page as the box uncovers it (object-position makes up for the box's move);
@@ -8990,8 +9020,26 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
     layPrep(a, to);
     showView(to, state.scope);
     return layLand(a);
-  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, only: a ? a.keys : [], press: button });
+  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, only: layOnly(a), press: button });
 });
+// The sessions that move between the layouts: the item you were at and those starting
+// with it first, then every other session in sight, nearest to it first (the rest of
+// the page cross-fades). Into the list, mxBegin keeps only those whose moves show on
+// the screen and never cross another's.
+function layOnly(a){
+  const keys = a ? [...a.keys] : [], seen = new Set(keys), y = a ? a.y : 0;
+  const bar = stickyWrap.getBoundingClientRect().bottom, vh = innerHeight;
+  const sel = state.layout === 'list' ? '.card[data-sid], .ag-row[data-sid]' : LAY_CAL;
+  const near = [];
+  for (const el of document.getElementById('main').querySelectorAll(sel)){
+    const sid = el.dataset.sid;
+    if (!sid || seen.has('s-' + sid)) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.height || r.bottom <= bar + 4 || r.top >= vh - 4 || r.right <= 0 || r.left >= innerWidth) continue;
+    seen.add('s-' + sid); near.push({ key: 's-' + sid, d: Math.abs(r.top - y) });
+  }
+  return keys.concat(near.sort((p, q) => p.d - q.d).map(x => x.key));
+}
 // The item at the top of what you are reading, under the sticky toolbar: in the list,
 // the first card (or My agenda row) reaching well below it (the tail of one above does
 // not count), found through the time blocks' own boxes (so the blocks far away are not
