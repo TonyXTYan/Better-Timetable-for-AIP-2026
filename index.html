@@ -671,8 +671,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 #eventDialog details .ag-btn{margin-top:12px}
 #eventDialog summary{display:flex;align-items:baseline;gap:12px;min-height:44px;padding:11px 0;list-style:none;cursor:pointer;font-weight:640;line-height:1.35}
 #eventDialog summary::-webkit-details-marker{display:none}
-#eventDialog summary::before{content:"";flex:none;align-self:flex-start;width:6px;height:6px;margin:.6em 3px 0 1px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(-45deg);transition:transform var(--dur-s,120ms)}
-#eventDialog details[open]>summary::before{transform:rotate(45deg)}
+#eventDialog summary::before{content:"";flex:none;align-self:flex-start;width:6px;height:6px;margin:.6em 3px 0 1px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(-45deg);transition:transform var(--dur-l,200ms) var(--ease,ease)}
+#eventDialog details[open]:not(.dx-shut)>summary::before{transform:rotate(45deg)}
 #eventDialog summary:hover{color:var(--ink)}
 .ed-ttime{flex:none;min-width:5.6em;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
 .ed-ttitle{min-width:0}
@@ -726,8 +726,8 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .md-qr summary{cursor:pointer;padding:10px 0;font-weight:650;font-size:.875rem;color:var(--ink);min-height:40px;box-sizing:border-box}
 .md-qr summary{display:flex;align-items:center;gap:10px;list-style:none}
 .md-qr summary::-webkit-details-marker{display:none}
-.md-qr summary::before{content:"";flex:none;width:6px;height:6px;margin:0 3px 0 1px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(-45deg);transition:transform var(--dur-s,120ms)}
-.md-qr[open] summary::before{transform:rotate(45deg)}
+.md-qr summary::before{content:"";flex:none;width:6px;height:6px;margin:0 3px 0 1px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(-45deg);transition:transform var(--dur-l,200ms) var(--ease,ease)}
+.md-qr[open]:not(.dx-shut) summary::before{transform:rotate(45deg)}
 .md-qr[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
 .md-warn{font-size:.8125rem;color:var(--ink);background:var(--surface-3);border:1px solid var(--line);border-left:3px solid var(--ink-2);border-radius:var(--r-seg);padding:8px 12px;margin:10px 0}
 .qr-box{width:var(--qr-size,280px);max-width:100%;margin:4px auto 6px;background:var(--qr-light);border-radius:var(--r-plate);border:1px solid var(--line);overflow:hidden}
@@ -1101,6 +1101,9 @@ details.about{margin:10px 19px 14px;font-size:.9375rem}
 details.about summary{cursor:pointer;color:var(--link);font-weight:600;font-size:.8125rem;width:max-content;text-decoration:underline;text-decoration-color:var(--hover-line);text-decoration-thickness:1px;text-underline-offset:.2em}
 details.about summary:hover{text-decoration-color:currentColor}
 details.about .desc{padding:8px 0 0}
+/* an abstract unfolding or folding (dxFold): its height runs in script, its content clipped to it */
+details.dx-run{box-sizing:border-box;overflow:clip;interpolate-size:allow-keywords}
+@supports not (overflow:clip){details.dx-run{overflow:hidden}}
 
 /* Talks: rows under a hairline, the time condensed and tabular, the speakers in italic */
 .talks{list-style:none;margin:12px 0 0;padding:0;border-top:1px solid var(--line)}
@@ -1115,10 +1118,10 @@ details.talk-d summary::-webkit-details-marker{display:none}
 .t-title{display:block;font-size:.9375rem;font-weight:560;line-height:1.38;overflow-wrap:anywhere;text-wrap:pretty}
 .t-sp{display:block;font-size:.8125rem;font-style:italic;font-weight:480;line-height:1.45;color:var(--ink-2);margin-top:3px}
 .t-sp .aff{font-style:normal;font-weight:420;color:var(--muted)}
-.t-caret{flex:0 0 auto;align-self:center;display:inline-flex;color:var(--caret);transition:transform var(--dur-s) var(--ease-em)}
+.t-caret{flex:0 0 auto;align-self:center;display:inline-flex;color:var(--caret);transition:transform var(--dur-l) var(--ease)}
 .t-caret svg{display:block}
 details.talk-d summary:hover .t-caret{color:var(--ink-2)}
-details.talk-d[open] .t-caret{transform:rotate(90deg)}
+details.talk-d[open]:not(.dx-shut) .t-caret{transform:rotate(90deg)}
 .t-body{padding:0 16px 14px calc(19px + 2.25rem + 10px);font-size:.9375rem;line-height:1.6;color:var(--ink-2)}
 .t-body .abstract{margin:0 0 10px;overflow-wrap:anywhere}
 .t-body .abstract.none{color:var(--muted);font-style:italic}
@@ -1161,8 +1164,9 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
   .card .talks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,26rem),1fr));border-top:0}
   .card .talk{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line)}
   .card .talk:last-child{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
-  /* an opened talk takes the whole row, so its abstract reads at its usual measure */
-  .card .talk:has(>details[open]){grid-column:1/-1}
+  /* an opened talk takes the whole row, so its abstract reads at its usual measure (and goes
+     back to its column as it starts to fold) */
+  .card .talk:has(>details[open]:not(.dx-shut)){grid-column:1/-1}
   .card.iv .meta{flex:0 1 auto}
   .card.iv .star{margin-left:0}
 }
@@ -5753,6 +5757,8 @@ function renderBuilder(){
 // and skips the animation, so the state is never stale. The button pressed for a change
 // (opts.press) shows its new state in the next frame, before any of that work.
 let viewTx = null;
+const dxRunning = new Set();   // abstracts unfolding or folding (see dxFold)
+const DX_AUTO = CSS.supports('interpolate-size', 'allow-keywords');
 // Animation speed (Display settings): every duration here and in the CSS (--mo) is the
 // Fast one times this.
 const motionK = () => ({ slow: 2, xslow: 4 })[document.documentElement.dataset.speed] || 1;
@@ -6277,6 +6283,7 @@ function mxBegin(kind, from, opts){
 // change itself (redraw, snapshot, measuring) starts once that frame is painted.
 function withTransition(kind, fn, from, opts = {}){
   settleTransition();
+  dxSettleAll();   // (an abstract still unfolding is snapshotted where it ends)
   if (vtSlideEnd) vtSlideEnd();   // (a day sliding in Vertical lands first, its ghost gone)
   // No snapshot while a modal dialog is up, but for the details dialog's own opening and
   // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
@@ -10171,52 +10178,115 @@ function calendarJump(s, tid){
   return true;
 }
 
-// A talk's abstract opened or closed with its title unfolds or folds over a moment
-// (height and fade). Expand all, find in page and links that open one stay instant.
-document.getElementById('agenda').addEventListener('click', e => {
-  const sm = e.target.closest('details.talk-d > summary');
-  if (!sm || motionReduced()) return;
-  const d = sm.parentElement, body = d.querySelector(':scope > .t-body');
-  if (!body || !body.animate) return;
-  e.preventDefault();
-  body.getAnimations().forEach(a => a.cancel());
-  const opening = !d.open || d.dataset.folding !== undefined;
-  delete d.dataset.folding;
-  d.open = true;
-  const cs = getComputedStyle(body), h = body.getBoundingClientRect().height, pb = cs.paddingBottom;
-  const shut = { height: '0px', paddingBottom: '0px', opacity: 0, overflow: 'hidden', boxSizing: 'border-box' };
-  const full = { height: h + 'px', paddingBottom: pb, opacity: 1, overflow: 'hidden', boxSizing: 'border-box' };
-  if (opening){
-    body.animate([shut, full], { duration: 170 * motionK(), easing: 'cubic-bezier(.2,.7,.3,1)' });
-    return;
+// ---------- abstracts that unfold ----------
+// A <details> opened or closed by its summary (a talk in the list, a talk in the details
+// dialog, About this session, the dialogs' own folds), or by Expand all near the screen,
+// unfolds or folds: its height runs between its closed and open heights (--dur-l on --ease,
+// times the speed setting), what is under the summary fades, and the caret turns alongside
+// (its CSS transition, on the same tokens). A closing one keeps `open` until it has folded;
+// the class dx-shut turns its caret back meanwhile. A press while it moves reverses it from
+// where it is, over the part of the way left. Everything else that sets `open` (a link to a
+// talk, a search opening its matches, find in page, print, Expand all away from the screen)
+// stays instant, as does all of it with reduced motion. Only the space under the summary
+// grows or shrinks, so the summary stays where it was pressed (scroll anchoring keeps
+// whatever is above it in place).
+// d.__dx, while it moves: { open (where it is going), anims, hc, ho (its closed and open heights) };
+// dxRunning (with viewTx) holds those that move.
+const dxFades = d => [...d.children].filter(c => c.tagName !== 'SUMMARY');
+const dxGoal = d => d.__dx ? d.__dx.open : d.open;
+function dxEnd(d){
+  const st = d.__dx;
+  d.classList.remove('dx-run', 'dx-shut');
+  if (!st) return;
+  d.__dx = null;
+  dxRunning.delete(d);
+  st.anims.forEach(a => a.cancel());
+}
+// at once where it was going (before a view change is snapshotted; Expand all far away)
+function dxSet(d, open){ dxEnd(d); d.open = open; }
+function dxSettleAll(){ for (const d of [...dxRunning]) dxSet(d, d.__dx.open); }
+// Opens or shuts each of ds, moving. Given together, they are measured in one layout
+// between them, not a few each; `also` makes the changes that go with them at once (after
+// their heights now are read from the layout on screen, before the one that measures them).
+function dxFold(ds, open, also){
+  ds = ds.filter(d => d.isConnected && dxGoal(d) !== open);
+  if (!ds.length || motionReduced() || !ds[0].animate){ ds.forEach(d => dxSet(d, open)); if (also) also(); return; }
+  // where each is now (part of the way, when it moves), and how far its text has faded
+  const xs = ds.map(d => {
+    const fades = dxFades(d), st = d.__dx;
+    return { d, fades, st, h0: d.getBoundingClientRect().height, o0: st ? fades.map(c => +getComputedStyle(c).opacity) : null };
+  });
+  for (const x of xs){
+    if (x.st){ x.st.anims.forEach(a => a.cancel()); x.d.__dx = null; dxRunning.delete(x.d); }
+    // (the caret's turn starts here, once: a closing one stays shut while it is measured)
+    x.d.classList.toggle('dx-shut', !open);
   }
-  d.dataset.folding = '';
-  const a = body.animate([full, shut], { duration: 120 * motionK(), easing: 'ease-in', fill: 'forwards' });
-  a.onfinish = () => { if (d.dataset.folding === undefined) return; delete d.dataset.folding; d.open = false; a.cancel(); };
+  if (also) also();
+  // The end it has not been to yet, as laid out (a reversal knows both from its first run).
+  // Unfolding where the browser can run a height to auto (interpolate-size), its open height
+  // is left to the next frame's layout, not measured now: Expand all costs no extra layout.
+  // (A reversal of that run reads it once its run is cancelled: open, at its full height.)
+  const fresh = xs.filter(x => !x.st);
+  if (open){
+    for (const x of fresh){ x.hc = x.h0; x.d.open = true; }
+    if (!DX_AUTO) for (const x of fresh) x.ho = x.d.getBoundingClientRect().height;
+  } else {
+    for (const x of fresh){ x.ho = x.h0; x.d.open = false; }
+    for (const x of fresh) x.hc = x.d.getBoundingClientRect().height;
+    for (const x of fresh) x.d.open = true;
+  }
+  for (const x of xs) if (x.st){ x.hc = x.st.hc; x.ho = x.st.ho ?? x.d.getBoundingClientRect().height; }
+  const k = motionK();
+  for (const x of xs){
+    const { d, fades, h0, hc, ho } = x, to = open ? ho : hc, span = ho == null ? 1 / 0 : Math.abs(ho - hc);
+    const part = ho == null ? 1 : span < 1 ? 0 : Math.min(1, Math.abs(to - h0) / span), ms = MO_L * k * part;
+    if (ms < 8 || !h0){ dxSet(d, open); continue; }
+    d.classList.add('dx-run');
+    const o0 = x.o0 || fades.map(() => open ? 0 : 1);
+    const opt = { duration: ms, easing: EASE, fill: 'forwards' };
+    const anims = [d.animate([{ height: h0 + 'px' }, { height: to == null ? 'auto' : to + 'px' }], opt)];
+    // (opening, the text comes in with its room; closing, it is gone a little before)
+    fades.forEach((c, i) => anims.push(c.animate([{ opacity: o0[i] }, { opacity: open ? 1 : 0 }], open ? opt : { ...opt, duration: ms * .7 })));
+    const st = d.__dx = { open, anims, hc, ho };
+    dxRunning.add(d);
+    anims[0].finished.then(() => { if (d.__dx === st) dxSet(d, open); }, () => {});
+  }
+}
+document.addEventListener('click', e => {
+  if (e.defaultPrevented || e.button) return;
+  const sm = e.target.closest('summary'), d = sm && sm.parentElement;
+  if (!d || d.tagName !== 'DETAILS' || d.querySelector(':scope > summary') !== sm) return;
+  // (a link or button inside a summary is its own)
+  const own = e.target.closest('a[href], button, input, select, textarea, label');
+  if (own && sm.contains(own)) return;
+  if (motionReduced() || !d.animate){ dxEnd(d); return; }
+  e.preventDefault();
+  dxFold([d], !dxGoal(d));
 });
 document.getElementById('expandAll').addEventListener('click', e => {
   const ds = [...document.querySelectorAll('.card:not(.hidden) details')];
   // (blocks of All week not drawn yet follow the choice as they are drawn)
   const L = document.getElementById('agenda')._list, later = L && L.phs && [...L.phs].some(p => !p.classList.contains('hidden'));
   // (while a choice is still being applied, a press reverses it)
-  const anyClosed = xaJob ? !xaJob.open : ds.some(d => !d.open) || (later && !L.expanded);
+  const anyClosed = xaJob ? !xaJob.open : ds.some(d => !dxGoal(d)) || (later && !L.expanded);
   if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
   if (later) L.expanded = anyClosed;
-  // a long list: the abstracts near the screen at once, the rest in short turns
-  let far = [];
-  if (ds.length > 120){
-    const vh = innerHeight, at = new Map();
-    for (const d of ds){
-      if (d.open === anyClosed) continue;
-      const b = d.closest('.block');
-      if (!at.has(b)){ const r = b.getBoundingClientRect(); at.set(b, r.bottom > 0 && r.top < vh); }
-      if (at.get(b)) d.open = anyClosed; else far.push(d);
-    }
-  } else ds.forEach(d => d.open = anyClosed);
+  // The abstracts on screen unfold or fold (a few dozen at most); the rest change at once
+  // (a long list: those in the blocks near the screen at once, the others in short turns).
+  const vh = innerHeight, at = new Map(), cap = PHONE_MQ.matches ? 12 : 24, move = [], now = [], far = [];
+  for (const d of ds){
+    if (dxGoal(d) === anyClosed) continue;
+    const b = d.closest('.block');
+    if (!at.has(b)){ const r = b && b.getBoundingClientRect(); at.set(b, !r || (r.bottom > 0 && r.top < vh)); }
+    if (!at.get(b)){ (ds.length > 120 ? far : now).push(d); continue; }
+    const r = d.getBoundingClientRect();
+    (move.length < cap && r.bottom > 0 && r.top < vh ? move : now).push(d);
+  }
+  dxFold(move, anyClosed, () => now.forEach(d => dxSet(d, anyClosed)));
   if (far.length){
     const job = xaJob = { open: anyClosed, t: 0 }, step = () => {
       const t0 = performance.now();
-      while (far.length && performance.now() - t0 < 10){ const d = far.shift(); if (d.isConnected) d.open = anyClosed; }
+      while (far.length && performance.now() - t0 < 10){ const d = far.shift(); if (d.isConnected) dxSet(d, anyClosed); }
       if (far.length) job.t = setTimeout(step, 0); else { xaJob = null; blockHeightsSoon(); }
     };
     job.t = setTimeout(step, 0);
@@ -10234,6 +10304,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.activeElement === qEl){ e.preventDefault(); qEl.blur(); }
 });
 window.addEventListener('beforeprint', () => {
+  dxSettleAll();
   if (state.layout === 'list' && state.scope === 'program') listFill();
   if (state.layout === 'list' && state.scope === 'program') document.querySelectorAll('#agenda details').forEach(d => d.open = true);
 });
