@@ -3867,11 +3867,13 @@ function slotById(id){
 // the grid's columns, each card its head and a row a talk. Only roughly: it keeps the
 // page about as tall as it will be, so the scrollbar and jumps far down stay close.
 function blockEst(slots){
-  const phone = PHONE_MQ.matches, w = listPlateW();
-  if (slots.every(isInterval)) return slots.length * (phone ? 58 : 38) + (phone ? 36 : 0);
+  // (in the page's text size: the figures below are for the default 16px, so the room in
+  // a column is counted in them and the height scaled back up)
+  const phone = PHONE_MQ.matches, w = listPlateW(), z = remPx() / 16;
+  if (slots.every(isInterval)) return Math.round((slots.length * (phone ? 58 : 38) + (phone ? 36 : 0)) * z);
   // (its columns as plateFit sets them; a plate of one or two stops at --plate-max)
   const cols = plateCols(slots.length, listCols()), pm = 72 * remPx();
-  const cw = (cols <= 2 && w > pm * 1.15 ? pm : w) / cols;
+  const cw = (cols <= 2 && w > pm * 1.15 ? pm : w) / cols / z;
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
   const hs = slots.map(s => {
     const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
@@ -3881,7 +3883,7 @@ function blockEst(slots){
   });
   let h = phone ? 36 : 0;
   for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
-  return Math.round(h);
+  return Math.round(h * z);
 }
 // The width of a time block's plate of cards in the list: the page's, less its gutters,
 // the time column (88px in Archivo, 5.5rem in the other fonts, as in the CSS) and the gap
@@ -8881,11 +8883,14 @@ function layLand(a){
   layBack = { key, el, top: r.top, left: r.left, y: a.from, layout: state.layout, ret: key !== a.keys[0] ? a.keys[0] : null };
   return el;
 }
+// (its own block too: one not drawn yet is only as tall as its estimate, and if that falls
+// short of the item, the block ends above the screen and is never drawn, the item in it
+// with it, whatever is below the block showing in its place)
 function layMeasureAbove(el){
   const row = el.closest('#builderList .ag-row'), sel = row ? '#builderList .ag-row' : '#agenda .block';
   const all = [...document.querySelectorAll(sel)], at = all.indexOf(row || el.closest('.block')), lim = el.getBoundingClientRect().top - innerHeight * 1.5;
   const above = [];
-  for (let i = at - 1; i >= 0; i--){
+  for (let i = at; i >= 0; i--){
     const r = all[i].getBoundingClientRect();
     if (r.bottom < lim) break;
     if (r.height) above.push(all[i]);
@@ -10035,11 +10040,12 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
   }
   document.querySelector('#daytabs [aria-pressed="true"]').focus();
 }
-// The blocks above a jump's target are measured at their real height (they are only
-// estimated until the browser draws them), so the landing does not move once they are.
+// The blocks above a jump's target, and its own, are measured at their real height (they
+// are only estimated until the browser draws them), so the landing does not move once they
+// are, and its block reaches down to it.
 function listMeasureAbove(card){
   const all = [...document.querySelectorAll('#agenda .block')], at = all.indexOf(card.closest('.block'));
-  const above = all.slice(0, Math.max(0, at)).filter(b => !b._drawn && b.getClientRects().length);
+  const above = all.slice(0, Math.max(0, at + 1)).filter(b => !b._drawn && b.getClientRects().length);
   for (const b of above) b.style.contentVisibility = 'visible';
   const hs = above.map(cihOf);
   above.forEach((b, i) => { b.style.contentVisibility = ''; if (hs[i] > 0) b.style.setProperty('--cih', hs[i] + 'px'); });
