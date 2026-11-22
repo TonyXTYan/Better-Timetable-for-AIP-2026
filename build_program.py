@@ -1404,12 +1404,14 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .cards>.card{container:card / inline-size}
 @container card (min-width:1000px){
   .card>.card-head{display:grid;grid-template-columns:minmax(0,max-content) auto;justify-content:start;align-items:start;column-gap:12px;padding-right:19px}
-  .card>.card-head>.badge{grid-column:1}
+  .card>.card-head>.badge{grid-column:1;justify-self:start}
   .card>.card-head>h3{grid-column:1;max-width:60ch}
   .card>.card-head>.star{position:static;grid-column:2;grid-row:2;align-self:start;margin:-5px 0 -5px}
   .card .talks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,26rem),1fr));border-top:0}
   .card .talk{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line)}
   .card .talk:last-child{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
+  /* an opened talk takes the whole row, so its abstract reads at its usual measure */
+  .card .talk:has(>details[open]){grid-column:1/-1}
   .card.iv .meta{flex:0 1 auto}
   .card.iv .star{margin-left:0}
 }
