@@ -1081,27 +1081,49 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .dt-of{position:relative;font-weight:400;opacity:.85}
 .daytab.zero:not(.on){color:var(--muted);background:var(--surface-2)}
 .daytab.today:not(.on) .dt-wd{color:var(--na-text)}
-/* The count's words (renderTabs: .dt-u "sessions" or "items", .dt-tk the talks) show as the
-   strip's width allows: short of room only the number shows, the words kept for screen
-   readers; with room the unit; with more (two-row tabs) the talks on the date's line. The
-   widths are what the seven tabs take at their widest counts (the whole program's), at
-   every text size: rem for their text, px for their padding (the Archivo font takes
-   less). One-row tabs (the folded toolbar, a phone on
-   its side) never show the talks. */
+/* The count (renderTabs) shows as the strip's width allows, never as a bare number: with
+   room the full words (.dt-u "sessions" or "items"), and with more (two-row tabs) the talks
+   on the date's line (.dt-tk); with less, a short word (.dt-us "sess."); short of room for
+   that, no count at all (kept for screen readers, with its full words). The widths are
+   what the seven tabs take at their widest counts (the whole program's), at every text
+   size: rem for their text, px for their padding (the Archivo font takes less). One-row
+   tabs (the folded toolbar, a phone on its side) never show the talks. */
 .daytabs{container:dt / inline-size}
-.daytab :is(.dt-u,.dt-tk){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.daytab :is(.dt-count,.dt-u,.dt-tk){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.daytab .dt-us{display:none}
 .dt-tk{grid-area:tk;justify-self:end;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
 .dt-count{justify-self:end}
 @media (min-height:501px),(orientation:portrait){
-  @container dt (min-width:calc(40rem + 268px)){.sticky-wrap:not(.tb-compact) .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+  @container dt (min-width:calc(32rem + 264px)){
+    .sticky-wrap:not(.tb-compact) .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+    .sticky-wrap:not(.tb-compact) .daytab .dt-us{display:inline}
+  }
+  @container dt (min-width:calc(40rem + 268px)){
+    .sticky-wrap:not(.tb-compact) .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+    .sticky-wrap:not(.tb-compact) .daytab .dt-us{display:none}
+  }
   @container dt (min-width:calc(52rem + 260px)){
     .sticky-wrap:not(.tb-compact) .daytab{grid-template-areas:"wd n" "dm tk"}
     .sticky-wrap:not(.tb-compact) .daytab .dt-tk{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
   }
 }
-@container dt (min-width:calc(59.5rem + 284px)){.sticky-wrap.tb-compact .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+@container dt (min-width:calc(51rem + 284px)){
+  .sticky-wrap.tb-compact .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+  .sticky-wrap.tb-compact .daytab .dt-us{display:inline}
+}
+@container dt (min-width:calc(59.5rem + 284px)){
+  .sticky-wrap.tb-compact .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+  .sticky-wrap.tb-compact .daytab .dt-us{display:none}
+}
 @media (max-height:500px) and (orientation:landscape){
-  @container dt (min-width:calc(59.5rem + 284px)){.sticky-wrap .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+  @container dt (min-width:calc(51rem + 284px)){
+    .sticky-wrap .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+    .sticky-wrap .daytab .dt-us{display:inline}
+  }
+  @container dt (min-width:calc(59.5rem + 284px)){
+    .sticky-wrap .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+    .sticky-wrap .daytab .dt-us{display:none}
+  }
 }
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 0 10px}
 .searchbox{flex:1 1 220px;position:relative;min-width:0}
@@ -3886,9 +3908,10 @@ function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).
 function programTalkCounts(){ return DATA.days.map(d => d.slots.reduce((n, s) => n + (slotMatches(s) ? s.talks.filter(t => talkMatches(t, s)).length : 0), 0)); }
 // A tab's count says what it counts: the Full program's sessions (every session in the
 // program, breaks included, that the search and streams leave) and their talks; My
-// agenda's items (as its badge counts them). Short of room only the number shows (the
-// words stay for screen readers); with more the unit, then the talks on the date's line
-// (.dt-u, .dt-tk: which show is up to the strip's width, @container dt).
+// agenda's items (as its badge counts them). Never a bare number: short of room no count
+// shows (the words stay for screen readers); with a little more a short word (.dt-us),
+// then the unit (.dt-u), then the talks on the date's line (.dt-tk): which show is up to
+// the strip's width, @container dt.
 // totals (My agenda while its search or streams are on): the whole agenda's count a day,
 // so a tab reads "4/7" ("4/7 items"), 4 of the day's 7 items matching, beside the badge's 7.
 function renderTabs(counts, totals = null, talks = null){
@@ -3899,7 +3922,7 @@ function renderTabs(counts, totals = null, talks = null){
   const ti = todayIdx();
   const unit = talks ? 'session' : 'item', s = n => n === 1 ? '' : 's';
   const of = (n, t) => totals && t !== n ? `<span class="dt-of"><span aria-hidden="true">/</span><span class="visually-hidden"> of </span>${t}</span>` : '';
-  const count = (n, t, k) => `<span class="dt-count"><span class="visually-hidden">, </span>${n}${of(n, t)}<span class="dt-u"> ${unit}${s(t === undefined || t === null ? n : Math.max(n, t))}</span></span>`
+  const count = (n, t, k) => `<span class="dt-count"><span class="visually-hidden">, </span>${n}${of(n, t)}<span class="dt-u"> ${unit}${s(t === undefined || t === null ? n : Math.max(n, t))}</span><span class="dt-us" aria-hidden="true"> ${talks ? 'sess.' : unit + s(t === undefined || t === null ? n : Math.max(n, t))}</span></span>`
     + (k ? `<span class="dt-tk"><span class="visually-hidden">, </span>${k} talk${s(k)}</span>` : '');
   // a cell of the day ruler: the weekday (or the week's dates) small, the date large, the count
   const cell = (wd, dm) => `<span class="dt-wd">${wd}</span> <span class="dt-dm">${dm}</span>`;
