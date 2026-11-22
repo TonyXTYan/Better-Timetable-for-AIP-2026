@@ -5985,8 +5985,10 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // rect, its scroll box's rect (the part of it that shows) and its session's key. Near
 // the screen only, but for the keys in `keep` (the old state's, which may have moved
 // further): up to a screen and a half away. With `only` (a set of keys): those items
-// alone, looked up by their ids, and no grid marks or covers.
-function mxScan(aux, keep, only){
+// alone, looked up by their ids, and no grid marks or covers; with `any` as well, each
+// wherever it is, even scrolled out of its box or off the screen (and with `sel`, only
+// those matching it).
+function mxScan(aux, keep, only, any, sel){
   const vw = innerWidth, vh = innerHeight, mn = Math.max(240, vh * .5), mf = vh * 1.5;
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
@@ -6000,7 +6002,10 @@ function mxScan(aux, keep, only){
     const k = kind === 'item' ? sc : sc.parentNode;
     let r = boxes.get(k);
     if (!r){
-      const b = sc.getBoundingClientRect(), lab = kind === 'item' && sc.classList.contains('hz-vp') ? sc.querySelector('.hz-label') : null, lw = lab ? lab.offsetWidth : 0;
+      // (and the All week rows' day heads, stuck at the left of its scroller in Horizontal)
+      const b = sc.getBoundingClientRect(), hz = sc.classList.contains('hz-vp');
+      const lab = kind !== 'item' ? null : hz ? sc.querySelector('.hz-label') : sc.matches('.week-h .week-sc') ? sc.querySelector('.week-dayh') : null;
+      const lw = !lab ? 0 : hz ? lab.offsetWidth : Math.max(0, lab.getBoundingClientRect().right - b.left);
       boxes.set(k, r = lw ? { left: b.left + lw, right: b.right, top: b.top, bottom: b.bottom, width: b.width - lw, height: b.height } : b);
     }
     return r;
@@ -6019,11 +6024,12 @@ function mxScan(aux, keep, only){
     if (ghost && ghost.contains(el)) return;
     key = mxSafe(key);
     const m = keep && keep.has(key) ? mf : mn;
-    if (kind === 'item' && off(el, m)) return;
+    if (kind === 'item' && !any && off(el, m)) return;
     const r = el.getBoundingClientRect();
-    if (r.width < 2 || r.height < 2 || r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2) return;
+    if (r.width < 2 || r.height < 2) return;
+    if (!any && (r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2)) return;
     const c = box(el, kind);
-    if (c && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
+    if (c && !any && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
     const was = items.get(key);
     if (was && was.r.width * was.r.height >= r.width * r.height) return;
     const ps = kind === 'item' && !el.dataset.inSid && el.parentElement.closest('[data-sid]');
@@ -6033,7 +6039,7 @@ function mxScan(aux, keep, only){
   };
   if (only){
     for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
-      if (el.matches(MX_ITEM) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
+      if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
     return items;
   }
   const nth = new Map();
@@ -6145,6 +6151,18 @@ function mxBegin(kind, from, opts){
           const r = h.getBoundingClientRect();
           if (r.height && r.bottom > bar + 1 && r.top < bar + 64 && r.top < innerHeight) mxName(h, 'h-' + i++, 'mx-cover mx-head');
         }
+      }
+      // All week <-> a day: a session of the day whose bar or card (or week block) is not in
+      // sight in the new view (scrolled out of the day's side-scrolling canvas, or further
+      // down the page) still moves to it, wherever it is, clipped by its scroll box's edges
+      // as it goes in (clipKeys); taken anywhere else (with the day, as it grows out of its
+      // row), it would land where it has no bar
+      if (opts.band !== undefined && !pop){
+        const miss = new Set([...old.keys()].filter(key => !now.has(key)));
+        const sel = kind === 'dayout' ? `.week-col[data-day="${opts.band}"] .week-blk` : '.hz-bar, .hz-talk, .vt-card, .vt-tk';
+        // (more than two screens away it goes with the page instead: no capture that far)
+        if (miss.size) for (const [key, n] of mxScan(false, null, miss, true, sel))
+          if (n.r.bottom > -innerHeight * 2 && n.r.top < innerHeight * 3) now.set(key, n);
       }
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
@@ -6328,14 +6346,11 @@ function mxBegin(kind, from, opts){
           run(key, 'group', [box(o.r), box(o.r, 0)]);
           run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
         }
-        // All week <-> a day: an item with no place in the other view goes with the day as
-        // it grows out of its row or column (taken from there to the same place on the
-        // screen) or shrinks into it, fading
-        if (rect && o.kind === 'item'){
-          const vp = { left: 0, top: 0, width: innerWidth, height: innerHeight };
-          run(key, 'group', [box(o.r), box(kind === 'dayout' ? map(o.r, vp, rect) : map(o.r, rect, vp))]);
-          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MS * .6, easing: 'linear' });
-        }
+        // All week <-> a day: an item with no place in the other view (none at all, or too
+        // far away to move to) fades where it is, quickly: stretched with the day as it grows
+        // out of its row (a strip a few pixels high, in Horizontal, when the row is below
+        // the screen) it would fly across the screen to where it has no bar
+        if (rect && o.kind === 'item') run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MS * .4, easing: 'linear' });
       }
       for (const { key, n } of plan.added){
         run(key, 'group', [box(n.r, 0), box(n.r)]);
