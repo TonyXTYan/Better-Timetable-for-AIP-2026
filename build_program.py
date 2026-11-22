@@ -1310,21 +1310,17 @@ div.vt-card:hover,div.vt-card:has(:focus-visible){border-color:var(--c)}
 .block-time .bt{font-size:1.5rem;font-weight:700;font-stretch:75%;font-variant-numeric:tabular-nums;line-height:1.05;letter-spacing:0;color:var(--ink)}
 .block-time .bd{margin-top:3px;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(var(--pc,auto-fit),minmax(min(100%,330px),1fr));gap:0;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);overflow:clip}
-/* The list uses the page's full width, as the calendars do: a time slot's parallel sessions
-   spread into as many columns as fit, in rows as even as those allow (--pc, set by
-   plateFit: 12 sessions in room for 5 go 4+4+4, not 5+5+2). A plate of one or two
-   sessions (or a break) stops at --plate-max, about what the page's old content column
-   held, so a star stays near its text and lines keep a readable length; long text inside
-   keeps a narrower measure still. My agenda is all one column, so its title bar (Build
-   and Export, with the notes under it), its Now and Up next plate, each day (its
-   heading, with Open in program, and its rows) and the note shown when nothing is
-   saved or nothing matches stop there too, lined up with each other. The cap applies only
-   where it saves over 15% of the width: just short of that, a capped plate would read
-   as one out of line with the rest, not as a column of its own. */
-:root{--plate-max:72rem}
-.cards:is(.single,.ivs,[data-n="1"],[data-n="2"]),#builderList>:is(.up-next,.ag-day,.ag-empty),body:not(.wide-view) #builder>:is(.ag-bar,.clash-box,.export-status,.ics-note){max-width:calc(var(--plate-max) + max(0px,var(--plate-max) * 1.15 - 100%) * 10000)}
+/* The list uses the page's full width, as the calendars and the toolbar do: a time slot's
+   parallel sessions spread into as many columns as fit, in rows as even as those allow
+   (--pc, set by plateFit: 12 sessions in room for 5 go 4+4+4, not 5+5+2), and a plate of
+   one or two sessions (or a break) runs edge to edge too, so every plate ends where the
+   toolbar does. Text keeps a readable measure inside however wide the plate is. */
 .cards.single{grid-template-columns:minmax(0,1fr)}
-.cards.single .t-body .abstract,.cards.single .card .desc,.cards.single .card .ev-info{max-width:72ch}
+/* (a measure of 72ch, which in this type runs to over 90 letters a line; on a wide screen,
+   where the cells are wide enough to reach it, about 75: 58ch) */
+.t-body .abstract{max-width:72ch}
+.card .desc,.card .ev-info{max-width:72ch}
+@media (min-width:1200px){.t-body .abstract{max-width:58ch}.card .desc{max-width:calc(58ch + 38px)}.card .ev-info{max-width:62ch}}
 
 /* A cell: its hairlines are drawn over its neighbours to the left and above, so the plate's
    edge clips the outer ones and only the interior lines show, whatever the column count. */
@@ -1373,7 +1369,7 @@ details.talk-d summary::-webkit-details-marker{display:none}
 details.talk-d summary:hover .t-caret{color:var(--ink-2)}
 details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .t-body{padding:0 16px 14px calc(19px + 2.25rem + 10px);font-size:.9375rem;line-height:1.6;color:var(--ink-2)}
-.t-body .abstract{margin:0 0 10px;max-width:72ch;overflow-wrap:anywhere}
+.t-body .abstract{margin:0 0 10px;overflow-wrap:anywhere}
 .t-body .abstract.none{color:var(--muted);font-style:italic}
 .t-body .aff{font-style:italic}
 .t-body .tools{display:flex;gap:16px;align-items:center;font-size:.8125rem}
@@ -1400,6 +1396,23 @@ details.talk-d[open] .t-caret{transform:rotate(90deg)}
 .card.iv .meta .room{border-color:var(--hover-line);color:var(--muted)}
 .card.iv .star{position:static;order:3;margin-left:auto;margin-right:7px;width:32px;height:32px;min-width:0;min-height:0}
 .block.past .card.iv h3{color:var(--muted)}
+/* A session's cell as wide as a page of its own (a plate of one or two on a wide screen,
+   1000px and over: never on a phone or a small laptop): its talks side by side in columns
+   of about the width of a three-across cell, read across, so that a talk's star and
+   chevron stay by its text; and the session's own star by its title, not in a corner far
+   away from it. A break's row likewise keeps its star by its time. */
+.cards>.card{container:card / inline-size}
+@container card (min-width:1000px){
+  .card>.card-head{display:grid;grid-template-columns:minmax(0,max-content) auto;justify-content:start;align-items:start;column-gap:12px;padding-right:19px}
+  .card>.card-head>.badge{grid-column:1}
+  .card>.card-head>h3{grid-column:1;max-width:60ch}
+  .card>.card-head>.star{position:static;grid-column:2;grid-row:2;align-self:start;margin:-5px 0 -5px}
+  .card .talks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,26rem),1fr));border-top:0}
+  .card .talk{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line)}
+  .card .talk:last-child{border-bottom:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line),1px 0 0 var(--line)}
+  .card.iv .meta{flex:0 1 auto}
+  .card.iv .star{margin-left:0}
+}
 /* print: plain plates, no tints, no sodium (the page prints as a timetable) */
 @media print{
   .cards,.card,.ag-list,.ag-row,.talk.is-now,.ag-row.is-now,.ag-row.has-clash{background:none!important}
@@ -2237,7 +2250,9 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-t1::before{content:"to "}
 .ag-row.past .ag-t0{color:var(--muted)}
 .ag-row .ag-ended{margin-left:auto}
-.ag-main{flex:1;min-width:0;overflow-wrap:anywhere}
+/* (on a wide screen the row runs the page's width, as the program's plates do, and its
+   text stops at a readable measure, its buttons following it rather than a screen away) */
+.ag-main{flex:1;min-width:0;max-width:52rem;overflow-wrap:anywhere}
 .ag-title{display:block;font-size:1rem;font-weight:640;line-height:1.38;text-wrap:pretty}
 .ag-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:.8125rem;color:var(--muted);margin-top:5px}
 .ag-sub .ag-who{color:var(--ink-2);font-style:italic;font-weight:480}
@@ -2251,6 +2266,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 @media (min-width:861px){.ag-actions{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:340px;margin-top:-5px}}
 @media (min-width:1100px){.ag-actions{width:340px}}
+@media (min-width:1500px){.ag-actions{width:auto;max-width:none;flex-wrap:nowrap;justify-content:flex-start}}
 .ag-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:32px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-ctl);padding:0 10px;font-size:.8125rem;font-weight:650;color:var(--ink-2);white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
 .ag-btn:hover{background:var(--surface-2);border-color:var(--hover-line);color:var(--ink)}
 .ag-btn .ic{flex:none}
@@ -4120,15 +4136,19 @@ function blockEst(slots){
   // a column is counted in them and the height scaled back up)
   const phone = PHONE_MQ.matches, w = listPlateW(), z = remPx() / 16;
   if (slots.every(isInterval)) return Math.round((slots.length * (phone ? 58 : 38) + (phone ? 36 : 0)) * z);
-  // (its columns as plateFit sets them; a plate of one or two stops at --plate-max)
-  const cols = plateCols(slots.length, listCols()), pm = 72 * remPx();
-  const cw = (cols <= 2 && w > pm * 1.15 ? pm : w) / cols / z;
+  // (its columns as plateFit sets them; a cell 1000px wide or more sets its talks side by
+  // side, in columns of 26rem or more, as the CSS does)
+  const cols = plateCols(slots.length, listCols()), cw = w / cols / z;
+  const tc = cw * z >= 1000 ? Math.max(1, Math.floor(cw / 416)) : 1, tw = cw / tc;
   const lines = (n, px, room) => n ? Math.ceil(n * px / Math.max(60, room)) : 0;
+  const talkH = t => (phone ? 36 : 26) + 20.5 * lines(t.t.length, 8, tw - 90)
+    + 20 * lines(t.sp.reduce((n, p) => n + p.n.length + (p.a ? p.a.length + 5 : 2), 0), 7, tw - 90);
   const hs = slots.map(s => {
-    const head = 70 + 23 * lines(s.title.length, 9, cw - 70) + (s.info ? 100 : 0);
-    return s.talks.length ? head + 25 + s.talks.reduce((h, t) => h + (phone ? 36 : 26) + 20.5 * lines(t.t.length, 8, cw - 90)
-        + 20 * lines(t.sp.reduce((n, p) => n + p.n.length + (p.a ? p.a.length + 5 : 2), 0), 7, cw - 90), 0)
-      : head + (phone ? 50 : 30) + (s.conv && s.conv.length ? 22 : 0) + (s.desc ? 30 : 0);
+    const head = 70 + 23 * lines(s.title.length, 9, Math.min(cw - 70, tc > 1 ? 560 : 1e9)) + (s.info ? 100 : 0);
+    if (!s.talks.length) return head + (phone ? 50 : 30) + (s.conv && s.conv.length ? 22 : 0) + (s.desc ? 30 : 0);
+    let h = head + 25;
+    for (let i = 0; i < s.talks.length; i += tc) h += Math.max(...s.talks.slice(i, i + tc).map(talkH));
+    return h;
   });
   let h = phone ? 36 : 0;
   for (let i = 0; i < hs.length; i += cols) h += Math.max(...hs.slice(i, i + cols)) + (i ? 12 : 0);
@@ -4150,7 +4170,7 @@ const listCols = () => PHONE_MQ.matches ? 1 : Math.max(1, Math.floor(listPlateW(
 // k sessions in rows as even as room for m columns allows: 12 in room for 5 go 4+4+4,
 // 11 go 4+4+3, 7 go 4+3 (never fewer columns than that: no more rows than m would take)
 const plateCols = (k, m) => k <= m ? k : Math.ceil(k / Math.ceil(k / m));
-// A plate's sessions showing (data-n, which caps a plate of one or two) and its columns
+// A plate's sessions showing (data-n) and its columns
 // (--pc, where they are fewer than its auto-fit would make: otherwise left to that)
 function plateFit(cards, m = listCols()){
   if (cards.classList.contains('ivs')) return;
