@@ -835,46 +835,48 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .dt-of{position:relative;font-weight:400;opacity:.85}
 .daytab.zero:not(.on){color:var(--muted);background:var(--surface-2)}
 .daytab.today:not(.on) .dt-wd{color:var(--na-text)}
-/* The count (renderTabs) shows as the strip's width allows, never as a bare number: with
-   room the full words (.dt-u "sessions" or "items"), and with more (two-row tabs) the talks
-   on the date's line (.dt-tk); with less, a short word (.dt-us "sess."); short of room for
-   that, no count at all (kept for screen readers, with its full words). The widths are
-   what the seven tabs take at their widest counts (the whole program's), at every text
-   size: rem for their text, px for their padding (the Archivo font takes less). One-row
-   tabs (the folded toolbar, a phone on its side) never show the talks. */
+/* The count (renderTabs) shows as the strip's width allows, and the sessions never without
+   the talks, nor ever a bare number: with room the full words (.dt-u "sessions" or
+   "items") and the talks (.dt-tk: on the date's line in two-row tabs, after the count in
+   one-row tabs: the folded toolbar, a phone on its side); with less, a short word for the
+   sessions (.dt-us "sess.") and the talks; short of room for that, no count at all (kept
+   for screen readers, with its full words). The widths are what the seven tabs take at
+   their widest counts (the whole program's, All week's the widest), at every text size:
+   rem for their text, px for their padding (the Archivo font takes less). */
 .daytabs{container:dt / inline-size}
 .daytab :is(.dt-count,.dt-u,.dt-tk){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .daytab .dt-us{display:none}
 .dt-tk{grid-area:tk;justify-self:end;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
 .dt-count{justify-self:end}
 @media (min-height:501px),(orientation:portrait){
-  @container dt (min-width:calc(32rem + 264px)){
-    .sticky-wrap:not(.tb-compact) .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+  @container dt (min-width:calc(44.8rem + 256px)){
+    .sticky-wrap:not(.tb-compact) .daytab{grid-template-areas:"wd n" "dm tk"}
+    .sticky-wrap:not(.tb-compact) .daytab :is(.dt-count,.dt-tk){position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
     .sticky-wrap:not(.tb-compact) .daytab .dt-us{display:inline}
   }
-  @container dt (min-width:calc(40rem + 268px)){
+  @container dt (min-width:calc(52.1rem + 258px)){
     .sticky-wrap:not(.tb-compact) .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
     .sticky-wrap:not(.tb-compact) .daytab .dt-us{display:none}
   }
-  @container dt (min-width:calc(52rem + 260px)){
-    .sticky-wrap:not(.tb-compact) .daytab{grid-template-areas:"wd n" "dm tk"}
-    .sticky-wrap:not(.tb-compact) .daytab .dt-tk{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
-  }
 }
-@container dt (min-width:calc(51rem + 284px)){
-  .sticky-wrap.tb-compact .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+@container dt (min-width:calc(73.2rem + 324px)){
+  .sticky-wrap.tb-compact .daytab{grid-template-areas:"wd dm n tk";grid-template-columns:auto auto auto auto}
+  .sticky-wrap.tb-compact .daytab :is(.dt-count,.dt-tk){position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
   .sticky-wrap.tb-compact .daytab .dt-us{display:inline}
+  .sticky-wrap.tb-compact .daytab .dt-tk::before{content:"\00b7\00a0" / ""}
 }
-@container dt (min-width:calc(59.5rem + 284px)){
+@container dt (min-width:calc(81.8rem + 326px)){
   .sticky-wrap.tb-compact .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
   .sticky-wrap.tb-compact .daytab .dt-us{display:none}
 }
 @media (max-height:500px) and (orientation:landscape){
-  @container dt (min-width:calc(51rem + 284px)){
-    .sticky-wrap .daytab .dt-count{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+  @container dt (min-width:calc(73.2rem + 324px)){
+    .sticky-wrap .daytab{grid-template-areas:"wd dm n tk";grid-template-columns:auto auto auto auto}
+    .sticky-wrap .daytab :is(.dt-count,.dt-tk){position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
     .sticky-wrap .daytab .dt-us{display:inline}
+    .sticky-wrap .daytab .dt-tk::before{content:"\00b7\00a0" / ""}
   }
-  @container dt (min-width:calc(59.5rem + 284px)){
+  @container dt (min-width:calc(81.8rem + 326px)){
     .sticky-wrap .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
     .sticky-wrap .daytab .dt-us{display:none}
   }
@@ -3662,10 +3664,10 @@ function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).
 function programTalkCounts(){ return DATA.days.map(d => d.slots.reduce((n, s) => n + (slotMatches(s) ? s.talks.filter(t => talkMatches(t, s)).length : 0), 0)); }
 // A tab's count says what it counts: the Full program's sessions (every session in the
 // program, breaks included, that the search and streams leave) and their talks; My
-// agenda's items (as its badge counts them). Never a bare number: short of room no count
-// shows (the words stay for screen readers); with a little more a short word (.dt-us),
-// then the unit (.dt-u), then the talks on the date's line (.dt-tk): which show is up to
-// the strip's width, @container dt.
+// agenda's items (as its badge counts them). Never a bare number, nor the sessions without the
+// talks: short of room no count shows (the words stay for screen readers); with more a
+// short word (.dt-us) and the talks (.dt-tk), then the full unit (.dt-u): which show is
+// up to the strip's width, @container dt.
 // totals (My agenda while its search or streams are on): the whole agenda's count a day,
 // so a tab reads "4/7" ("4/7 items"), 4 of the day's 7 items matching, beside the badge's 7.
 function renderTabs(counts, totals = null, talks = null){
