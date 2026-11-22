@@ -298,7 +298,10 @@ VIVID_DARK_TOKENS = """\
   --business-bg:#303237; --social-bg:#353331;
   --now-bg:#3a2a14; --na-bg:#3a2a14; --today-bg:#3a2a14;
   --tint-muted:var(--muted);
-  --tag-l:.48; --tag-k:1.4;"""
+  --tag-l:.48; --tag-k:1.4;
+  --cx-line:#121316; --cx-ring:var(--cx); --cx-axis:var(--cx); --cx-plate-ink:#121316; --cx-plate-line:var(--cx); --cx-plate-muted:#40454d;
+  --cx-wash:color-mix(in srgb,var(--cx) 16%,transparent); --cx-wash-edge:color-mix(in srgb,var(--cx) 60%,transparent);
+  --cx-card-bg:var(--clash-bg); --cx-card-ring:var(--cx); --clash-row-bg:#1e2024;"""
 
 def font_faces(root):
     """@font-face rules for the Archivo subsets in fonts/ (made by fonts/make_fonts.py), as
@@ -443,6 +446,13 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
   --social-bg:color-mix(in srgb,var(--social) 12%,var(--card));
   --now-bg:#ffeedd; --na-bg:#ffeedd; --today-bg:#ffeedd;
   --tint-muted:#4c525b;
+  /* a clash: hazard yellow (OKLCH h 101), far from the sodium amber of "now" (h 58 to 76) and
+     from every stream; ink fringes on it, so the mark holds contrast on white */
+  --cx:#ffe600; --cx-gap:var(--cx); --cx-line:#16181c; --cx-ring:#16181c; --cx-axis:#16181c;
+  --cx-plate-bg:var(--cx); --cx-plate-ink:#16181c; --cx-plate-line:#16181c; --cx-plate-muted:#40454d; --cx-plate-hover:#fff27a;
+  --cx-hatch:var(--cx); --cx-wash:color-mix(in srgb,var(--cx) 34%,transparent); --cx-map:color-mix(in srgb,var(--cx) 85%,transparent);
+  --cx-card-bg:color-mix(in srgb,var(--cx) 24%,var(--card)); --cx-card-ring:#16181c; --cx-box-top:4px solid var(--cx);
+  --clash-row-bg:color-mix(in srgb,var(--cx) 16%,var(--card));
   /* a stream tag's fill, from its line colour in OKLCH: in light the line colour itself */
   --tag-l:l; --tag-k:1;
 }
@@ -543,7 +553,8 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .sp-legend li.sp-hot{background:var(--surface-3)}
 /* the neutrals and now follow the streams, a little apart */
 .sp-legend li[data-k="plenary"],.sp-legend li[data-k="greys"]{margin-top:6px}
-.sp-legend .sp-now{grid-column:1/-1}
+.sp-legend .sp-now,.sp-legend .sp-cx{grid-column:1/-1}
+.sp-legend li>i.cx-fr{width:6px;margin:0;border-radius:0;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px)}
 :root[data-colour="vivid"] .sp-legend li:not(.sp-now){background:var(--cbg)}
 :root[data-colour="vivid"] .sp-legend{gap:4px 6px}
 :root[data-colour="vivid"] .sp-legend li.sp-hot:not(.sp-now){box-shadow:inset 0 0 0 1px var(--c)}
@@ -1552,15 +1563,15 @@ footer .colophon p{font-size:.8125rem}
   #builder .builder-actions .ag-opt{flex:1 1 100%}
 }
 /* Clashes are drawn as interference fringes: a small plate of fine parallel ink lines */
-.cx-fr{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;border-radius:1px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
-.ag-clash-ind{display:inline-flex;align-items:center;gap:6px;min-height:32px;border:1px solid var(--clash-line);background:var(--clash-bg);color:var(--clash-ink);border-radius:var(--r-ctl);padding:0 8px 0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+.cx-fr{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px)}
+.ag-clash-ind{display:inline-flex;align-items:center;gap:6px;min-height:32px;border:1px solid var(--cx-plate-line,var(--clash-line));background:var(--cx-plate-bg,var(--clash-bg));color:var(--cx-plate-ink,var(--clash-ink));border-radius:var(--r-ctl);padding:0 8px 0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
 .ag-clash-ind>span{display:inline-flex;align-items:center}
 .ag-clash-ind .cx-fr{margin-right:7px}
 .ag-clash-ind:hover{border-color:var(--ink-2)}
-.ag-clash-ind[aria-expanded="true"]{background:var(--card);border-color:var(--ink)}
-.ag-clash-ind.quiet{border-color:var(--line);background:var(--card);color:var(--ink-2);font-weight:600}
-.ag-clash-ind .cx-wk{font-weight:500;color:var(--muted);white-space:pre}
-.ag-clash-ind .caret{flex:none;color:var(--ink-2);transition:transform var(--dur-s) var(--ease-em)}
+.ag-clash-ind[aria-expanded="true"]{background:var(--cx-plate-bg,var(--card));border-color:var(--ink)}
+.ag-clash-ind.quiet{--cx-plate-muted:initial;border-color:var(--line);background:var(--card);color:var(--ink-2);font-weight:600}
+.ag-clash-ind .cx-wk{font-weight:500;color:var(--cx-plate-muted,var(--muted));white-space:pre}
+.ag-clash-ind .caret{flex:none;color:var(--cx-plate-muted,var(--ink-2));transition:transform var(--dur-s) var(--ease-em)}
 .ag-clash-ind[aria-expanded="true"] .caret{transform:rotate(180deg)}
 .ag-ok{color:var(--ok-ink);font-size:.8125rem;font-weight:650}
 .ag-warn{color:var(--warn-ink);font-weight:700}
@@ -1592,7 +1603,7 @@ html:has(dialog[open]) .undo-bar{display:none}
 .undo-bar .toggle:hover{background:transparent;filter:none;box-shadow:inset 0 0 0 1px var(--toast-ink)}
 .undo-bar #undoBtn:hover{background:var(--toast-ink);opacity:.88}
 #undoDismiss{padding:5px 10px;border-color:transparent}
-.clash-box{margin:12px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:6px 16px 8px}
+.clash-box{margin:12px 0 0;background:var(--card);border:1px solid var(--line);border-top:var(--cx-box-top,1px solid var(--line));border-radius:var(--r-plate);padding:6px 16px 8px}
 .clash-box-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:6px 0}
 .clash-box-head h3{margin:0;font-size:1.125rem;font-weight:700;color:var(--clash-ink)}
 .clash-box-head .cp-count{margin-left:8px;font-size:.8125rem;font-weight:500;color:var(--muted)}
@@ -2012,8 +2023,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .ag-key .ak-note{color:var(--muted)}
 .ak-sw{display:inline-block;flex:none;width:1.5rem;height:.875rem;border-radius:3px;box-sizing:border-box;position:relative;overflow:hidden}
 .ak-dim{border:1px dashed var(--ink-2)}
-.ak-cx{outline:2px solid var(--warn-ink);outline-offset:-2px;background:var(--surface-2)}
-.ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
+.ak-cx{outline:2px solid var(--cx-ring,var(--warn-ink));outline-offset:-2px;background:var(--surface-2)}
+.ak-cx::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px)}
 .vt-agenda .ag-key{margin-top:-4px}
 /* the key as a popover from a Key button (phones and short landscape screens) */
 .dv-keyb{display:none;align-items:center;justify-content:center;flex:none;min-height:28px;padding:0 8px;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);color:var(--ink);font:inherit;font-size:.75rem;font-weight:650;line-height:1;cursor:pointer}
@@ -2064,8 +2075,8 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* (the mic: an outline, a 1.5px stroke like the rest of the icon set: capsule, arc, stem and base) */
 :root{--mic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 17' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Crect x='3.75' y='.75' width='4.5' height='9.5' rx='2.25'/%3E%3Cpath d='M1.25 7.75a4.75 4.75 0 0 0 9.5 0M6 12.5v3.5M3.5 16.25h5'/%3E%3C/svg%3E")}
 /* a clash: interference fringes (fine ink lines) along the top edge, as in the list, and a fine ink ring */
-.has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);box-shadow:inset 0 1px 0 var(--warn-ink)}
-.hz-bar.has-clash,.vt-card.has-clash{outline:1.5px solid var(--warn-ink);outline-offset:1px}
+.has-clash>.cx-band,.hz-bar.has-clash::after,.vt-card.has-clash::after{content:"";position:absolute;z-index:3;left:0;right:0;top:0;height:5px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px);box-shadow:inset 0 1px 0 var(--cx-line,var(--warn-ink))}
+.hz-bar.has-clash,.vt-card.has-clash{outline:1.5px solid var(--cx-ring,var(--warn-ink));outline-offset:1px}
 .vt-card{position:relative}
 .vt-card.has-clash .vt-hd{padding-top:3px}
 .hz-agenda .hz-bar{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 50%,var(--line));border-left-color:var(--c);border-radius:5px}
@@ -2113,13 +2124,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .hz-label small.hz-lcx{color:var(--warn-ink)}
 .hz-inl{display:block;font-size:.6875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* the clash's span on the time axis: a hatched strip under the tick labels (never over them) */
-.hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--warn-ink);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 22%,transparent) 0 4px,transparent 4px 9px);pointer-events:auto}
-.hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--warn-ink) 9%,transparent) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent),inset -1px 0 0 color-mix(in srgb,var(--warn-ink) 45%,transparent)}
-.hz-mcx{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--warn-ink) 30%,transparent)}
+.hz-cx{position:absolute;bottom:0;height:.5rem;box-sizing:border-box;border-bottom:3px solid var(--cx-axis,var(--warn-ink));background:repeating-linear-gradient(135deg,var(--cx-hatch,color-mix(in srgb,var(--warn-ink) 22%,transparent)) 0 4px,transparent 4px 9px);pointer-events:auto}
+.hz-lines i.cx{border-left:0;background:repeating-linear-gradient(135deg,var(--cx-wash,color-mix(in srgb,var(--warn-ink) 9%,transparent)) 0 6px,transparent 6px 14px);box-shadow:inset 1px 0 0 var(--cx-wash-edge,color-mix(in srgb,var(--warn-ink) 45%,transparent)),inset -1px 0 0 var(--cx-wash-edge,color-mix(in srgb,var(--warn-ink) 45%,transparent))}
+.hz-mcx{position:absolute;top:0;bottom:0;background:var(--cx-map,color-mix(in srgb,var(--warn-ink) 30%,transparent))}
 /* (the fringe in the calendars' labels, bars and tags: 10px by .75rem, a little closer to its words) */
 :is(.hz-cxb,.hz-lcx,.vt-cx,.vt-hcx) .cx-fr{width:10px;height:.75rem;margin-right:4px;vertical-align:-.0625rem}
 .hz-cxb .cx-fr{vertical-align:-.125rem}
-.vt-cx{display:inline-flex;align-items:center;flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--clash-line);border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
+.vt-cx{display:inline-flex;align-items:center;flex:0 0 auto;font-size:.6875rem;font-weight:720;color:var(--cx-plate-ink,var(--clash-ink));background:var(--cx-plate-bg,var(--clash-bg));border:1px solid var(--cx-plate-line,var(--clash-line));border-radius:var(--r-tag);padding:0 5px;white-space:nowrap}
 .vt-agenda .vt-card{--body:color-mix(in srgb,var(--cbg) 36%,var(--card));background:var(--body);border-color:color-mix(in srgb,var(--c) 40%,var(--line));border-left-color:var(--c)}
 .vt-agenda .vt-card .vt-hd{background:var(--cbg);border-radius:4px 4px 0 0}
 .vt-agenda .vt-card.open .vt-hd{border-bottom:1px solid color-mix(in srgb,var(--c) 35%,transparent);margin-bottom:3px}
@@ -2159,13 +2170,13 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .week-v .week-tk{left:calc((var(--l) + var(--w)) * 1% - var(--tkw));width:calc(var(--tkw) - 1px);top:calc((var(--a) + var(--h) * var(--ta) / 100) * 1%);height:calc(var(--h) * var(--tw) / 100 * 1%);min-height:12px}
 .week-h .week-tk{top:calc(var(--bs) + (100% - var(--bs)) * (var(--l) + var(--w)) / 100 - 13px);height:11px;left:calc(var(--a) * 1% + 1px + (var(--h) * 1% - 2px) * var(--ta) / 100);width:calc((var(--h) * 1% - 2px) * var(--tw) / 100);min-width:12px}
 .week-h .week-tk::before{top:0;height:calc(100% - 1px)}
-.week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--warn-ink)}
-.week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px)}
+.week-blk.has-clash{box-shadow:inset 0 0 0 2px var(--cx-ring,var(--warn-ink))}
+.week-blk.has-clash::after,.week-legend .week-lcx i::after{content:"";position:absolute;left:0;right:0;top:0;height:4px;pointer-events:none;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px)}
 /* a clash's stripe keeps clear of the label (weekFit counts the extra 2px) */
 .week-blk.has-clash span,.week-blk.has-clash.week-ab::before{padding-top:4px}
 .week-blk.has-clash.week-up::before{padding-top:6px}
 .week-legend i{position:relative;overflow:hidden}
-.week-legend .week-lcx i{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--warn-ink)}
+.week-legend .week-lcx i{background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--cx-ring,var(--warn-ink))}
 .week-legend .wk-k i{background:var(--ink-2)}
 .week-legend .wk-kt i{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .week-legend .wk-kg i{background:var(--surface-3);box-shadow:none;border:1.5px dashed var(--ink-2);box-sizing:border-box}
@@ -2253,7 +2264,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
    clash adds ink fringes beside the stream line, keeping the stream colours */
 /* a clash: fringes (fine ink lines) beside the stream line, on the clash ground */
 .ag-row.has-clash{background:var(--clash-row-bg)}
-.ag-row.has-clash::after{content:"";position:absolute;left:5px;top:0;bottom:0;width:7px;background:repeating-linear-gradient(90deg,var(--warn-ink) 0 1px,transparent 1px 3px);pointer-events:none}
+.ag-row.has-clash::after{content:"";position:absolute;left:5px;top:0;bottom:0;width:7px;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px);pointer-events:none}
 /* An item that has ended keeps readable text and working buttons: only its stream stripe
    turns grey and an "Ended" label shows by the time */
 .ag-row.past::before{background:repeating-linear-gradient(180deg,var(--faint) 0 6px,transparent 6px 10px)}
@@ -2355,16 +2366,16 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-tick.has{width:3px;height:8px;border-radius:1px;background:var(--star)}
 .bd-tick.day.has{height:9px}
 /* a slot where saved items overlap (bdClashes): a small fringe mark under the track, wider than a saved slot's bar */
-.bd-tick.has.cx{width:9px;height:9px;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-mark,var(--warn-ink)) 0 1px,transparent 1px 3px)}
-.bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--ink-2);border-radius:var(--r-seg);background:var(--clash-bg);color:var(--clash-ink);font-size:.75rem;font-weight:700;white-space:nowrap}
-button.bd-cxkey:hover{border-color:var(--ink);background:var(--surface-3)}
-.bd-cxn{display:inline-flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--ink-2)}
+.bd-tick.has.cx{width:9px;height:9px;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-line,var(--cx-mark,var(--warn-ink))) 0 1px,var(--cx-gap,transparent) 1px 3px)}
+.bd-cxkey{display:inline-flex;align-items:center;gap:6px;margin-left:auto;min-height:28px;padding:2px 10px;border:1px solid var(--cx-plate-line,var(--ink-2));border-radius:var(--r-seg);background:var(--cx-plate-bg,var(--clash-bg));color:var(--cx-plate-ink,var(--clash-ink));font-size:.75rem;font-weight:700;white-space:nowrap}
+button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,var(--surface-3))}
+.bd-cxn{display:inline-flex;align-items:center;gap:2px;padding-left:8px;border-left:1px solid var(--cx-plate-muted,var(--ink-2))}
 .bd-cxn svg{flex:none;width:12px;height:12px}
 .bd-cxkey[hidden],.bd-cxnote[hidden],.bd-cxp[hidden]{display:none}
 .bd-cxnote{flex:1 1 100%;margin:4px 0 0;font-size:.75rem;color:var(--clash-ink);font-weight:600}
-.bd-card.cx,.bd-card.on.cx{background-color:var(--clash-bg);background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 6%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--ink),-1px 0 0 var(--line),0 -1px 0 var(--line)}
+.bd-card.cx,.bd-card.on.cx{background-color:var(--cx-card-bg,var(--clash-bg));background-image:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink) 6%,transparent) 5px 6px);box-shadow:inset 0 0 0 2px var(--cx-card-ring,var(--ink)),-1px 0 0 var(--line),0 -1px 0 var(--line)}
 .bd-cxp .cx-fr,.bd-cxkey .cx-fr{margin-right:0}
-.bd-cxp{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:750;color:var(--clash-ink);background:var(--clash-bg);border:1px solid var(--ink-2);border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
+.bd-cxp{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;font-weight:750;color:var(--cx-plate-ink,var(--clash-ink));background:var(--cx-plate-bg,var(--clash-bg));border:1px solid var(--cx-plate-line,var(--ink-2));border-radius:var(--r-tag);padding:0 6px;white-space:nowrap}
 .bd-days{height:22px}
 .bd-day{position:absolute;top:0;border:0;background:none;padding:1px 3px;border-radius:var(--r-seg);font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--ink);white-space:nowrap;line-height:1.5}
 .bd-day:hover{background:var(--surface-3)}
@@ -3108,6 +3119,8 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
   .sp-scale i,.sp-scale::after,.sp-legend li>i,.na-glyph,.na-glyph::before,.na-glyph::after,.hz-nowl,.hz-nowl::before,.hz-nowl::after,.vt-nowl,.vt-nowl::before,.vt-nowl::after,.week-now,.week-now::before,.week-now::after,#nowBtn::before,.hz-pre button[data-hzgo="now"]::before,.talk.is-now::before,.talk.is-now::after,.card::before,.ag-row::before,.badge::before,.chip .dot,.chip-wrap .dot{forced-color-adjust:none}
   .week-blk{border:1px solid CanvasText}
   ::placeholder{color:GrayText}
+  /* (the weight of the Vivid dark blocks, which come earlier) */
+  :root[data-colour="vivid"]:is([data-theme],:not([data-theme])){--cx:CanvasText; --cx-gap:transparent; --cx-line:CanvasText; --cx-ring:CanvasText; --cx-axis:CanvasText; --cx-plate-bg:Canvas; --cx-plate-ink:CanvasText; --cx-plate-line:CanvasText; --cx-plate-muted:CanvasText; --cx-plate-hover:Canvas; --cx-hatch:transparent; --cx-wash:transparent; --cx-wash-edge:CanvasText; --cx-card-bg:Canvas; --cx-card-ring:CanvasText; --cx-box-top:1px solid CanvasText; --clash-row-bg:Canvas}
 }
 /* Dialogs take the same ink ring when focus lands on the dialog itself. */
 dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
@@ -3447,7 +3460,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       <h3 id="spKeyTitle">Colour key</h3>
       <p class="sp-intro">Each stream takes its colour from a real spectral line, set here at its wavelength. Point at the scale or tap it to name a line.</p>
       <div class="spectral" aria-hidden="true"><div class="sp-scale"><div class="sp-tip" hidden><b></b><span></span></div><i style="--nm:410.2;--c:var(--poster)" data-k="poster" data-n="Posters" data-d="Hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" data-k="commad" data-n="COMMAD" data-d="InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" data-k="special" data-n="Forums &amp; Special Events" data-d="Ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" data-k="aip" data-n="AIP Sessions" data-d="Hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" data-k="focus" data-n="Focus Sessions" data-d="Mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" data-k="edu" data-n="Education &amp; PEG" data-d="Mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" data-k="anzcop" data-n="ANZCOP" data-d="Helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" data-k="events" data-n="Congress events" data-d="Hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" data-k="now" data-n="Now" data-d="Sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
-      <ul class="sp-legend"><li data-k="poster" style="--c:var(--poster);--cbg:var(--poster-bg)"><i aria-hidden="true"></i><b>Posters</b><span>Hydrogen H&#948;, 410.2&nbsp;nm</span></li><li data-k="commad" style="--c:var(--commad);--cbg:var(--commad-bg)"><i aria-hidden="true"></i><b>COMMAD</b><span>InGaN blue LED, 455&nbsp;nm</span></li><li data-k="special" style="--c:var(--special);--cbg:var(--special-bg)"><i aria-hidden="true"></i><b>Forums &amp; Special Events</b><span>Ytterbium-ion clock, 467&nbsp;nm</span></li><li data-k="aip" style="--c:var(--aip);--cbg:var(--aip-bg)"><i aria-hidden="true"></i><b>AIP Sessions</b><span>Hydrogen H&#946;, 486.1&nbsp;nm</span></li><li data-k="focus" style="--c:var(--focus);--cbg:var(--focus-bg)"><i aria-hidden="true"></i><b>Focus Sessions</b><span>Mercury e-line, 546.1&nbsp;nm</span></li><li data-k="edu" style="--c:var(--edu);--cbg:var(--edu-bg)"><i aria-hidden="true"></i><b>Education &amp; PEG</b><span>Mercury yellow pair, 577 and 579&nbsp;nm</span></li><li data-k="anzcop" style="--c:var(--anzcop);--cbg:var(--anzcop-bg)"><i aria-hidden="true"></i><b>ANZCOP</b><span>Helium&#8211;neon laser, 632.8&nbsp;nm</span></li><li data-k="events" style="--c:var(--events);--cbg:var(--events-bg)"><i aria-hidden="true"></i><b>Congress events</b><span>Hydrogen lamp, H&#945; 656.3&nbsp;nm</span></li><li data-k="plenary" class="sp-x" style="--c:var(--plenary);--cbg:var(--plenary-bg)"><i aria-hidden="true"></i><b>Plenary &amp; Welcome</b><span>White light, every line at once</span></li><li data-k="greys" class="sp-x sp-grey" style="--c:var(--social);--cbg:var(--social-bg)"><i aria-hidden="true"></i><b>Meals and meetings</b><span>Neutral greys</span></li><li data-k="now" class="sp-x sp-now"><span class="na-glyph" aria-hidden="true"></span><b>Now</b><span>Sodium D doublet, 589.0 and 589.6&nbsp;nm</span></li></ul>
+      <ul class="sp-legend"><li data-k="poster" style="--c:var(--poster);--cbg:var(--poster-bg)"><i aria-hidden="true"></i><b>Posters</b><span>Hydrogen H&#948;, 410.2&nbsp;nm</span></li><li data-k="commad" style="--c:var(--commad);--cbg:var(--commad-bg)"><i aria-hidden="true"></i><b>COMMAD</b><span>InGaN blue LED, 455&nbsp;nm</span></li><li data-k="special" style="--c:var(--special);--cbg:var(--special-bg)"><i aria-hidden="true"></i><b>Forums &amp; Special Events</b><span>Ytterbium-ion clock, 467&nbsp;nm</span></li><li data-k="aip" style="--c:var(--aip);--cbg:var(--aip-bg)"><i aria-hidden="true"></i><b>AIP Sessions</b><span>Hydrogen H&#946;, 486.1&nbsp;nm</span></li><li data-k="focus" style="--c:var(--focus);--cbg:var(--focus-bg)"><i aria-hidden="true"></i><b>Focus Sessions</b><span>Mercury e-line, 546.1&nbsp;nm</span></li><li data-k="edu" style="--c:var(--edu);--cbg:var(--edu-bg)"><i aria-hidden="true"></i><b>Education &amp; PEG</b><span>Mercury yellow pair, 577 and 579&nbsp;nm</span></li><li data-k="anzcop" style="--c:var(--anzcop);--cbg:var(--anzcop-bg)"><i aria-hidden="true"></i><b>ANZCOP</b><span>Helium&#8211;neon laser, 632.8&nbsp;nm</span></li><li data-k="events" style="--c:var(--events);--cbg:var(--events-bg)"><i aria-hidden="true"></i><b>Congress events</b><span>Hydrogen lamp, H&#945; 656.3&nbsp;nm</span></li><li data-k="plenary" class="sp-x" style="--c:var(--plenary);--cbg:var(--plenary-bg)"><i aria-hidden="true"></i><b>Plenary &amp; Welcome</b><span>White light, every line at once</span></li><li data-k="greys" class="sp-x sp-grey" style="--c:var(--social);--cbg:var(--social-bg)"><i aria-hidden="true"></i><b>Meals and meetings</b><span>Neutral greys</span></li><li data-k="now" class="sp-x sp-now"><span class="na-glyph" aria-hidden="true"></span><b>Now</b><span>Sodium D doublet, 589.0 and 589.6&nbsp;nm</span></li><li data-k="clash" class="sp-x sp-cx" style="--cbg:transparent"><i class="cx-fr" aria-hidden="true"></i><b>Clash</b><span>Saved items that overlap: fine fringes, on hazard yellow in Vivid</span></li></ul>
     </section>
     <button type="button" class="dd-switch" id="dsContrast" aria-pressed="false"><span><b>High-contrast text</b><small>Stronger text and lines, in both themes</small></span><span class="sw-track" aria-hidden="true"></span></button>
     <button type="button" class="dd-switch" id="dsMotion" aria-pressed="false"><span><b>Reduce motion</b><small id="dsMotionNote">Follows your device setting</small></span><span class="sw-track" aria-hidden="true"></span></button>
