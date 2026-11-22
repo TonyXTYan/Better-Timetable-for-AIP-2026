@@ -1654,7 +1654,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 #vtPop[hidden]{display:none}
 #vtPop .vt-title,#vtPop .vt-ttl{display:block;-webkit-line-clamp:none;overflow:visible}
 #vtPop .vt-tsp{white-space:normal}
-#vtPop .vt-pfoot{color:var(--bar-meta)}
+#vtPop .vt-conv{display:block;-webkit-line-clamp:none;overflow:visible}
 @media print{#vtPop,.sx-more,.sx-fade,.vt-nowl,.vt-nowd{display:none!important}.vt-grid .vt-card.now-in{background-image:none}.vt-card.is-now .vt-time::before{display:none}}
 .vt-wrap .vt-grid{margin:0}
 /* sideways only: vertical scrolling stays with the page */
@@ -1673,7 +1673,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 :root[data-contrast="high"] .vt-list .vt-card.is-now{border-left-color:transparent}
 .vt-card.sub{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);row-gap:0}
 .vt-hd{grid-row:1;display:flex;flex-direction:column;min-width:0}
-.vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 3px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
+.vt-open{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:5px 7px 4px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;border-radius:inherit}
 .vt-open:hover,.vt-tk:hover{outline:2px solid var(--c);outline-offset:-1px}
 .vt-open:focus-visible,.vt-tk:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 /* the time stays on one line; the stream badge keeps its full short code and moves
@@ -1685,20 +1685,16 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-grid .vt-card:not([data-col="phys"]):not([data-col="mine"]):not(.band) .vt-badge{display:none}
 .vt-grid .vt-card[data-col="phys"]:not(.band) .vt-badge{flex-basis:100%}
 .vt-title{font-weight:650;font-size:.8125rem;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
-.vt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 6px;padding:0 7px 4px;color:var(--bar-meta);font-size:.75rem;line-height:1.3;min-height:1.1rem}
+.vt-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:3px 6px;margin-top:1px;color:var(--bar-meta);font-size:.75rem;line-height:1.3;min-height:1.1rem}
 .vt-conv{flex:1 1 5.5rem;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-style:italic;font-weight:480}
 .vt-conv.rm{font-style:normal;font-weight:520}
-.vt-count{flex:0 0 auto;white-space:nowrap}
-.vt-tog{flex:0 0 auto;margin-left:auto;display:inline-flex;align-items:center;gap:5px;min-height:28px;background:var(--card);border:1px solid var(--line);padding:0 8px;font:inherit;font-weight:650;color:var(--bar-ink);cursor:pointer;border-radius:5px;white-space:nowrap;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-@media (pointer:coarse){.vt-tog{min-height:40px;padding:0 12px}.vt-go,.vt-picker button,.dv-keyb{min-height:40px}}
-.vt-tog:hover{border-color:var(--ink)}
-.vt-tog:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-/* a closed card's footer (convener, "N talks") sits at its bottom, so the buttons of
+/* "N talks" reads as the card's text, a little firmer than the convener beside it */
+.vt-count{flex:0 0 auto;margin-left:auto;white-space:nowrap;font-weight:620;font-variant-numeric:tabular-nums}
+@media (pointer:coarse){.vt-go,.vt-picker button,.dv-keyb{min-height:40px}}
+/* a closed card's footer (convener, "N talks") sits at its bottom, so the footers of
    sessions that start and end together line up across the row */
-.vt-card:not(.open):not(.band)>.vt-hd{flex:1 1 auto}
-.vt-card:not(.open):not(.band)>.vt-hd>.vt-foot{margin-top:auto}
-.vt-tog::after{content:"";width:.5rem;height:.3125rem;background:currentColor;-webkit-mask:var(--chev) center/contain no-repeat;mask:var(--chev) center/contain no-repeat;transition:rotate calc(var(--mo,1) * 120ms)}
-.vt-tog[aria-expanded="true"]::after{rotate:180deg}
+.vt-card:not(.open):not(.band)>.vt-hd,.vt-card:not(.open):not(.band)>.vt-hd>.vt-open{flex:1 1 auto}
+.vt-card:not(.open):not(.band)>.vt-hd>.vt-open>.vt-foot{margin-top:auto}
 .vt-tk{grid-column:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;min-width:0;width:100%;text-align:left;background:var(--card);border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;font-size:.75rem;line-height:1.25;padding:3px 6px 4px;cursor:pointer}
 .vt-card .vt-tk:last-child{border-radius:0 0 4px 2px}
 .vt-ttl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
@@ -1711,12 +1707,11 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-card.band .vt-open{flex-direction:row;align-items:center;gap:4px 12px;flex:1 1 20rem;width:auto;padding:4px 8px}
 .vt-card.band .vt-top{justify-content:flex-start;gap:10px}
 .vt-card.band .vt-title{-webkit-line-clamp:1;flex:1 1 auto}
-.vt-card.band .vt-foot{padding:0 8px 0 0;flex:0 0 auto}
+.vt-card.band .vt-foot{margin:0 0 0 auto;flex:0 0 auto}
 .vt-foot>span:empty{display:none}
 .vt-card.band .vt-tk{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;padding:3px 8px}
 .vt-card.band .vt-ttl{-webkit-line-clamp:2}
-.vt-grid.talks .vt-open{padding:4px 6px 2px}
-.vt-grid.talks .vt-foot{padding:0 6px 3px}
+.vt-grid.talks .vt-open{padding:4px 6px 3px}
 .vt-grid.talks .vt-title{font-size:.75rem}
 .vt-grid.talks .vt-card:not(.band) .vt-badge{display:none}
 .vt-card.past{background:color-mix(in srgb,var(--cbg) 45%,var(--card))}
@@ -1941,13 +1936,12 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 .vt-lb{display:flex;flex-direction:column;gap:5px;padding:0 0 8px}
 .vt-lb .vt-card{margin:0;scroll-margin-top:calc(var(--toolbar-h,150px) + 5.5rem)}
 .vt-lb .vt-title{font-size:.875rem}
-.vt-lb .vt-open{padding:6px 9px 3px}
-.vt-lb .vt-foot{padding:0 9px 5px;font-size:.75rem}
+.vt-lb .vt-open{padding:6px 9px 5px}
 .vt-lb .vt-tk{padding:5px 9px;font-size:.75rem}
 .vt-lb .vt-card.band,.vt-lb .vt-card.band .vt-hd,.vt-lb .vt-card.band .vt-open{flex-direction:column;align-items:stretch}
 .vt-lb .vt-card.band .vt-title{-webkit-line-clamp:3}
 .vt-lb .vt-card.band .vt-top{justify-content:space-between}
-.vt-lb .vt-card.band .vt-foot{padding:0 9px 5px}
+.vt-lb .vt-card.band .vt-foot{margin:1px 0 0}
 .vt-lb .vt-card.band .vt-open,.vt-lb .vt-card.band .vt-foot{flex:none}
 .vt-none{color:var(--muted);font-size:.75rem;padding:4px 2px}
 .vt-day{outline:none}
@@ -6397,7 +6391,7 @@ function txStart(kind, fn, from, opts){
 // lighter one: opts.lite), or no snapshot at all (none; enter: the short fade instead),
 // and why.
 // - A reversible change (opts.pair, with opts.dir 'in' or 'out': Sessions <-> Talks, All
-//   week <-> a day, a card's talks shown or hidden, Show full sessions) gets its pair's
+//   week <-> a day, Show full sessions) gets its pair's
 //   level, the same both ways, never one set by whatever ran just before it (txPairRec):
 //   a full morph, a lighter one (half the names) or a plain cross-fade (All week <-> a
 //   day still grows or shrinks); never nothing.
@@ -8213,15 +8207,12 @@ function hzInit(root){
 // (adaptive sub-columns share the width by how many sessions run side by side),
 // with plenaries and breaks as full-width bands and sticky column heads.
 // Grid rows are the day's start times: a heading row for each time a session
-// starts and, where talks are shown (Talks mode, or a card opened with
-// "N talks"), a row for each time a talk starts. A card that shows talks spans
+// starts and, where talks are shown (Talks mode, or My agenda's sessions with
+// saved or matching talks), a row for each time a talk starts. A card that shows talks spans
 // its rows with a subgrid and puts each talk on the row of its start time, so
 // reading across from a time label meets every talk that starts then. Phones
 // get a single list grouped by start time instead of the grid.
 let vtPick = 'all';
-const vtOpen = new Set();
-// My agenda's search opens a saved session on its matching talks; the ones folded by hand
-const vtShut = new Set();
 let vtWidth = 0;
 // the one clash mark, the fringe (.cx-fr), as in the list and My agenda
 const VT_CX_ICO = '<i class="cx-fr" aria-hidden="true"></i>';
@@ -8246,13 +8237,12 @@ function vtDayView(day){
   const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
   const who = t => t.sp.map(p => p.n).join(', ');
   // My agenda opens a saved session on its talks when some are starred (starred
-  // posters only, as a list); otherwise talks open with Talks mode or "N talks"
+  // posters only, as a list) or its search finds some; the program shows talks in Talks mode
   const talksOf = e => agenda ? (e.t ? [] : e.s.cat === 'poster' ? e.s.talks.filter(t => e.inner.has(t.id)) : e.s.talks)
     : e.s.cat === 'poster' ? [] : e.s.talks.filter(t => talkMatches(t, e.s));
   const merged = e => agenda && e.inner && e.inner.size > 0;
   const hitSess = e => agenda && !merged(e) && !e.t && e.hits && e.hits.size > 0;
-  const hitOpen = e => hitSess(e) && !vtShut.has(e.s.id);
-  const isOpen = e => (merged(e) || hitOpen(e) || (!agenda && state.programTalks) || vtOpen.has(e.s.id)) && talksOf(e).length > 0;
+  const isOpen = e => (merged(e) || hitSess(e) || (!agenda && state.programTalks)) && talksOf(e).length > 0;
   const listOnly = e => e.s.cat === 'poster';
   const star = id => state.starred.has(id) ? '<span class="vt-star" aria-label="In my agenda">★</span> ' : '';
   const isBandCat = e => !agenda && VT_BAND_CATS.includes(e.cat);
@@ -8284,11 +8274,13 @@ function vtDayView(day){
     const conv = e.t ? `<span class="vt-conv" title="${esc(s.title)}">in ${esc(s.title)}</span>`
       : s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
       : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv rm">${hl(s.room)}</span>` : '<span></span>';
+    // "N talks" is part of the card's text: the card opens the session's details, talks
+    // and all. A search that finds only some of them says how many.
     const count = `${nTalk} ${s.cat === 'poster' ? 'poster' : 'talk'}${nTalk > 1 ? 's' : ''}`;
-    const tog = merged(e) ? `<span class="vt-count">${count}, ★ ${e.inner.size}</span>`
-      : hitSess(e) && tk.length ? `<button type="button" class="vt-tog" data-vttog="${s.id}" data-vthit aria-expanded="${open}">${count}, ${e.hits.size} matching</button>`
-      : tk.length && (agenda || !state.programTalks) ? `<button type="button" class="vt-tog" data-vttog="${s.id}" aria-expanded="${open}">${count}</button>`
-      : !e.t && nTalk && !open ? `<span class="vt-count">${count}</span>` : '';
+    const found = hitSess(e) ? e.hits.size : !agenda && !open && tk.length < nTalk ? tk.length : 0;
+    const tally = merged(e) ? `${count}, <span aria-hidden="true">★ ${e.inner.size}</span><span class="visually-hidden">${e.inner.size} saved</span>` : found ? `${count}, ${found} matching`
+      : !e.t && nTalk && !open ? count : '';
+    const tog = tally ? `<span class="vt-count">${tally}</span>` : '';
     const talkBtn = (t, style) => {
       const mine = agenda ? (e.inner.has(t.id) ? ' mine' : e.hits.has(t.id) ? ' hit' : ' dim') : '';
       return `<button type="button" class="vt-tk${mine}" data-tid="${t.id}" style="${style}" title="${esc(t.t + (t.sp.length ? ' — ' + who(t) : ''))}" data-date="${day.date}" data-s="${t.s}" data-e="${t.e}" data-session-detail="${s.id}" data-talk-detail="${t.id}"><span class="vt-ttl"><span class="vt-ttime">${agenda && mine === ' mine' ? '<i class="k-ic" aria-hidden="true"></i>' : ''}${t.s}</span> ${star(t.id)}${vtWbr(hl(t.t))}</span>${t.sp.length ? `<span class="vt-tsp">${hl(who(t))}</span>` : ''}</button>`;
@@ -8315,8 +8307,8 @@ function vtDayView(day){
     return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" ${ids} data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
       <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${clash ? ` aria-description="${esc(clash)}"` : ''}>
         <span class="vt-top">${agenda ? dvKind(e) : ''}<span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
-        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span>${e.t && e.t.sp.length ? `<span class="vt-tsp">${hl(who(e.t))}</span>` : ''}</button>
-      <span class="vt-foot">${conv}${tog}</span></div>${talks}</div>`;
+        <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span>${e.t && e.t.sp.length ? `<span class="vt-tsp">${hl(who(e.t))}</span>` : ''}
+        <span class="vt-foot">${conv}${tog}</span></button></div>${talks}</div>`;
   };
 
   if (PHONE_MQ.matches && !agenda){
@@ -8425,20 +8417,6 @@ function vtDayView(day){
 }
 
 document.getElementById('agenda').addEventListener('click', e => {
-  const t = e.target.closest('[data-vttog]');
-  if (t){
-    const id = t.dataset.vttog, top = t.getBoundingClientRect().top, shut = t.getAttribute('aria-expanded') === 'true';
-    // the card grows or shrinks, its talks unfold from its heading, the rest moves along
-    // (both ways alike: one pair, txGuards)
-    withTransition('mx', () => {
-      if (t.getAttribute('aria-expanded') === 'true'){ vtOpen.delete(id); if ('vthit' in t.dataset) vtShut.add(id); }
-      else { vtShut.delete(id); vtOpen.add(id); }
-      renderCalendar();
-      const nt = document.querySelector(`#agenda [data-vttog="${id}"]`);
-      if (nt){ window.scrollBy(0, nt.getBoundingClientRect().top - top); nt.focus({ preventScroll: true }); }
-    }, null, { near: t.closest('.vt-card') || t, to: {}, pair: 'open', dir: shut ? 'out' : 'in' });
-    return;
-  }
   const b = e.target.closest('[data-vtpick]');
   if (b){ vtPick = b.dataset.vtpick; renderCalendar(); }
 });
@@ -8506,7 +8484,7 @@ function vtPopShow(el){
   if (!p){ p = document.createElement('div'); p.id = 'vtPop'; p.setAttribute('aria-hidden', 'true'); document.body.appendChild(p); }
   const card = el.closest('.vt-card'), r = el.getBoundingClientRect();
   p.className = el.classList.contains('vt-tk') ? 'tk' + (el.classList.contains('dim') ? ' dim' : '') : card.classList.contains('ctx') ? 'ctx' : '';
-  p.innerHTML = el.innerHTML + (el.matches('.vt-open') && card.querySelector('.vt-conv') ? `<span class="vt-pfoot">${card.querySelector('.vt-conv').innerHTML}</span>` : '');
+  p.innerHTML = el.innerHTML;
   for (const k of ['--c', '--cbg']) p.style.setProperty(k, card.style.getPropertyValue(k));
   const w = Math.max(r.width, Math.min(14 * remPx(), innerWidth - 16));
   p.style.width = w + 'px';
@@ -9140,7 +9118,7 @@ function fillEventDialog(sid, tid){
   const names = sp => sp.map(p => `<i class="ed-name">${esc(p.n)}</i>` + (p.a ? ` <span class="ed-aff">(${esc(p.a)})</span>` : '')).join('; ');
   const details = talks.map(talk => {
     const saved = state.starred.has(talk.id);
-    const open = t || (personal && saved) || (!personal && openMatchingTalk(talk,s));
+    const open = t || (personal && saved) || openMatchingTalk(talk,s);
     const who = talk.sp.length ? `<p class="ed-who">${names(talk.sp)}</p>` : '';
     if (t) return `${who}<h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', esc)}</div>`;
     return `<details ${open?'open':''}><summary><span class="ed-ttime">${saved?'<span class="saved-marker">★</span> ':''}${talk.s}–${talk.e}</span><span class="ed-ttitle">${esc(talk.t)}</span></summary>

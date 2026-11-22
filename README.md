@@ -47,8 +47,9 @@ user site's `404.html` that keeps `?query` and `#hash`).
   - **Vertical** puts time down the page in stream columns (AIP groups, ANZCOP, COMMAD, Focus,
     Posters and education, Forums), which split into sub-columns where sessions run side by side;
     plenaries and breaks are full-width bands and the column heads stay in view. Each session
-    card opens its talks with its **N talks** button. Wherever talks are shown (Talks mode, or an opened
-    card) every talk sits on the row of its start time, so reading across from a time on the
+    card says how many talks it has (and, during a search, how many match); clicking the card opens
+    the session's details with its talks. Wherever talks are shown (Talks mode, or My agenda's
+    sessions with saved or matching talks) every talk sits on the row of its start time, so reading across from a time on the
     left finds every talk starting then (session tops line up with their start time the same
     way). Sub-columns never get narrower than 7.5 rem: collapsed sessions beyond a stream's
     sub-columns stack in its cell, and when the talks need more width than the page has, the
