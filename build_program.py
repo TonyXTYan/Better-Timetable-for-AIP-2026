@@ -1060,12 +1060,34 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .dt-wd .na-glyph{align-self:center}
 /* (the ink fill stays inside the strip's hairline) */
 .daytab.on{z-index:2;background:var(--accent);border-color:var(--line);color:var(--accent-ink)}
-.daytab.on .dt-wd,.daytab.on .dt-count{color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
+.daytab.on .dt-wd,.daytab.on .dt-count,.daytab.on .dt-tk{color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
 .daytab.on .na-glyph{--g:var(--na-sel)}
 /* relative: its hidden words stay inside the sideways-scrolling tabs */
 .dt-of{position:relative;font-weight:400;opacity:.85}
 .daytab.zero:not(.on){color:var(--muted);background:var(--surface-2)}
 .daytab.today:not(.on) .dt-wd{color:var(--na-text)}
+/* The count's words (renderTabs: .dt-u "sessions" or "items", .dt-tk the talks) show as the
+   strip's width allows: short of room only the number shows, the words kept for screen
+   readers; with room the unit; with more (two-row tabs) the talks on the date's line. The
+   widths are what the seven tabs take at their widest counts (the whole program's), at
+   every text size: rem for their text, px for their padding (the Archivo font takes
+   less). One-row tabs (the folded toolbar, a phone on
+   its side) never show the talks. */
+.daytabs{container:dt / inline-size}
+.daytab :is(.dt-u,.dt-tk){position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dt-tk{grid-area:tk;justify-self:end;font-size:.75rem;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+.dt-count{justify-self:end}
+@media (min-height:501px),(orientation:portrait){
+  @container dt (min-width:calc(40rem + 268px)){.sticky-wrap:not(.tb-compact) .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+  @container dt (min-width:calc(52rem + 260px)){
+    .sticky-wrap:not(.tb-compact) .daytab{grid-template-areas:"wd n" "dm tk"}
+    .sticky-wrap:not(.tb-compact) .daytab .dt-tk{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}
+  }
+}
+@container dt (min-width:calc(59.5rem + 284px)){.sticky-wrap.tb-compact .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+@media (max-height:500px) and (orientation:landscape){
+  @container dt (min-width:calc(59.5rem + 284px)){.sticky-wrap .daytab .dt-u{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto}}
+}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 0 10px}
 .searchbox{flex:1 1 220px;position:relative;min-width:0}
 .searchbox input{width:100%;min-height:40px;padding:8px 36px 8px 2.25rem;border-radius:var(--r-ctl);border:1px solid var(--field-line);font-size:.9375rem;font-weight:450;background:var(--card);color:var(--ink)}
@@ -2840,6 +2862,32 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .agenda-views.seg-hold::before,.agenda-views.seg-hold>button{transition:none}
   .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
   .agenda-views.seg-hold>button.seg-was{color:var(--accent-ink)}
+  /* The day tabs: the same indicator, the size of the chosen tab, its corners rounded at
+     either end of the strip (--seg-r) and edged with the strip's hairline as the chosen
+     tab is. At rest the chosen tab keeps its own fill over it, as the other groups' do.
+     While it moves or waits (seg-moving, seg-hold), so that it can pass under the other
+     tabs' labels, each tab's fill and border move to its own ::before, below the
+     indicator (the hovered one's above its neighbours'), and the tabs make no layer of
+     their own (no z-index); the chosen tab's ::before has no fill, so not even a pressed
+     (scaled, so layered) tab hides the indicator. The indicator lives in the strip's
+     scrolled content, so it scrolls with the tabs. */
+  .daytabs.seg-ind{position:relative;isolation:isolate}
+  .daytabs.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--seg-r,0);background:var(--accent);box-shadow:inset 0 0 0 1px var(--line);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease),border-radius calc(200ms * var(--mo)) var(--ease)}
+  .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab,.daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab:is(:hover,.on,.zero,:focus-visible){z-index:auto;background:transparent;border-color:transparent}
+  .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab::before{content:"";position:absolute;inset:-1px;z-index:-2;border:1px solid var(--line);border-radius:inherit;background:var(--card);pointer-events:none}
+  .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.zero:not(.on)::before{background:var(--surface-2)}
+  .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab:hover::before{z-index:-1;border-color:var(--hover-line);background:var(--surface-2)}
+  .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.on::before{background:transparent}
+  .daytabs.seg-ind>.daytab,.daytabs.seg-ind>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .daytabs.seg-snap>.daytab,.daytabs.seg-snap>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
+  /* (held, segWait: the indicator and the colours as they were, the pressed tab lit; an
+     indicator still sliding, a held arrow key's earlier day, lands first) */
+  .daytabs.seg-hold>.daytab,.daytabs.seg-hold>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
+  .daytabs.seg-ind.seg-hold>.daytab.on::before{background:var(--surface-3)}
+  .daytabs.seg-hold>.daytab.on{color:var(--ink)}
+  .daytabs.seg-hold>.daytab.on :is(.dt-wd,.dt-count,.dt-tk){color:var(--muted)}
+  .daytabs.seg-hold>.daytab.seg-was{color:var(--accent-ink)}
+  .daytabs.seg-hold>.daytab.seg-was :is(.dt-wd,.dt-count,.dt-tk){color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
 }
 /* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
    tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
@@ -3816,14 +3864,25 @@ function personStr(sp){
 // ---------- header tabs & chips ----------
 const NO_STREAMS_HTML = '<b>No streams selected</b> &mdash; <button type="button" class="linkish empty-action" data-select-all-streams>Select all</button>';
 function programCounts(){ return DATA.days.map(d => d.slots.filter(slotMatches).length); }
+// the talks a day's matching sessions hold that match too (as the result line counts them)
+function programTalkCounts(){ return DATA.days.map(d => d.slots.reduce((n, s) => n + (slotMatches(s) ? s.talks.filter(t => talkMatches(t, s)).length : 0), 0)); }
+// A tab's count says what it counts: the Full program's sessions (every session in the
+// program, breaks included, that the search and streams leave) and their talks; My
+// agenda's items (as its badge counts them). Short of room only the number shows (the
+// words stay for screen readers); with more the unit, then the talks on the date's line
+// (.dt-u, .dt-tk: which show is up to the strip's width, @container dt).
 // totals (My agenda while its search or streams are on): the whole agenda's count a day,
-// so a tab reads "4/7", 4 of the day's 7 items matching, beside the badge's 7.
-function renderTabs(counts = programCounts(), totals = null){
+// so a tab reads "4/7" ("4/7 items"), 4 of the day's 7 items matching, beside the badge's 7.
+function renderTabs(counts, totals = null, talks = null){
+  if (!counts){ counts = programCounts(); talks = programTalkCounts(); }
   const el = document.getElementById('daytabs');
   const sum = a => a.reduce((x,y)=>x+y,0), total = sum(counts);
   const allOn = state.day === 'all';
   const ti = todayIdx();
-  const of = (n, t) => totals && t !== n ? `<span class="dt-of"><span aria-hidden="true">/</span><span class="visually-hidden"> of </span>${t}<span class="visually-hidden"> matching</span></span>` : '';
+  const unit = talks ? 'session' : 'item', s = n => n === 1 ? '' : 's';
+  const of = (n, t) => totals && t !== n ? `<span class="dt-of"><span aria-hidden="true">/</span><span class="visually-hidden"> of </span>${t}</span>` : '';
+  const count = (n, t, k) => `<span class="dt-count"><span class="visually-hidden">, </span>${n}${of(n, t)}<span class="dt-u"> ${unit}${s(t === undefined || t === null ? n : Math.max(n, t))}</span></span>`
+    + (k ? `<span class="dt-tk"><span class="visually-hidden">, </span>${k} talk${s(k)}</span>` : '');
   // a cell of the day ruler: the weekday (or the week's dates) small, the date large, the count
   const cell = (wd, dm) => `<span class="dt-wd">${wd}</span> <span class="dt-dm">${dm}</span>`;
   const dayCell = (label, today) => {
@@ -3831,16 +3890,39 @@ function renderTabs(counts = programCounts(), totals = null){
     return cell((today ? '<span class="na-glyph" aria-hidden="true"></span>' : '') + esc(label.slice(0, i)), esc(label.slice(i + 1)));
   };
   const span = DATA.days.length ? DATA.days[0].label.replace(/^\S+ (\d+).*$/, '$1') + '&#8211;' + DATA.days[DATA.days.length - 1].label.replace(/^\S+ /, '') : '';
-  const tab = (key, label, n, on, today, t) =>
-    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' aria-current="date" title="Today"':''}>${label}<span class="dt-count">${n}${of(n, t)}</span></button>`;
-  el.innerHTML = tab('all', cell(span, 'All week'), total, allOn, false, totals && sum(totals)) +
-    DATA.days.map((d,i) => tab(i, dayCell(d.label, i === ti), counts[i], state.day === i, i === ti, totals && totals[i])).join('');
+  const tab = (key, label, n, on, today, t, k) =>
+    `<button class="daytab ${on?'on':''} ${n?'':'zero'} ${today?'today':''}" data-day="${key}" tabindex="${on ? 0 : -1}" aria-pressed="${on}"${today?' aria-current="date" title="Today"':''}>${label}${count(n, t, k)}</button>`;
+  const html = tab('all', cell(span, 'All week'), total, allOn, false, totals && sum(totals), talks && sum(talks)) +
+    DATA.days.map((d,i) => tab(i, dayCell(d.label, i === ti), counts[i], state.day === i, i === ti, totals && totals[i], talks && talks[i])).join('');
+  dayTabsDraw(el, html);
   // (only a new choice of day moves the strip: a redraw for new counts leaves it where
   // the user scrolled it)
   if (revealDayTab.day !== state.day){ revealDayTab(revealDayTab.day === undefined); revealDayTab.day = state.day; }
   const day = allOn ? '' : DATA.days[state.day].label;
   if (state.scope !== 'participants') fitPlaceholder(state.scope === 'agenda' ? [day && `Search my agenda, ${day}…`, 'Search my agenda…', 'Search agenda…']
     : allOn ? ['Search talks, speakers, abstracts…', 'Search talks, speakers…', 'Search talks…'] : [`Search ${day}…`, 'Search talks…']);
+}
+// The tabs are redrawn in place (new counts, a new day): the same buttons stay, so the
+// one that has the focus keeps it and the selection's indicator slides from the tab it
+// was under (segPlace). Only the first drawing (over the placeholders) makes them anew.
+function dayTabsDraw(el, html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  const fresh = [...tpl.content.children], kids = [...el.children];
+  if (kids.length !== fresh.length || kids.some((b, i) => b.tagName !== 'BUTTON' || b.dataset.day !== fresh[i].dataset.day)){
+    el.replaceChildren(...fresh);
+    segRedrawn(el);
+    return;
+  }
+  fresh.forEach((f, i) => {
+    const b = kids[i];
+    for (const c of ['on', 'zero', 'today']) b.classList.toggle(c, f.classList.contains(c));
+    for (const a of ['tabindex', 'aria-pressed', 'aria-current', 'title']){
+      const v = f.getAttribute(a);
+      if (v === null) b.removeAttribute(a); else if (b.getAttribute(a) !== v) b.setAttribute(a, v);
+    }
+    if (b.innerHTML !== f.innerHTML) b.innerHTML = f.innerHTML;
+  });
 }
 // A newly chosen day is brought into the sideways-scrolling tabs (a phone). Measured in
 // the next frame, with the layout it needs anyway, and only moved when the tab is wholly
@@ -3855,11 +3937,14 @@ function revealDayTab(whole){
     const el = document.getElementById('daytabs'), t = el.querySelector('.daytab.on'), whole = dayTabWhole;
     dayTabWhole = false;
     if (!t || el.scrollWidth <= el.clientWidth + 1) return;
-    const a = t.offsetLeft - el.offsetLeft, w = t.offsetWidth;
+    const a = dayTabLeft(el, t), w = t.offsetWidth;
     if (whole ? a >= el.scrollLeft && a + w <= el.scrollLeft + el.clientWidth : a + w > el.scrollLeft && a < el.scrollLeft + el.clientWidth) return;
     el.scrollLeft = Math.max(0, a - (el.clientWidth - w) / 2);
   });
 }
+// (a tab's place in the strip's scrolled content, whether or not the strip is its
+// offsetParent: it is while the selection's indicator is on, seg-ind)
+function dayTabLeft(el, t){ return t.getBoundingClientRect().left - el.getBoundingClientRect().left - el.clientLeft + el.scrollLeft; }
 // The longest of the given placeholders that fits the search box (the last one, or
 // "Search…", when none does); kept up to date as the box changes width.
 // The box's room and font are read once and again only when it changes size (or the
@@ -4639,7 +4724,7 @@ function applyFilters(){
       + searchWeekHtml(shownSlots) + aliasChipsHtml() + dayEndedHtml();
   }
   paintStarCount();
-  if (state.scope === 'program') renderTabs(programCounts());
+  if (state.scope === 'program') renderTabs();
   blockHeightsSoon();
   const L = main._list;
   if (L && L.phs && L.phs.size && !L.job && L.t0 !== undefined) listLazyRun(L);
@@ -8937,7 +9022,9 @@ function renderCalendar(){
   const items = favourites ? agendaCalendarItems() : programCalendarItems();
   const counted = favourites ? items.merged : items;
   const wholeAg = favourites && agendaFiltered() ? agendaItems() : null;
-  renderTabs(DATA.days.map((d,i) => counted.filter(it => it.di === i).length), wholeAg && DATA.days.map((d,i) => wholeAg.filter(it => it.di === i).length));
+  // (the Full program's tabs count its sessions and talks, whichever the calendar draws)
+  if (favourites) renderTabs(DATA.days.map((d,i) => counted.filter(it => it.di === i).length), wholeAg && DATA.days.map((d,i) => wholeAg.filter(it => it.di === i).length));
+  else renderTabs();
   const main = document.getElementById('agenda');
   const selected = state.day === 'all' ? items : items.filter(it => it.di === state.day);
   const fallback = !favourites && !selected.length && items.length > 0;
@@ -12268,7 +12355,7 @@ function tbCompact(on){
     TB.slimKey = innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
     // the chosen day stays in view in the sideways-scrolling tabs
     const tabs = document.getElementById('daytabs'), t = tabs.querySelector('[aria-pressed="true"]');
-    if (t) tabs.scrollLeft = Math.max(0, t.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2);
+    if (t) tabs.scrollLeft = Math.max(0, dayTabLeft(tabs, t) - (tabs.clientWidth - t.offsetWidth) / 2);
   }
   const done = () => {
     if (TB.anim) tbAnimEnd(TB.anim);
@@ -12393,8 +12480,10 @@ syncToolbarHeight();
 // dialog's choices, the Horizontal calendar's zoom) has one ink indicator, its ::before at
 // --seg-x/-y/-w/-h, under the chosen option. A new choice moves it there (a CSS transition:
 // at once with reduced motion); a group that has just come into sight or changed size
-// places it at once (snap). The zoom is drawn with each day: segAdopt takes it on.
-const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom';
+// places it at once (snap). The zoom is drawn with each day: segAdopt takes it on. The
+// day tabs are one such group too: their buttons are redrawn in place (dayTabsDraw), and
+// made anew only over the placeholders (segRedrawn).
+const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .daytabs';
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
 // Calendar, the scope) slides only once the new view shows: until then the page is busy
 // redrawing (or frozen under a view transition's snapshot), and a slide started at the
@@ -12408,7 +12497,15 @@ function segWait(g){
   g.classList.add('seg-hold');
   g._segOn.classList.add('seg-was');
   let n = 0;
-  const go = () => { if (g._segHold){ segUnhold(g); segPlace(g, false, true); } };
+  // (from where the option it was under is now: the view's change may have moved it, as
+  // the folded toolbar unfolds)
+  const go = () => {
+    if (!g._segHold) return;
+    segUnhold(g);
+    const was = g._segOn;
+    if (was && was.isConnected && was.offsetWidth) segAt(g, was, true);
+    segPlace(g, false, true);
+  };
   const tick = () => {
     const t = viewTx;
     // (in the transition's first frame, before its styles are worked out: read at once,
@@ -12428,16 +12525,32 @@ function segUnhold(g){
 function segPlace(g, snap, now){
   const on = g.classList.contains('seg') ? g.querySelector('input:checked')?.closest('label')
     : g.querySelector(':scope > button[aria-pressed="true"]:not([hidden])');
-  if (g._segHold){ if (!snap && on) return; segUnhold(g); }
-  if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
-  if (snap || !g._segOn || !g.classList.contains('seg-ind')) g.classList.add('seg-snap');
-  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
-  else if (g._segOn !== on && !motionReduced()){
-    // the slide: the chosen option's own fill waits until the indicator is under it
-    g.classList.add('seg-moving');
-    clearTimeout(g._segT);
-    g._segT = setTimeout(() => g.classList.remove('seg-moving'), 200 * motionK() + 60);
+  if (g._segHold){
+    if (!snap && on) return;
+    // (resized while held, as the folded toolbar unfolds: the indicator stays with the
+    // option it is under, and still slides once the new view shows)
+    const was = g._segOn;
+    if (on && was && was.isConnected && was.offsetWidth){ segAt(g, was, true); return; }
+    segUnhold(g);
   }
+  if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
+  // (resized mid-slide: the slide goes on to the option's new place rather than jumping)
+  const retarget = snap && g._segOn === on && g.classList.contains('seg-moving') && g.classList.contains('seg-ind');
+  if (retarget) segMoving(g);
+  else if (snap || !g._segOn || !g.classList.contains('seg-ind')) snap = true;
+  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
+  // the slide: the chosen option's own fill waits until the indicator is under it
+  else if (g._segOn !== on && !motionReduced()) segMoving(g);
+  segAt(g, on, snap && !retarget);
+}
+function segMoving(g){
+  g.classList.add('seg-moving');
+  clearTimeout(g._segT);
+  g._segT = setTimeout(() => g.classList.remove('seg-moving'), 200 * motionK() + 60);
+}
+// The indicator under the option `on` (at once: snap).
+function segAt(g, on, snap){
+  if (snap) g.classList.add('seg-snap');
   g.classList.add('seg-ind');
   // (offsets: the group is the indicator's containing block once seg-ind is on; and the
   // option's own press scale does not count)
@@ -12446,8 +12559,10 @@ function segPlace(g, snap, now){
   s.setProperty('--seg-y', on.offsetTop + 'px');
   s.setProperty('--seg-w', on.offsetWidth + 'px');
   s.setProperty('--seg-h', on.offsetHeight + 'px');
+  // (a day tab at either end of the strip has its outer corners rounded)
+  if (g.id === 'daytabs') s.setProperty('--seg-r', on === g.firstElementChild ? 'var(--r-ctl) 0 0 var(--r-ctl)' : on === g.lastElementChild ? '0 var(--r-ctl) var(--r-ctl) 0' : '0px');
   g._segOn = on;
-  if (g.classList.contains('seg-snap')){
+  if (snap){
     getComputedStyle(g, '::before').transform;
     g.classList.remove('seg-snap', 'seg-moving');
   }
@@ -12482,7 +12597,19 @@ function segAdopt(g, drawn = true){
   }
   segPlace(g, true);
   if (o.ro){ o.ro.observe(g); for (const c of g.children) o.ro.observe(c); }
+  g._segKids = [...g.children];
   o.mo.observe(g, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden'] });
+}
+// (a group whose options were made anew: the size watcher follows the new ones)
+function segRedrawn(g){
+  if (g._segOn === undefined) return;
+  const o = segObs();
+  if (o.ro){
+    for (const c of g._segKids || []) if (!c.isConnected) o.ro.unobserve(c);
+    for (const c of g.children) o.ro.observe(c);
+  }
+  g._segKids = [...g.children];
+  segPlace(g, true);
 }
 for (const g of document.querySelectorAll(SEG_GROUPS)) segAdopt(g, false);
 document.addEventListener('change', e => { const g = e.target.closest && e.target.closest('.seg'); if (g) segPlace(g); });
