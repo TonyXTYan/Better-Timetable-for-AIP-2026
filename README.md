@@ -17,6 +17,15 @@ user site's `404.html` that keeps `?query` and `#hash`).
   it, opening Streams or pressing `/` brings the whole toolbar back (no animation with reduced
   motion). Jumps made by the page (links to a talk, the A–Z rail, View in program) leave it as
   it is and land just below it.
+- In the list, a talk's row opens its details in a pop-up that grows out of the row (a bottom
+  sheet on a phone), over the list as it was: title, speakers with their institutions, day,
+  time, room, stream and session, the full abstract (search words marked), and Save, Share link,
+  Open in Indico and **Whole session**, which shows the session with that talk open among its
+  others. Esc, Close, a click outside it or Back closes it and puts the focus back on the row;
+  Forward opens it again, and a link to a talk (`#t=…`) opens it over its row.
+  **Expand all abstracts** is a reading mode instead: every abstract unfolds in place under its
+  row (as do abstracts a search finds words in), each with a **Hide abstract** button; the row
+  itself still opens the pop-up. Printing the list prints every abstract, as before.
 - **Congress events** is a stream of its own: the two public lectures, the Welcome Reception,
   the Congress Dinner and the Career Fair; Teachers Day session. Each carries a short note and
   its official links (in `EVENT_DETAILS` in `build_program.py`, taken from the official congress

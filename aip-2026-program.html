@@ -699,6 +699,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .saved-marker:not(:empty){color:var(--ink)}
 .replace-note{display:block;margin:4px 0 8px;font-size:.8125rem;color:var(--muted)}
 .ed-saved{font-weight:650;color:var(--ink)}
+.ed-stream{color:var(--muted)}
+.ed-kicker .ed-stream::before{content:"\00b7";margin-right:12px}
+.ed-parent .ed-in{color:var(--muted)}
+#eventDialog a.ag-btn{text-decoration:none}
 /* ---------- load stability, deep-link landing, sheets (fixes) ----------
    The toolbar ships with its final geometry: seven empty cells in the day ruler, and the
    Now button laid out but invisible until the first render decides whether it shows. */
@@ -1027,7 +1031,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .talk.is-now .t-time{color:var(--na-text)}
 .talk.is-now .t-time::after{content:"Now";display:block;font-size:.6875rem;font-weight:750;font-stretch:100%;line-height:1.5}
 .block.is-now .talk.is-now .t-time::after{content:", now";position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.talk.is-now summary:hover,.talk.is-now:has(summary:hover){background:var(--now-bg)}
+.talk.is-now .t-open:hover,.talk.is-now:has(>.t-open:hover){background:var(--now-bg)}
 /* My agenda's Now and Next: a plate whose left edge is the doublet */
 .up-next{position:relative;margin:16px 0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate);padding:12px 16px 12px 22px;font-size:.875rem;overflow:clip}
 /* the doublet edge runs beside the rows that are on now only: a panel of what is next has none */
@@ -1146,18 +1150,19 @@ details.dx-run{box-sizing:border-box;overflow:clip;interpolate-size:allow-keywor
 .talk{display:grid;grid-template-columns:minmax(0,1fr) auto;border-bottom:1px solid var(--line);transition:background-color var(--dur-s) var(--ease)}
 .talk:last-child{border-bottom:0}
 .talk.hidden{display:none}
-.talk:has(>details>summary:hover){background:var(--surface-2)}
-details.talk-d summary{list-style:none;display:flex;gap:10px;align-items:baseline;padding:10px 2px 10px 19px;cursor:pointer}
-details.talk-d summary::-webkit-details-marker{display:none}
+.talk:has(>.t-open:hover){background:var(--surface-2)}
+.t-open{grid-column:1;grid-row:1;display:flex;gap:10px;align-items:baseline;width:100%;min-width:0;margin:0;padding:10px 2px 10px 19px;border:0;border-radius:0;background:none;color:inherit;text-align:start;cursor:pointer}
+.talk>.talk-star{grid-column:2;grid-row:1}
+.talk>details.talk-d{grid-column:1;grid-row:2}
+details.talk-d>summary{display:none}
 .t-time{flex:0 0 auto;font-size:.8125rem;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond);min-width:2.25rem}
 .t-main{flex:1;min-width:0}
 .t-title{display:block;font-size:.9375rem;font-weight:560;line-height:1.38;overflow-wrap:anywhere;text-wrap:pretty}
 .t-sp{display:block;font-size:.8125rem;font-style:italic;font-weight:480;line-height:1.45;color:var(--ink-2);margin-top:3px}
 .t-sp .aff{font-style:normal;font-weight:420;color:var(--muted)}
-.t-caret{flex:0 0 auto;align-self:center;display:inline-flex;color:var(--caret);transition:transform var(--dur-l) var(--ease)}
+.t-caret{flex:0 0 auto;align-self:center;display:inline-flex;color:var(--caret)}
 .t-caret svg{display:block}
-details.talk-d summary:hover .t-caret{color:var(--ink-2)}
-details.talk-d[open]:not(.dx-shut) .t-caret{transform:rotate(90deg)}
+.t-open:hover .t-caret{color:var(--ink-2)}
 .t-body{padding:0 16px 14px calc(19px + 2.25rem + 10px);font-size:.9375rem;line-height:1.6;color:var(--ink-2)}
 .t-body .abstract{margin:0 0 10px;overflow-wrap:anywhere}
 .t-body .abstract.none{color:var(--muted);font-style:italic}
@@ -2363,14 +2368,14 @@ html[data-view-tx="dlg"] #eventDialog,html[data-view-tx="dlg"] #eventDialog::bac
 html{-webkit-tap-highlight-color:transparent}
 /* (the two ids have rules of their own: an id inside :is() would lend the whole list its
    weight, and this rule would then override the segmented controls' colour cross-fade) */
-:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,details.talk-d>summary,.linkish),#clr,#grpclr{transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
+:is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,.t-open,.linkish),#clr,#grpclr{transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
 :is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,.seg label):not(:disabled):active,#clr:not(:disabled):active,#grpclr:not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
 .agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
 .dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
 :is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
 .vt-card:has(>.vt-hd .vt-open:active){filter:var(--press)}
 .vt-card:has(>.vt-hd .vt-open:active) .vt-open{filter:none}
-details.talk-d>summary:active{filter:var(--press);background:var(--press-sum);transition-duration:0s}
+.t-open:active{filter:var(--press);background:var(--press-sum);transition-duration:0s}
 .linkish:active{opacity:.6;transition-duration:0s}
 @media (prefers-reduced-motion:reduce){
   html:not([data-motion="full"]) :active{scale:none!important}
@@ -2691,7 +2696,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .favourites-calendar #builder{padding-bottom:0}
 @media print{
   .favourites-calendar #agenda{display:none!important}
-  .sticky-wrap,.star,.talk-star,.display-btn,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
+  .sticky-wrap,.star,.talk-star,.display-btn,.chips,.controls,.shared-banner,.toast,.up-next,.t-share,.t-hide,.builder-actions,.agenda-views,.ics-note,.export-status,.ag-actions,.ag-day .dh-focus{display:none!important}
   .hz-ov,.hz-mini,.vt-picker,.vt-go,#hzTip{display:none!important}
   #weekTip,.week-hint{display:none!important}
   .hz-stick,.vt-head,.vt-corner,.vt-lh,.vt-hbar{position:static;box-shadow:none}
@@ -2742,7 +2747,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 /* One focus ring for every control outside the calendars (they draw their own): solid ink,
    just outside the control (3px with high-contrast text). */
 :where(a,button,input,select,textarea,summary,[tabindex]:not(#main)):focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.card summary:focus-visible,.pp-role:focus-visible,.pp-pi:focus-visible,.chip-wrap :focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.card summary:focus-visible,.t-open:focus-visible,.pp-role:focus-visible,.pp-pi:focus-visible,.chip-wrap :focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .chip-wrap.on :focus-visible{outline-color:var(--fill-ink)}
 .daytab:focus-visible,.toggle:focus-visible,.agenda-views button:focus-visible,.dh-focus:focus-visible,.fp-all:focus-visible{outline:2px solid var(--ink);outline-offset:2px;z-index:3}
 :root[data-contrast="high"] :focus-visible{outline-width:3px}
@@ -4337,25 +4342,30 @@ function cardHtml(s){
     talksHtml = '<ul class="talks">' + s.talks.map(t => {
       const tStar = state.starred.has(t.id) ? 'on' : '';
       const who = t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
+      // The row is a button: it opens the talk in the details dialog (fillEventDialog's
+      // talk view), grown out of the row. Under it, its abstract in place: a <details> whose
+      // summary is hidden, opened only as a reading mode (Expand all, a search that finds
+      // words in the abstract, find in page, print) and folded by its own Hide button.
       return `<li class="talk" data-tid="${t.id}">
-        <details class="talk-d">
-          <summary>
-            <span class="t-time">${t.s}</span>
-            <span class="t-main">
-              <span class="t-title" id="h-${t.id}">${hl(t.t)}</span>
-              ${who ? `<span class="t-sp">${personStr(t.sp)}</span>` : ''}
-            </span>
-            <span class="t-caret" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg></span>
-          </summary>
+        <button type="button" class="t-open" data-session-detail="${s.id}" data-talk-detail="${t.id}" aria-haspopup="dialog">
+          <span class="t-time">${t.s}</span>
+          <span class="t-main">
+            <span class="t-title" id="h-${t.id}">${hl(t.t)}</span>
+            ${who ? `<span class="t-sp">${personStr(t.sp)}</span>` : ''}
+          </span>
+          <span class="t-caret" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 3.5 4.5 4.5L6 12.5"/></svg></span>
+        </button>
+        <button type="button" class="talk-star ${tStar}" data-tstar="${t.id}" aria-label="Save talk: ${esc(t.t)}" title="Save to My agenda" aria-pressed="${Boolean(tStar)}">${tStar?'&#9733;':'&#9734;'}</button>
+        <details class="talk-d"><summary hidden></summary>
           <div class="t-body">
             ${t.d ? `<div class="abstract">${paras(t.d)}</div>` : '<p class="abstract none">No abstract provided.</p>'}
             <div class="tools">
               <a href="${t.u}" target="_blank" rel="noopener" aria-describedby="h-${t.id}">Open in Indico${NEW_TAB}</a>
               <button type="button" class="linkish t-share" data-share="t=${t.id}" data-share-title="${esc(t.t)}" aria-describedby="h-${t.id}">Share link</button>
+              <button type="button" class="linkish t-hide" aria-describedby="h-${t.id}">Hide abstract</button>
             </div>
           </div>
         </details>
-        <button type="button" class="talk-star ${tStar}" data-tstar="${t.id}" aria-label="Save talk: ${esc(t.t)}" title="Save to My agenda" aria-pressed="${Boolean(tStar)}">${tStar?'&#9733;':'&#9734;'}</button>
       </li>`;
     }).join('') + '</ul>';
   } else if (s.desc){
@@ -9216,7 +9226,11 @@ function replaceButton(s, t){
   return `<button class="ag-btn" data-replace-session="${s.id}">Replace with whole session</button>
     <small class="replace-note">Saves the whole session and removes ${n === 1 ? 'your saved talk' : 'your ' + n + ' saved talks'} from it.</small>`;
 }
-function fillEventDialog(sid, tid){
+// The details of a session (its talks as folds), or of one talk (the talk view: its
+// speakers, when and where, the session it is in, its abstract). The search's words are
+// marked in them as in the view behind (not over Participants, whose search is its own).
+// `at`, in a session's details: the talk shown open (the one they were opened from).
+function fillEventDialog(sid, tid, at){
   const s = slotById(sid);
   const t = s.talks.find(talk => talk.id === tid);
   eventDialog.dataset.sid = s.id;
@@ -9225,29 +9239,37 @@ function fillEventDialog(sid, tid){
   const talks = t ? [t] : [...s.talks];
   const personal = state.scope === 'agenda';
   if (personal) talks.sort((a,b) => Number(state.starred.has(b.id)) - Number(state.starred.has(a.id)));
-  const names = sp => sp.map(p => `<i class="ed-name">${esc(p.n)}</i>` + (p.a ? ` <span class="ed-aff">(${esc(p.a)})</span>` : '')).join('; ');
+  const fmt = state.scope === 'participants' ? esc : hl;
+  const aff = p => fmt !== esc && speakerInAlias(p) ? '<mark class="hlm">' + esc(p.a) + '</mark>' : fmt(p.a);
+  const names = sp => sp.map(p => `<i class="ed-name">${fmt(p.n)}</i>` + (p.a ? ` <span class="ed-aff">(${aff(p)})</span>` : '')).join('; ');
   const details = talks.map(talk => {
     const saved = state.starred.has(talk.id);
-    const open = t || (personal && saved) || openMatchingTalk(talk,s);
+    const open = t || talk.id === at || (personal && saved) || openMatchingTalk(talk,s);
     const who = talk.sp.length ? `<p class="ed-who">${names(talk.sp)}</p>` : '';
-    if (t) return `${who}<h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', esc)}</div>`;
-    return `<details ${open?'open':''}><summary><span class="ed-ttime">${saved?'<span class="saved-marker">★</span> ':''}${talk.s}–${talk.e}</span><span class="ed-ttitle">${esc(talk.t)}</span></summary>
-      ${who}<div class="detail-text">${paras(talk.d || 'No abstract provided.', esc)}</div>
+    if (t) return `${who}<h3>Abstract</h3><div class="detail-text">${paras(t.d || 'No abstract provided.', fmt)}</div>`;
+    return `<details ${open?'open':''} data-tid="${talk.id}"><summary><span class="ed-ttime">${saved?'<span class="saved-marker">★</span> ':''}${talk.s}–${talk.e}</span><span class="ed-ttitle">${fmt(talk.t)}</span></summary>
+      ${who}<div class="detail-text">${paras(talk.d || 'No abstract provided.', fmt)}</div>
       ${favouriteButton(talk.id,'talk')}</details>`;
   }).join('');
   const [c, bg] = CAT_COLORS[s.cat];
   const sessionSaved = t && state.starred.has(s.id) ? ' <span class="ed-saved">★ Whole session in your agenda</span>' : '';
-  const kicker = `<span class="badge" style="cursor:default">${esc(s.grp || DATA.cats[s.cat])}</span><span>${t ? 'Talk' : 'Session'}</span>`;
-  const body = `${eventInfoHtml(s, esc)}${!t && s.desc ? '<div class="detail-text">' + paras(s.desc, esc) + '</div>' : ''}${t ? details : ''}`;
+  // (the stream's name beside its short form: QST, Quantum Science & Technology)
+  const stream = s.grp && DATA.groups[s.grp] ? `<span class="ed-stream">${esc(DATA.groups[s.grp])}</span>` : '';
+  const kicker = `<span class="badge" style="cursor:default">${esc(s.grp || DATA.cats[s.cat])}</span><span>${t ? 'Talk' : 'Session'}</span>${stream}`;
+  const body = `${eventInfoHtml(s, fmt)}${!t && s.desc ? '<div class="detail-text">' + paras(s.desc, fmt) + '</div>' : ''}${t ? details : ''}`;
+  // (over the program's list, View in program would only close them onto the same row)
+  const overList = state.scope === 'program' && state.layout === 'list';
   document.getElementById('eventContent').innerHTML = `<div class="ed-head" style="--c:${c};--cbg:${bg}">
     <p class="ed-kicker">${kicker}</p>
-    <h2 id="eventTitle" tabindex="-1">${esc(t ? t.t : s.title)}</h2>
+    <h2 id="eventTitle" tabindex="-1">${fmt(t ? t.t : s.title)}</h2>
     <p class="ed-meta"><span class="ed-day">${esc(day.label)}</span><span class="visually-hidden">, </span><span class="ed-time">${t ? t.s : s.start}–${t ? t.e : s.end}<small>AEDT</small></span><span class="visually-hidden">, </span><span class="ed-room">${esc(s.room || 'Room to be confirmed')}</span></p>
-    ${t ? '<p class="ed-parent"><span>' + esc(s.title) + '</span>' + sessionSaved + '</p>' : (s.conv && s.conv.length ? '<p class="ed-conv"><span>Convened by ' + s.conv.map(n => `<i class="ed-name">${esc(n)}</i>`).join(', ') + '</span></p>' : '')}
+    ${t ? `<p class="ed-parent"><span><span class="ed-in">In </span>${fmt(s.title)}<span class="ed-in">, ${s.start}–${s.end}</span></span>${sessionSaved}</p>` : (s.conv && s.conv.length ? '<p class="ed-conv"><span>Convened by ' + s.conv.map(n => `<i class="ed-name">${fmt(n)}</i>`).join(', ') + '</span></p>' : '')}
   </div>
   <div class="ed-actions">${favouriteButton(t ? t.id : s.id, t ? 'talk' : 'session')}
-    <button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>
+    ${overList ? '' : `<button class="ag-btn" ${programJumpAttrs({di:DATA.days.indexOf(day), s, t})}>View in program</button>`}
     <button class="ag-btn" data-share="${t ? 't=' + t.id : 's=' + s.id}" data-share-title="${esc(t ? t.t : s.title)}">Share link</button>
+    ${t && t.u ? `<a class="ag-btn" href="${esc(t.u)}" target="_blank" rel="noopener">Open in Indico${NEW_TAB}</a>` : ''}
+    ${t ? `<button type="button" class="ag-btn" data-dlg-session="${s.id}" data-dlg-from="${t.id}">Whole session<span class="visually-hidden">: ${esc(s.title)}</span></button>` : ''}
     ${replaceButton(s, t)}</div>
   ${body ? `<div class="ed-body">${body}</div>` : ''}
   ${!t ? (details ? `<div class="ed-talks">${details}</div>` : (!s.desc && !s.info ? '<div class="ed-body"><p class="ed-who">No abstract provided.</p></div>' : '')) : ''}`;
@@ -9256,6 +9278,9 @@ function fillEventDialog(sid, tid){
 // gesture) closes them; Forward opens them again. `button` is the block that opened them
 // (null when only the history knows what was open).
 let dlgSeq = 0, dlgDoneSeq = 0;
+// What the details grow out of and shrink back into: the item that opened them; for a
+// talk in the list, its row (not its abstract under it, when that is shown in place).
+const dlgBox = el => el.matches('.t-open') ? el : el.closest(MX_ITEM) || el;
 function openEventDialog(button, sid, tid, fromHistory, still){
   // opened again while it closes (DLG_JS): that closing is over, the dialog stays open
   const again = dlgAbortClose(eventDialog);
@@ -9267,7 +9292,7 @@ function openEventDialog(button, sid, tid, fromHistory, still){
   const open = () => { hideToast(); if (!eventDialog.open) eventDialog.showModal(); eventDialog.scrollTop = 0; };
   // the dialog grows out of the block that opened it (not from inside another dialog)
   if (still || !button || button.closest('dialog') || !button.getClientRects().length) open();
-  else withTransition('dlg', () => { open(); return eventDialog; }, button.closest(MX_ITEM) || button);
+  else withTransition('dlg', () => { open(); return eventDialog; }, dlgBox(button));
 }
 document.addEventListener('click', e => {
   const button = e.target.closest('[data-session-detail]');
@@ -9292,7 +9317,7 @@ function closeEventDialog(){
     eventDialogDone();   // may redraw; moves the focus back
     const f = document.activeElement, el = f && f.closest && f.closest('#main [data-session-detail]') ? f
       : dialogTrigger && dialogTrigger.isConnected ? dialogTrigger : null;
-    const box = el && (el.closest(MX_ITEM) || el), r = box && box.getBoundingClientRect();
+    const box = el && dlgBox(el), r = box && box.getBoundingClientRect();
     return r && r.width && r.bottom > 0 && r.top < innerHeight ? box : null;
   }, eventDialog);
 }
@@ -9314,6 +9339,21 @@ eventDialog.addEventListener('click', e => {
     dlgHistoryClose();
     if (buildDialog.open){ bd.nav = true; dlgNow(buildDialog); pnlHistoryClose(); }
     openInProgram(jump);
+    return;
+  }
+  // A talk's details give way to its session's, with that talk open among the others; the
+  // step in the history is the session's now (Back closes them, as it would have).
+  const whole = e.target.closest('[data-dlg-session]');
+  if (whole){
+    const sid = whole.dataset.dlgSession, from = whole.dataset.dlgFrom;
+    fillEventDialog(sid, '', from);
+    if (dlgEntry && history.state && history.state.dlg) try { history.replaceState({ ...history.state, dlg: { s: sid, t: '' } }, ''); } catch (err) {}
+    eventDialog.scrollTop = 0;
+    const fold = eventDialog.querySelector(`details[data-tid="${CSS.escape(from)}"]`);
+    if (fold){
+      fold.querySelector('summary').focus({ preventScroll: true });
+      fold.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    } else document.getElementById('eventTitle').focus();
     return;
   }
   const rep = e.target.closest('[data-replace-session]');
@@ -10200,20 +10240,20 @@ function jumpTo(dayAttr, jump, jumpTalk, layout = 'list'){
     const card = document.querySelector(`#agenda .card[data-sid="${jump}"]`);
     if (card){
       listMeasureAbove(card);
-      const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] details`);
-      if (talk) talk.open = true;
-      const target = talk ? talk.querySelector('summary') : card.querySelector('h3');
+      // (a talk: its row, which opens its details; its abstract stays as it was)
+      const talk = jumpTalk && card.querySelector(`.talk[data-tid="${jumpTalk}"] > .t-open`);
+      const target = talk || card.querySelector('h3');
       // (with a mouse the target keeps its focus ring, as before; on touch the tint marks it)
       target.focus({ preventScroll: true, focusVisible: !matchMedia('(pointer: coarse)').matches });
       markJumpTarget(target);
-      revealInCard(card, talk && talk.querySelector('summary'));
+      revealInCard(card, talk);
       // (a face still loading, the italic names say, rewraps the text above: place it again
       // once the type is in, unless the reader has scrolled meanwhile)
       if (document.fonts && document.fonts.status === 'loading'){
         let mine = true;
         const ins = ['wheel', 'touchstart', 'keydown', 'pointerdown'], off = () => { mine = false; for (const k of ins) window.removeEventListener(k, off, true); };
         for (const k of ins) window.addEventListener(k, off, { capture: true, passive: true });
-        document.fonts.ready.then(() => { if (mine && card.isConnected) revealInCard(card, talk && talk.querySelector('summary')); off(); });
+        document.fonts.ready.then(() => { if (mine && card.isConnected) revealInCard(card, talk); off(); });
       }
       card.classList.add('flash');
       setTimeout(() => card.classList.remove('flash'), 1400 * motionK() + 100);
@@ -10317,7 +10357,7 @@ function dxFold(ds, open, also){
   // where each is now (part of the way, when it moves), and how far its text has faded
   const xs = ds.map(d => {
     const fades = dxFades(d), st = d.__dx;
-    return { d, fades, st, h0: d.getBoundingClientRect().height, o0: st ? fades.map(c => +getComputedStyle(c).opacity) : null };
+    return { d, fades, st, h0: d.getBoundingClientRect().height, on: d.getClientRects().length > 0, o0: st ? fades.map(c => +getComputedStyle(c).opacity) : null };
   });
   for (const x of xs){
     if (x.st){ x.st.anims.forEach(a => a.cancel()); x.d.__dx = null; dxRunning.delete(x.d); }
@@ -10343,7 +10383,9 @@ function dxFold(ds, open, also){
   for (const x of xs){
     const { d, fades, h0, hc, ho } = x, to = open ? ho : hc, span = ho == null ? 1 / 0 : Math.abs(ho - hc);
     const part = ho == null ? 1 : span < 1 ? 0 : Math.min(1, Math.abs(to - h0) / span), ms = MO_L * k * part;
-    if (ms < 8 || !h0){ dxSet(d, open); continue; }
+    // (not on the page: at once; a list talk's abstract, whose summary is hidden, is 0px
+    // high while it is closed, and moves from there)
+    if (ms < 8 || !x.on || (!h0 && !d.matches('.talk-d'))){ dxSet(d, open); continue; }
     d.classList.add('dx-run');
     const o0 = x.o0 || fades.map(() => open ? 0 : 1);
     const opt = { duration: ms, easing: EASE, fill: 'forwards' };
@@ -10365,6 +10407,17 @@ document.addEventListener('click', e => {
   if (motionReduced() || !d.animate){ dxEnd(d); return; }
   e.preventDefault();
   dxFold([d], !dxGoal(d));
+});
+// A list talk's abstract shown in place (Expand all, a search): its Hide button folds it
+// back under the row, and the focus goes to the row (the button is folding away): from the
+// keyboard, the row is then brought into sight if the fold left it above the screen.
+document.addEventListener('click', e => {
+  const hide = e.target.closest('.t-hide'), d = hide && hide.closest('details.talk-d');
+  if (!d) return;
+  const row = d.closest('.talk').querySelector('.t-open');
+  row.focus({ preventScroll: true });
+  dxFold([d], false);
+  if (!e.detail) setTimeout(() => { if (document.activeElement === row) row.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }, d.__dx ? MO_L * motionK() + 40 : 0);
 });
 document.getElementById('expandAll').addEventListener('click', e => {
   const ds = [...document.querySelectorAll('.card:not(.hidden) details')];
@@ -11434,7 +11487,7 @@ function readHash(){
   if (state.scope === 'agenda') document.getElementById('includeParents').checked = p.get('full') === '1' || (p.get('layout') !== 'calendar' && savedFull());
   return { session: p.get('s'), talk: p.get('t'), agenda: p.get('agenda'), hasDay: di >= 0 };
 }
-function followHashTargets(r){
+function followHashTargets(r, pop){
   const hit = r.talk ? talkById(r.talk) : null;
   const s = hit ? hit.s : r.session ? slotById(r.session) : null;
   pinned = hit ? 't=' + hit.t.id : s ? 's=' + s.id : '';
@@ -11449,6 +11502,14 @@ function followHashTargets(r){
   pinnedAgenda = '';
   if (r.agenda) showSharedAgenda(r.agenda.split(','));
   writeHash();
+  // A link to a talk followed into the list (`pop`: the page opened on it, 'still', or
+  // the address changed to it, 'grow') opens the talk's details over its row, as a press
+  // on the row would. (Back and Forward onto such an address only go to the row: the
+  // history's own steps say whether the details were open.)
+  if (pop && hit && !r.agenda && state.layout === 'list' && state.scope === 'program'){
+    const row = document.querySelector(`#agenda .talk[data-tid="${CSS.escape(hit.t.id)}"] > .t-open`);
+    if (row) openEventDialog(row, hit.s.id, hit.t.id, false, pop === 'still');
+  }
 }
 function linkTo(hash){
   // Share the real address: the short /AIP2026 alias answers through a 404 page,
@@ -12410,7 +12471,7 @@ function start(){
   showView(state.layout, state.scope);
   void document.body.offsetHeight;
   txCost.set(txKey(), txAvg = performance.now() - t0);   // (a first guess at this view's cost: txHeavy)
-  followHashTargets(r);
+  followHashTargets(r, st ? '' : 'still');   // (a reload: the step says whether the details were open)
   if (st && typeof st.y === 'number' && !r.session && !r.talk){ window.scrollTo({ top: st.y, behavior: 'instant' }); anchorBack(st.ya, st.y); }
   // reloaded with a panel or the details open: open them again
   if (pnlEntry) openPanel(pnlEntry);
@@ -12429,7 +12490,7 @@ window.addEventListener('hashchange', e => {
   clearTimeout(qTimer); qPending = null; // the address wins over a search still being typed
   const r = readHash();
   showView(state.layout, state.scope);
-  followHashTargets(r);
+  followHashTargets(r, 'grow');
 });
 setInterval(paintNow, 30000);
 // the web fonts can settle after the first paint and grow the vertical grid's rows: redraw the now line then
