@@ -6075,6 +6075,30 @@ function mxBegin(kind, from, opts){
       const its = cand.filter(x => x.o.kind === 'item' && x.key !== fromKey);
       // (opts.reshape: the change is meant to reshape items, as "Show full sessions" does)
       const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
+      // (opts.only, into the list: the item you were at, and of the sessions beside it
+      // those whose move shows on the screen at both ends and never crosses another's on
+      // the way: in a crowded slot, bars stacked in lanes become cards side by side, much
+      // taller, and their boxes would pile up over each other, text over text, for much of
+      // the move; the other way, each card folds into its bar under the new page's own)
+      if (only && state.layout === 'list'){
+        const vw = innerWidth, vh = innerHeight, at = (r, q) => {
+          const l = r.o.left + (r.n.left - r.o.left) * q, t = r.o.top + (r.n.top - r.o.top) * q;
+          const R = l + r.o.width + (r.n.width - r.o.width) * q, B = t + r.o.height + (r.n.height - r.o.height) * q;
+          return { l: Math.max(l, 0), t: Math.max(t, 0), r: Math.min(R, vw), b: Math.min(B, vh) };
+        };
+        const shows = r => r.right > 8 && r.left < vw - 8 && r.bottom > 8 && r.top < vh - 8;
+        const QS = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1], kept = [];
+        for (let i = cand.length - 1; i >= 0; i--) if (cand[i].key === first){ cand.unshift(cand.splice(i, 1)[0]); break; }
+        for (let i = 0; i < cand.length; i++){
+          const x = cand[i], path = { o: x.o.r, n: x.n.r };
+          const ok = x.key === first || x.o.kind !== 'item' || (shows(x.o.r) && shows(x.n.r) && !kept.some(k => QS.some(q => {
+            const a = at(path, q), b = at(k, q);
+            return Math.min(a.r, b.r) - Math.max(a.l, b.l) > 4 && Math.min(a.b, b.b) - Math.max(a.t, b.t) > 4;
+          })));
+          if (ok){ if (x.o.kind === 'item') kept.push(path); continue; }
+          named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); cand.splice(i--, 1);
+        }
+      }
       for (const x of cand){
         if (wild && x.o.kind === 'item' && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
         // (a block that changes shape: its new look comes in over the old one early, so the
