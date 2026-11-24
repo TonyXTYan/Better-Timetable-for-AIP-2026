@@ -850,11 +850,11 @@ html[data-view-tx="zoom"]::view-transition-old(root){animation:var(--dur-s) var(
 html[data-view-tx="zoomout"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-zoomout-old}
 html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(var(--dur-s) / 3)}
 /* List <-> Calendar ('lay'): the old page goes quickly and the new one comes up from a
-   little smaller, about the item you were at (--lay-o, set on the root by layAnchor), while
+   little smaller, about the item you were at (layOrigin, set by layAnchor), while
    that item and the sessions beside it in its time slot move from their cards to their
    bars or blocks (or back), in Fast's 300ms, times the speed setting */
 html[data-view-tx="lay"]::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
-html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both lay-in;transform-origin:var(--lay-o,50% 30%)}
+html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both lay-in;transform-origin:50% 30%}
 html[data-view-tx="lay"]::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* (a card and a bar are too unlike to show together for long: the old look goes at once,
    in 90ms, as the new one comes in, pinned to the top left of the moving box, so a card
@@ -2958,8 +2958,16 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
    chosen option just keeps its own fill. Reduced motion: it moves at once. */
 @media (forced-colors:none){
   .agenda-views.seg-ind,.seg.seg-ind,.hz-zoom.seg-ind{position:relative;isolation:isolate}
-  .agenda-views.seg-ind::before,.seg.seg-ind::before,.hz-zoom.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease)}
-  .seg-ind.seg-snap::before{transition:none}
+  .agenda-views.seg-ind::before,.seg.seg-ind::before,.hz-zoom.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-bw,var(--seg-w));height:var(--seg-bh,var(--seg-h));transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none}
+  /* (sliding, segSlide: the indicator is as big as the larger of the two options, and a
+     clip, rounded as it is, cuts it down to the size between them; the clip and the
+     transform both run on the compositor, so the slide keeps going while the page redraws) */
+  .seg-ind.seg-slide::before{border-radius:0}
+  /* (as a slide starts, the option it leaves drops its own fill at once: the indicator is
+     still under it, so nothing changes; a fill fading out instead would show, greyed,
+     as the indicator moves away from under it) */
+  .agenda-views.seg-moving>button{transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .hz-zoom.seg-moving>button,.seg.seg-moving label>span{transition:color calc(200ms * var(--mo)) var(--ease)}
   .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
@@ -2970,7 +2978,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .seg-ind.seg-snap>button,.seg-ind.seg-snap label>span,.seg-ind.seg-snap small{transition:none}
   /* (held until the new view shows, segWait: the indicator and the colours as they were,
      the new choice lit as under a pointer meanwhile, so the press shows at once) */
-  .agenda-views.seg-hold::before,.agenda-views.seg-hold>button{transition:none}
+  .agenda-views.seg-hold>button{transition:none}
   .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
   .agenda-views.seg-hold>button.seg-was{color:var(--accent-ink)}
   /* The day tabs: the same indicator, the size of the chosen tab, its corners rounded at
@@ -2983,7 +2991,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
      (scaled, so layered) tab hides the indicator. The indicator lives in the strip's
      scrolled content, so it scrolls with the tabs. */
   .daytabs.seg-ind{position:relative;isolation:isolate}
-  .daytabs.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-w);height:var(--seg-h);transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--seg-r,0);background:var(--accent);box-shadow:inset 0 0 0 1px var(--line);pointer-events:none;transition:transform calc(200ms * var(--mo)) var(--ease),width calc(200ms * var(--mo)) var(--ease),height calc(200ms * var(--mo)) var(--ease),border-radius calc(200ms * var(--mo)) var(--ease)}
+  .daytabs.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-bw,var(--seg-w));height:var(--seg-bh,var(--seg-h));transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--seg-r,0);background:var(--accent);box-shadow:inset 0 0 0 1px var(--line);pointer-events:none}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab,.daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab:is(:hover,.on,.zero,:focus-visible){z-index:auto;background:transparent;border-color:transparent}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab::before{content:"";position:absolute;inset:-1px;z-index:-2;border:1px solid var(--line);border-radius:inherit;background:var(--card);pointer-events:none}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.zero:not(.on)::before{background:var(--surface-2)}
@@ -4967,7 +4975,7 @@ document.getElementById('daytabs').addEventListener('click', e => {
   // The Vertical day view slides between days itself (the tab shows pressed first).
   if (day !== 'all' && day !== state.day && vtShown()){
     const slide = () => vtSlideTo(day, { focus: 'tab', toTop: true });
-    txPending(b, slide, slide);
+    txPending(b, slide, slide, 0, false);   // (no snapshots: the tabs' slide starts at the press)
     return;
   }
   const go = () => {
@@ -4980,7 +4988,7 @@ document.getElementById('daytabs').addEventListener('click', e => {
   const vertical = state.layout === 'calendar' && state.scope === 'program' && state.orient === 'v' && state.day !== 'all' && day !== 'all';
   const week = (day === 'all') !== (state.day === 'all');
   if (day === state.day) go();
-  else if (vertical) txPending(b, go, go);
+  else if (vertical) txPending(b, go, go, 0, false);
   // All week <-> a day: in the calendar the day grows out of the week or shrinks back
   // into it; a list zooms in or out (the same pair: a level for both ways, and always some
   // zoom, even for the Full program's long week, whose cards are then not named: plain)
@@ -6837,7 +6845,7 @@ function withTransition(kind, fn, from, opts = {}){
   if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
   if (opts.press){
     const o = { ...opts, press: null };
-    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o), txSlideFirst(o, opts.press));
+    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o), txSlideFirst(o, opts.press), txFreezes(kind, o));
     return;
   }
   txStart(kind, fn, from, opts);
@@ -6858,6 +6866,13 @@ function txSlideFirst(o, press){
   if (p && o.pair === 'layout' && txPairLevel(o, p) === 0) return redraw > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
   const wait = redraw + (p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0));
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
+}
+// Whether the change will take snapshots (a view transition), which hold the page still
+// while it redraws: a switch's slide then waits for the new view (segWait); a change
+// without them (none: drawn in place, at most faded in) slides at the press, on the
+// compositor, while the page redraws.
+function txFreezes(kind, o){
+  return !!document.startViewTransition && !motionReduced() && !txGuards(kind, o, performance.now()).none;
 }
 // fn, timed: its cost is the script and the layout it causes
 const txTimed = (fn, opts, after) => () => {
@@ -7199,7 +7214,7 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slide = 0){
+function txPending(press, go, now, slide = 0, freeze = true){
   if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
@@ -7209,7 +7224,7 @@ function txPending(press, go, now, slide = 0){
     ran = true;
     if (viewTx === tx) viewTx = null;
   };
-  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, slide, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
+  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, slide, freeze, group: press.parentElement, drop: () => { if (!ran){ end(); paint(false); } } };
   requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, slide));
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
@@ -9342,9 +9357,16 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
 function layOnly(a){
   const keys = a ? [...a.keys] : [], seen = new Set(keys), y = a ? a.y : 0;
   const bar = stickyWrap.getBoundingClientRect().bottom, vh = innerHeight;
-  const sel = state.layout === 'list' ? '.card[data-sid], .ag-row[data-sid]' : LAY_CAL;
-  const near = [];
-  for (const el of document.getElementById('main').querySelectorAll(sel)){
+  const near = [], main = document.getElementById('main');
+  // (the list: only the time blocks in sight are looked into; a card's box in a block off
+  // screen, which is not laid out (content-visibility), would cost that block's layout)
+  const els = state.layout !== 'list' ? main.querySelectorAll(LAY_CAL)
+    : [...main.querySelectorAll('.block, .ag-row[data-sid]')].flatMap(b => {
+      const r = b.getBoundingClientRect();
+      if (!r.height || r.bottom <= bar + 4 || r.top >= vh - 4) return [];
+      return b.matches('.ag-row') ? [b] : [...b.querySelectorAll('.card[data-sid]')];
+    });
+  for (const el of els){
     const sid = el.dataset.sid;
     if (!sid || seen.has('s-' + sid)) continue;
     const r = el.getBoundingClientRect();
@@ -9425,12 +9447,24 @@ function layAnchor(){
   const key = tid ? 't-' + tid : 's-' + sid, r = el.getBoundingClientRect();
   const keys = [key, ...DATA.days[day].slots.filter(x => x.start === slot.start && 's-' + x.id !== key).map(x => 's-' + x.id)];
   // (the new page comes in about it)
-  document.documentElement.style.setProperty('--lay-o', `${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
+  layOrigin(`${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
   const lead = back && back.key === key && back.ret || key;
   if (lead !== key){ const i = keys.indexOf(lead); if (i > 0) keys.splice(i, 1); keys.unshift(lead); }
   const top = !back && window.scrollY <= programTop() + 8;
   const again = !!(back && back.key === key);
   return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
+}
+// The point the new layout comes in about, kept in a rule of its own for the new page's
+// picture alone: a custom property on the root would be inherited by every element, and
+// changing it would restyle the whole page, at the press, before it shows.
+function layOrigin(o){
+  if (!layOrigin.rule){
+    const st = document.createElement('style');
+    st.textContent = 'html[data-view-tx="lay"]::view-transition-new(root){}';
+    document.head.append(st);
+    layOrigin.rule = st.sheet.cssRules[0].style;
+  }
+  layOrigin.rule.setProperty('transform-origin', o);
 }
 // A calendar item's session and talk; a week's "+N" chip stands for the first item it folds.
 const layIds = el => el.matches('.week-nmore') ? { tid: el.dataset.weekTid || undefined, sid: el.dataset.weekSid }
@@ -12669,7 +12703,8 @@ function tbFollowers(){
   for (const el of all){
     const cs = getComputedStyle(el);
     if (cs.position !== 'sticky') continue;
-    const top = parseFloat(cs.top), r = el.getBoundingClientRect();
+    // (mid-fold, a head moving by a translate: where it shows, its top and that together)
+    const top = parseFloat(cs.top) + (parseFloat(cs.translate.split(' ')[1]) || 0), r = el.getBoundingClientRect();
     if (!Number.isFinite(top) || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
     out.push({ el, top, h: parseFloat(cs.height), y: r.top });
   }
@@ -12714,7 +12749,7 @@ function tbAnimEnd(run){
   stickyWrap.style.clipPath = '';
   stickyWrap.style.removeProperty('--tb-edge');
   stickyWrap.querySelector('.toolbar').style.opacity = '';
-  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; }
+  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; el.style.translate = ''; }
   for (const el of run.lv) el.style.removeProperty('--toolbar-h');
   if (TB.anim === run) TB.anim = null;
 }
@@ -12798,13 +12833,21 @@ function tbCompact(on){
       const cs = getComputedStyle(f.el), top = parseFloat(cs.top), h = parseFloat(cs.height);
       // (only what sits at the edge or will: one lower down is in its own place either way)
       if (f.y > Math.max(f.top, top) + 1) continue;
-      const k0 = { top: f.top + 'px' }, k1 = { top: top + 'px' };
-      if (Math.abs(h - f.h) > 0.5){ k0.height = f.h + 'px'; k1.height = h + 'px'; }
-      if (Math.abs(top - f.top) > 0.5 || k0.height){
+      // (a head that keeps its height moves by a translate, which the compositor runs,
+      // from where it was to its new place; one whose height changes too is moved by its
+      // top, with the height, a layout each frame)
+      if (Math.abs(h - f.h) <= 0.5){
+        if (Math.abs(top - f.top) <= 0.5) continue;
+        const k0 = { translate: `0 ${f.top - top}px` }, k1 = { translate: '0 0' };
         Object.assign(f.el.style, k0);
         TB.anim.fe.push(f.el);
         TB.anim.f.push(f.el.animate([k0, k1], opt));
+        continue;
       }
+      const k0 = { top: f.top + 'px', height: f.h + 'px' }, k1 = { top: top + 'px', height: h + 'px' };
+      Object.assign(f.el.style, k0);
+      TB.anim.fe.push(f.el);
+      TB.anim.f.push(f.el.animate([k0, k1], opt));
     }
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
@@ -12933,12 +12976,12 @@ function segPlace(g, snap, now){
     if (on && was && was.isConnected && was.offsetWidth){ segAt(g, was, true); return; }
     segUnhold(g);
   }
-  if (!on || !on.offsetWidth){ g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
+  if (!on || !on.offsetWidth){ segStop(g); g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
   // (resized mid-slide: the slide goes on to the option's new place rather than jumping)
   const retarget = snap && g._segOn === on && g.classList.contains('seg-moving') && g.classList.contains('seg-ind');
   if (retarget) segMoving(g);
   else if (snap || !g._segOn || !g.classList.contains('seg-ind')) snap = true;
-  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
+  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && viewTx.freeze !== false && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
   // the slide: the chosen option's own fill waits until the indicator is under it
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
@@ -12948,24 +12991,74 @@ function segMoving(g){
   clearTimeout(g._segT);
   g._segT = setTimeout(() => g.classList.remove('seg-moving'), 200 * motionK() + 60);
 }
-// The indicator under the option `on` (at once: snap).
+// The indicator under the option `on` (at once: snap; else it slides there from where it
+// is now, segSlide). Its box is read from the options' offsets, never from its own style,
+// so a slide begun mid-slide (a held arrow key, a resize) starts where it shows.
 function segAt(g, on, snap){
-  if (snap) g.classList.add('seg-snap');
+  const to = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight, r: segRound(g, on) };
+  const from = !snap && g.classList.contains('seg-ind') ? segNow(g) : null;
+  segStop(g);
+  if (snap){
+    g.classList.add('seg-snap');
+    // (the labels' colours change at once too: seg-snap holds their transitions off until
+    // that style has been drawn, the next frame, rather than forcing it now)
+    cancelAnimationFrame(g._segSnapF);
+    g._segSnapF = requestAnimationFrame(() => { g._segSnapF = requestAnimationFrame(() => g.classList.remove('seg-snap')); });
+    g.classList.remove('seg-moving');
+  } else if (g.classList.contains('seg-snap')){ cancelAnimationFrame(g._segSnapF); g.classList.remove('seg-snap'); }
   g.classList.add('seg-ind');
   // (offsets: the group is the indicator's containing block once seg-ind is on; and the
   // option's own press scale does not count)
   const s = g.style;
-  s.setProperty('--seg-x', on.offsetLeft + 'px');
-  s.setProperty('--seg-y', on.offsetTop + 'px');
-  s.setProperty('--seg-w', on.offsetWidth + 'px');
-  s.setProperty('--seg-h', on.offsetHeight + 'px');
+  s.setProperty('--seg-x', to.x + 'px');
+  s.setProperty('--seg-y', to.y + 'px');
+  s.setProperty('--seg-w', to.w + 'px');
+  s.setProperty('--seg-h', to.h + 'px');
   // (a day tab at either end of the strip has its outer corners rounded)
   if (g.id === 'daytabs') s.setProperty('--seg-r', on === g.firstElementChild ? 'var(--r-ctl) 0 0 var(--r-ctl)' : on === g.lastElementChild ? '0 var(--r-ctl) var(--r-ctl) 0' : '0px');
   g._segOn = on;
-  if (snap){
-    getComputedStyle(g, '::before').transform;
-    g.classList.remove('seg-snap', 'seg-moving');
-  }
+  g._segBox = to;
+  if (from && !motionReduced() && ['x', 'y', 'w', 'h'].some(k => Math.abs(from[k] - to[k]) > .5)) segSlide(g, from, to);
+}
+// The indicator's corners for the option `on`, as a clip's radii in px (never all four 0,
+// which the compositor cannot animate to or from)
+function segRound(g, on){
+  const px = v => (segRound[v] ??= parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v)) || 0);
+  if (g.id !== 'daytabs'){ const r = px('--r-seg'); return [r, r, r, r]; }
+  const r = px('--r-ctl'), a = on === g.firstElementChild, b = on === g.lastElementChild;
+  return [a ? r : 0, b ? r : 0, b ? r : 0, a ? r : .01];
+}
+// Where the indicator shows now: mid-slide, between the slide's ends by its eased progress.
+function segNow(g){
+  const sl = g._segSlide, to = g._segBox;
+  if (!sl || !to) return to;
+  const p = sl.a.effect.getComputedTiming().progress ?? 1, f = sl.from, t = sl.to, m = (u, v) => u + (v - u) * p;
+  return { x: m(f.x, t.x), y: m(f.y, t.y), w: m(f.w, t.w), h: m(f.h, t.h), r: f.r.map((u, i) => m(u, t.r[i])) };
+}
+// The slide: a move (transform) and a clip (its size and corners) of the indicator, both
+// of which the compositor runs, so it goes on while the page is busy redrawing; the box
+// itself is the larger of the two ends meanwhile.
+function segSlide(g, from, to){
+  const W = Math.max(from.w, to.w), H = Math.max(from.h, to.h);
+  const clip = b => `inset(0px ${W - b.w}px ${H - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`;
+  g.style.setProperty('--seg-bw', W + 'px');
+  g.style.setProperty('--seg-bh', H + 'px');
+  g.classList.add('seg-slide');
+  const o = { duration: 200 * motionK(), easing: EASE, pseudoElement: '::before', fill: 'forwards' };
+  const a = g.animate([{ transform: `translate(${from.x}px,${from.y}px)` }, { transform: `translate(${to.x}px,${to.y}px)` }], o);
+  const c = g.animate([{ clipPath: clip(from) }, { clipPath: clip(to) }], o);
+  const sl = g._segSlide = { a, c, from, to };
+  a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
+}
+// (the slide ends: its box and clip go, the indicator at rest where it ended)
+function segStop(g){
+  const sl = g._segSlide;
+  if (!sl) return;
+  g._segSlide = null;
+  sl.a.cancel(); sl.c.cancel();
+  g.style.removeProperty('--seg-bw');
+  g.style.removeProperty('--seg-bh');
+  g.classList.remove('seg-slide');
 }
 // (the watchers are made on first use: the calendar may draw its zoom before this point
 // of the script has run)
