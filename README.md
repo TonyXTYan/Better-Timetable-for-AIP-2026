@@ -86,6 +86,11 @@ user site's `404.html` that keeps `?query` and `#hash`).
   with its talks, a tick box for each, saved as you tick. A slider with day and time marks
   jumps anywhere in the week and updates the slot as you drag; breaks and meetings are left out
   unless you ask for them. During the congress it starts at the first slot that is not over.
+  **Expand all talks** (remembered for the visit, like the breaks option) unfolds every
+  session's talks in each slot; a session folded by hand stays folded until the dialog closes
+  or the option changes. With a keyboard, Left and Right step back and on like Back and Next
+  (not in the slider, which steps by itself, nor with a modifier key); a grey hint in the
+  footer says so, hidden on phones and touch screens.
 - Export My agenda: **Print or save as PDF** (a clean A4 list per day with a clash section),
   copy as text, download `.ics` (each event lists what it overlaps; talks inside a saved session
   are listed in that session's event), or share it as a link the receiver can add to or swap for

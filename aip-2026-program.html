@@ -2168,6 +2168,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-opts{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:2px 16px;font-size:.8125rem;color:var(--muted);align-self:center}
 .bd-opts label{display:inline-flex;align-items:center;gap:6px;min-height:32px;color:var(--ink-2);cursor:pointer}
 .bd-opt-t{white-space:nowrap}
+.bd-optset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 16px}
+.bd-opt-s{display:none}
 .bd-opts input,.bd-check input{accent-color:var(--accent)}
 .bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:16px 20px 20px}
 .bd-slot-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin:0 0 12px}
@@ -2226,6 +2228,13 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-done p{margin:0 0 14px;color:var(--muted)}
 .bd-foot{flex:none;display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface-2)}
 .bd-foot #bdNext{margin-left:auto}
+/* the keyboard hint, between Skip day and Next: only where there is a keyboard and room for it */
+.bd-kbd{flex:0 1 auto;min-width:0;margin:0 0 0 auto;padding-left:8px;font-size:.75rem;line-height:1.3;color:var(--muted);text-align:center}
+.bd-kbd[hidden]{display:none}
+@media (max-width:720px),(max-height:520px),(hover:none),(pointer:coarse),print{.bd-kbd{display:none}}
+/* a session's talks folding out or away (bdFold): its height runs in script */
+.bd-tlist.bd-run{overflow:clip}
+@supports not (overflow:clip){.bd-tlist.bd-run{overflow:hidden}}
 .bd-foot .toggle svg{flex:none;width:14px;height:14px}
 .bd-foot button:disabled{opacity:.5;cursor:default}
 @media (max-width:720px){
@@ -2237,6 +2246,11 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
   .bd-titles{flex:1 1 0}
   .bd-intro{display:none}
   .bd-opts{order:3;flex:1 1 100%;justify-content:space-between;flex-wrap:nowrap;gap:8px}
+  .bd-optset{flex-wrap:nowrap;gap:12px}
+  .bd-opt-w{display:none}
+  .bd-opt-s{display:inline}
+  /* (where the two options do not fit beside "Slot x of y", they take a line of their own) */
+  .bd-opts{flex-wrap:wrap;row-gap:0}
   .bd-scale{margin-top:2px}
   .bd-range{height:40px}
   .bd-ticks{margin-top:-4px}
@@ -2285,6 +2299,9 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 }
 /* Large text on the narrowest phones: the talks toggle goes under the title, the header
    and footer stay on one line each. */
+/* narrow phones, and phones with large text: "Include breaks", short */
+@media (max-width:440px){.bd-opt-x{display:none}}
+@media (max-width:520px){html:is([data-text="lg"],[data-text="xl"]) .bd-opt-x{display:none}}
 @media (max-width:360px){
   html[data-text="xl"] #bdProgress{white-space:nowrap}
   html[data-text="xl"] .bd-opt-x{display:none}
@@ -2345,7 +2362,9 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
   #buildDialog .bd-chips{grid-area:1 / 2;align-self:center;margin:0;padding:4px 0}
   #buildDialog .bd-chip{min-height:32px;height:32px;position:relative}
   #buildDialog .bd-chip::after{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
-  #buildDialog .bd-opts label{grid-area:1 / 3;margin-right:calc(var(--bdx) + 4px)}
+  #buildDialog .bd-optset{grid-area:1 / 3;flex-wrap:nowrap;gap:12px;margin-right:calc(var(--bdx) + 4px)}
+  .bd-opt-w,.bd-opt-x{display:none}   /* "All talks", "Include breaks": the streams keep their room */
+  .bd-opt-s{display:inline}
   #buildDialog #bdProgress{display:block;grid-area:2 / 1;white-space:nowrap;font-size:.75rem}
   #buildDialog .bd-scale{grid-area:2 / 2 / 3 / 4;margin:0}
   #bdClose{top:2px;right:14px}
@@ -2808,7 +2827,7 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 /* Mouse and keyboard wording versus touch wording */
 .on-touch{display:none}
 @media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
-.hero kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
+.hero kbd,.bd-kbd kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
 @media (hover:none),(pointer:coarse),print{.kbd-hint{display:none!important}}
 /* Result line: a quick "Search all week" and what a short form matched */
 .result-line{overflow-wrap:anywhere}
@@ -3296,7 +3315,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </div>
       <div class="bd-opts">
         <span id="bdProgress"></span>
-        <label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"><span class="bd-opt-t">Include breaks<span class="bd-opt-x"> and meetings</span></span></label>
+        <span class="bd-optset"><label title="Show every session's talks"><input type="checkbox" id="bdExpand"><span class="bd-opt-t"><span class="bd-opt-w">Expand all</span><span class="bd-opt-s">All</span> talks</span></label><label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"><span class="bd-opt-t">Include breaks<span class="bd-opt-x"> and meetings</span></span></label></span>
       </div>
       <button type="button" class="toggle dlg-x" id="bdClose" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
     </div>
@@ -3313,6 +3332,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   <div class="bd-foot">
     <button type="button" class="toggle" id="bdBack"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
     <button type="button" class="toggle" id="bdSkipDay">Skip day</button>
+    <p class="bd-kbd" id="bdKbd">Tip: <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move between slots</p>
+    <span class="visually-hidden" id="bdLive" aria-live="polite"></span>
     <button type="button" class="toggle primary" id="bdNext">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </dialog>
@@ -9851,8 +9872,9 @@ const buildDialog = document.getElementById('buildDialog');
 const ADMIN_CATS = new Set(['social', 'business']);
 const isAdminSession = s => ADMIN_CATS.has(s.cat);
 const bdEl = id => document.getElementById(id);
-const bd = { slots: [], i: 0, done: false, admin: false, cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null };
+const bd = { slots: [], i: 0, done: false, admin: false, expand: false, folds: new Map(), cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null };
 try { bd.admin = sessionStorage.getItem('aip2026-build-admin') === '1'; } catch (e) {}
+try { bd.expand = sessionStorage.getItem('aip2026-build-expand') === '1'; } catch (e) {}
 try { (sessionStorage.getItem('aip2026-build-cats') || '').split(',').filter(k => k in DATA.cats).forEach(k => bd.cats.add(k)); } catch (e) {}
 // Phones and short (landscape) screens: one compact row per session, talks folded away.
 const BD_COMPACT = matchMedia('(max-width:720px), (max-height:520px)');
@@ -9941,12 +9963,45 @@ function bdTalk(s, t){
     <span class="bd-ttime">${esc(t.s)}</span><span class="bd-tmain"><span class="bd-ttitle">${esc(t.t)}</span>${who ? `<span class="bd-sp">${esc(who)}</span>` : ''}</span></label>
     <button type="button" class="bd-abs" data-session-detail="${esc(s.id)}" data-talk-detail="${esc(t.id)}" aria-label="Abstract of ${esc(t.t)}">Abstract</button></li>`;
 }
+// Whether a session's talks show: as folded or unfolded by hand on this visit (bd.folds,
+// kept as you move from slot to slot until the dialog closes or Expand all talks changes),
+// else all of them with Expand all talks, else where any is saved or there is room.
+function bdTalksOpen(s, parallel){
+  if (bd.folds.has(s.id)) return bd.folds.get(s.id);
+  if (bd.expand) return true;
+  return s.talks.some(t => state.starred.has(t.id)) || (!BD_COMPACT.matches && (s.talks.length <= 3 || parallel <= 2));
+}
+// A session's talks folding out or away: the list's height (and margins) run from where
+// they are now, so a reversal half way turns back smoothly; at once with reduced motion.
+function bdFold(list, open){
+  const card = list.closest('.bd-card'), tog = card.querySelector('.bd-tog');
+  tog.setAttribute('aria-expanded', open);
+  card.classList.toggle('open', open);
+  const run = list.__bd, cs = getComputedStyle(list);
+  const from = list.hidden ? { height: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 }
+    : { height: list.getBoundingClientRect().height + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, opacity: run ? +cs.opacity : 1 };
+  if (run){ run.cancel(); list.__bd = null; }
+  list.classList.remove('bd-run');
+  list.hidden = false;
+  const cs2 = getComputedStyle(list);
+  const to = open ? { height: list.getBoundingClientRect().height + 'px', marginTop: cs2.marginTop, marginBottom: cs2.marginBottom, opacity: 1 }
+    : { height: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 };
+  if (motionReduced() || !list.animate || !list.getClientRects().length || from.height === to.height){ list.hidden = !open; return; }
+  list.classList.add('bd-run');
+  const a = list.__bd = list.animate([from, to], { duration: MO_L * motionK(), easing: EASE, fill: 'forwards' });
+  a.finished.then(() => {
+    if (list.__bd !== a) return;
+    list.__bd = null;
+    list.hidden = !open;
+    list.classList.remove('bd-run');
+    a.cancel();
+  }, () => {});
+}
 function bdCard(s, parallel){
   const [c, bg] = CAT_COLORS[s.cat];
   const poster = s.cat === 'poster';
   const talks = poster ? [] : s.talks;
-  const saved = talks.some(t => state.starred.has(t.id));
-  const open = saved || (!BD_COMPACT.matches && (talks.length <= 3 || parallel <= 2));
+  const open = !!talks.length && bdTalksOpen(s, parallel);
   const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
     s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
     poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join('; ');
@@ -10129,6 +10184,7 @@ function bdPaintScale(){
   bdEl('bdBack').disabled = !bd.done && bd.i === 0;
   bdEl('bdSkipDay').hidden = bdEl('bdNext').hidden = bd.done;
   bdEl('bdNext').innerHTML = bd.i === n - 1 ? 'Finish' : 'Next slot' + BD_CHEV;
+  bdEl('bdKbd').hidden = bd.done;
   bdEl('bdSkipDay').textContent = bd.slots.slice(bd.i + 1).some(sl => sl.di !== slot.di) ? 'Skip day' : 'Skip to end';
 }
 function bdGo(i){
@@ -10154,6 +10210,8 @@ function openBuild(trigger, fromHistory){
   bd.nav = false;
   bd.done = false;
   bdEl('bdAdmin').checked = bd.admin;
+  bdEl('bdExpand').checked = bd.expand;
+  bd.folds.clear();
   bdPaintChips();
   bd.slots = bdVisibleSlots();
   hideToast();
@@ -10170,15 +10228,40 @@ function bdKeepFocus(){
   const a = document.activeElement;
   if (!a || a === document.body || a.disabled || a.hidden || !buildDialog.contains(a)) bdEl('bdRange').focus();
 }
+// The new slot, said once the step is made from a button or a key (the slider says it
+// itself when it has the focus; the summary at the end takes the focus).
+function bdAnnounce(){
+  const range = bdEl('bdRange');
+  bdEl('bdLive').textContent = bd.done || document.activeElement === range ? '' : range.getAttribute('aria-valuetext');
+}
 
 bdEl('bdRange').addEventListener('input', e => bdGo(+e.target.value));
-bdEl('bdBack').addEventListener('click', () => { bd.done ? bdGo(bd.i) : bdGo(bd.i - 1); bdKeepFocus(); });
+bdEl('bdBack').addEventListener('click', () => { bd.done ? bdGo(bd.i) : bdGo(bd.i - 1); bdKeepFocus(); bdAnnounce(); });
 bdEl('bdNext').addEventListener('click', () => {
   if (bd.i >= bd.slots.length - 1) bdFinish(); else { bdGo(bd.i + 1); bdKeepFocus(); }
+  bdAnnounce();
 });
 bdEl('bdSkipDay').addEventListener('click', () => {
   const next = bd.slots.findIndex((sl, k) => k > bd.i && sl.di !== bd.slots[bd.i].di);
   if (next < 0) bdFinish(); else { bdGo(next); bdKeepFocus(); }
+  bdAnnounce();
+});
+// Left and Right step back and on, as Back and Next do (at the first slot Left does
+// nothing; at the last Right finishes, and after that only Left goes back). Not with a
+// modifier, nor where the arrows are already the field's own: a text field, the slider
+// (it steps by itself), a radio group; tick boxes and buttons have no use for them.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (!buildDialog.open || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing) return;
+  if (document.querySelectorAll('dialog[open]').length > 1) return;   // the details dialog on top
+  const t = e.target instanceof Element ? e.target : document.body;
+  if (t !== document.body && !buildDialog.contains(t)) return;
+  if (t.closest('textarea, select, [contenteditable]:not([contenteditable="false"]), [role="radiogroup"], [role="tablist"], [role="listbox"], [role="menu"], [role="slider"]')) return;
+  if (t.matches('input') && !['checkbox', 'button', 'submit', 'reset'].includes(t.type)) return;
+  const btn = bdEl(e.key === 'ArrowLeft' ? 'bdBack' : 'bdNext');
+  if (btn.hidden || btn.disabled) return;
+  e.preventDefault();
+  btn.click();
 });
 bdEl('bdDays').addEventListener('click', e => {
   const b = e.target.closest('[data-bd-go]');
@@ -10192,6 +10275,16 @@ function bdReslot(){
   if (bd.done){ bd.i = bdIndexFor(key); bdPaintScale(); bdPaintChecks(); }
   else bdGo(bdIndexFor(key));
 }
+// Expand all talks: every session's talks unfold here and in each slot after; a session
+// folded by hand stays folded until the box changes again (or the dialog closes).
+bdEl('bdExpand').addEventListener('change', e => {
+  bd.expand = e.target.checked;
+  try { sessionStorage.setItem('aip2026-build-expand', bd.expand ? '1' : '0'); } catch (err) {}
+  bd.folds.clear();
+  if (bd.done) return;
+  const n = bdSessions(bd.slots[bd.i]).length;
+  bdEl('bdBody').querySelectorAll('.bd-tlist').forEach(ul => bdFold(ul, bdTalksOpen(slotById(ul.closest('[data-bd-card]').dataset.bdCard), n)));
+});
 bdEl('bdAdmin').addEventListener('change', e => {
   bd.admin = e.target.checked;
   try { sessionStorage.setItem('aip2026-build-admin', bd.admin ? '1' : '0'); } catch (err) {}
@@ -10223,10 +10316,9 @@ bdEl('bdBody').addEventListener('change', e => {
 bdEl('bdBody').addEventListener('click', e => {
   const tog = e.target.closest('.bd-tog');
   if (tog){
-    const open = tog.getAttribute('aria-expanded') !== 'true', card = tog.closest('.bd-card');
-    tog.setAttribute('aria-expanded', open);
-    document.getElementById(tog.getAttribute('aria-controls')).hidden = !open;
-    card.classList.toggle('open', open);
+    const open = tog.getAttribute('aria-expanded') !== 'true';
+    bd.folds.set(tog.closest('[data-bd-card]').dataset.bdCard, open);
+    bdFold(document.getElementById(tog.getAttribute('aria-controls')), open);
     return;
   }
   if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
