@@ -593,11 +593,11 @@ html[data-view-tx="zoom"]::view-transition-old(root){animation:var(--dur-s) var(
 html[data-view-tx="zoomout"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-zoomout-old}
 html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(var(--dur-s) / 3)}
 /* List <-> Calendar ('lay'): the old page goes quickly and the new one comes up from a
-   little smaller, about the item you were at (--lay-o, set on the root by layAnchor), while
+   little smaller, about the item you were at (layOrigin, set by layAnchor), while
    that item and the sessions beside it in its time slot move from their cards to their
    bars or blocks (or back), in Fast's 300ms, times the speed setting */
 html[data-view-tx="lay"]::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
-html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both lay-in;transform-origin:var(--lay-o,50% 30%)}
+html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both lay-in;transform-origin:50% 30%}
 html[data-view-tx="lay"]::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* (a card and a bar are too unlike to show together for long: the old look goes at once,
    in 90ms, as the new one comes in, pinned to the top left of the moving box, so a card
@@ -8937,9 +8937,16 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
 function layOnly(a){
   const keys = a ? [...a.keys] : [], seen = new Set(keys), y = a ? a.y : 0;
   const bar = stickyWrap.getBoundingClientRect().bottom, vh = innerHeight;
-  const sel = state.layout === 'list' ? '.card[data-sid], .ag-row[data-sid]' : LAY_CAL;
-  const near = [];
-  for (const el of document.getElementById('main').querySelectorAll(sel)){
+  const near = [], main = document.getElementById('main');
+  // (the list: only the time blocks in sight are looked into; a card's box in a block off
+  // screen, which is not laid out (content-visibility), would cost that block's layout)
+  const els = state.layout !== 'list' ? main.querySelectorAll(LAY_CAL)
+    : [...main.querySelectorAll('.block, .ag-row[data-sid]')].flatMap(b => {
+      const r = b.getBoundingClientRect();
+      if (!r.height || r.bottom <= bar + 4 || r.top >= vh - 4) return [];
+      return b.matches('.ag-row') ? [b] : [...b.querySelectorAll('.card[data-sid]')];
+    });
+  for (const el of els){
     const sid = el.dataset.sid;
     if (!sid || seen.has('s-' + sid)) continue;
     const r = el.getBoundingClientRect();
@@ -9020,12 +9027,24 @@ function layAnchor(){
   const key = tid ? 't-' + tid : 's-' + sid, r = el.getBoundingClientRect();
   const keys = [key, ...DATA.days[day].slots.filter(x => x.start === slot.start && 's-' + x.id !== key).map(x => 's-' + x.id)];
   // (the new page comes in about it)
-  document.documentElement.style.setProperty('--lay-o', `${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
+  layOrigin(`${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
   const lead = back && back.key === key && back.ret || key;
   if (lead !== key){ const i = keys.indexOf(lead); if (i > 0) keys.splice(i, 1); keys.unshift(lead); }
   const top = !back && window.scrollY <= programTop() + 8;
   const again = !!(back && back.key === key);
   return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
+}
+// The point the new layout comes in about, kept in a rule of its own for the new page's
+// picture alone: a custom property on the root would be inherited by every element, and
+// changing it would restyle the whole page, at the press, before it shows.
+function layOrigin(o){
+  if (!layOrigin.rule){
+    const st = document.createElement('style');
+    st.textContent = 'html[data-view-tx="lay"]::view-transition-new(root){}';
+    document.head.append(st);
+    layOrigin.rule = st.sheet.cssRules[0].style;
+  }
+  layOrigin.rule.setProperty('transform-origin', o);
 }
 // A calendar item's session and talk; a week's "+N" chip stands for the first item it folds.
 const layIds = el => el.matches('.week-nmore') ? { tid: el.dataset.weekTid || undefined, sid: el.dataset.weekSid }
