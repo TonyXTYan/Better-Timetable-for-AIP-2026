@@ -308,7 +308,8 @@ VIVID_DARK_TOKENS = """\
   --tag-l:.48; --tag-k:1.4;
   --cx-line:#121316; --cx-ring:var(--cx); --cx-axis:var(--cx); --cx-plate-ink:#121316; --cx-plate-line:var(--cx); --cx-plate-muted:#40454d;
   --cx-wash:color-mix(in srgb,var(--cx) 16%,transparent); --cx-wash-edge:color-mix(in srgb,var(--cx) 60%,transparent);
-  --cx-card-bg:var(--clash-bg); --cx-card-ring:var(--cx); --clash-row-bg:#1e2024;"""
+  --cx-card-bg:var(--clash-bg); --cx-card-ring:var(--cx); --clash-row-bg:#1e2024;
+  --cxs-line:var(--cx); --cxs-bg:color-mix(in srgb,var(--cx) 8%,var(--card)); --cxs-ink:#ecedef;"""
 
 def font_faces(root):
     """@font-face rules for the Archivo subsets in fonts/ (made by fonts/make_fonts.py), as
@@ -460,6 +461,9 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
   --cx-hatch:var(--cx); --cx-wash:color-mix(in srgb,var(--cx) 34%,transparent); --cx-map:color-mix(in srgb,var(--cx) 85%,transparent);
   --cx-card-bg:color-mix(in srgb,var(--cx) 24%,var(--card)); --cx-card-ring:#16181c; --cx-box-top:4px solid var(--cx);
   --clash-row-bg:color-mix(in srgb,var(--cx) 16%,var(--card));
+  /* a possible clash (sessions overlap): the same hazard hue, lighter in weight: an open
+     dashed mark in a deep hazard olive (6.6:1 on white), on a pale hazard ground */
+  --cxs-line:#6b5d00; --cxs-bg:color-mix(in srgb,var(--cx) 20%,var(--card)); --cxs-ink:#16181c;
   /* a stream tag's fill, from its line colour in OKLCH: in light the line colour itself */
   --tag-l:l; --tag-k:1;
 }
@@ -1491,7 +1495,7 @@ details.talk-d>summary{display:none}
 /* print: plain plates, no tints, no sodium (the page prints as a timetable) */
 @media print{
   .cards,.card,.ag-list,.ag-row,.talk.is-now,.ag-row.is-now,.ag-row.has-clash{background:none!important}
-  .talk.is-now::before,.talk.is-now::after,.ag-row.has-clash::after,.block-time .live,.ag-now,.t-caret{display:none!important}
+  .talk.is-now::before,.talk.is-now::after,.ag-row.has-clash::after,.ag-row.has-soft::after,.block-time .live,.ag-now,.t-caret{display:none!important}
   .talk.is-now .t-time,.ag-row.is-now .ag-t0{color:var(--ink)}
   .talk.is-now .t-time::after{content:none}
   .ag-row.is-now::before{width:3px;background:var(--c)}
@@ -1601,6 +1605,43 @@ footer .colophon p{font-size:.8125rem}
 /* Clashes are drawn as interference fringes: a small plate of fine parallel ink lines */
 .cx-fr{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;border-radius:1px;background:repeating-linear-gradient(90deg,var(--cx-line,var(--warn-ink)) 0 1px,var(--cx-gap,transparent) 1px 3px)}
 .ag-clash-ind{display:inline-flex;align-items:center;gap:6px;min-height:32px;border:1px solid var(--cx-plate-line,var(--clash-line));background:var(--cx-plate-bg,var(--clash-bg));color:var(--cx-plate-ink,var(--clash-ink));border-radius:var(--r-ctl);padding:0 8px 0 10px;font-size:.8125rem;font-weight:650;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),border-color var(--dur-s) var(--ease)}
+/* A possible clash (sessions overlap) is the same mark opened out: a dashed outline in place
+   of the fringe's ink lines (--cxs-line: --ink-2 in Quiet, a hazard olive or the hazard
+   yellow itself under Vivid, CanvasText in forced colours), with no clash ground */
+.cx-po{display:inline-block;flex:none;width:10px;height:.75rem;margin-right:6px;vertical-align:-.0625rem;box-sizing:border-box;border:1.5px dashed var(--cxs-line,var(--ink-2));border-radius:1px}
+.ag-clash-ind.soft{background:var(--cxs-bg,var(--card));border:1.5px dashed var(--cxs-line,var(--ink-2));color:var(--cxs-ink,var(--clash-ink))}
+.ag-clash-ind.soft[aria-expanded="true"]{border-color:var(--cxs-line,var(--ink))}
+.ag-clash-ind .cx-sp{font-weight:600;white-space:pre}
+.ag-clash-ind .cx-po{margin-right:5px}
+.cp-why{flex:1 1 100%;font-size:.8125rem;color:var(--ink-2)}
+.cp-softnote{margin-top:6px}
+.cp-soft .cp-head b{font-weight:650}
+.cp-soft .cp-head .cx-po{margin-right:-2px}
+.ag-row.has-soft:not(.has-clash)::after{content:"";position:absolute;left:6px;top:6px;bottom:6px;border-left:2px dashed var(--cxs-line,var(--ink-2));pointer-events:none}
+.ag-row.is-now.has-soft:not(.has-clash)::after{left:calc(var(--doublet-w) + 3px)}
+.ag-clash.soft{color:var(--ink-2);border:1.5px dashed var(--cxs-line,var(--ink-2));background:var(--card)}
+.ag-clash.soft b{color:var(--ink);font-weight:650}
+.ag-clash.soft .cx-po{margin-right:8px;vertical-align:0}
+.ag-clash .ag-cx-in{color:var(--muted)}
+.hz-bar.has-soft,.vt-card.has-soft{outline:1.5px dashed var(--cxs-line,var(--ink-2));outline-offset:1px}
+:is(.hz-cxb,.hz-lcx,.vt-hcx).soft{color:var(--ink-2);font-weight:650}
+.vt-cx.soft{background:var(--cxs-bg,var(--card));border:1px dashed var(--cxs-line,var(--ink-2));color:var(--cxs-ink,var(--ink));font-weight:650}
+:is(.hz-cxb,.hz-lcx,.vt-cx,.vt-hcx) .cx-po{width:10px;height:.75rem;margin-right:4px;vertical-align:-.0625rem}
+.hz-cx.soft{background:none;height:.375rem;border-bottom:2px dashed var(--cxs-line,var(--ink-2))}
+.hz-mcx.soft{background:color-mix(in srgb,var(--cxs-line,var(--ink-2)) 16%,transparent)}
+.hz-pnote.soft{color:var(--ink-2);font-weight:650}
+.ak-cxs{outline:1.5px dashed var(--cxs-line,var(--ink-2));outline-offset:-2px;background:var(--surface-2)}
+.week-blk.has-soft{outline:1.5px dashed var(--cxs-line,var(--ink-2));outline-offset:-3px}
+.week-legend .week-lcx.soft i{box-shadow:none;outline:1.5px dashed var(--cxs-line,var(--ink-2));outline-offset:-2px}
+.week-legend .week-lcx.soft i::after{display:none}
+.bd-tick.has.sx{width:9px;height:9px;border-radius:1px;box-sizing:border-box;background:var(--card);border:1.5px dashed var(--cxs-line,var(--ink-2))}
+.bd-cxkey.soft{border-style:dashed;border-color:var(--cxs-line,var(--ink-2));background:var(--cxs-bg,var(--card));color:var(--cxs-ink,var(--ink))}
+.bd-cxkey .cx-po,.bd-cxp .cx-po{margin-right:0}
+.bd-cxsep{margin-left:-6px}
+.bd-cxnote.soft{color:var(--ink-2)}
+.bd-card.sx{outline:1.5px dashed var(--cxs-line,var(--ink-2));outline-offset:-3px}
+.bd-cxp.bd-cxs{background:var(--cxs-bg,var(--card));border:1px dashed var(--cxs-line,var(--ink-2));color:var(--cxs-ink,var(--ink));font-weight:650}
+.ag-warn.soft{color:var(--ink-2);font-weight:600}
 .ag-clash-ind>span{display:inline-flex;align-items:center}
 .ag-clash-ind .cx-fr{margin-right:7px}
 .ag-clash-ind:hover{border-color:var(--ink-2)}
@@ -1644,6 +1685,8 @@ html:has(dialog[open]) .undo-bar{display:none}
 .clash-box-head h3{margin:0;font-size:1.125rem;font-weight:700;color:var(--clash-ink)}
 .clash-box-head .cp-count{margin-left:8px;font-size:.8125rem;font-weight:500;color:var(--muted)}
 .clash-box-note{margin:0 0 10px;font-size:.875rem;color:var(--ink-2)}
+.clash-tools{display:inline-flex;flex-wrap:wrap;gap:6px}
+.clash-tools .toggle:disabled{color:var(--muted);cursor:default}
 .clash-tools .toggle{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:5px 12px;font-size:0.8125rem}
 .clash-tools .toggle::before{content:"";width:14px;height:14px;border:1.5px solid var(--field-line);border-radius:var(--r-tag);box-sizing:border-box}
 .clash-tools .toggle[aria-pressed="true"]{background:var(--active-bg);border-color:var(--accent);color:var(--active-ink)}
@@ -3014,6 +3057,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .print-doc .pd-it{margin-right:6pt;font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;font-weight:700}
 .print-doc h3 .pd-it{font-weight:500}
 .print-doc .pd-k{margin-right:6pt;color:var(--muted);font-size:8.5pt;font-weight:400}
+.print-doc .pd-clash.soft{border-style:dashed;font-weight:600}
+.print-doc .pd-note{margin:0 0 3pt;font-size:8.5pt}
 .print-doc .pd-clash{display:table;margin-top:3pt;padding:0 3pt;border:.75pt solid var(--ink);border-radius:2pt;font-weight:700;color:var(--ink);font-size:8.5pt}
 .print-doc .pd-group{break-inside:avoid}
 .print-doc ul{margin:2pt 0 6pt;padding-left:14pt}
@@ -3157,7 +3202,8 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
   .week-blk{border:1px solid CanvasText}
   ::placeholder{color:GrayText}
   /* (the weight of the Vivid dark blocks, which come earlier) */
-  :root[data-colour="vivid"]:is([data-theme],:not([data-theme])){--cx:CanvasText; --cx-gap:transparent; --cx-line:CanvasText; --cx-ring:CanvasText; --cx-axis:CanvasText; --cx-plate-bg:Canvas; --cx-plate-ink:CanvasText; --cx-plate-line:CanvasText; --cx-plate-muted:CanvasText; --cx-plate-hover:Canvas; --cx-hatch:transparent; --cx-wash:transparent; --cx-wash-edge:CanvasText; --cx-card-bg:Canvas; --cx-card-ring:CanvasText; --cx-box-top:1px solid CanvasText; --clash-row-bg:Canvas}
+  :root[data-colour="vivid"]:is([data-theme],:not([data-theme])){--cx:CanvasText; --cx-gap:transparent; --cx-line:CanvasText; --cx-ring:CanvasText; --cx-axis:CanvasText; --cx-plate-bg:Canvas; --cx-plate-ink:CanvasText; --cx-plate-line:CanvasText; --cx-plate-muted:CanvasText; --cx-plate-hover:Canvas; --cx-hatch:transparent; --cx-wash:transparent; --cx-wash-edge:CanvasText; --cx-card-bg:Canvas; --cx-card-ring:CanvasText; --cx-box-top:1px solid CanvasText; --clash-row-bg:Canvas; --cxs-line:CanvasText; --cxs-bg:Canvas; --cxs-ink:CanvasText}
+  :root{--cxs-line:CanvasText; --cxs-bg:Canvas; --cxs-ink:CanvasText}
 }
 /* Dialogs take the same ink ring when focus lands on the dialog itself. */
 dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
@@ -3881,6 +3927,10 @@ function loadStars(){
 }
 loadStars();
 try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; } catch (e) {}
+// "Flag talks whose sessions overlap" (possible clashes): on unless turned off, kept as
+// Hide clash warnings is
+state.softClashes = true;
+try { state.softClashes = localStorage.getItem('aip2026-soft-clashes') !== '0'; } catch (e) {}
 
 function persistStars(){
   try { localStorage.setItem('aip2026-stars', JSON.stringify([...state.starred])); } catch(e){}
@@ -5211,10 +5261,12 @@ function agendaCountText(items, html, sep = '; '){
 // week's legend, the exports): "2 clashes (5 items)", a clash being a group of items that
 // overlap one another. list: agenda items (it.clashes) or day-view entries (e.clash).
 const clashKey = x => x.t ? x.t.id : x.s.id;
-function clashTally(list){
+// (of: what an item clashes with; possible clashes count the same way with x => x.soft)
+const trueOf = x => x.clash || x.clashes || [], softOf = x => x.soft || [];
+function clashTally(list, of = trueOf){
   const up = new Map(), root = k => { while (up.get(k) !== k) k = up.get(k); return k; };
   for (const x of list){
-    const cl = x.clash || x.clashes || [];
+    const cl = of(x);
     if (!cl.length) continue;
     const a = clashKey(x);
     if (!up.has(a)) up.set(a, a);
@@ -5225,15 +5277,15 @@ function clashTally(list){
     }
   }
   return { groups: new Set([...up.keys()].map(root)).size, items: up.size,
-    shown: list.filter(x => (x.clash || x.clashes || []).length).length };
+    shown: list.filter(x => of(x).length).length };
 }
 // The same for what My agenda's calendar shows on day di (or all week), counted on its
 // items as the bar counts them, not on the blocks that Show full sessions groups.
-function agendaClashWords(di){
+function agendaClashWords(di, soft){
   const all = agendaItems();
   markClashes(all);
-  const items = agendaFilter(all), t = clashTally(di === undefined ? items : items.filter(it => it.di === di));
-  return clashWords(t.groups, t.items, agendaFiltered() ? t.shown : undefined);
+  const items = agendaFilter(all), t = clashTally(di === undefined ? items : items.filter(it => it.di === di), soft ? softOf : trueOf);
+  return (soft ? softWords : clashWords)(t.groups, t.items, agendaFiltered() ? t.shown : undefined);
 }
 // shown: how many of the items are on screen, while a search or streams hide some
 // ("1 clash (1 of 2 items shown)").
@@ -5241,9 +5293,24 @@ function clashWords(groups, items, shown){
   const of = !items ? '' : shown !== undefined && shown < items ? `${shown} of ${items} items shown` : `${items} items`;
   return groups + (groups === 1 ? ' clash' : ' clashes') + (of ? ` (${of})` : '');
 }
+// "2 possible clashes (4 items)": the same unit for talks whose sessions overlap
+const softWords = (groups, items, shown) => clashWords(groups, items, shown).replace(/^(\d+) /, '$1 possible ');
 
+// it.clashes: the saved items it overlaps in time (a clash). it.soft: a possible clash
+// ("session overlap"), with "Flag talks whose sessions overlap" on: an item in another
+// session whose own time does not overlap it, but whose session's time does, so that being
+// at both means leaving one session part-way for another room (two talks in parallel
+// sessions, or a saved session and a talk in a session overlapping it). Never within one
+// session, and never with a meal, break, registration or reception (Meals & Social): those
+// are open-door, not a room one sits through.
+const SOFT_SKIP = new Set(['social']);
+function softLinked(a, b){
+  return a.d === b.d && a.s !== b.s && !SOFT_SKIP.has(a.s.cat) && !SOFT_SKIP.has(b.s.cat)
+    && toMin(a.s.start) < toMin(b.s.end) && toMin(b.s.start) < toMin(a.s.end)
+    && !(toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end));
+}
 function markClashes(items){
-  items.forEach(it => it.clashes = []);
+  items.forEach(it => { it.clashes = []; it.soft = []; });
   for (let i = 0; i < items.length; i++){
     for (let j = i+1; j < items.length; j++){
       const a = items[i], b = items[j];
@@ -5252,24 +5319,39 @@ function markClashes(items){
       if (a.s === b.s && (a.kind !== b.kind || a.s.cat === 'poster')) continue;
       if (toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end)){
         a.clashes.push(b); b.clashes.push(a);
+      } else if (state.softClashes && softLinked(a, b)){
+        a.soft.push(b); b.soft.push(a);
       }
     }
   }
 }
+// Possible clashes the setting would flag were it on (so the clash indicator can still
+// offer the setting while it is off).
+const softWouldFlag = items => items.some((a, i) => items.some((b, j) => j > i && softLinked(a, b)));
+// Clash warnings hidden: both kinds go (the Build dialog keeps its marks, as before).
+function clearClashes(items){ items.forEach(it => { it.clashes = []; it.soft = []; }); }
+// Why a possible clash is one: "Different times, but their sessions (11:00–12:30 and
+// 11:30–13:00) overlap", or "…but both sessions run 11:30–13:00".
+function softReason(g){
+  const spans = [...new Set(g.map(x => x.s.start + '–' + x.s.end))];
+  const n = new Set(g.map(x => x.s)).size;
+  return 'Different times, but ' + (spans.length === 1 ? `${n === 2 ? 'both' : 'all ' + n} sessions run ${spans[0]}`
+    : `their sessions (${spans.slice(0, -1).join(', ')} and ${spans[spans.length - 1]}) overlap`);
+}
 
 // Overlap groups: connected clusters of the clash graph (A overlaps B and B
 // overlaps C makes one group), in agenda order. Needs markClashes first.
-function clashGroups(items){
+function clashGroups(items, key = 'clashes'){
   const order = new Map(items.map((it, i) => [it, i]));
   const seen = new Set(), groups = [];
   for (const it of items){
-    if (!it.clashes.length || seen.has(it)) continue;
+    if (!it[key].length || seen.has(it)) continue;
     const group = [], stack = [it];
     seen.add(it);
     while (stack.length){
       const x = stack.pop();
       group.push(x);
-      for (const y of x.clashes) if (!seen.has(y)){ seen.add(y); stack.push(y); }
+      for (const y of x[key]) if (!seen.has(y)){ seen.add(y); stack.push(y); }
     }
     groups.push(group.sort((a, b) => order.get(a) - order.get(b)));
   }
@@ -5288,15 +5370,18 @@ const itemIdAttrs = it => it.t ? `data-tid="${it.t.id}" data-in-sid="${it.s.id}"
 function itemIds(it){ return [it.t ? it.t.id : it.s.id, ...(it.inner || []).map(t => t.id)]; }
 // The clash panel: each group of overlapping items, and for each item "Keep this", which
 // removes the items that overlap it (with Undo).
-function clashPanelHtml(groups, numbers){
-  return `<ol class="cp-groups">${groups.map(g => `<li class="cp-group">
-      <div class="cp-head"><i class="cx-fr" aria-hidden="true"></i><b>Clash ${numbers.get(g)}</b> <span class="cp-when">${esc(g[0].d.label)}, ${groupSpan(g)}</span></div>
+// Possible clashes (soft) are listed the same way, each with why it is one, and without
+// Keep this: moving between parallel sessions is often the plan, so the panel informs and
+// leaves the choice (Remove in the list, or the setting) to the reader.
+function clashPanelHtml(groups, numbers, soft){
+  return `<ol class="cp-groups${soft ? ' cp-soft' : ''}">${groups.map(g => `<li class="cp-group">
+      <div class="cp-head">${soft ? '<i class="cx-po" aria-hidden="true"></i><b>Possible clash' : '<i class="cx-fr" aria-hidden="true"></i><b>Clash'} ${numbers.get(g)}</b> <span class="cp-when">${esc(g[0].d.label)}, ${groupSpan(g)}</span>${soft ? `<span class="cp-why">${softReason(g)}</span>` : ''}</div>
       <ul class="cp-items">${g.map(it => {
         const [c, bg] = CAT_COLORS[it.s.cat];
         const drop = it.clashes.flatMap(itemIds), n = it.clashes.length;
-        const keep = `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
+        const keep = soft ? '' : `<button type="button" class="cp-keep" data-keep="${esc(itemIds(it)[0])}" data-drop="${esc(drop.join(','))}" aria-label="Keep this, remove the ${n === 1 ? 'other item' : n + ' others'} in clash ${numbers.get(g)}: keep ${esc(itemTitle(it))}" title="Keep this and remove ${n === 1 ? 'the item' : 'the ' + n + ' items'} it overlaps">Keep this</button>`;
         // an item My agenda's search or streams hide is still in the clash: said so
-        const sub = [it.t ? `in ${esc(it.s.title)}` : '', it.off ? '<span class="cp-hid">Hidden by your search or streams</span>' : ''].filter(Boolean).join('. ');
+        const sub = [it.t ? `in ${esc(it.s.title)}${soft ? ` (${it.s.start}&#8211;${it.s.end})` : ''}` : '', it.off ? '<span class="cp-hid">Hidden by your search or streams</span>' : ''].filter(Boolean).join('. ');
         return `<li style="--c:${c};--cbg:${bg}" ${itemIdAttrs(it)}${it.off ? ' class="cp-off"' : ''}><span class="cp-time">${it.start}&#8211;${it.end}</span><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span><button type="button" class="linkish cp-open" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}${it.off ? '<span class="visually-hidden"> (hidden by your search or streams)</span>' : ''}</button>${keep}${sub ? `<span class="cp-in">${sub}</span>` : ''}</li>`;
       }).join('')}</ul></li>`).join('')}</ol>`;
 }
@@ -5339,6 +5424,11 @@ function agRow(it){
   const clash = clashes.length
     ? `<span class="ag-clash"${nOff ? ` title="${nOff === clashes.length ? 'Hidden' : 'Partly hidden'} by your search or streams: the clash is still real"` : ''}><i class="cx-fr" aria-hidden="true"></i>Clashes with ${clashes.map(x => '“' + esc(itemTitle(x)) + '”' + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span>`
     : '';
+  // a possible clash: a lighter, dashed line of its own, naming the other item and its time
+  const softs = state.hideClashes ? [] : [...new Map((it.soft || []).map(x => [itemTitle(x), x])).values()];
+  const soft = softs.length
+    ? `<span class="ag-clash soft"><i class="cx-po" aria-hidden="true"></i><span><b>Possible clash</b>, sessions overlap: ${softs.map(x => '“' + esc(itemTitle(x)) + '” ' + x.start + '&#8211;' + x.end + (x.t ? ` <span class="ag-cx-in">in ${esc(x.s.title)} (${x.s.start}&#8211;${x.s.end})</span>` : '') + (x.off ? ' <span class="ag-cx-off">(hidden by filters)</span>' : '')).join(', ')}</span></span>`
+    : '';
   // the search matched talks in this session that are not starred: name them
   const hits = (it.hits || []).filter(t => !(it.inner || []).includes(t));
   // as a list, one title a line (titles have commas of their own): up to five, and past
@@ -5355,12 +5445,12 @@ function agRow(it){
     return `<li data-tid="${t.id}"${hit.has(t) ? ' class="ag-ihit"' : ''}><span class="ag-itime">${t.s}&#8211;${t.e}</span><span class="ag-imain"><button type="button" class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${hl(t.t)}</button>${sp ? `<span class="ag-isp">${hl(sp)}</span>` : ''}</span><button type="button" class="ag-iun" data-tstar="${t.id}" data-in-session="${it.s.id}" aria-label="Remove ${word} from My agenda: ${esc(t.t)}" title="Saved. Remove this ${word} from My agenda (the session stays)"><span aria-hidden="true">&#9733;</span></button></li>`;
   }).join('')}</ul>` : '';
   const ids = itemIdAttrs(it);
-  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-start="${it.start}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
+  return `<li class="ag-row ${it.t ? 'is-talk' : 'is-sess'}${clashes.length ? ' has-clash' : ''}${softs.length ? ' has-soft' : ''}${nIn ? ' has-inner' : ''}" ${ids} data-date="${it.d.date}" data-start="${it.start}" data-end="${it.end}" style="--c:${c};--cbg:${bg}${agHeights && agHeights.has(itemIds(it)[0]) ? `;--cih:${agHeights.get(itemIds(it)[0])}px` : ''}">
     <span class="ag-time"><span class="ag-t0">${it.start}</span><span class="ag-t1"><span class="visually-hidden">to </span>${it.end}</span><span class="ag-ended">Ended</span><span class="ag-now">Now</span></span>
     <div class="ag-main">
       <span class="ag-title" id="agt-${it.t ? it.t.id : it.s.id}"><span class="kind ag-kind${it.t ? ' k-t' : ''}">${kindLabel(it)}</span>${hl(itemTitle(it))}</span>
       <span class="ag-sub">${who ? `<span class="ag-who">${who}</span>` : ''}${sub2}</span>
-      ${inner}${hitsHtml}${clash}
+      ${inner}${hitsHtml}${clash}${soft}
     </div>
     <div class="ag-actions">
       <button class="ag-btn" ${calendarDetailAttrs(it)} aria-describedby="agt-${it.t ? it.t.id : it.s.id}">${it.t ? 'Abstract' : 'Session details'}</button>
@@ -5382,7 +5472,7 @@ function calendarDetailAttrs(it){
 // current task ends, and only while the stars, filters and options they depend on are unchanged.
 const acMemo = new Map();
 function agendaCalendarItems(all = false, full = document.getElementById('includeParents').checked){
-  const sig = [all, [...state.starred].join(), state.aq, [...state.acats].join(), full, state.hideClashes].join('|');
+  const sig = [all, [...state.starred].join(), state.aq, [...state.acats].join(), full, state.hideClashes, state.softClashes].join('|');
   if (acMemo.has(sig)) return acMemo.get(sig);
   if (!acMemo.size) queueMicrotask(() => acMemo.clear());
   const out = agendaCalendarItemsNow(all, full);
@@ -5393,7 +5483,7 @@ function agendaCalendarItemsNow(all, full){
   const items = agendaItems();
   markClashes(items);
   const shown = all ? items : agendaFilter(items);
-  if (state.hideClashes) items.forEach(it => it.clashes = []);
+  if (state.hideClashes) clearClashes(items);
   // counts go by the merged items (out.merged: shown; out.whole: the whole agenda), as
   // the badge and the list count them, not by the blocks grouping draws
   const out = groupFavourites(shown, full);
@@ -5413,7 +5503,7 @@ function groupFavourites(items, all = document.getElementById('includeParents').
     if (!h){
       // (as, ae: where its first saved talk sits, so the session drawn around the talk
       // keeps the talk's place among the items: see packLanes)
-      h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, as:it.start, ae:it.end, inner:[], clashes:[] };
+      h = { ...it, kind:'session', ctx:true, t:null, start:it.s.start, end:it.s.end, as:it.start, ae:it.end, inner:[], clashes:[], soft:[] };
       hosts.set(it.s, h);
       out.push(h);
     }
@@ -5425,8 +5515,11 @@ function groupFavourites(items, all = document.getElementById('includeParents').
   for (const it of items){
     const h = hostOf.get(it);
     if (h) for (const x of it.clashes){ const y = shown(x); if (y !== h && !h.clashes.includes(y)) h.clashes.push(y); }
+    if (h) for (const x of it.soft || []){ const y = shown(x); if (y !== h && !h.soft.includes(y)) h.soft.push(y); }
   }
   for (const it of out) if (!it.ctx) it.clashes = [...new Set(it.clashes.map(shown))];
+  // (a possible clash with something it also truly clashes with is just a clash)
+  for (const it of out) it.soft = [...new Set((it.soft || []).map(shown))].filter(y => y !== it && !it.clashes.includes(y));
   return out.sort((a,b) => a.di-b.di || (a.as || a.start).localeCompare(b.as || b.start) || (a.ae || a.end).localeCompare(b.ae || b.end));
 }
 
@@ -5481,7 +5574,7 @@ function weekOverview(){
     // x is a session, or (My agenda) an entry
     const s = agenda ? x.s : x, on = agenda || slotMatches(s), [c, bg] = CAT_COLORS[s.cat];
     const a = toMin(x.start), b = toMin(x.end);
-    const clash = agenda && x.clash.length > 0;
+    const clash = agenda && x.clash.length > 0, soft = agenda && !clash && x.soft.length > 0;
     const bandText = s.cat === 'plenary' ? 'Plenary' : s.title, parts = weekLabelParts(s);
     // a talk: a mic, then its title, or (weekFit, when narrow) its session's stream code
     const label = band ? esc(bandText)
@@ -5491,7 +5584,7 @@ function weekOverview(){
     const full = agenda && x.t ? `, starred talk in ${s.title}` : shown.endsWith(s.title.replace(/^(AIP|ANZCOP|COMMAD)\b\s*:?\s*/, '')) ? '' : `, ${s.title}`;
     // (a narrow talk shows its session's code instead of its title: both are in its name)
     const kind = agenda ? (x.t ? `${parts[0]} talk, ` : x.ctx ? 'session not saved, ' : 'session, ') : '';
-    const aria = esc(`${shown}, ${kind}${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : ''));
+    const aria = esc(`${shown}, ${kind}${DATA.days[di].label} ${x.start}–${x.end}${full}` + (agenda && x.inner.size ? `, ${x.inner.size} starred talk${x.inner.size === 1 ? '' : 's'}` : '') + (clash ? ', clash' : soft ? ', possible clash: sessions overlap' : ''));
     // My agenda: a session's starred talks as marks at their times inside it
     // (buttons of their own after the block, placed over its edge, so each is a stop for
     // the keyboard and has its own name)
@@ -5502,7 +5595,7 @@ function weekOverview(){
         aria-label="${esc(`${t.t}, starred ${s.cat === 'poster' ? 'poster' : 'talk'} in ${s.title}, ${DATA.days[di].label} ${t.s}–${t.e}`)}"></button>` : '';
     }).join('') : '';
     const ids = agenda && x.t ? `data-tid="${x.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
-    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}${marks ? ' has-tk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}${cl}
+    return `<button type="button" class="week-blk${band ? ' week-band' : ''}${on ? '' : ' week-off'}${clash ? ' has-clash' : soft ? ' has-soft' : ''}${agenda && x.ctx ? ' ctx' : ''}${agenda && x.t ? ' w-talk' : ''}${marks ? ' has-tk' : ''}" tabindex="-1" ${on ? '' : 'disabled aria-hidden="true"'}${cl}
       style="--c:${c};--cbg:${bg};--a:${pct(a)};--h:${+((b - a) / dur * 100).toFixed(3)};--l:${l};--w:${w}"
       ${ids} data-week-sid="${s.id}" data-code="${esc(s.grp && s.grp !== 'Focus' ? s.grp : WEEK_AB[s.cat])}"${agenda ? ` data-week-tid="${dvTid(x)}"` : ''} data-day="${di}" data-date="${DATA.days[di].date}" data-start="${a}" data-end="${b}" aria-label="${aria}"><span>${label}</span></button>${marks}`;
   };
@@ -5550,7 +5643,8 @@ function weekOverview(){
     has(x => x.ctx) ? '<li class="wk-k wk-kg"><i></i>Session not saved (shown for what you saved in it)</li>' : '',
     has(x => !x.t && x.inner.size) ? `<li class="wk-k wk-km"><i><b></b></i>Saved ${has(x => !x.t && x.inner.size && x.s.cat !== 'poster') ? 'talk' : 'poster'} in a session</li>` : ''].join('');
   const legend = key + cats.map(k => `<li class="${agenda || state.cats.has(k) ? '' : 'week-off'}" style="--c:${CAT_COLORS[k][0]}"><i></i>${esc(DATA.cats[k])}</li>`).join('')
-    + (nClash ? `<li class="week-lcx"><i></i>${agendaClashWords()}</li>` : '');
+    + (nClash ? `<li class="week-lcx"><i></i>${agendaClashWords()}</li>` : '')
+    + (agenda && all.some(x => x.soft.length) ? `<li class="week-lcx soft"><i></i>${agendaClashWords(undefined, true)}: sessions overlap</li>` : '');
   // the hint for a mouse or for touch (CSS shows the one that fits the device)
   const hint = `<h2 class="week-title">${agenda ? 'My agenda, all week' : 'All week'} <small>${esc(DATA.days[0].label)} – ${esc(DATA.days[DATA.days.length - 1].label)} 2026</small></h2>
     <p class="week-hint">${agenda ? `<span class="wh-ptr">Your saved items for the week, to scale, in their stream colours: sessions solid, talks outlined. Overlapping items sit side by side, marked by fine ink lines along the top. Click one, or a day, to open that day; with the keyboard, Tab to the grid and use the arrow keys.</span><span class="wh-tch">Your saved items for the week. Tap one to open its day.</span>`
@@ -5939,7 +6033,8 @@ function weekShowTip(b, mark){
   const what = [s.grp && s.grp !== 'Focus' ? (DATA.groups[s.grp] || s.grp) : DATA.cats[s.cat], s.room].filter(Boolean).join(', ');
   // My agenda: the starred talks in a saved session, and what an item clashes with
   const it = dvAgenda() ? agendaCalendarItems().find(x => x.s === s && (x.t ? x.t === t : !t)) : null;
-  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '') : '';
+  const extra = it ? (it.inner || []).map(x => `<br>★ ${x.s} ${esc(x.t)}`).join('') + (it.clashes.length ? `<br>Clashes with ${it.clashes.map(x => esc(clashName(x))).join('; ')}` : '')
+    + (it.soft && it.soft.length ? `<br>Possible clash, sessions overlap: ${it.soft.map(x => esc(clashName(x)) + ` (${x.start}–${x.end})`).join('; ')}` : '') : '';
   tip.innerHTML = t ? `<b>★ ${esc(t.t)}</b>${esc(d.label)}, ${t.s}–${t.e}<br>in ${esc(s.title)}${mark ? '' : extra}`
     : `<b>${esc(s.title)}</b>${esc(d.label)}, ${s.start}–${s.end}${what ? '<br>' + esc(what) : ''}${extra}`;
   weekPlaceTip(tip, mark || b);
@@ -6033,19 +6128,25 @@ function agendaEmptyHtml(){
 // items) · week 5"). In the list and the calendar alike.
 function renderClashes(items){
   const slot = document.getElementById('clashSlot'), box = document.getElementById('clashBox');
-  const groups = clashGroups(items);
   agendaFilter(items);   // marks the items the filters hide (it.off)
   const day = state.day === 'all' ? null : state.day;
-  const dayGroups = day === null ? groups : groups.filter(g => g[0].di === day);
-  const scoped = dayGroups.filter(g => g.some(x => !x.off));
-  const shown = scoped.length ? scoped : dayGroups.length ? dayGroups : groups;
+  // one kind's groups, scoped as the bar counts them: the day's (or the week's), those with
+  // an item the filters leave shown, and what the panel lists
+  const scope = gs => {
+    const dayG = day === null ? gs : gs.filter(g => g[0].di === day), sc = dayG.filter(g => g.some(x => !x.off));
+    return { all: gs, dayG, scoped: sc, shown: sc.length ? sc : dayG.length ? dayG : gs };
+  };
+  const T = scope(clashGroups(items)), S = scope(state.hideClashes ? [] : clashGroups(items, 'soft'));
+  const groups = T.all, dayGroups = T.dayG, scoped = T.scoped, shown = T.shown;
   // numbered within what the panel lists, as the bar counts them ("Clash 1" of "Wed: 2 clashes")
-  const numbers = new Map(shown.map((g, i) => [g, i + 1]));
+  const numbers = new Map(shown.map((g, i) => [g, i + 1])), sNumbers = new Map(S.shown.map((g, i) => [g, i + 1]));
   const caret = '<svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg>';
   const nItems = g => g.reduce((n, x) => n + x.length, 0);
   // the items left shown, while My agenda's search or streams are on
   const nShown = g => agendaFiltered() ? g.reduce((n, x) => n + x.filter(y => !y.off).length, 0) : undefined;
-  if (!groups.length){
+  // possible clashes the settings keep out of sight: the indicator stays, quiet, to reach them
+  const softHidden = state.hideClashes ? items.some(it => it.soft.length) : !state.softClashes && softWouldFlag(items);
+  if (!groups.length && !S.all.length && !softHidden){
     slot.innerHTML = items.length ? '<span class="ag-ok">&#10003; No clashes</span>' : '';
     box.hidden = true; box.innerHTML = '';
     return;
@@ -6053,16 +6154,35 @@ function renderClashes(items){
   const where = day === null ? 'Week' : DATA.days[day].label.split(' ')[0];
   const n = scoped.length, all = groups.length, cxWk = t => `<span class="cx-wk">; ${t}</span>`;
   const allWords = clashWords(all, nItems(groups));
-  const label = state.hideClashes ? `${allWords} hidden`
+  const ns = S.scoped.length, sAll = S.all.length, sAllWords = softWords(sAll, nItems(S.all));
+  const PO = '<i class="cx-po" aria-hidden="true"></i>';
+  let label;
+  if (all) label = state.hideClashes ? `${allWords} hidden`
+    : !n && ns ? `${PO}${where}: ` + softWords(ns, nItems(S.scoped), nShown(S.scoped)) + cxWk((day === null ? 'in all: ' : 'week: ') + allWords)
     : !n ? (day === null ? 'No clashes shown' + cxWk(allWords + ' in all') : `No clashes on ${where}` + cxWk('week: ' + allWords))
-    : `<i class="cx-fr" aria-hidden="true"></i>${where}: ` + clashWords(n, nItems(scoped), nShown(scoped)) + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
-  slot.innerHTML = `<button type="button" class="ag-clash-ind${state.hideClashes || !scoped.length ? ' quiet' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox"><span>${label}</span>${caret}</button>`;
+    : `<i class="cx-fr" aria-hidden="true"></i>${where}: ` + clashWords(n, nItems(scoped), nShown(scoped))
+      + (ns ? `<span class="cx-sp">, ${PO}${ns} possible</span>` : '') + (n < all ? cxWk((day === null ? 'in all: ' : 'week: ') + allWords) : '');
+  else if (sAll) label = !ns ? (day === null ? 'No clashes shown' + cxWk(sAllWords + ' in all') : `No clashes on ${where}` + cxWk('week: ' + sAllWords))
+    : `${PO}${where}: ` + softWords(ns, nItems(S.scoped), nShown(S.scoped)) + (ns < sAll ? cxWk((day === null ? 'in all: ' : 'week: ') + sAllWords) : '');
+  else {
+    // (only possible clashes, and the settings hide them)
+    const t = clashTally(items, softOf);
+    label = state.hideClashes ? `${softWords(t.groups, t.items)} hidden` : '&#10003; No clashes';
+  }
+  const quiet = state.hideClashes || (!scoped.length && !ns);
+  slot.innerHTML = `<button type="button" class="ag-clash-ind${quiet ? ' quiet' : !n ? ' soft' : ''}" id="clashToggle" aria-expanded="${clashPanelOpen}" aria-controls="clashBox"><span>${label}</span>${caret}</button>`;
   box.hidden = !clashPanelOpen;
-  const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button></span>`;
-  const onWhat = shown === groups && day !== null && !dayGroups.length ? ' on other days' : day === null ? ' this week' : ' on ' + esc(DATA.days[day].label);
-  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : `${clashWords(shown.length, nItems(shown), nShown(shown))}`}</span></h3>${tools}</div>` +
+  const tools = `<span class="clash-tools"><button type="button" class="toggle" id="hideClashes" aria-pressed="${state.hideClashes}">Hide clash warnings</button>`
+    + `<button type="button" class="toggle" id="softClashes" aria-pressed="${state.softClashes && !state.hideClashes}"${state.hideClashes ? ' disabled title="Clash warnings are hidden"' : ''}>Flag talks whose sessions overlap</button></span>`;
+  const K = all ? T : S;
+  const onWhat = K.shown === K.all && day !== null && !K.dayG.length ? ' on other days' : day === null ? ' this week' : ' on ' + esc(DATA.days[day].label);
+  const count = [all ? clashWords(shown.length, nItems(shown), nShown(shown)) : '', sAll ? softWords(S.shown.length, nItems(S.shown), nShown(S.shown)) : ''].filter(Boolean).join(', ');
+  const softNote = '<p class="clash-box-note cp-softnote"><b>Possible clashes</b>: talks at different times in sessions that overlap. Being at both means leaving one session part-way for another room.</p>';
+  box.innerHTML = `<div class="clash-box-head"><h3 id="clashBoxTitle">Clashes${state.hideClashes || !(all || sAll) ? '' : onWhat} <span class="cp-count">${state.hideClashes ? '' : count}</span></h3>${tools}</div>` +
     (state.hideClashes ? '<p class="clash-box-note">Clash warnings are hidden in the list, the calendar and the exports.</p>'
-      : '<p class="clash-box-note">Items that overlap in time. <b>Keep this</b> removes the items that overlap it; you can undo.</p>' + clashPanelHtml(shown, numbers));
+      : (all ? '<p class="clash-box-note">Items that overlap in time. <b>Keep this</b> removes the items that overlap it; you can undo.</p>' + clashPanelHtml(shown, numbers) : '')
+      + (sAll ? softNote + clashPanelHtml(S.shown, sNumbers, true) : '')
+      + (!all && !sAll ? '<p class="clash-box-note">No saved items overlap in time. Talks in sessions that overlap are not flagged while <b>Flag talks whose sessions overlap</b> is off.</p>' : ''));
   box.setAttribute('aria-labelledby', 'clashBoxTitle');
   box.setAttribute('role', 'region');
 }
@@ -7154,7 +7274,7 @@ function toUTCStamp(date, time){
 }
 function exportClashes(items){
   markClashes(items);
-  if (state.hideClashes) items.forEach(it => it.clashes = []);
+  if (state.hideClashes) clearClashes(items);
 }
 function buildIcs(){
   const items = agendaItems();
@@ -7177,7 +7297,8 @@ function buildIcs(){
     const starred = it.inner && it.inner.length ? `Saved ${word} in this session:\n` +
       it.inner.map(t => `★ ${t.s}–${t.e} ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}`).join('\n') : '';
     const clashLine = it.clashes.length ? 'Overlaps: ' + it.clashes.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
-    const body = [starred, who ? (it.kind === 'talk' ? 'Speakers: ' : 'Convened by: ') + who : '', clashLine, desc, official, parent, url].filter(Boolean).join('\n\n');
+    const softLine = it.soft.length ? 'Possible clash, sessions overlap: ' + it.soft.map(x => `${itemTitle(x)} (${x.start}–${x.end})`).join('; ') : '';
+    const body = [starred, who ? (it.kind === 'talk' ? 'Speakers: ' : 'Convened by: ') + who : '', clashLine, softLine, desc, official, parent, url].filter(Boolean).join('\n\n');
     lines.push('BEGIN:VEVENT');
     lines.push(icsFold('UID:' + it.s.id + (it.t ? '-' + it.t.id : '') + '@aip2026-program'));
     lines.push('DTSTAMP:' + stamp);
@@ -7195,11 +7316,11 @@ function buildIcs(){
 function agendaText(){
   const items = agendaItems();
   exportClashes(items);
-  const cx = clashTally(items);
+  const cx = clashTally(items), cxs = clashTally(items, softOf);
   let out = 'AIP Congress 2026 — My agenda\n=============================\nAll times AEDT (Australia/Sydney)\n';
   const speakers = t => t.sp.map(p => p.n + (p.a ? ' (' + p.a + ')' : '')).join('; ');
   out += `${agendaCountText(items, false)}, about ${plannedHours(items).toFixed(1)} h` +
-         (cx.groups ? `; ${clashWords(cx.groups, cx.items)}` : '; no clashes') + '\n';
+         (cx.groups ? `; ${clashWords(cx.groups, cx.items)}` : '; no clashes') + (cxs.groups ? `; ${softWords(cxs.groups, cxs.items)}, sessions overlap` : '') + '\n';
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
     if (!dayItems.length) return;
@@ -7212,6 +7333,7 @@ function agendaText(){
       if (it.kind === 'talk' && it.s.room) out += `             ${it.s.room}\n`;
       (it.inner || []).forEach(t => out += `             ★ ${t.s}–${t.e}  ${t.t}${t.sp.length ? ' — ' + speakers(t) : ''}\n`);
       it.clashes.forEach(x => out += `             Clashes with “${itemTitle(x)}” (${x.start}–${x.end})\n`);
+      it.soft.forEach(x => out += `             Possible clash with “${itemTitle(x)}” (${x.start}–${x.end}): sessions overlap\n`);
     });
   });
   out += '\nSource: official AIP Congress 2026 Indico timetable — https://indico.global/event/16926/timetable/\n';
@@ -7344,7 +7466,7 @@ function dayEntries(day, full){
   const di = DATA.days.indexOf(day);
   return agendaCalendarItems(false, full).filter(it => it.di === di).map(it => ({
     s: it.s, t: it.t, start: it.start, end: it.end, as: it.as || it.start, ae: it.ae || it.end, at: it.ctx ? it.inner[0].t : undefined, title: itemTitle(it), cat: it.s.cat, star: !it.ctx, ctx: !!it.ctx,
-    inner: new Set((it.inner || []).map(t => t.id)), clash: it.clashes,
+    inner: new Set((it.inner || []).map(t => t.id)), clash: it.clashes, soft: it.soft || [],
     hits: new Set((it.hits || []).map(t => t.id)), // talks My agenda's search matched in a saved session
   }));
 }
@@ -7381,7 +7503,8 @@ function dvKey(ents, inline = true){
     ps ? `<li><span class="kind k-t">Poster</span> saved poster</li>` : '',
     has(e => e.ctx) ? `<li><span class="kind k-g">Session, not saved</span> shown for your saved ${gw}</li>` : '',
     has(e => !e.t && e.inner.size && e.s.cat !== 'poster' && e.s.talks.length > e.inner.size) ? `<li>${n('ak-dim')} the session’s other talks</li>` : '',
-    has(e => e.clash.length) ? `<li>${n('ak-cx')} ${agendaClashWords(state.day)}</li>` : ''].join('');
+    has(e => e.clash.length) ? `<li>${n('ak-cx')} ${agendaClashWords(state.day)}</li>` : '',
+    has(e => e.soft.length) ? `<li>${n('ak-cxs')} ${agendaClashWords(state.day, true)}, sessions overlap</li>` : ''].join('');
   return `<ul class="ag-key${inline ? ' ak-inline' : ''}" aria-label="Key">${items}<li class="ak-note">Colours show the stream</li></ul>`;
 }
 // On a phone (or a short landscape screen) the key folds into a small Key button in the
@@ -7412,6 +7535,23 @@ window.addEventListener('resize', () => {
   if (btn && btn.offsetWidth) dvKeyPlace(pop, btn); else pop.hidePopover();
 });
 const dvClashText = e => e.clash && e.clash.length ? 'Clashes with ' + e.clash.map(x => `${itemTitle(x)} (${x.start}–${x.end})${x.off ? ', hidden by your search or streams' : ''}`).join('; ') : '';
+// a possible clash (its sessions overlap), said as the tooltips and accessible names say a clash
+const dvSoftText = e => e.soft && e.soft.length ? 'Possible clash, sessions overlap: ' + e.soft.map(x => `${itemTitle(x)} (${x.start}–${x.end}${x.t ? `, in a session ${x.s.start}–${x.s.end}` : ''})${x.off ? ', hidden by your search or streams' : ''}`).join('; ') : '';
+// Where saved items' sessions overlap for a possible clash: merged minute ranges.
+function dvSoftSpans(ents){
+  const iv = [];
+  for (const e of ents) for (const x of e.soft || []){
+    const a = Math.max(toMin(e.s.start), toMin(x.s.start)), b = Math.min(toMin(e.s.end), toMin(x.s.end));
+    if (b > a) iv.push([a, b]);
+  }
+  iv.sort((p, q) => p[0] - q[0]);
+  const out = [];
+  for (const [a, b] of iv){
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b); else out.push([a, b]);
+  }
+  return out;
+}
 // Where saved items overlap: merged [start, end] minute ranges, for the time axis.
 function dvClashSpans(ents){
   const iv = [];
@@ -7527,6 +7667,7 @@ function hzDayView(day){
   const gsets = agenda ? dvTimeRows(ents) : HZ_GROUPS.map(g => ents.filter(s => g.cats.includes(s.cat))).filter(gs => gs.length);
   const R = Math.max(6, gsets.length), off = (R - gsets.length) / 2;
   let mt = '';
+  if (agenda) for (const [a, b] of dvSoftSpans(ents)) mt += `<i class="hz-mcx soft" style="left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%"></i>`;
   if (agenda) for (const [a, b] of dvClashSpans(ents)) mt += `<i class="hz-mcx" style="left:${pc(a)}%;width:${((b - a) / full * 100).toFixed(3)}%"></i>`;
   gsets.forEach((gs, i) => { for (const s of gs){
     const a = toMin(s.start), b = toMin(s.end), [col] = CAT_COLORS[s.cat];
@@ -7599,7 +7740,10 @@ function hzDraw(root, left){
     if (m < d1 && (major || px60 >= 900)) tk += `<span class="t${major ? '' : ' m'}" style="left:${X(m)}px" data-m="${m}">${hzHM(m)}</span>`;
     else if (m < d1 && m > d0) tk += `<span class="t m" style="left:${X(m)}px" data-m="${m}"></span>`;
   }
-  // My agenda: each clash marked on the time axis and hatched down the canvas
+  // My agenda: where sessions overlap for a possible clash, a dashed line on the time axis
+  // (under a clash's mark, which comes after), and each clash marked on the axis and
+  // hatched down the canvas
+  if (agenda) for (const [a, b] of dvSoftSpans(ents)) tk += `<i class="hz-cx soft" style="left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px" title="Possible clash: sessions overlap ${hzHM(a)}–${hzHM(b)}"></i>`;
   if (agenda) for (const [a, b] of dvClashSpans(ents)){
     const pos = `left:${X(a)}px;width:${((b - a) * ppm).toFixed(1)}px`;
     tk += `<i class="hz-cx" style="${pos}" title="Clash ${hzHM(a)}–${hzHM(b)}"></i>`;
@@ -7664,21 +7808,21 @@ function hzDraw(root, left){
       const hh = Math.max(...sub.items.map(x => x.m.h));
       for (const { m } of sub.items){
         const e = m.e, s = m.s, n = s.talks.length, [lc, lbg] = col || CAT_COLORS[e.cat];
-        const clash = dvClashText(e);
+        const clash = dvClashText(e), soft = dvSoftText(e);
         const word = s.cat === 'poster' ? 'poster' : 'talk';
         const meta = (e.t ? [`${e.start}–${e.end}`, agenda ? '' : 'in ' + s.title]
           : [`${s.start}–${s.end}`, n ? `${e.inner && e.inner.size ? `★${e.inner.size}<span class="visually-hidden"> starred</span> of ` : ''}${n} ${word}${n > 1 ? 's' : ''}` : '',
             s.room && s.room !== 'Belinda Hutchinson Building' ? hl(s.room) : '']).filter(Boolean).join(HZ_SEP);
         const conv = !e.t && s.conv.length ? '; convened by ' + s.conv.join(', ') : '';
-        const tip = esc(e.t ? `${e.title} (${e.start}–${e.end}, in ${s.title})${clash ? '\n' + clash : ''}`
-          : `${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})${e.ctx ? '\nShown for your starred talks; the session is not in My agenda' : ''}${clash ? '\n' + clash : ''}`);
+        const tip = esc(e.t ? `${e.title} (${e.start}–${e.end}, in ${s.title})${clash ? '\n' + clash : ''}${soft ? '\n' + soft : ''}`
+          : `${s.title} (${s.start}–${s.end}${s.room ? ', ' + s.room : ''}${conv})${e.ctx ? '\nShown for your starred talks; the session is not in My agenda' : ''}${clash ? '\n' + clash : ''}${soft ? '\n' + soft : ''}`);
         const pos = `left:${X(m.a)}px;width:${Math.max(5, (m.b - m.a) * ppm).toFixed(1)}px;top:${yy}px;height:${hh}px;--c:${lc};--cbg:${lbg}`;
         const attrs = `data-date="${day.date}" data-start="${m.a}" data-end="${m.b}"`;
-        const cls = (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '');
+        const cls = (clash ? ' has-clash' : soft ? ' has-soft' : '') + (e.ctx ? ' ctx' : '');
         const tiny = !agenda && (m.b - m.a) * ppm < 30;
         const shown = shownOf ? shownOf(s) : e.title;
         const lst = listed(e).map(t => `<span class="hz-inl" data-tid="${t.id}">★ ${esc(t.t)}</span>`).join('');
-        const title = `<span class="hz-title">${clash ? `<span class="hz-cxb" role="img" aria-label="Clash">${VT_CX_ICO}</span>` : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(shown || e.title))}</span>`;
+        const title = `<span class="hz-title">${clash ? `<span class="hz-cxb" role="img" aria-label="Clash">${VT_CX_ICO}</span>` : soft ? `<span class="hz-cxb soft" role="img" aria-label="Possible clash">${VT_CXS_ICO}</span>` : ''}${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(shown || e.title))}</span>`;
         // My agenda says what each item is: its kind first, then title; a talk adds its speakers and session
         const sp = e.t ? e.t.sp.map(p => p.n).join(', ') : '';
         const inner = tiny ? '' : agenda
@@ -7726,8 +7870,8 @@ function hzDraw(root, left){
       return m;
     });
     const { bars, yy, rows: n } = laneBars(ents.map(barModel), null, null, rank);
-    const nClash = ents.filter(e => e.clash.length).length;
-    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">${VT_CX_ICO}${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? `, ${n} rows` : ''}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
+    const nClash = ents.filter(e => e.clash.length).length, nSoft = ents.some(e => e.soft.length);
+    rows = `<div class="hz-lane sole hz-mine" role="group" aria-label="My agenda" style="--c:var(--accent);--cbg:var(--active-bg)"><div class="hz-label" style="--c:var(--accent)"><b><span class="hz-full">My agenda</span><span class="hz-ab">Mine</span></b><small>${countWord(entCount(ents), 'item')}</small>${nClash ? `<small class="hz-lcx">${VT_CX_ICO}${agendaClashWords(DATA.days.indexOf(day))}${n > 1 ? `, ${n} rows` : ''}</small>` : ''}${nSoft ? `<small class="hz-lcx soft">${VT_CXS_ICO}${agendaClashWords(DATA.days.indexOf(day), true)}</small>` : ''}</div><div class="hz-track" style="width:${W}px;height:${yy + 1}px">${bars}</div></div>`;
   }
   // groups -> lanes (a lane is shown if it has anything that day)
   for (const g of agenda ? [] : HZ_GROUPS){
@@ -8379,7 +8523,7 @@ function hzPopHtml(el){
     html = `<span class="hz-title">${hl(t ? t.t : s.title)}</span><span class="hz-meta">${t ? esc(t.s + '–' + t.e) : esc(s.start + '–' + s.end) + (s.room ? HZ_SEP + hl(s.room) : '')}</span>`;
   }
   if (s && !hit && s.conv.length) html += `<span class="hz-pconv">Convened by ${hl(s.conv.join(', '))}</span>`;
-  for (const n of (bar.getAttribute('title') || '').split('\n').slice(1)) html += `<span class="${/^Clash/.test(n) ? 'hz-pnote' : 'hz-pconv'}">${esc(n)}</span>`;
+  for (const n of (bar.getAttribute('title') || '').split('\n').slice(1)) html += `<span class="${/^Clash/.test(n) ? 'hz-pnote' : /^Possible clash/.test(n) ? 'hz-pnote soft' : 'hz-pconv'}">${esc(n)}</span>`;
   return html;
 }
 function hzPopShow(el, h, mouse){
@@ -8631,6 +8775,8 @@ let vtPick = 'all';
 let vtWidth = 0;
 // the one clash mark, the fringe (.cx-fr), as in the list and My agenda
 const VT_CX_ICO = '<i class="cx-fr" aria-hidden="true"></i>';
+// and a possible clash's lighter mark: an open, dashed plate (.cx-po)
+const VT_CXS_ICO = '<i class="cx-po" aria-hidden="true"></i>';
 const VT_COLS = [
   { key:'phys',   label:'AIP physics groups', short:'AIP groups', col:'var(--aip)', of:s => s.cat === 'aip' },
   { key:'anzcop', label:'ANZCOP', short:'ANZCOP', col:'var(--anzcop)', of:s => s.cat === 'anzcop' },
@@ -8685,7 +8831,7 @@ function vtDayView(day){
     const s = e.s, [col, bg] = CAT_COLORS[s.cat];
     const tk = talksOf(e), open = isOpen(e), nTalk = s.talks.length;
     const label = s.grp ? s.grp : DATA.cats[s.cat];
-    const clash = dvClashText(e);
+    const clash = dvClashText(e), soft = dvSoftText(e);
     const conv = e.t ? `<span class="vt-conv" title="${esc(s.title)}">in ${esc(s.title)}</span>`
       : s.conv.length ? `<span class="vt-conv" title="Convened by ${esc(s.conv.join(', '))}">${s.conv.map(hl).join(', ')}</span>`
       : s.room && s.room !== 'Belinda Hutchinson Building' ? `<span class="vt-conv rm">${hl(s.room)}</span>` : '<span></span>';
@@ -8715,12 +8861,13 @@ function vtDayView(day){
       talks = `<div class="vt-talks">${tk.map(t => talkBtn(t, '')).join('')}</div>`;
     }
     const cls = 'vt-card' + (o.band ? ' band' : '') + (open && o.rows && !listOnly(e) ? ' sub' : '') + (open ? ' open' : '')
-      + (clash ? ' has-clash' : '') + (e.ctx ? ' ctx' : '') + (e.t ? ' is-talk' : '');
-    const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">${VT_CX_ICO}Clash</span>` : '';
+      + (clash ? ' has-clash' : soft ? ' has-soft' : '') + (e.ctx ? ' ctx' : '') + (e.t ? ' is-talk' : '');
+    const badge = clash ? `<span class="vt-cx" title="${esc(clash)}">${VT_CX_ICO}Clash</span>` : soft ? `<span class="vt-cx soft" title="${esc(soft)}">${VT_CXS_ICO}Possible</span>` : '';
+    const desc = [clash, soft].filter(Boolean).join('. ');
     const what = e.ctx ? ' title="Shown for your starred talks; the session is not in My agenda"' : '';
     const ids = e.t ? `data-tid="${e.t.id}" data-in-sid="${s.id}"` : `data-sid="${s.id}"`;
     return `<div class="${cls}" style="--c:${col};--cbg:${bg};${o.place || ''}" ${ids} data-col="${colOf(e).key}" data-date="${day.date}" data-start="${toMin(e.start)}" data-end="${toMin(e.end)}"${what}>
-      <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${clash ? ` aria-description="${esc(clash)}"` : ''}>
+      <div class="vt-hd"><button type="button" class="vt-open" data-session-detail="${s.id}" data-talk-detail="${dvTid(e)}"${desc ? ` aria-description="${esc(desc)}"` : ''}>
         <span class="vt-top">${agenda ? dvKind(e) : ''}<span class="vt-time">${e.start}–${e.end}</span>${badge}<span class="vt-badge">${esc(label)}</span></span>
         <span class="vt-title" title="${esc(e.title)}">${e.star ? star(e.t ? e.t.id : s.id) : ''}${vtWbr(hl(e.title))}</span>${e.t && e.t.sp.length ? `<span class="vt-tsp">${hl(who(e.t))}</span>` : ''}
         <span class="vt-foot">${conv}${tog}</span></button></div>${talks}</div>`;
@@ -8789,7 +8936,8 @@ function vtDayView(day){
   const colsCss = `--vtcols:${cols.map(c => `repeat(${c.k},${tr})`).join(' ') || 'minmax(0,1fr)'}`;
   const nClash = agenda ? slots.filter(e => e.clash.length).length : 0;
   const cx = nClash && agendaClashWords(DATA.days.indexOf(day));
-  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? `, <span class="vt-hcx">${VT_CX_ICO}${cx}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
+  const cxs = agenda && slots.some(e => e.soft.length) && agendaClashWords(DATA.days.indexOf(day), true);
+  const headNote = c => agenda ? `<small>${countWord(entCount(colSlots[c.key]), 'item')}${nClash ? `, <span class="vt-hcx">${VT_CX_ICO}${cx}</span>` : ''}${cxs ? `, <span class="vt-hcx soft" title="${cxs}, sessions overlap">${VT_CXS_ICO}${cxs.replace(/^(\d+ possible)(.*)$/, '$1<span class="visually-hidden">$2</span>')}</span>` : ''}</small>` : `<small>${colSlots[c.key].length}</small>`;
   const heads = `<div class="vt-corner">${agenda && !scroll ? DV_KEY_BTN : ''}</div>` + cols.map(c => `<div class="vt-head" style="--c:${c.col};grid-column:${c.t0} / span ${c.k}"><span title="${esc(c.label)}">${esc(c.label)}</span>${headNote(c)}</div>`).join('');
   // A grid that scrolls sideways keeps its column heads in a bar above it,
   // sticky under the toolbar and kept in step with the grid's scroll (a head
@@ -9725,8 +9873,9 @@ function buildPrintDoc(){
   const items = agendaItems();
   exportClashes(items);
   const groups = clashGroups(items);
-  const groupNo = new Map();
+  const groupNo = new Map(), softs = clashGroups(items, 'soft'), softNo = new Map();
   groups.forEach((g, i) => g.forEach(it => groupNo.set(it, i + 1)));
+  softs.forEach((g, i) => g.forEach(it => softNo.set(it, i + 1)));
   const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
   let generated;
   try { generated = new Date().toLocaleString('en-AU', { day:'numeric', month:'long', year:'numeric', hour:'numeric', minute:'2-digit' }); }
@@ -9736,13 +9885,14 @@ function buildPrintDoc(){
     const who = it.t ? (it.t.sp.length ? people(it.t.sp) : 'Speaker TBA') : (it.s.conv || []).map(n => `<i class="pd-n">${esc(n)}</i>`).join('; ');
     const sess = it.t ? `${esc(it.s.title)}${it.s.room ? `<span class="pd-room">${esc(it.s.room)}</span>` : ''}`
       : `${esc(it.s.room || 'Belinda Hutchinson Building')}${it.s.talks.length ? `<span class="pd-room">${plural(it.s.talks.length, it.s.cat === 'poster' ? 'poster' : 'talk')}</span>` : ''}`;
-    const clash = groupNo.has(it) ? `<span class="pd-clash">Clash ${groupNo.get(it)}</span>` : '';
+    const clash = (groupNo.has(it) ? `<span class="pd-clash">Clash ${groupNo.get(it)}</span>` : '')
+      + (softNo.has(it) ? `<span class="pd-clash soft">Possible clash ${softNo.get(it)}</span>` : '');
     const inner = it.inner && it.inner.length ? `<ul class="pd-inner">${it.inner.map(t =>
       `<li><span class="pd-it">&#9733; ${t.s}&#8211;${t.e}</span>${esc(t.t)}${t.sp.length ? ` <i class="pd-aff pd-n">${esc(t.sp.map(p => p.n).join(', '))}</i>` : ''}</li>`).join('')}</ul>` : '';
     return `<tr style="--c:${CAT_COLORS[it.s.cat][0]}"><td class="pd-time">${it.start}&#8211;${it.end}</td><td class="pd-kind">${kindLabel(it)}</td><td class="pd-title">${esc(itemTitle(it))}${inner}${clash}</td><td class="pd-who">${who}</td><td class="pd-sess">${sess}</td></tr>`;
   };
   let html = `<h1>AIP Congress 2026<span class="pd-sub">My agenda</span></h1>
-    <p class="pd-meta"><span>${esc(agendaCountText(items, false, ', '))}</span><span>about ${plannedHours(items).toFixed(1)} h</span><span>${groups.length ? clashWords(groups.length, groups.reduce((n, g) => n + g.length, 0)) : 'no clashes'}</span></p>
+    <p class="pd-meta"><span>${esc(agendaCountText(items, false, ', '))}</span><span>about ${plannedHours(items).toFixed(1)} h</span><span>${groups.length ? clashWords(groups.length, groups.reduce((n, g) => n + g.length, 0)) : 'no clashes'}${softs.length ? ', ' + softWords(softs.length, softs.reduce((n, g) => n + g.length, 0)) : ''}</span></p>
     <p class="pd-meta"><span>All times AEDT (Australia/Sydney)</span><span>Belinda Hutchinson Building, The University of Sydney</span><span>Generated ${esc(generated)}</span></p>`;
   DATA.days.forEach((d, di) => {
     const dayItems = items.filter(x => x.di === di);
@@ -9755,6 +9905,12 @@ function buildPrintDoc(){
     html += `<section class="pd-clashes"><h2>Clash details</h2>` + groups.map((g, i) => `<div class="pd-group">
       <h3>Clash ${i + 1}<span class="pd-it">${esc(g[0].d.label)}</span><span class="pd-it">${groupSpan(g)}</span></h3>
       <ul>${g.map(it => `<li><span class="pd-it">${it.start}&#8211;${it.end}</span><span class="pd-k">${kindLabel(it)}</span>${esc(itemTitle(it))}${it.t ? ` (in ${esc(it.s.title)})` : ''}</li>`).join('')}</ul></div>`).join('') + `</section>`;
+  }
+  if (softs.length){
+    html += `<section class="pd-clashes"><h2>Possible clashes</h2><p class="pd-note">Talks at different times in sessions that overlap: being at both means leaving one session part-way.</p>` + softs.map((g, i) => `<div class="pd-group">
+      <h3>Possible clash ${i + 1}<span class="pd-it">${esc(g[0].d.label)}</span><span class="pd-it">${groupSpan(g)}</span></h3>
+      <p class="pd-note">${softReason(g)}.</p>
+      <ul>${g.map(it => `<li><span class="pd-it">${it.start}&#8211;${it.end}</span><span class="pd-k">${kindLabel(it)}</span>${esc(itemTitle(it))}${it.t ? ` (in ${esc(it.s.title)}, ${it.s.start}&#8211;${it.s.end})` : ''}</li>`).join('')}</ul></div>`).join('') + `</section>`;
   }
   html += `<p class="pd-foot">From the AIP Congress 2026 Program Explorer, built from the official Indico timetable. Times and rooms can change; check the official program close to the day.</p>`;
   return html;
@@ -10036,6 +10192,13 @@ document.getElementById('builder').addEventListener('click', e => {
     document.getElementById('hideClashes')?.focus();
     return;
   }
+  if (e.target.closest('#softClashes')){
+    state.softClashes = !state.softClashes;
+    try { localStorage.setItem('aip2026-soft-clashes', state.softClashes ? '1' : '0'); } catch (err) {}
+    rerender();
+    document.getElementById('softClashes')?.focus();
+    return;
+  }
   const keep = e.target.closest('[data-keep]');
   if (keep){
     const drop = keep.dataset.drop.split(',').filter(Boolean);
@@ -10208,7 +10371,7 @@ function bdCard(s, parallel){
   const n = talks.length, word = n > 1 ? ' talks' : ' talk';
   return `<article class="bd-card${open ? ' open' : ''}" data-bd-card="${esc(s.id)}" data-sid="${esc(s.id)}" style="--c:${c};--cbg:${bg}">
     <div class="bd-card-top"><span class="badge" title="${esc(DATA.groups[s.grp] || DATA.cats[s.cat])}">${esc(s.grp || DATA.cats[s.cat])}</span>
-      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="cx-fr" aria-hidden="true"></i>Clash</span>
+      <span class="bd-when">${esc(s.start)}–${esc(s.end)}</span><span class="bd-cxp" hidden><i class="cx-fr" aria-hidden="true"></i>Clash</span><span class="bd-cxp bd-cxs" hidden><i class="cx-po" aria-hidden="true"></i>Possible clash</span>
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
@@ -10232,13 +10395,14 @@ function bdRenderSlot(){
     markClashes(items);
     const added = [...state.starred].filter(id => !bd.before.has(id)).length;
     const removed = [...bd.before].filter(id => !state.starred.has(id)).length;
-    const clashes = items.filter(x => x.clashes.length).length;
+    const clashes = items.filter(x => x.clashes.length).length, softs = items.filter(x => x.soft.length && !x.clashes.length).length;
     const run = added || removed ? ` This time you added ${added} and removed ${removed}.` : '';
     body.innerHTML = `<div class="bd-done">
       <div class="ag-empty-icon" aria-hidden="true">&#9733;</div>
       <h3 id="bdDoneTitle" tabindex="-1">${items.length} item${items.length !== 1 ? 's' : ''} saved</h3>
       <p>${items.length ? `My agenda has ${agendaCountText(items, false, ' and ')}, about ${plannedHours(items).toFixed(1)} h.` : 'My agenda is empty.'}${run}
-      ${clashes ? `<br><span class="ag-warn"><i class="cx-fr" aria-hidden="true"></i>${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}</p>
+      ${clashes ? `<br><span class="ag-warn"><i class="cx-fr" aria-hidden="true"></i>${countWord(clashes, 'item')} ${clashes === 1 ? 'overlaps' : 'overlap'}</span>; My agenda shows where.` : ''}
+      ${softs ? `<br><span class="ag-warn soft"><i class="cx-po" aria-hidden="true"></i>${countWord(softs, 'item')} in overlapping sessions</span> (possible clash${softs === 1 ? '' : 'es'}).` : ''}</p>
       <div class="ag-empty-actions"><button type="button" class="toggle primary" data-bd-view>View my agenda</button><button type="button" class="toggle" data-bd-restart>Start again</button></div>
     </div>`;
     body.scrollTop = 0;
@@ -10249,7 +10413,7 @@ function bdRenderSlot(){
   const [a, b] = bdSpan(slot);
   body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)}<span class="visually-hidden">, </span><span class="bd-slot-t">${a}–${b}</span></h3>
     <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''}, <span id="bdSlotSaved"></span></p>
-    <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p></div>
+    <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p><p class="bd-cxnote soft" id="bdSlotCxs" hidden></p></div>
     <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
   body.scrollTop = 0;
 }
@@ -10258,9 +10422,9 @@ function bdRenderSlot(){
 // The agenda's clashes, by slot (each item under the slot its session is shown in): marks
 // on the slider, its value text, the slot's note and its cards.
 function bdClashes(){
-  const key = [...state.starred].join() + '|' + bd.admin + '|' + [...bd.cats].join() + '|' + bd.slots.map(sl => sl.key).join();
+  const key = [...state.starred].join() + '|' + bd.admin + '|' + [...bd.cats].join() + '|' + bd.slots.map(sl => sl.key).join() + '|' + state.softClashes;
   if (bdClashes.key === key) return bdClashes.v;
-  const items = agendaItems(), at = new Map(), by = new Map();
+  const items = agendaItems(), at = new Map(), by = new Map(), soft = new Map();
   markClashes(items);
   bd.slots.forEach((sl, i) => { for (const s of bdSessions(sl)) at.set(s, i); });
   for (const it of items) if (it.clashes.length && at.has(it.s)){
@@ -10268,15 +10432,22 @@ function bdClashes(){
     if (!by.has(i)) by.set(i, []);
     by.get(i).push(it);
   }
+  // possible clashes (sessions overlap) by slot too, kept apart (bdClashes.soft)
+  for (const it of items) if (it.soft.length && at.has(it.s)){
+    const i = at.get(it.s);
+    if (!soft.has(i)) soft.set(i, []);
+    soft.get(i).push(it);
+  }
   bdClashes.key = key;
+  bdClashes.soft = soft;
   return bdClashes.v = by;
 }
 function bdPaintChecks(){
   paintStarCount();
-  const cx = bdClashes(), range = bdEl('bdRange');
-  [...bdEl('bdTicks').children].forEach((tick, i) => { tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0); tick.classList.toggle('cx', cx.has(i)); });
-  const vt = (range.getAttribute('aria-valuetext') || '').replace(/, this slot has a clash$/, '');
-  range.setAttribute('aria-valuetext', vt + (!bd.done && cx.has(bd.i) ? ', this slot has a clash' : ''));
+  const cx = bdClashes(), sx = bdClashes.soft, range = bdEl('bdRange');
+  [...bdEl('bdTicks').children].forEach((tick, i) => { tick.classList.toggle('has', bdSlotItems(bd.slots[i]).length > 0); tick.classList.toggle('cx', cx.has(i)); tick.classList.toggle('sx', !cx.has(i) && sx.has(i)); });
+  const vt = (range.getAttribute('aria-valuetext') || '').replace(/, this slot has a (possible )?clash$/, '');
+  range.setAttribute('aria-valuetext', vt + (!bd.done && cx.has(bd.i) ? ', this slot has a clash' : !bd.done && sx.has(bd.i) ? ', this slot has a possible clash' : ''));
   if (bd.done) return;
   const body = bdEl('bdBody');
   body.querySelectorAll('[data-bd-id]').forEach(cb => {
@@ -10289,11 +10460,14 @@ function bdPaintChecks(){
     cb.closest('.bd-check').classList.toggle('on', cb.checked);
     cb.closest('.bd-check').classList.toggle('inc', included);
   });
-  const mine = cx.get(bd.i) || [];
+  const mine = cx.get(bd.i) || [], mineS = sx.get(bd.i) || [];
   body.querySelectorAll('[data-bd-card]').forEach(card => {
     const s = slotById(card.dataset.bdCard);
     card.classList.toggle('on', state.starred.has(s.id));
-    card.classList.toggle('cx', !(card.querySelector('.bd-cxp').hidden = !mine.some(it => it.s === s)));
+    const isCx = !(card.querySelector('.bd-cxp').hidden = !mine.some(it => it.s === s));
+    card.classList.toggle('cx', isCx);
+    // a possible clash: the lighter plate, unless the card has a clash
+    card.classList.toggle('sx', !(card.querySelector('.bd-cxs').hidden = isCx || !mineS.some(it => it.s === s)));
     const n = s.cat === 'poster' ? 0 : s.talks.filter(t => state.starred.has(t.id)).length;
     const count = card.querySelector('.bd-tcount');
     if (count) count.innerHTML = state.starred.has(s.id) ? '<span class="bd-tc-l">, all included</span><span class="bd-tc-s"> (&#9733; all)</span>'
@@ -10309,16 +10483,27 @@ function bdPaintChecks(){
   note.hidden = !pairs.length;
   note.title = pairs.length > 2 ? pairs.map(([a, o]) => `${itemTitle(a)} overlaps ${itemTitle(o)}`).join('\n') : '';
   note.innerHTML = pairs.length ? '<i class="cx-fr" aria-hidden="true"></i>Clash: ' + pairs.slice(0, 2).map(([a, o]) => `${nm(a)} overlaps ${nm(o)}`).join('; ') + (pairs.length > 2 ? `; and ${pairs.length - 2} more` : '') : '';
-  // the key to the slider's marks, which steps to the next slot with a clash
+  // and the possible clashes: saved items in this slot's sessions whose sessions overlap
+  const sp = [];
+  for (const a of mineS) for (const o of a.soft) if (!sp.some(([x, y]) => x === o && y === a)) sp.push([a, o]);
+  const snote = bdEl('bdSlotCxs');
+  snote.hidden = !sp.length;
+  snote.title = sp.length > 2 ? sp.map(([a, o]) => `${itemTitle(a)} and ${itemTitle(o)}`).join('\n') : '';
+  snote.innerHTML = sp.length ? '<i class="cx-po" aria-hidden="true"></i>Possible clash, sessions overlap: ' + sp.slice(0, 2).map(([a, o]) => `${nm(a)} and ${nm(o)}`).join('; ') + (sp.length > 2 ? `; and ${sp.length - 2} more` : '') : '';
+  // the key to the slider's marks, which steps to the next slot with a clash (or a possible one)
   const key = bdEl('bdCxKey'), all = [...cx.keys()].sort((a, b) => a - b);
-  const next = all.find(i => i > bd.i) ?? all.find(i => i !== bd.i);
-  key.hidden = !all.length;
-  if (all.length){
+  const sAll = [...sx.keys()].filter(i => !cx.has(i)), steps = [...all, ...sAll].sort((a, b) => a - b);
+  const next = steps.find(i => i > bd.i) ?? steps.find(i => i !== bd.i);
+  key.hidden = !steps.length;
+  key.classList.toggle('soft', !all.length && sAll.length > 0);
+  if (steps.length){
     const sl = next === undefined ? null : bd.slots[next];
     key.disabled = !sl;
     key.dataset.next = sl ? next : '';
-    key.title = 'Marks under the slider show the slots where saved items overlap';
-    key.innerHTML = `<i class="cx-fr" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}<span class="visually-hidden">, marked on the slider</span>`
+    key.title = sAll.length ? 'Marks under the slider show the slots where saved items overlap (solid) or their sessions overlap (open)' : 'Marks under the slider show the slots where saved items overlap';
+    const words = [all.length ? `<i class="cx-fr" aria-hidden="true"></i>${all.length === 1 ? 'Clash in 1 slot' : `Clashes in ${all.length} slots`}` : '',
+      sAll.length ? `<i class="cx-po" aria-hidden="true"></i>${all.length ? `${sAll.length} possible` : sAll.length === 1 ? 'Possible clash in 1 slot' : `Possible clashes in ${sAll.length} slots`}` : ''].filter(Boolean).join('<span class="bd-cxsep">,</span>');
+    key.innerHTML = words + '<span class="visually-hidden">, marked on the slider</span>'
       + (sl ? `<span class="bd-cxn">next<span class="visually-hidden">: ${esc(sl.d.label)}, ${bdSpan(sl)[0]}</span>${BD_CHEV}</span>` : '');
   }
 }

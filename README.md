@@ -79,8 +79,16 @@ user site's `404.html` that keeps `?query` and `#hash`).
   from a small table in `normalize.py`, and organisation-only speakers (an all-caps name that
   is also the affiliation, such as ANZOS) stay on their talk but are left out of the list.
 - Star talks or whole sessions to build **My agenda**, as a list or a calendar. Overlaps show on
-  each row and in a **Clashes** panel that groups chains of overlapping items; **Hide clash
-  warnings** turns all of that off (remembered). **Clear all** has an Undo, and a saved talk can be
+  each row and in a **Clashes** panel that groups chains of overlapping items. A **possible
+  clash** (session overlap) is flagged too, in a lighter dashed mark: two saved items at
+  different times whose sessions overlap (two talks in parallel sessions, or a saved session and
+  a talk in a session overlapping it), so being at both means leaving one session part-way.
+  Never within one session, and never with a meal, break or reception. The panel says why
+  ("Different times, but their sessions (14:15–15:45 and 14:30–15:30) overlap") and offers no
+  Keep this for them, since moving between sessions is often the plan; the list, calendars, All
+  week, Build my agenda and the exports show them apart from clashes ("1 clash, 2 possible").
+  **Flag talks whose sessions overlap** turns possible clashes off; **Hide clash warnings** turns
+  both off (each remembered). **Clear all** has an Undo, and a saved talk can be
   swapped for its whole session from its details.
 - **Build my agenda** walks through the week one time slot at a time: every parallel session
   with its talks, a tick box for each, saved as you tick. A slider with day and time marks
