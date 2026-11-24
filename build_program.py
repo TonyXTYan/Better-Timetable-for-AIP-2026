@@ -17,6 +17,13 @@ from normalize import affiliation_table, normalize_payload  # noqa: E402
 
 RETRIEVED = "24 November 2026"
 
+# Talks Indico re-created under a new id (same contribution, new timetable entry). The page
+# maps the old id to the new one wherever saved ids come back in (stars on the device,
+# shared agenda links and codes, agenda files, #t= links), so nothing saved is lost.
+ID_ALIASES = {
+    'c190543': 'c193722',  # Transcranial ultrasound (contribution 164898): Fri 09:45 -> Thu 18:00, 24 Nov
+}
+
 # ---------------------------------------------------------------- classify
 GROUP_LABELS = {
     'QST': 'Quantum Science & Technology',
@@ -3851,6 +3858,8 @@ const state = {
 };
 // Every session and talk id in the program: the only ids a star can hold.
 const KNOWN_IDS = new Set(DATA.days.flatMap(d => d.slots.flatMap(s => [s.id, ...s.talks.map(t => t.id)])));
+// A retired id (a talk Indico re-created under a new one) reads as its replacement.
+const canonId = id => (typeof id === 'string' && !KNOWN_IDS.has(id) && Object.prototype.hasOwnProperty.call(DATA.aliases, id)) ? DATA.aliases[id] : id;
 // Stars from storage: only string ids of this program's sessions and talks, once each
 // (anything else, from an old version, another tab or a hand edit, is dropped and the
 // cleaned list saved back). At most as many as the program has ids.
@@ -3859,7 +3868,8 @@ function loadStars(){
   try { raw = localStorage.getItem('aip2026-stars'); saved = JSON.parse(raw || '[]'); } catch (e) { saved = []; }
   if (!Array.isArray(saved)) saved = [];
   const ids = new Set();
-  for (const x of saved.slice(0, 4 * KNOWN_IDS.size + 100)){
+  for (const x0 of saved.slice(0, 4 * KNOWN_IDS.size + 100)){
+    const x = canonId(x0);
     if (typeof x === 'string' && KNOWN_IDS.has(x)) ids.add(x);
     if (ids.size >= KNOWN_IDS.size) break;
   }
@@ -4245,7 +4255,7 @@ function talkById(id){
     talkById.map = Object.create(null);
     DATA.days.forEach(d => d.slots.forEach(s => s.talks.forEach(t => talkById.map[t.id] = { s, t })));
   }
-  return talkById.map[id];
+  return talkById.map[canonId(id)];
 }
 
 function slotById(id){
@@ -11876,7 +11886,7 @@ document.addEventListener('click', e => {
 const ID_RE = /^[a-z]\d{1,12}$/i;
 function resolveAgendaIds(ids){
   const items = [];
-  for (const id of new Set(ids)){
+  for (const id of new Set(ids.map(canonId))){
     if (!ID_RE.test(id)) continue;
     const hit = talkById(id), s = hit ? hit.s : slotById(id);
     if (!s) continue;
@@ -12840,7 +12850,9 @@ def main():
         print(f'wrote {data_path.name}')
 
     # The affiliation groups are derived data, so they go into the page only.
-    page_data = dict(payload, affs=affiliation_table(payload))
+    known = {x for d in payload['days'] for sl in d['slots'] for x in [sl['id'], *(t['id'] for t in sl['talks'])]}
+    aliases = {a: b for a, b in ID_ALIASES.items() if a not in known and b in known}
+    page_data = dict(payload, affs=affiliation_table(payload), aliases=aliases)
     print(f"affiliations: {len(page_data['affs']['map'])} distinct strings "
           f"in {len(page_data['affs']['groups'])} groups")
     embedded = json.dumps(page_data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
