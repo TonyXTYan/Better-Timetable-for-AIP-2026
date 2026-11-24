@@ -2479,6 +2479,11 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-done p{margin:0 0 14px;color:var(--muted)}
 .bd-foot{flex:none;display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface-2)}
 .bd-foot #bdNext{margin-left:auto}
+.bd-keys{margin-left:auto;font-size:.75rem;color:var(--muted);white-space:nowrap}
+.bd-keys ~ #bdNext{margin-left:4px}
+.bd-keys kbd{display:inline-block;min-width:1.6em;margin:0 1px;padding:0 4px;border:1px solid var(--line);border-radius:var(--r-tag);background:var(--card);font:inherit;font-weight:650;text-align:center;line-height:1.4}
+.bd-xall{margin-left:auto;align-self:center;font-size:.8125rem;white-space:nowrap}
+.bd-xall + .bd-cxkey{margin-left:0}
 .bd-foot .toggle svg{flex:none;width:14px;height:14px}
 .bd-foot button:disabled{opacity:.5;cursor:default}
 @media (max-width:720px){
@@ -2498,6 +2503,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
   .bd-opts label{min-height:40px}
   .bd-opts input{width:20px;height:20px}
   .bd-foot{display:grid;grid-template-columns:1fr 1fr 1.4fr;padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+  .bd-keys{display:none}
   .bd-foot .toggle{justify-content:center;padding:8px 6px}
 }
 /* Compact Build my agenda, on phones and short (landscape) screens: the header and footer
@@ -2514,6 +2520,10 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
   .bd-body{padding:0 12px 14px}
   .bd-slot-head{position:sticky;top:0;z-index:1;margin:0 -12px 8px;padding:8px 12px 7px;background:var(--card);border-bottom:1px solid var(--line);gap:0 10px}
   .bd-slot-head h3{font-size:1rem}
+  .bd-slot-head h3{order:-2}
+  .bd-xall{order:-1;font-size:.75rem;min-height:26px}
+  .bd-slot-sub{flex:1 1 100%}
+  .bd-xw{display:none}
   .bd-cards{grid-template-columns:minmax(0,1fr)}
   /* one row: tick box | stream, time, Details over a two-line title | talks toggle */
   .bd-card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;column-gap:6px;padding:5px 6px 5px 15px}
@@ -3564,9 +3574,10 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   </div>
   <div class="bd-body" id="bdBody"></div>
   <div class="bd-foot">
-    <button type="button" class="toggle" id="bdBack"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+    <button type="button" class="toggle" id="bdBack" aria-keyshortcuts="ArrowLeft"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
     <button type="button" class="toggle" id="bdSkipDay">Skip day</button>
-    <button type="button" class="toggle primary" id="bdNext">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <span class="bd-keys" aria-hidden="true"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> previous or next slot</span>
+    <button type="button" class="toggle primary" id="bdNext" aria-keyshortcuts="ArrowRight">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </dialog>
 <footer>
@@ -10106,6 +10117,8 @@ const isAdminSession = s => ADMIN_CATS.has(s.cat);
 const bdEl = id => document.getElementById(id);
 const bd = { slots: [], i: 0, done: false, admin: false, cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null };
 try { bd.admin = sessionStorage.getItem('aip2026-build-admin') === '1'; } catch (e) {}
+// Expand all talks: every session's talks open in every slot until collapsed again.
+try { bd.expand = sessionStorage.getItem('aip2026-build-expand') === '1'; } catch (e) {}
 try { (sessionStorage.getItem('aip2026-build-cats') || '').split(',').filter(k => k in DATA.cats).forEach(k => bd.cats.add(k)); } catch (e) {}
 // Phones and short (landscape) screens: one compact row per session, talks folded away.
 const BD_COMPACT = matchMedia('(max-width:720px), (max-height:520px)');
@@ -10199,7 +10212,7 @@ function bdCard(s, parallel){
   const poster = s.cat === 'poster';
   const talks = poster ? [] : s.talks;
   const saved = talks.some(t => state.starred.has(t.id));
-  const open = saved || (!BD_COMPACT.matches && (talks.length <= 3 || parallel <= 2));
+  const open = bd.expand || saved || (!BD_COMPACT.matches && (talks.length <= 3 || parallel <= 2));
   const meta = [s.conv.length ? 'Convened by ' + s.conv.join(', ') : '',
     s.room && s.room !== 'Belinda Hutchinson Building' ? s.room : '',
     poster && s.talks.length ? s.talks.length + (s.talks.length === 1 ? ' poster' : ' posters') : ''].filter(Boolean).join('; ');
@@ -10248,8 +10261,10 @@ function bdRenderSlot(){
   const [a, b] = bdSpan(slot);
   body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)}<span class="visually-hidden">, </span><span class="bd-slot-t">${a}–${b}</span></h3>
     <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''}, <span id="bdSlotSaved"></span></p>
+    <button type="button" class="linkish bd-xall" id="bdXall" hidden></button>
     <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p></div>
     <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
+  bdPaintXall();
   body.scrollTop = 0;
 }
 
@@ -10473,13 +10488,35 @@ bdEl('bdBody').addEventListener('change', e => {
   bd.changed = true;
   bdPaintChecks();
 });
+function bdSetOpen(tog, open){
+  tog.setAttribute('aria-expanded', open);
+  document.getElementById(tog.getAttribute('aria-controls')).hidden = !open;
+  tog.closest('.bd-card').classList.toggle('open', open);
+}
+// The slot's Expand all talks / Collapse all talks: expands while any session's talks are
+// closed, and is hidden where no session in the slot has talks.
+function bdPaintXall(){
+  const b = document.getElementById('bdXall');
+  if (!b) return;
+  const togs = [...bdEl('bdBody').querySelectorAll('.bd-tog')];
+  b.hidden = !togs.length;
+  const any = togs.some(t => t.getAttribute('aria-expanded') !== 'true');
+  b.dataset.open = any ? '1' : '';
+  b.innerHTML = (any ? 'Expand all' : 'Collapse all') + '<span class="bd-xw"> talks</span>';
+}
 bdEl('bdBody').addEventListener('click', e => {
+  if (e.target.closest('#bdXall')){
+    const open = !!e.target.closest('#bdXall').dataset.open;
+    bd.expand = open;
+    try { sessionStorage.setItem('aip2026-build-expand', open ? '1' : '0'); } catch (err) {}
+    bdEl('bdBody').querySelectorAll('.bd-tog').forEach(t => bdSetOpen(t, open));
+    bdPaintXall();
+    return;
+  }
   const tog = e.target.closest('.bd-tog');
   if (tog){
-    const open = tog.getAttribute('aria-expanded') !== 'true', card = tog.closest('.bd-card');
-    tog.setAttribute('aria-expanded', open);
-    document.getElementById(tog.getAttribute('aria-controls')).hidden = !open;
-    card.classList.toggle('open', open);
+    bdSetOpen(tog, tog.getAttribute('aria-expanded') !== 'true');
+    bdPaintXall();
     return;
   }
   if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
@@ -10492,6 +10529,18 @@ bdEl('bdBody').addEventListener('click', e => {
   document.getElementById('builderTitle').focus({ preventScroll: true });
 });
 bdEl('bdClose').addEventListener('click', () => buildDialog.close());
+// Left and right arrows step through the slots (as Back and Next do) wherever focus is in the
+// dialog, except where the key already means something: the slider (it steps the slots
+// itself), text fields, and with a modifier held.
+buildDialog.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented) return;
+  if (e.target.closest('input[type="range"], input:not([type]), input[type="text"], input[type="search"], textarea, select, [contenteditable]')) return;
+  const btn = bdEl(e.key === 'ArrowLeft' ? 'bdBack' : 'bdNext');
+  if (btn.hidden || btn.disabled) return;
+  e.preventDefault();
+  btn.click();
+});
 lightDismiss(buildDialog, () => buildDialog.close());
 buildDialog.addEventListener('close', () => {
   pnlHistoryClose();

@@ -85,7 +85,10 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - **Build my agenda** walks through the week one time slot at a time: every parallel session
   with its talks, a tick box for each, saved as you tick. A slider with day and time marks
   jumps anywhere in the week and updates the slot as you drag; breaks and meetings are left out
-  unless you ask for them. During the congress it starts at the first slot that is not over.
+  unless you ask for them. **Expand all talks** opens every session's talk list (and keeps them
+  open from slot to slot until collapsed), and the left and right arrow keys step to the previous
+  or next slot (a hint beside Next says so, except on narrow screens). During the congress it
+  starts at the first slot that is not over.
 - Export My agenda: **Print or save as PDF** (a clean A4 list per day with a clash section),
   copy as text, download `.ics` (each event lists what it overlaps; talks inside a saved session
   are listed in that session's event), or share it as a link the receiver can add to or swap for
