@@ -15,7 +15,7 @@ import datetime
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from normalize import affiliation_table, normalize_payload  # noqa: E402
 
-RETRIEVED = "19 November 2026"
+RETRIEVED = "24 November 2026"
 
 # ---------------------------------------------------------------- classify
 GROUP_LABELS = {
