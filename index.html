@@ -23,7 +23,7 @@ window.applyDisplay = function(d){
   set('data-contrast', d.contrast, ['high']);
   set('data-colour', d.colour, ['vivid']);
   set('data-motion', d.motion, ['reduce','full']);
-  set('data-speed', d.speed, ['slow','xslow']);
+  set('data-speed', d.speed, ['fast','xslow']);
   var metas = document.querySelectorAll('meta[name="theme-color"]');
   for (var i = 0; i < metas.length; i++){
     var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
@@ -2360,11 +2360,12 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
-/* Animation speed (Display settings): every duration is a base (Fast) times --mo.
+/* Animation speed (Display settings): every duration is a base (Fast) times --mo: Fast 1,
+   Normal 2 (the default), Slow 4. (An older stored "slow", the same speed, reads as Normal.)
    Motion tokens: a short and a long duration, a standard ease-out and an emphasised one
    for things that move (MO_S, MO_L, EASE, EASE_EM in the script). */
-html{--mo:1;--dur-s:calc(120ms * var(--mo));--dur-l:calc(200ms * var(--mo));--ease:cubic-bezier(.2,0,0,1);--ease-em:cubic-bezier(.3,.15,0,1)}
-html[data-speed="slow"]{--mo:2}
+html{--mo:2;--dur-s:calc(120ms * var(--mo));--dur-l:calc(200ms * var(--mo));--ease:cubic-bezier(.2,0,0,1);--ease-em:cubic-bezier(.3,.15,0,1)}
+html[data-speed="fast"]{--mo:1}
 html[data-speed="xslow"]{--mo:4}
 /* Dialogs (Display settings, Build my agenda, Move to another device, and the details
    when they do not grow out of their block) fade in rising 8px and fade out sinking, their
@@ -3250,9 +3251,9 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     <fieldset class="dd-group" id="dsSpeedGroup" aria-describedby="dsSpeedNote">
       <legend>Animation speed</legend>
       <div class="seg">
-        <label><input type="radio" name="dsSpeed" value=""><span>Fast<small>Default</small></span></label>
-        <label><input type="radio" name="dsSpeed" value="slow"><span>Slow</span></label>
-        <label><input type="radio" name="dsSpeed" value="xslow"><span>Extra slow</span></label>
+        <label><input type="radio" name="dsSpeed" value="fast"><span>Fast</span></label>
+        <label><input type="radio" name="dsSpeed" value=""><span>Normal<small>Default</small></span></label>
+        <label><input type="radio" name="dsSpeed" value="xslow"><span>Slow</span></label>
       </div>
       <p class="dd-note" id="dsSpeedNote" hidden>Nothing moves while Reduce motion is on.</p>
     </fieldset>
@@ -5900,7 +5901,7 @@ const dxRunning = new Set();   // abstracts unfolding or folding (see dxFold)
 const DX_AUTO = CSS.supports('interpolate-size', 'allow-keywords');
 // Animation speed (Display settings): every duration here and in the CSS (--mo) is the
 // Fast one times this.
-const motionK = () => ({ slow: 2, xslow: 4 })[document.documentElement.dataset.speed] || 1;
+const motionK = () => ({ fast: 1, xslow: 4 })[document.documentElement.dataset.speed] || 2;
 function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
@@ -11735,7 +11736,7 @@ const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['slow','xslow'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
