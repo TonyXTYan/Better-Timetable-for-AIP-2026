@@ -3635,11 +3635,11 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   </div>
   <div class="bd-body" id="bdBody"></div>
   <div class="bd-foot">
-    <button type="button" class="toggle" id="bdBack"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+    <button type="button" class="toggle" id="bdBack" aria-keyshortcuts="ArrowLeft"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
     <button type="button" class="toggle" id="bdSkipDay">Skip day</button>
     <p class="bd-kbd" id="bdKbd">Tip: <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move between slots</p>
     <span class="visually-hidden" id="bdLive" aria-live="polite"></span>
-    <button type="button" class="toggle primary" id="bdNext">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="toggle primary" id="bdNext" aria-keyshortcuts="ArrowRight">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </dialog>
 <footer>
