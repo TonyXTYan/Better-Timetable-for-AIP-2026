@@ -263,7 +263,7 @@ def build_payload(raw):
 
 
 # Dark-theme tokens, used twice in the page: under prefers-color-scheme: dark (unless
-# Light is picked in Display settings) and under data-theme="dark".
+# Light is picked in Display options) and under data-theme="dark".
 DARK_TOKENS = """\
   --bg:#0f1012; --card:#17181b; --ink:#ecedef; --muted:#9ca2ab; --line:#2e3136; --accent:#ecedef; --accent-ink:#121316;
   --plenary:#ecedef; --plenary-bg:#2a2c30;
@@ -338,7 +338,7 @@ HTML = r'''<!DOCTYPE html>
 <meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <script>
-// Display settings (text size, font, theme, contrast, colour, motion, animation speed) go on <html> before
+// Display options (text size, font, theme, contrast, colour, motion, animation speed) go on <html> before
 // the first paint, so the page never flashes the wrong theme. Only overrides are stored.
 window.applyDisplay = function(d){
   var r = document.documentElement;
@@ -369,7 +369,7 @@ window.applyDisplay = function(d){
 @@FONTS@@
 </style>
 <script>
-// Archivo (Display settings, Font) is decoded only when it is chosen: then its faces start
+// Archivo (Display options, Font) is decoded only when it is chosen: then its faces start
 // loading now, before the first paint needs them. The System font needs nothing.
 try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}}catch(e){}
 </script>
@@ -406,7 +406,7 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
   /* radii, strictly by kind: lines, tags, segments and chips, controls, plates, dialogs */
   --r-line:2px; --r-tag:3px; --r-seg:6px; --r-ctl:8px; --r-plate:10px; --r-dialog:12px;
   --dlg-shadow:0 24px 48px -12px rgba(12,13,15,.28),0 2px 6px rgba(12,13,15,.08);
-  /* one family. By default the platform's own UI face (Display settings, Font: System), with
+  /* one family. By default the platform's own UI face (Display options, Font: System), with
      tabular figures; Archivo, whose width axis does the work of a second face, on request */
   --font-system:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --font-archivo:"Archivo",var(--font-system);
@@ -427,7 +427,7 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
   /* solid fills for selected chips: white text (--fill-ink) on these in both modes */
   --plenary-fill:#16181c; --aip-fill:#006b6f; --anzcop-fill:#c71f31; --commad-fill:#4a57db; --focus-fill:#006313; --edu-fill:#6b6a00; --poster-fill:#8b41c7; --events-fill:#b92684; --special-fill:#006ca0; --business-fill:#4a5563; --social-fill:#6b5f52;
 }
-/* Colour: Vivid (Display settings). Quiet, the default, keeps colour to marks: a 3px stream
+/* Colour: Vivid (Display options). Quiet, the default, keeps colour to marks: a 3px stream
    line and 10% tints. Vivid lets each stream colour fill its sessions: stronger stream tints
    (18% of the line colour over the card in light; in dark, about 38% of the deep light-theme
    hue over the card, so the tints are jewel tones rather than grey pastels: VIVID_DARK_TOKENS),
@@ -466,7 +466,7 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
 :root[data-colour="vivid"][data-contrast="high"]{--tint-muted:var(--muted)}
 }
 /* Dark theme: the system setting unless the reader picked Light, or Dark picked in
-   Display settings. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
+   Display options. Both blocks get the same tokens (DARK_TOKENS in build_program.py).
    Screen only, so print stays light. */
 @media screen and (prefers-color-scheme: dark){
 :root:not([data-theme="light"]){
@@ -479,7 +479,7 @@ try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=doc
 }
 }
 :root[data-theme="light"]{color-scheme:light}
-/* High-contrast text (Display settings): darker text and stronger lines in light,
+/* High-contrast text (Display options): darker text and stronger lines in light,
    lighter text and stronger lines in dark. */
 :root[data-contrast="high"]{
   --ink:#0b0c0e; --muted:#33373d; --line:#80868f; --hover-line:#4b5058; --ink-2:#1f2226; --ink-3:#121418; --faint:#5d636d; --caret:#4b5058;
@@ -521,7 +521,7 @@ button{font:inherit;cursor:pointer}
 /* ---------- header ---------- */
 /* A calm typographic header on the page's grey: the wordmark, one sentence, three facts;
    Display and the countdown on the right. (The colour key, the spectral rule, lives in
-   Display settings beside the Colour setting.) */
+   Display options beside the Colour setting.) */
 header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
 .hero-main{min-width:0}
@@ -540,7 +540,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-when .na-glyph{display:none}
 .hero-when.is-today .na-glyph{display:inline-block}
 .facts-short{display:none}
-/* The colour key (in Display settings, under Colour): the spectral rule, 400 to 700 nm across
+/* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
    the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
    ticks hanging under it (every 10 nm, longer every 50 nm), labelled at the hundreds. Each
    line is 2px, snapped to whole pixels so it stays crisp; the sodium doublet (now) stands
@@ -966,7 +966,7 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 @keyframes jump-tint{0%,55%{background-color:var(--surface-3);box-shadow:inset 3px 0 0 var(--ink)}100%{background-color:transparent;box-shadow:inset 0 0 0 transparent}}
 @media (pointer:coarse){.jump-target.jump-target,.jump-target.jump-target:focus-visible{outline:none}.jump-target.jump-target{animation:jump-tint calc(1.4s * var(--mo)) ease-out}}
 @media (scripting:enabled){body:not(.ready) footer{visibility:hidden}}
-/* Phones: the details, Display settings and Move to another device open as bottom
+/* Phones: the details, Display options and Move to another device open as bottom
    sheets (no grabber: there is no drag to dismiss). They rise from the foot over --dur-l
    on --ease-em (the dialog transitions above; reduced motion shows them at once), and
    their actions sit in two columns with the primary one across both. */
@@ -2613,14 +2613,14 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 }
 @keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
 .card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
-/* Animation speed (Display settings): every duration is a base (Fast) times --mo: Fast 1,
+/* Animation speed (Display options): every duration is a base (Fast) times --mo: Fast 1,
    Normal 2 (the default), Slow 4. (An older stored "slow", the same speed, reads as Normal.)
    Motion tokens: a short and a long duration, a standard ease-out and an emphasised one
    for things that move (MO_S, MO_L, EASE, EASE_EM in the script). */
 html{--mo:2;--dur-s:calc(120ms * var(--mo));--dur-l:calc(200ms * var(--mo));--ease:cubic-bezier(.2,0,0,1);--ease-em:cubic-bezier(.3,.15,0,1)}
 html[data-speed="fast"]{--mo:1}
 html[data-speed="xslow"]{--mo:4}
-/* Dialogs (Display settings, Build my agenda, Move to another device, and the details
+/* Dialogs (Display options, Build my agenda, Move to another device, and the details
    when they do not grow out of their block) fade in rising 8px and fade out sinking, their
    backdrops fading too; a closing one lets clicks through at once. The details' own grow
    and shrink (a view transition, data-view-tx="dlg") replaces this. */
@@ -2661,7 +2661,7 @@ html{-webkit-tap-highlight-color:transparent}
 }
 html[data-motion="reduce"] :active{scale:none!important}
 html[data-motion="reduce"] dialog::backdrop{transition:none}
-/* Reduced motion: the system setting unless turned off in Display settings, or turned on there. */
+/* Reduced motion: the system setting unless turned off in Display options, or turned on there. */
 @media (prefers-reduced-motion:reduce){
   html:not([data-motion="full"]){scroll-behavior:auto}
   html:not([data-motion="full"]) *,html:not([data-motion="full"]) *::before,html:not([data-motion="full"]) *::after{animation:none!important;transition:none!important}
@@ -2843,7 +2843,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 }
 /* (phones on their side: the day strip keeps its 4px of room for focus rings there too) */
 @media (max-height:500px) and (orientation:landscape){.sticky-wrap:not(.tb-compact) .toolbar>.daytabs.daytabs{padding:4px;margin:-4px}}
-/* ---------- display settings ---------- */
+/* ---------- display options ---------- */
 :root[data-text="sm"]{font-size:90%}
 :root[data-text="lg"]{font-size:115%}
 :root[data-text="xl"]{font-size:130%}
@@ -2851,7 +2851,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media (max-width:720px){:root[data-text="xl"] .sticky-wrap{zoom:.9}}
 .display-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:.8125rem;font-weight:650}
 .display-btn:hover{border-color:var(--hover-line);background:var(--surface-2)}
-.display-btn .aa{font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.02em;font-size:1.0625rem;line-height:1}
+.foot-display{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:2px 0 10px!important}
+.foot-display span{color:var(--muted)}
 #displayDialog{max-height:90vh;width:min(30rem,94vw);padding:0;overscroll-behavior:contain}
 #displayDialog::backdrop,#eventDialog::backdrop{background:var(--backdrop)}
 .dd-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 14px 14px 20px;background:var(--card);border-bottom:1px solid var(--line)}
@@ -2963,8 +2964,6 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .dd-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding-top:14px;border-top:1px solid var(--line)}
 .dd-foot p{margin:0;color:var(--muted);font-size:.75rem}
 @media (max-width:720px){
-  .display-btn .display-word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .display-btn{width:40px;padding:0;justify-content:center}
   .seg.sizes{--n:2!important}
   .dd-foot .linkish{min-height:40px}
   .card-head{padding-right:54px}
@@ -3076,14 +3075,13 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
    many columns as fit. */
 body.participants-view .people-intro{max-width:100ch}
 body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
-/* Compact header on phones and in landscape on phones (about 100px): the wordmark with Aa,
+/* Compact header on phones and in landscape on phones (about 100px): the wordmark,
    the countdown and one line of facts */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
   header.hero{padding:14px 0 0}
   .hero-inner{padding:0 20px;column-gap:12px}
   .hero-main,.hero-side{display:contents}
   .hero h1{grid-row:1;grid-column:1;align-self:center;font-size:1.375rem;font-stretch:112%;letter-spacing:-.015em}
-  .display-btn{grid-row:1;grid-column:2}
   .hero-when{grid-row:2;grid-column:1/-1;margin-top:2px}
   .hero p.sub,.hero .facts{display:none}
   .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
@@ -3222,7 +3220,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   /* paper type: about 9.5pt, whatever the screen's text size (the list is long: abstracts open) */
   html,html[data-text]{font-size:12.5px!important}
   header.hero{background:none}
-  /* the colour key points to Display settings, and the tips describe the screen: neither belongs on paper */
+  /* the colour key points to Display options, and the tips describe the screen: neither belongs on paper */
   footer .colophon,footer .cols>div:nth-child(3){display:none}
   footer{padding:10px 0 0;margin-top:0}
   .cards{display:block!important;overflow:visible!important;border:0!important}
@@ -3265,7 +3263,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 :root[data-colour="vivid"] .vt-badge{color:var(--bar-ink)}
 :root[data-colour="vivid"] .dd-preview{background:var(--aip-bg)}
 }
-/* Font (Display settings). System, the default, sets the page in the platform's UI face
+/* Font (Display options). System, the default, sets the page in the platform's UI face
    (San Francisco, Segoe UI, Roboto...) with tabular figures; Archivo is the congress face, whose
    width axis widens the wordmark and narrows times. Most system faces have no width axis, so
    with System every width is set to normal (the same on every platform, never a stray
@@ -3317,7 +3315,6 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </dl>
     </div>
     <div class="hero-side">
-      <button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog" title="Display settings"><span class="aa" aria-hidden="true">Aa</span> <span class="display-word">Display</span><span class="visually-hidden"> settings</span></button>
       <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
     </div>
   </div>
@@ -3458,7 +3455,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 </dialog>
 <dialog id="displayDialog" aria-labelledby="displayTitle">
   <div class="dd-head">
-    <h2 id="displayTitle">Display settings</h2>
+    <h2 id="displayTitle">Display options</h2>
     <form method="dialog"><button class="toggle dlg-x" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></form>
   </div>
   <div class="dd-body">
@@ -3512,7 +3509,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </fieldset>
     <div class="dd-preview" aria-hidden="true"><span class="badge" style="--c:var(--aip);--cbg:var(--aip-bg)">QST</span><span class="pv-title">Preview: silicon spin qubits at scale</span><span class="pv-meta">Tue 8 Dec, 10:30–12:30 AEDT, Room 2.01</span></div>
     <div class="dd-foot">
-      <button type="button" class="linkish" id="dsReset">Reset display settings</button>
+      <button type="button" class="linkish" id="dsReset">Reset display options</button>
       <p>Saved on this device only.</p>
     </div>
   </div>
@@ -3593,12 +3590,13 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </div>
     <div>
       <h2>Tips</h2>
+      <p class="foot-display"><button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast and motion.</span></p>
       <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. <span class="on-fine">Click</span><span class="on-touch">Tap</span> a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
       <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
     </div>
     <div class="colophon">
       <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <button type="button" class="linkish" data-colour-key>Display settings</button>, beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
+      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <button type="button" class="linkish" data-colour-key>Display options</button>, beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
@@ -6145,14 +6143,14 @@ function renderBuilder(){
 // On top of that, every session or talk on screen in both states moves and resizes from
 // its old place to its new one (mx*, below); fn may return the element the `from`
 // element turns into. Browsers without view transitions get a short fade. Nothing
-// animates when motion is reduced (system setting, unless Display settings say Full, or
+// animates when motion is reduced (system setting, unless Display options say Full, or
 // Reduce there). A click, key press or input while a change is pending applies it first
 // and skips the animation, so the state is never stale. The button pressed for a change
 // (opts.press) shows its new state in the next frame, before any of that work.
 let viewTx = null;
 const dxRunning = new Set();   // abstracts unfolding or folding (see dxFold)
 const DX_AUTO = CSS.supports('interpolate-size', 'allow-keywords');
-// Animation speed (Display settings): every duration here and in the CSS (--mo) is the
+// Animation speed (Display options): every duration here and in the CSS (--mo) is the
 // Fast one times this.
 const motionK = () => ({ fast: 1, xslow: 4 })[document.documentElement.dataset.speed] || 2;
 function settleTransition(e){
@@ -8445,7 +8443,7 @@ function hzPopScrolled(){
   if (keyed && h) hzPopRe = setTimeout(() => { if (document.activeElement === src && src.isConnected) hzPopShow(src, h, false); }, 140);
 }
 window.addEventListener('scroll', () => { if (hzPop.src && Math.abs(scrollY - hzPop.y) > 1) hzPopScrolled(); }, { passive: true });
-// The colour key's spectral rule (in Display settings): hover near a line, or touch the
+// The colour key's spectral rule (in Display options): hover near a line, or touch the
 // scale and slide along it, to name the nearest line; the legend entry for it lights up too,
 // and pointing at a legend entry lights its line. The dialog is in the page from the start
 // (only hidden while closed), so its parts are found once; positions are measured as needed.
@@ -11980,7 +11978,7 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
   }
 });
 
-// ---------- display settings ----------
+// ---------- display options ----------
 // Text size, font (System or Archivo), theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
 // the defaults are stored (localStorage 'aip2026-display'); the inline script in <head>
 // applies them before the first paint, and applyDisplay() keeps <html> and theme-color in step.
@@ -12092,7 +12090,7 @@ function openDisplay(fromHistory){
   if (!fromHistory) pnlHistoryOpen('display');
 }
 displayBtn.addEventListener('click', () => openDisplay());
-// (the footer's Colour key opens Display settings at the key)
+// (the footer's Colour key opens Display options at the key)
 document.addEventListener('click', e => {
   if (!e.target.closest('[data-colour-key]')) return;
   openDisplay();
@@ -12124,7 +12122,7 @@ displayDialog.addEventListener('click', e => {
       fitPlaceholder();
       if (hadText || hadFont) refitCalendars();
     }, hadText);
-    toast('Display settings reset');
+    toast('Display options reset');
   }
 });
 displayDialog.addEventListener('close', () => { pnlHistoryClose(); displayBtn.focus(); });

@@ -99,7 +99,7 @@ user site's `404.html` that keeps `?query` and `#hash`).
   edge of a session or talk on now in a list; the glyph on today's tab and the Now button.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
-- **Display settings** (the **Aa** button): text size (Smaller 90 %, Default, Larger 115 %,
+- **Display options** (the button in the footer): text size (Smaller 90 %, Default, Larger 115 %,
   Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
   colour to thin lines and faint tints; Vivid fills each session head, calendar bar and lane
   label with its stream's tint and turns the stream tags solid), high-contrast text and reduce
@@ -118,12 +118,12 @@ user site's `404.html` that keeps `?query` and `#hash`).
 "Line List": the program set like a spectroscopist's line list. The interface is ink on a
 neutral grey, and colour appears only where it is data. Each stream takes its hue from a real
 spectral line (ANZCOP the 632.8 nm helium–neon laser, COMMAD a 455 nm blue LED, the AIP groups
-hydrogen Hβ, and so on); the colour key in Display settings draws them on a spectral rule,
-400 to 700 nm, and the footer's Colour key tells the story. Display settings also offer a Vivid
+hydrogen Hβ, and so on); the colour key in Display options draws them on a spectral rule,
+400 to 700 nm, and the footer's Colour key tells the story. Display options also offer a Vivid
 colour mode, where the stream colours fill the sessions instead of only marking them. Amber is kept for the sodium doublet that marks now. Each
 time slot is a white plate on the grey page, divided by hairlines, with no drop shadows. The
 type is one family at a time, with tabular figures for times: by default the device's own UI
-font (San Francisco, Segoe UI, Roboto...), or, under Display settings, Font, Archivo, whose width
+font (San Francisco, Segoe UI, Roboto...), or, under Display options, Font, Archivo, whose width
 axis does the work of a second face: expanded for the wordmark, condensed for times. Light, dark, high-contrast and forced-colour modes
 and print are designed alongside.
 
@@ -143,7 +143,7 @@ Pushing to `main` runs `.github/workflows/pages.yml`, which rebuilds and deploys
 
 The optional typeface, Archivo (variable: weight and width axes, roman and italic, SIL Open Font
 License, `fonts/OFL.txt`), is inlined as base64 so the page works offline; browsers decode it only
-when it is chosen (or shown as a sample in Display settings). `fonts/*.woff2` are subsets cut from
+when it is chosen (or shown as a sample in Display options). `fonts/*.woff2` are subsets cut from
 `@fontsource-variable/archivo@5.3.0` by `fonts/make_fonts.py` (fontTools: axes limited, then only the
 characters the page and the data use); `fonts/fonts.json` lists them with their unicode ranges, and
 the build only reads those files, so it needs nothing beyond the Python standard library. Re-run
