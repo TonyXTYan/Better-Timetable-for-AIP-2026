@@ -12743,8 +12743,18 @@ function segMoving(g){
 // is now, segSlide). Its box is read from the options' offsets, never from its own style,
 // so a slide begun mid-slide (a held arrow key, a resize) starts where it shows.
 function segAt(g, on, snap){
-  const to = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight, r: segRound(g, on) };
-  const from = !snap && g.classList.contains('seg-ind') ? segNow(g) : null;
+  // (offsets from the group itself: it is the option's offset parent only once seg-ind
+  // makes it the indicator's containing block, so that goes on first; were the option
+  // still measured from elsewhere (a dialog), its box is taken from the two rects)
+  const had = g.classList.contains('seg-ind');
+  g.classList.add('seg-ind');
+  let x = on.offsetLeft, y = on.offsetTop;
+  if (on.offsetParent !== g){
+    const a = on.getBoundingClientRect(), c = g.getBoundingClientRect();
+    x = a.left - c.left - g.clientLeft; y = a.top - c.top - g.clientTop;
+  }
+  const to = { x, y, w: on.offsetWidth, h: on.offsetHeight, r: segRound(g, on) };
+  const from = !snap && had ? segNow(g) : null;
   segStop(g);
   if (snap){
     g.classList.add('seg-snap');
