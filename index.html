@@ -12175,7 +12175,8 @@ function tbFollowers(){
   for (const el of all){
     const cs = getComputedStyle(el);
     if (cs.position !== 'sticky') continue;
-    const top = parseFloat(cs.top), r = el.getBoundingClientRect();
+    // (mid-fold, a head moving by a translate: where it shows, its top and that together)
+    const top = parseFloat(cs.top) + (parseFloat(cs.translate.split(' ')[1]) || 0), r = el.getBoundingClientRect();
     if (!Number.isFinite(top) || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
     out.push({ el, top, h: parseFloat(cs.height), y: r.top });
   }
@@ -12220,7 +12221,7 @@ function tbAnimEnd(run){
   stickyWrap.style.clipPath = '';
   stickyWrap.style.removeProperty('--tb-edge');
   stickyWrap.querySelector('.toolbar').style.opacity = '';
-  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; }
+  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; el.style.translate = ''; }
   for (const el of run.lv) el.style.removeProperty('--toolbar-h');
   if (TB.anim === run) TB.anim = null;
 }
@@ -12304,13 +12305,21 @@ function tbCompact(on){
       const cs = getComputedStyle(f.el), top = parseFloat(cs.top), h = parseFloat(cs.height);
       // (only what sits at the edge or will: one lower down is in its own place either way)
       if (f.y > Math.max(f.top, top) + 1) continue;
-      const k0 = { top: f.top + 'px' }, k1 = { top: top + 'px' };
-      if (Math.abs(h - f.h) > 0.5){ k0.height = f.h + 'px'; k1.height = h + 'px'; }
-      if (Math.abs(top - f.top) > 0.5 || k0.height){
+      // (a head that keeps its height moves by a translate, which the compositor runs,
+      // from where it was to its new place; one whose height changes too is moved by its
+      // top, with the height, a layout each frame)
+      if (Math.abs(h - f.h) <= 0.5){
+        if (Math.abs(top - f.top) <= 0.5) continue;
+        const k0 = { translate: `0 ${f.top - top}px` }, k1 = { translate: '0 0' };
         Object.assign(f.el.style, k0);
         TB.anim.fe.push(f.el);
         TB.anim.f.push(f.el.animate([k0, k1], opt));
+        continue;
       }
+      const k0 = { top: f.top + 'px', height: f.h + 'px' }, k1 = { top: top + 'px', height: h + 'px' };
+      Object.assign(f.el.style, k0);
+      TB.anim.fe.push(f.el);
+      TB.anim.f.push(f.el.animate([k0, k1], opt));
     }
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
