@@ -7697,6 +7697,21 @@ function hzDraw(root, left){
     }
   }
   h.querySelector('.hz-rows').innerHTML = rows;
+  // What paintNow marks (ended, next; a talk on now), set before the new canvas is first
+  // styled, so that paintNow, after, finds it in place and styles none of it again. (A bar on
+  // now, whose title is set a step bolder, is still marked by paintNow: the text fit measures
+  // titles as they were before.)
+  if (h.closest('#agenda')){
+    const n = aedtNow();
+    let nextMin = Infinity;
+    for (const x of document.querySelectorAll('#agenda .hz-bar, #agenda .vt-card')) if (x.dataset.date === n.date && +x.dataset.start > n.min) nextMin = Math.min(nextMin, +x.dataset.start);
+    for (const x of h.querySelectorAll('.hz-rows .hz-bar')){
+      if (x.dataset.date !== n.date) continue;
+      if (+x.dataset.end <= n.min) x.classList.add('past');
+      if (+x.dataset.start === nextMin) x.classList.add('is-next');
+    }
+    for (const x of h.querySelectorAll('.hz-rows .hz-talk, .hz-rows .hz-mark')) if (x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)) x.classList.add('is-now');
+  }
   // the minute the canvas scrolls to: the one asked for, the kept one, else now on a
   // congress day, else the first session (a glide under way lands where it was going)
   if (left === undefined && h._glide) left = h._glide.m;
@@ -7706,10 +7721,16 @@ function hzDraw(root, left){
     const n = aedtNow();
     left = n.date === date && n.min >= d0 && n.min < d1 ? n.min - span * 0.2 : Math.min(...ents.map(e => toMin(e.start))) - 10;
   }
-  // (the ruler and minimap are measured before the fit writes, in the same layout)
+  // Read first, write after: the ruler, the minimap and the scroll position are taken from
+  // the canvas's first layout (the one the new markup needs anyway), the text fit reads its
+  // bars in one more, and hzSync runs inside that one, between the fit's reads and its
+  // writes, so nothing else here lays the canvas out again (the frame lays out the fit's
+  // writes). Every box is as it was: only the text inside bars and talks is fitted.
   h._ticks = [...ticksEl.querySelectorAll('span.t')].map(el => ({ el, x: parseFloat(el.style.left), w: el.offsetWidth, cut: false }));
   hzMapLabels(h);
-  hzFitFirst(h, Math.max(0, (left - d0) * ppm), trackW);
+  // scroll to that minute (on a laid-out canvas, so setting it lays out nothing)
+  const sl = Math.max(0, (left - d0) * ppm);
+  vp.scrollLeft = sl;
   // bars that can start off to the left: hzSync pads their text into view
   // (My agenda's bars pad their header strip, which carries the padding there)
   h._edge = [...h.querySelectorAll('button.hz-bar, .hz-head')].map(el => {
@@ -7717,6 +7738,7 @@ function hzDraw(root, left){
     const pel = agenda && el === bar ? el.querySelector('.hz-in') || el : el;
     return { el: pel, x: parseFloat(bar.style.left), w: parseFloat(bar.style.width), pad: 0 };
   });
+  hzFitFirst(h, sl, trackW, () => hzSync(h));
   // zoom buttons
   const z = HZ.zoom[hzZoomKey(key)];
   h.parentElement.querySelectorAll('[data-hzzoom]').forEach(b => {
@@ -7726,9 +7748,6 @@ function hzDraw(root, left){
   });
   segAdopt(h.parentElement.querySelector('.hz-zoom'));
   h.querySelectorAll('[data-hzstep]').forEach(b => { b.disabled = +b.dataset.hzstep > 0 ? span >= full - 0.5 : span <= 30.5; });
-  // scroll to that minute
-  vp.scrollLeft = Math.max(0, (left - d0) * ppm);
-  hzSync(h);
   paintNow();
 }
 
@@ -7835,7 +7854,7 @@ function hlUnclip(root, pick){
 }
 // `pick(bar)` limits the fit to some bars (and their talks): hzDraw fits those near what
 // shows first, the rest follow in idle time (hzFitLater) or on scroll (hzFitNear).
-function hzFitText(h, pick){
+function hzFitText(h, pick, mid){
   const over = el => el && el.scrollWidth > el.clientWidth + 1;
   const inPick = el => !pick || pick(el.classList.contains('hz-head') || el.classList.contains('hz-talk') ? el.closest('.hz-bar') : el);
   const bars = [...h.querySelectorAll('button.hz-bar, .hz-head')].filter(b => b.querySelector('.hz-title') && inPick(b)), nar = bars.filter(b => over(b.querySelector('.hz-title')));
@@ -7861,9 +7880,55 @@ function hzFitText(h, pick){
   }
   talks.forEach((t, i) => { if (tfit[i][0]) t.classList.add('hz-nar'); if (tfit[i][1]) t.classList.add('hz-thin'); if (tfit[i][2]) t.classList.add('hz-sliver'); if (tfit[i][3]) t.classList.add('hz-noic'); if (tfit[i][1] && tfit[i][4]) t.classList.add('hz-mm'); });
   for (const b of nokind) b.classList.add('hz-nokind');
+  // One layout for all that those classes change, read together: the narrow bars whose
+  // code does not fit (nar0), the talks taller than their row (clamp), and the other bars
+  // whose title runs into the lines under it (fix). Each is a bar or a talk laid out on its
+  // own (contain), so none of these reads depends on another's writes.
   const nar0 = nar.filter(b => over(b.querySelector('.hz-in')));
+  // Row heights are estimated (and capped): a talk still taller than its row keeps its
+  // whole title if it can and shortens its speakers, else drops them and ends the title
+  // with an ellipsis, so no line is cut through.
+  const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 13;
+  // A talk too narrow for whole words (hz-nar) gets its title set here (hzWords): whole
+  // words on as many lines as fit, a word too long for a line cut with an ellipsis, so it
+  // reads "Spectral / amplifica… / for / simulation…" rather than one cut line.
+  const fits = [], notl = [];
+  const clamp = talks.map(t => {
+    const tl = t.querySelector('.hz-tl'), ts = t.querySelector('.hz-ts'), tt = t.querySelector('.hz-tt');
+    if (!tl || getComputedStyle(tl).display === 'none') return null;
+    const cs = getComputedStyle(t), room = t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (tt ? tt.offsetHeight + 1 : 0);
+    // a thin talk's one title line, where there is room for it under the time
+    if (t.classList.contains('hz-thin')){ if (room < lh(tl) - 1) notl.push(t); return null; }
+    if (t.classList.contains('hz-nar')){
+      const ls = getComputedStyle(tl);
+      fits.push([tl, t.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth) - 1,
+        Math.max(1, Math.floor(room / (parseFloat(ls.lineHeight) || 13))), ls.font]);
+      return null;
+    }
+    if (t.scrollHeight <= t.clientHeight + 1) return null;
+    const showsSp = ts && getComputedStyle(ts).display !== 'none', th = tl.offsetHeight;
+    return showsSp && th <= room - lh(ts) - 1 ? [ts, Math.floor((room - th - 1) / lh(ts))]
+      : [tl, Math.max(1, Math.floor(room / lh(tl))), showsSp ? ts : null];
+  }).filter(Boolean);
+  // Bar heights are estimated from the title's length; where the title wraps to more lines
+  // than that allowed, end it in an ellipsis (fewer lines) so the time line below stays
+  // whole, and drop the time line only if one title line is all that fits. (Text may run
+  // into a plain bar's bottom padding; a split head or a bar with talk marks clips at its
+  // content edge.)
+  const fix = bars.filter(b => !b.classList.contains('hz-nar')).map(b => {
+    // m: the lines under the title (the time; in My agenda also speakers and session)
+    const t = b.querySelector('.hz-title'), m = [];
+    for (let n = t.nextElementSibling; n; n = n.nextElementSibling) if (getComputedStyle(n).display !== 'none') m.push(n);
+    const cs = getComputedStyle(b), ts = getComputedStyle(t), r = b.getBoundingClientRect();
+    const tight = b.classList.contains('hz-head') || b.classList.contains('marked');
+    const avail = r.bottom - parseFloat(cs.borderBottomWidth) - (tight ? parseFloat(cs.paddingBottom) : 2) - t.getBoundingClientRect().top;
+    const lh = parseFloat(ts.lineHeight) || 16, max = parseInt(ts.webkitLineClamp) || 6;
+    const lines = Math.min(max, Math.round(t.scrollHeight / lh)), mh = m.reduce((n, x) => n + x.scrollHeight, 0) + 1; // natural heights (either may be squeezed)
+    return { t, m, lh, lines, mh, avail };
+  }).filter(x => x.lines * x.lh + x.mh > x.avail + 1);
   for (const b of nar0) b.classList.add('hz-nar0');
-  // codes cut to three, two or one letters, every bar at each step
+  // codes cut to three, two or one letters, every bar at each step (a layout a step, only
+  // while some code is still cut)
   let cut = nar0;
   for (const n of [3, 2, 1]){
     cut = cut.filter(b => over(b.querySelector('.hz-in')));
@@ -7893,34 +7958,12 @@ function hzFitText(h, pick){
     const shown = (b.classList.contains('hz-nar1') && !b.classList.contains('hz-vert') ? '' : b.querySelector('.hz-bdg').textContent + ' ') + vis.map(text).filter(Boolean).join(' ');
     const notes = (b.title || '').split('\n').slice(1);
     const kind = b.classList.contains('hz-nokind') ? b.querySelector('.hz-meta .kind').textContent : '';
-    b.setAttribute('aria-label', [t.textContent.replace(/^[\s\u26a0\u2605]+/, '').trim(), shown, kind,
+    b.setAttribute('aria-label', [t.textContent.replace(/^[\s⚠★]+/, '').trim(), shown, kind,
       t.querySelector('.hz-star') ? 'in My agenda' : '', ...notes].filter(Boolean).join(', '));
   }
-  // Row heights are estimated (and capped): a talk still taller than its row keeps its
-  // whole title if it can and shortens its speakers, else drops them and ends the title
-  // with an ellipsis, so no line is cut through.
-  const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 13;
-  // A talk too narrow for whole words (hz-nar) gets its title set here (hzWords): whole
-  // words on as many lines as fit, a word too long for a line cut with an ellipsis, so it
-  // reads "Spectral / amplifica… / for / simulation…" rather than one cut line.
-  const fits = [], notl = [];
-  const clamp = talks.map(t => {
-    const tl = t.querySelector('.hz-tl'), ts = t.querySelector('.hz-ts'), tt = t.querySelector('.hz-tt');
-    if (!tl || getComputedStyle(tl).display === 'none') return null;
-    const cs = getComputedStyle(t), room = t.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (tt ? tt.offsetHeight + 1 : 0);
-    // a thin talk's one title line, where there is room for it under the time
-    if (t.classList.contains('hz-thin')){ if (room < lh(tl) - 1) notl.push(t); return null; }
-    if (t.classList.contains('hz-nar')){
-      const ls = getComputedStyle(tl);
-      fits.push([tl, t.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth) - 1,
-        Math.max(1, Math.floor(room / (parseFloat(ls.lineHeight) || 13))), ls.font]);
-      return null;
-    }
-    if (t.scrollHeight <= t.clientHeight + 1) return null;
-    const showsSp = ts && getComputedStyle(ts).display !== 'none', th = tl.offsetHeight;
-    return showsSp && th <= room - lh(ts) - 1 ? [ts, Math.floor((room - th - 1) / lh(ts))]
-      : [tl, Math.max(1, Math.floor(room / lh(tl))), showsSp ? ts : null];
-  }).filter(Boolean);
+  // (the caller's own reads, in this same layout: hzDraw's hzSync)
+  if (mid) mid();
+  // then the clamps and fits, with nothing read after them
   for (const t of notl) t.classList.add('hz-notl');
   for (const [el, n, hide] of clamp){
     if (hide) hide.hidden = true;
@@ -7935,22 +7978,6 @@ function hzFitText(h, pick){
     if (star) tl.firstChild.prepend(star, ' ');
     tl.classList.add('hz-fit');
   }
-  // Bar heights are estimated from the title's length; where the title wraps to more lines
-  // than that allowed, end it in an ellipsis (fewer lines) so the time line below stays
-  // whole, and drop the time line only if one title line is all that fits. (Text may run
-  // into a plain bar's bottom padding; a split head or a bar with talk marks clips at its
-  // content edge.)
-  const fix = bars.filter(b => !b.classList.contains('hz-nar')).map(b => {
-    // m: the lines under the title (the time; in My agenda also speakers and session)
-    const t = b.querySelector('.hz-title'), m = [];
-    for (let n = t.nextElementSibling; n; n = n.nextElementSibling) if (getComputedStyle(n).display !== 'none') m.push(n);
-    const cs = getComputedStyle(b), ts = getComputedStyle(t), r = b.getBoundingClientRect();
-    const tight = b.classList.contains('hz-head') || b.classList.contains('marked');
-    const avail = r.bottom - parseFloat(cs.borderBottomWidth) - (tight ? parseFloat(cs.paddingBottom) : 2) - t.getBoundingClientRect().top;
-    const lh = parseFloat(ts.lineHeight) || 16, max = parseInt(ts.webkitLineClamp) || 6;
-    const lines = Math.min(max, Math.round(t.scrollHeight / lh)), mh = m.reduce((n, x) => n + x.scrollHeight, 0) + 1; // natural heights (either may be squeezed)
-    return { t, m, lh, lines, mh, avail };
-  }).filter(x => x.lines * x.lh + x.mh > x.avail + 1);
   for (const { t, m, lh, lines, mh, avail } of fix){
     const keep = Math.floor((avail - mh + 1) / lh);
     if (keep >= 1){ t.style.webkitLineClamp = Math.min(lines, keep); continue; }
@@ -7962,18 +7989,26 @@ function hzFitText(h, pick){
 // the others later: a bar off the screen need not be laid out and measured before the
 // first frame. They are fitted in small batches in idle time, nearest first, and any that
 // scroll into view before then are fitted at once (hzFitNear, from hzSync, so before the
-// frame that shows them).
-function hzFitFirst(h, sl, tw){
+// frame that shows them). Inside a view change's redraw, whose picture is the screen
+// itself, the fit takes only the screen, and the rest waits until the change has moved.
+// (`mid` runs between the fit's reads and its writes: hzDraw's hzSync)
+function hzFitFirst(h, sl, tw, mid){
   const pos = new Map(), at = b => { let p = pos.get(b); if (!p) pos.set(b, p = [parseFloat(b.style.left), parseFloat(b.style.width)]); return p; };
-  const near = b => { const [x, w] = at(b); return x + w > sl - tw && x < sl + 2 * tw; };
-  hzFitText(h, near);
+  const vt = inVT && viewTx && viewTx.vt, lo = vt ? sl : sl - tw, hi = vt ? sl + tw : sl + 2 * tw;
+  const near = b => { const [x, w] = at(b); return x + w > lo && x < hi; };
   const pend = [...h.querySelectorAll('.hz-rows .hz-bar')].filter(b => !near(b));
   pend.sort((a, b) => Math.abs(at(a)[0] - sl) - Math.abs(at(b)[0] - sl));
-  h._fitPend = pend;
+  // (none is pending while `mid` runs, so its hzSync fits none of them in the middle of
+  // this fit; they are pending once it is done)
+  h._fitPend = [];
+  h._fitHold = vt || null;
+  if (vt) vt.finished.catch(() => {}).then(() => { if (h._fitHold === vt) h._fitHold = null; });
   h._fitMarks = !!h.querySelector('mark.hlm');
+  hzFitText(h, near, mid);
+  h._fitPend = pend;
   hlUnclip(h, near);
   const gen = h._fitGen = (h._fitGen || 0) + 1;
-  if (pend.length) hzFitLater(h, gen);
+  if (pend.length) hzFitLater(h, gen, vt);
 }
 function hzFitBatch(h, bars){
   if (!bars.length) return;
@@ -7981,7 +8016,8 @@ function hzFitBatch(h, bars){
   hzFitText(h, b => set.has(b));
   if (h._fitMarks) hlUnclip(h, b => set.has(b));
 }
-function hzFitLater(h, gen){
+function hzFitLater(h, gen, after){
+  if (after){ after.finished.catch(() => {}).then(() => hzFitLater(h, gen)); return; }
   const run = () => {
     if (h._fitGen !== gen || !h.isConnected) return;
     hzFitBatch(h, h._fitPend.splice(0, 6));
@@ -7993,8 +8029,10 @@ function hzFitNear(h){
   const pend = h._fitPend;
   if (!pend || !pend.length) return;
   const sl = h.querySelector('.hz-vp').scrollLeft, tw = +h.dataset.tw;
+  // (while a view change moves, only what comes on screen: the rest waits for it, hzFitFirst)
+  const lo = h._fitHold ? sl : sl - tw / 2, hi = h._fitHold ? sl + tw : sl + tw * 1.5;
   const hit = [], keep = [];
-  for (const b of pend) (parseFloat(b.style.left) + parseFloat(b.style.width) > sl - tw / 2 && parseFloat(b.style.left) < sl + tw * 1.5 ? hit : keep).push(b);
+  for (const b of pend) (parseFloat(b.style.left) + parseFloat(b.style.width) > lo && parseFloat(b.style.left) < hi ? hit : keep).push(b);
   if (!hit.length) return;
   h._fitPend = keep;
   hzFitBatch(h, hit);
@@ -8050,11 +8088,20 @@ function hzPaintNow(h){
   h.querySelectorAll('.hz-ticks .t').forEach(t => { const tx = (+t.dataset.m - d0) * ppm; t.style.visibility = show && tx > x - 62 && tx < x + 18 ? 'hidden' : ''; });
   // The doublet runs under the bars; a bar (or talk) on now draws its stretch of it on its
   // own fill, under its text (--nowx: where the line's centre crosses its padding box).
+  // Worked out from the positions the canvas was drawn with, not read from its layout, so
+  // this lays nothing out: the line's centre is `x` along the track, a bar's padding box
+  // starts its left plus its 3px border, a talk's its share of its session's padding box
+  // (less My agenda's margins) plus its 1px border.
   const on = show ? h.querySelectorAll('.hz-bar.is-now, .hz-talk.is-now') : [];
-  const cx = on.length ? line.getBoundingClientRect().left + line.offsetWidth / 2 : 0;
+  const ag = h.classList.contains('hz-agenda');
+  const padL = el => {
+    if (!el.classList.contains('hz-talk')) return parseFloat(el.style.left) + 3;
+    const bar = el.closest('.hz-bar'), bl = parseFloat(bar.style.left) + 3 + (ag ? 1 : 0);
+    return bl + parseFloat(el.style.left) / 100 * (parseFloat(bar.style.width) - 4 - (ag ? 4 : 0)) + 1;
+  };
   for (const el of h.querySelectorAll('.hz-now-in')) el.classList.remove('hz-now-in');
   for (const el of on){
-    el.style.setProperty('--nowx', (cx - el.getBoundingClientRect().left - el.clientLeft).toFixed(1) + 'px');
+    el.style.setProperty('--nowx', (x - padL(el)).toFixed(1) + 'px');
     el.classList.add('hz-now-in');
   }
 }
