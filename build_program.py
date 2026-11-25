@@ -933,7 +933,7 @@ html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(-
 @keyframes lay-in{from{opacity:0;transform:scale(.985)}}
 /* (the new page's stuck heads (mx-head) show at once, as the toolbar does, over the items
    moving under them) */
-html[data-view-tx="lay"]::view-transition-new(*.mx-head){animation:none}
+html:is([data-view-tx="lay"],[data-view-tx="fade"])::view-transition-new(*.mx-head){animation:none}
 /* (a moving Horizontal bar leaves its stubs of the Now line behind: the line stays put) */
 html[data-view-tx="lay"] .hz-day .hz-bar.is-now.hz-now-in[style*="view-transition-name"]::before{display:none}
 /* A change whose morph is off (recent ones were slow): a short plain cross-fade */
@@ -6548,6 +6548,9 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 // quick succession, recent redraws were slow or the view is slow to draw (txHeavy); and
 // a plain cross-fade while recent transitions were slow to start or janky (txWatch).
 const mxCap = () => PHONE_MQ.matches ? 28 : 56, mxNearCap = () => PHONE_MQ.matches ? 20 : 30, mxScanMax = () => PHONE_MQ.matches ? 450 : 1400;
+// Horizontal <-> Vertical names every item on screen (opts.sight), up to these: more than a
+// phone or a desktop screen holds even in Talks (at most about 30 and 80 seen)
+const mxOrientCap = () => PHONE_MQ.matches ? 60 : 150;
 const MX_NOOP = { after(){}, animate(){}, done(){} };
 let txLast = -1e9, txSlow = 0;
 // Motion tokens (as in the CSS: --dur-s, --dur-l, --ease, --ease-em): a short and a long
@@ -6612,6 +6615,8 @@ function mxUnderHeads(){
   return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
 }
 let mxNamed = [], mxOwner = null, mxShown = [];
+// (what the last morph named and found, for ?txdebug=1)
+let mxStat = {};
 // (this transition's own rules: each moving group's size, a clip that stays put, a look
 // the page fades itself; set once, in the update callback, before the browser builds the
 // transition's parts, so it styles them once)
@@ -6733,7 +6738,8 @@ function mxBegin(kind, from, opts){
   // (opts.only, a list of keys: those items alone are named, the first before the rest,
   // and with opts.lite the first only; looked up by id, so a long page costs no more)
   const only = opts.only ? new Set((opts.lite ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && [...only][0];
-  if (opts.plain || (!only && mxMany())) return MX_NOOP;
+  mxStat = {};
+  if (opts.plain || (!only && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
   if (from){
@@ -6774,6 +6780,8 @@ function mxBegin(kind, from, opts){
       const under = mxUnderHeads();
       seen = seen.filter(it => it.key === first || !under(it.r)).sort((a, b) => (b.key === first) - (a.key === first) || a.d - b.d);
     }
+    // (opts.sight: the items on screen only, all of them; one off it goes with the page)
+    if (opts.sight && !only && y0 === null) seen = seen.filter(it => coverish(it) || (it.kind === 'item' && it.d === 0));
     if (opts.lite && !only && y0 === null && opts.band === undefined){
       all = seen.length;
       seen = seen.filter(it => coverish(it) || (it.kind === 'item' && it.d === 0));
@@ -6789,9 +6797,11 @@ function mxBegin(kind, from, opts){
       && (!it.el.closest('.week-ov') || it.el.closest('.week-col')?.dataset.day === String(opts.band)));
     // (opts.lite: half as many as it would name, but never fewer than the covers and the
     // sessions in sight)
-    let cap = y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75;
+    // (opts.cap: a change's own budget, as Horizontal <-> Vertical's, mxOrientCap)
+    let cap = opts.cap || (y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75);
     if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
     else if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
+    mxStat = { seen: seen.length, cap: Math.round(cap), vis0: seen.filter(it => it.kind === 'item' && it.d === 0).length };
     for (const it of seen){
       if (old.size >= cap) break;
       if (opts.nest && it.p && !old.has(it.p)) continue;
@@ -6937,9 +6947,12 @@ function mxBegin(kind, from, opts){
       if (only){
         const under = mxUnderHeads();
         for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
-        // (and the heads stuck at the top of the new page (a phone's time head sits 50px
-        // under its stream chips) are shown over the items at once, with the toolbar, so
-        // nothing moving crosses over them: mx-head, in the style sheet)
+      }
+      // (and the heads stuck at the top of the new page (a phone's time head sits 50px
+      // under its stream chips) are shown over the items at once, with the toolbar, so
+      // nothing moving crosses over them: mx-head, in the style sheet. Also for a change
+      // whose two views have heads of their own (opts.sight: Horizontal <-> Vertical))
+      if (only || opts.sight){
         const bar = stickyWrap.getBoundingClientRect().bottom;
         for (const h of document.getElementById('main').querySelectorAll(MX_HEADS)){
           const r = h.getBoundingClientRect();
@@ -6978,6 +6991,7 @@ function mxBegin(kind, from, opts){
       const its = cand.filter(x => x.o.kind === 'item' && x.key !== fromKey);
       // (opts.reshape: the change is meant to reshape items, as "Show full sessions" does)
       const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
+      Object.assign(mxStat, { old: old.size, now: now.size, its: its.length, wild: its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length + (wild ? ' WILD' : '') });
       // (opts.only, into the list: the item you were at, and of the sessions beside it
       // those whose move shows on the screen at both ends and never crosses another's on
       // the way: in a crowded slot, bars stacked in lanes become cards side by side, much
@@ -7012,6 +7026,9 @@ function mxBegin(kind, from, opts){
         // (the old pictures go quickly: the two pages are too unlike to show together)
         plan.quick = true;
       }
+      mxStat.pairs = plan.pairs.filter(x => x.o.kind === 'item').length;
+      mxStat.vis1 = [...now.values()].filter(it => it.kind === 'item' && it.d === 0).length;
+      mxStat.pv = plan.pairs.filter(x => x.o.kind === 'item' && (x.o.d === 0 || x.n.d === 0)).length;
       // A session that comes or goes around saved talks shown on their own (My agenda's
       // "Show full sessions", or saving or removing the session): it grows out of those
       // talks (emerge) or shrinks back into them (sink), while each talk moves between
@@ -7160,7 +7177,7 @@ function mxBegin(kind, from, opts){
       // ---- and now the names, and this transition's rules (nothing is measured after this)
       for (const [el, key, cls] of names) mxName(el, key, cls);
       let i = 0;
-      for (const h of heads) mxName(h, 'h-' + i++, 'mx-cover mx-head');
+      for (const h of heads) if (!named.has(h)) mxName(h, 'h-' + i++, 'mx-cover mx-head');   // (one paired as a cover moves instead)
       if (plan.quick) document.documentElement.dataset.viewTxQuick = 'mx';
       mxRules(rules.join('\n'));
     },
@@ -7296,7 +7313,7 @@ function txStart(kind, fn, from, opts){
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
-      if (log) txDbgEnd(log, { redraw, freeze, jank, named });
+      if (log) txDbgEnd(log, { redraw, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' ') });
     });
   }, () => { if (log) txDbgEnd(log, { redraw, skipped: true }); });
   vt.updateCallbackDone.catch(e => console.error(e));
@@ -7333,7 +7350,7 @@ function txGuards(kind, opts, t){
     o.level = lv;
     // (List <-> Calendar at level 0: no snapshot at all, as below for a heavy view; the
     // new layout is drawn at once, in its place, and fades in)
-    if (lv === 0 && o.pair === 'layout'){ why.push('pair level 0: ' + p.why); return { kind, opts: o, none: true, enter: true, why, v, pr: p }; }
+    if (lv === 0 && TX_PAIR_NOSNAP.has(o.pair)){ why.push('pair level 0: ' + p.why); return { kind, opts: o, none: true, enter: true, why, v, pr: p }; }
     if (lv === 0) plain('pair level 0: ' + p.why);
     else if (lv === 1){ o.lite = true; why.push('pair level 1: ' + p.why); }
     return { kind, opts: o, none, enter, why, v };
@@ -7407,11 +7424,28 @@ function txWatch(vt, t, done){
 // long list (pageHeavy) to a layout not drawn yet; and never above its own level, which
 // steps down when a change's snapshots held the page over TX_FREEZE (and up as above,
 // or at level 0 after two quick redraws in a row).
+// Horizontal <-> Vertical ('orient') redraws the same either way, and its items move on
+// the compositor, so it starts at 2 (every item on screen moves: mxOrientCap) whatever
+// the redraw, and steps down only on what its own morphs add: two in a row whose first
+// moving frame came over TX_ORI_DOWN[0] after the redraw, or whose worst frame took over
+// TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
+// those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
+// takes no snapshot, as List <-> Calendar's.
 const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
+// (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
+const TX_PAIR_NOSNAP = new Set(['layout', 'orient']);
+// Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
+const TX_ORI_DOWN = [400, 250];
+// (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
+// with a screen of talks can still go without the morph; its items move on the
+// compositor, so what a slow device pays is the wait before they move, not the motion)
+const txPairFloor = p => p.pair === 'orient' ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
+// (and Horizontal <-> Vertical the orientation itself: by the view and its level)
 const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks]
+  : o.pair === 'orient' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', !!state.programTalks && state.day !== 'all']
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
@@ -7428,17 +7462,31 @@ function txPairLevel(o, p){
     return Math.min(by, p.level);
   }
   if (p.level !== null) return p.level;
+  // (Horizontal <-> Vertical redraws as much either way, morph or not: only what the
+  // morph adds counts, as it is measured)
+  if (o.pair === 'orient'){ p.why = ''; return p.level = 2; }
   const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
   p.why = 'redraw ' + Math.round(cost) + 'ms expected';
   return p.level = Math.max(TX_PAIR_FLOOR[p.pair] || 0, cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2);
 }
 function txPairNote(p, lv, freeze, jank){
   p.last = { freeze, jank };
-  const down = freeze > (p.pair === 'layout' ? TX_FREEZE : TX_PAIR_DOWN[0]) || jank > TX_PAIR_DOWN[1];
-  p.ok = !down && freeze < TX_FREEZE && jank <= TX_JANK ? (p.ok || 0) + 1 : 0;
+  let down = freeze > (p.pair === 'layout' ? TX_FREEZE : TX_PAIR_DOWN[0]) || jank > TX_PAIR_DOWN[1];
+  // (Horizontal <-> Vertical: its own budget, TX_ORI_DOWN, and a step down only when a
+  // change was slow twice running (or once, at twice that), so one hiccup (a busy moment
+  // of the device's, a slow frame of some other work) costs it nothing)
+  if (p.pair === 'orient'){
+    const bad = freeze > TX_ORI_DOWN[0] || jank > TX_ORI_DOWN[1];
+    p.bad = bad ? (p.bad || 0) + 1 : 0;
+    down = p.bad >= 2 || freeze > 2 * TX_ORI_DOWN[0] || jank > 2 * TX_ORI_DOWN[1];
+    if (down) p.bad = 0;
+  }
+  // (smooth: within TX_FREEZE and TX_JANK; Horizontal <-> Vertical, within half its own)
+  const smooth = p.pair === 'orient' ? freeze < TX_ORI_DOWN[0] / 2 && jank <= TX_ORI_DOWN[1] / 2 : freeze < TX_FREEZE && jank <= TX_JANK;
+  p.ok = !down && smooth ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
-  p.level = down ? Math.max(TX_PAIR_FLOOR[p.pair] || 0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
+  p.level = down ? Math.max(txPairFloor(p), lv - 1) : up ? Math.min(2, lv + 1) : lv;
   if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
 }
 // (a pair's change made with no snapshot (List <-> Calendar at level 0): two quick
@@ -7465,7 +7513,7 @@ function txDbgEnd(r, m){
   for (const [k, x] of Object.entries(m)) r[k] = typeof x === 'number' ? Math.round(x) : x;
   const vals = Object.entries(r.v).map(([k, x]) => k + '=' + x).join(' ');
   console.log(`[tx] #${r.n} ${r.asked}${r.kind !== r.asked ? '->' + r.kind : ''} ${r.level}${r.pair ? ' (' + r.pair + ')' : ''}${r.why ? ' because ' + r.why : ''} | ${vals}`
-    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.skipped ? ', skipped' : ''));
+    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.mx ? ' | ' + r.mx : '') + (r.skipped ? ', skipped' : ''));
 }
 // The cheap way in for a new view (no snapshot): the main area comes up from half
 // faded, quickly; the old one stays on screen while the new one is drawn. `dir`: 'in'
@@ -10243,17 +10291,104 @@ function savedOrient(){
 function paintOrient(){
   for (const b of document.querySelectorAll('[data-orient]')) b.setAttribute('aria-pressed', b.dataset.orient === state.orient);
 }
+// Horizontal <-> Vertical: the sessions in sight move to their places in the other
+// direction. Both ways alike: one pair (txGuards), each item free to change shape (a bar
+// becomes a card: reshape), and the reader's place kept (orientPlace), so the two views
+// show the same sessions and nearly all of them have somewhere to move to.
 document.getElementById('programOrient').addEventListener('click', e => {
   const b = e.target.closest('[data-orient]');
   if (!b || b.dataset.orient === state.orient) return;
+  const to = b.dataset.orient;
   withTransition('fade', () => {
-    state.orient = b.dataset.orient;
+    const keep = orientPlace();
+    state.orient = to;
     try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
     paintOrient();
+    if (keep && keep.m !== null && to === 'h') HZ.left[keep.hz] = keep.m;
     renderCalendar();
+    orientKeep(keep);
     revealCalendar();
-  }, null, { to: { orient: b.dataset.orient }, press: b });
+  }, null, { to: { orient: to }, pair: 'orient', dir: to === 'v' ? 'in' : 'out', reshape: true, sight: true, cap: mxOrientCap(), press: b });
 });
+// Where the reader is in a day's calendar, to keep across Horizontal <-> Vertical: the
+// minute at the start of what shows (Horizontal: the canvas's left edge; Vertical: the
+// time row at the top, under the stuck heads), the first session (or talk) in sight
+// there, and whether the page is scrolled into the day (its head stuck under the toolbar).
+// null: not a day calendar.
+function orientPlace(){
+  if (!dayViewShown()) return null;
+  const main = document.getElementById('agenda'), h = main.querySelector('.hz-day'), v = main.querySelector(':scope > .vt-day');
+  const top = (tbEdge() || 150) + 3 * remPx(), vh = innerHeight;
+  const date = DATA.days[state.day].date, hz = (dvAgenda() ? 'a:' : '') + date;
+  // (the item nearest the top left of the part that shows: by its row, then by how far
+  // it starts from that edge)
+  const first = (els, box) => {
+    let best = null, bs = Infinity;
+    for (const el of els){
+      const r = el.getBoundingClientRect();
+      if (r.height < 2 || r.bottom <= box.top + 4 || r.top >= vh - 8 || r.right <= box.left + 4 || r.left >= box.right - 4) continue;
+      const s = Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left);
+      if (s < bs){ bs = s; best = el; }
+    }
+    return best && { sid: best.dataset.sid || '', tid: best.dataset.tid || '' };
+  };
+  if (h){
+    const vp = h.querySelector('.hz-vp'), head = h.querySelector('.hz-top').getBoundingClientRect(), b = vp.getBoundingClientRect();
+    const lab = vp.querySelector('.hz-label'), left = b.left + (lab ? lab.offsetWidth : 0);
+    const m = HZ.left[hzKey(h)];
+    return { hz, m: Number.isFinite(m) ? m : null, into: h.getBoundingClientRect().top < top, item: first(h.querySelectorAll('.hz-bar[data-sid], .hz-talk[data-tid]'), { top: Math.max(head.bottom, 0), left, right: b.right }) };
+  }
+  if (v){
+    const grid = v.querySelector('.vt-grid, .vt-list');
+    if (!grid) return null;
+    const g = grid.getBoundingClientRect(), y = Math.max(top, g.top);
+    let m = null;
+    for (const el of v.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')){
+      if (el.getBoundingClientRect().top > y + 2 && m !== null) break;
+      m = +el.dataset.m;
+    }
+    const w = v.querySelector('.vt-wrap.scroll'), wb = w ? w.getBoundingClientRect() : g;
+    const tc = v.querySelector('.vt-tcol'), left = wb.left + (w && tc ? tc.offsetWidth : 0);
+    return { hz, m, into: v.getBoundingClientRect().top < top, item: first(v.querySelectorAll('.vt-card[data-sid], .vt-tk[data-tid]'), { top: y, left, right: wb.right }) };
+  }
+  return null;
+}
+// ...and the same place in the new direction: Vertical scrolls the page to that minute's
+// row (at once, under the stuck heads: the row the next switch reads back) and its grid
+// sideways to the item's column; Horizontal (its canvas already at that minute: HZ.left)
+// scrolls the page to the item's lane. A page not scrolled into the day stays where it is
+// while the place shows in the upper half of the screen.
+function orientKeep(k){
+  if (!k) return;
+  const main = document.getElementById('agenda'), vh = innerHeight, top = (tbEdge() || 150) + 3 * remPx();
+  const sel = it => it.tid ? `[data-tid="${CSS.escape(it.tid)}"]` : `[data-sid="${CSS.escape(it.sid)}"]:not([data-tid])`;
+  const h = main.querySelector('.hz-day'), v = main.querySelector(':scope > .vt-day');
+  let dy = 0;
+  if (v){
+    const marks = [...v.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')];
+    const row = k.m === null ? null : marks.filter(el => +el.dataset.m <= k.m + .5).pop() || marks[0];
+    if (row){ const t = row.getBoundingClientRect().top; if (k.into || t > vh * .5) dy = t - top + 1; }
+    const w = v.querySelector('.vt-wrap.scroll'), el = w && k.item && (v.querySelector('.vt-card' + sel(k.item)) || v.querySelector('.vt-tk' + sel(k.item)));
+    if (el && !el.closest('.vt-card.band')){
+      const wb = w.getBoundingClientRect(), r = el.getBoundingClientRect(), tc = v.querySelector('.vt-tcol'), l = wb.left + (tc ? tc.offsetWidth : 0);
+      if (r.left < l || r.right > wb.right){
+        w.scrollLeft += r.left - l - 6;
+        const bar = w.previousElementSibling;
+        if (bar && bar.matches('.vt-hbar')) bar.querySelector('.vt-hsc').scrollLeft = w.scrollLeft;
+        sxEdges(w.closest('.sx-box'));
+      }
+    }
+  } else if (h && k.item){
+    const el = h.querySelector('.hz-bar' + sel(k.item)) || h.querySelector('.hz-talk' + sel(k.item)) || (k.item.tid && k.item.sid && h.querySelector(`.hz-bar[data-sid="${CSS.escape(k.item.sid)}"]`));
+    const lane = el && (el.closest('.hz-lane') || el);
+    if (lane){
+      // (under the toolbar and the slim head, as hzReveal puts a bar)
+      const t = lane.getBoundingClientRect().top, head = h.querySelector('.hz-ruler').offsetHeight + 18;
+      if (k.into || t > vh * .5) dy = t - tbEdge() - head - 8;
+    }
+  }
+  if (Math.abs(dy) > 1) window.scrollTo({ top: Math.max(0, Math.round(window.scrollY + dy)), behavior: 'instant' });
+}
 // A switch in the toolbar whose result is out of sight below it (a phone's tall toolbar
 // over All week): bring the calendar's top up under the toolbar, so the change shows.
 function revealCalendar(){
