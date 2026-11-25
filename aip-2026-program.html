@@ -10103,6 +10103,9 @@ document.getElementById('programOrient').addEventListener('click', e => {
     renderCalendar();
     if (back) orientReturn(back); else orientKeep(keep);
     revealCalendar();
+    // (the page's own scroll: the tap on the switch is no scroll of the reader's, and the
+    // toolbar, with the switch in it, stays as it was)
+    TB.input = -1e9; TB.last = window.scrollY;
     orientLast = keep && { to, hz: keep.hz, talks: state.programTalks, any: keep.seen > 0, from, at: orientMark() };
   }, null, { to: { orient: to }, pair: 'orient', dir: to === 'v' ? 'in' : 'out', reshape: true, sight: true, cap: mxOrientCap(), press: b });
 });
@@ -12430,6 +12433,8 @@ function paintNow(){
 document.getElementById('nowBtn').addEventListener('click', () => {
   const ti = todayIdx();
   if (ti < 0) return;
+  // (a tap on Now is no scroll of the reader's: the page's jump leaves the toolbar as it is)
+  TB.input = -1e9;
   if (vtSlideEnd) vtSlideEnd();
   if (state.day !== ti && (state.day !== 'all' || state.layout === 'calendar')){ state.day = ti; rerender(); }
   if (state.layout === 'list' && state.scope === 'program') listFill();
@@ -13684,10 +13689,12 @@ function tbCompact(on){
   } else done();
 }
 // The toolbar stays whole while a menu is open, while it holds the keyboard focus, and
-// above the point where it has scrolled fully past its own place in the page.
+// above the point where it has scrolled fully past its own place in the page. (Not for
+// the Display button, as Esc on Display options leaves it the focus: the folded bar has it
+// too.)
 function tbMayFold(){
   return filterPanel.hidden && !document.querySelector('dialog[open]') && document.activeElement !== qEl
-    && !stickyWrap.querySelector(':focus-visible');
+    && !stickyWrap.querySelector(':focus-visible:not(#displayBtn)');
 }
 const tbUserScroll = () => TB.drag || performance.now() - TB.input < 1200;
 for (const type of ['wheel', 'touchmove', 'touchstart']) window.addEventListener(type, () => { TB.input = performance.now(); }, { passive:true });
