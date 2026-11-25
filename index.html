@@ -13176,7 +13176,11 @@ function issueView(){
   }
   const q = state.scope === 'participants' ? state.pq : state.scope === 'agenda' ? state.aq : state.q;
   const cats = state.scope === 'agenda' ? state.acats : state.cats, all = Object.keys(DATA.cats).length;
-  return `${day}; ${view}` + (q ? `; search "${q.slice(0, 80)}"` : '') + (cats.size < all ? `; streams: ${cats.size} of ${all}` : '');
+  // (the search as code, so the issue shows it as typed; cut by characters, so an emoji
+  // at the cut never leaves half of itself, which the link could not encode)
+  const qs = q && '`' + Array.from(q.replace(/`/g, "'")).slice(0, 80).join('') + '`';
+  // (Participants has no day)
+  return (state.scope === 'participants' ? view : `${day}; ${view}`) + (qs ? '; search ' + qs : '') + (cats.size < all ? `; streams: ${cats.size} of ${all}` : '');
 }
 function issueDisplay(){
   const r = document.documentElement, at = (n, d) => r.getAttribute('data-' + n) || d;
