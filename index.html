@@ -275,7 +275,7 @@ button{font:inherit;cursor:pointer}
    Display and the countdown on the right. (The colour key, the spectral rule, lives in
    Display options beside the Colour setting.) */
 header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
-.hero-inner{margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:start}
+.hero-inner{margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(min(23.5rem,100% - 17rem - 32px),1fr) minmax(0,auto);column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
 .hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
@@ -291,6 +291,53 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-when{display:flex;align-items:center;gap:8px;margin:0;font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .hero-when .na-glyph{display:none}
 .hero-when.is-today .na-glyph{display:inline-block}
+/* Now and next: the countdown's place grows into a small panel. Its head is the countdown
+   (or "Today: Tue 8 Dec") with My agenda | Everything beside it; under it My agenda's Up
+   next plate, made compact: one line a row (the title cut short, the time kept), the doublet
+   beside what is on now, a group's further items as "+N" under its label. */
+/* (the wordmark keeps its line beside it on a tablet: the panel gives way, to 17rem) */
+.hero-nn{display:flex;flex-direction:column;gap:6px;width:24rem;max-width:100%;min-width:0;container-type:inline-size}
+.hn-head{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 12px;min-height:26px}
+.hero-nn.hn-on .hn-head{justify-content:space-between}
+.hn-sw:empty,.hn-body:empty{display:none}
+.hn-cap{font-size:.75rem;font-weight:560;color:var(--muted);white-space:nowrap}
+.hn-src{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
+.hn-src button{min-height:26px;padding:2px 9px;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink-2);font-size:.75rem;font-weight:650;line-height:1.2;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
+.hn-src button:hover{background:var(--surface-3);color:var(--ink)}
+.hn-src button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.hn-src button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;position:relative;z-index:1}
+.hn-note{margin:0;font-size:.75rem;line-height:1.35;color:var(--muted);text-align:right}
+.hero-nn .up-next{margin:0;padding:6px 12px 6px 18px;font-size:.8125rem}
+/* a group's rows sit close; a line between Now and Next */
+.hero-nn .up-next>div{grid-template-columns:2.25rem minmax(0,1fr) auto;line-height:1.4}
+.hero-nn .up-next>div+div{margin-top:0;padding-top:4px;border-top:0}
+.hero-nn .up-next>div+div:has(>.un-k:not(.un-rep)){margin-top:5px;padding-top:5px;border-top:1px solid var(--line)}
+.hero-nn .up-next>div:has(>.un-k.is-now)::before{left:-18px;top:0}
+.hero-nn .up-next>div:first-child:has(>.un-k.is-now)::before{top:-6px}
+.hero-nn .up-next>div:last-child:has(>.un-k.is-now)::before{bottom:-6px}
+.hero-nn .up-next .un-k{font-size:.6875rem;line-height:1.75}
+.hero-nn .up-next .un-k.un-day{font-weight:650;color:var(--muted);white-space:nowrap}
+/* (a group's later rows keep their label for screen readers only) */
+.hero-nn .up-next .un-k.un-rep{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.hero-nn .up-next>div>.linkish:not(.hn-more){grid-column:2;grid-row:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8125rem;font-weight:620}
+.hero-nn .up-next>div>.un-when{grid-column:3;grid-row:1;font-size:.75rem;white-space:nowrap}
+.hero-nn .up-next .un-in{grid-column:2/4;display:flex;align-items:baseline;gap:6px;min-width:0;margin:0;font-size:.75rem;white-space:nowrap}
+.hero-nn .up-next .un-in .un-tk{flex:none;margin:0;font-size:.6875rem}
+.hero-nn .up-next .un-in .linkish{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:.75rem;font-weight:560}
+.hero-nn .up-next .un-in .un-when{flex:none;font-size:.6875rem}
+.hero-nn .up-next>div>.hn-more{grid-column:1;grid-row:1;justify-self:start;font-size:.6875rem;font-weight:650;line-height:1.75;color:var(--ink-2);font-variant-numeric:tabular-nums}
+/* to tap: every name at least 24px tall, never reaching into the next row's */
+@media (pointer:coarse){
+  .hn-src button{min-height:36px}
+  .hero-nn .up-next>div+div{padding-top:6px}
+  .hero-nn .up-next>div>.linkish{padding:3px 0;margin:-3px 0}
+  .hero-nn .up-next>div>.hn-more{padding:3px 8px 3px 0;margin:-3px 0}
+}
+/* a page printed during the congress keeps the heading only (My agenda's Up next is not printed either) */
+@media print{.hn-sw,.hn-note{display:none!important}}
+/* (a narrow panel gives a later start its time alone) */
+@container (max-width:20rem){.hero-nn .un-soon{display:none}}
+@media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
 .facts-short{display:none}
 /* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
    the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
@@ -2958,7 +3005,9 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
   .hero-inner{padding:0 20px;column-gap:12px}
   .hero-main,.hero-side{display:contents}
   .hero h1{grid-row:1;grid-column:1;align-self:center;font-size:1.375rem;font-stretch:112%;letter-spacing:-.015em}
-  .hero-when{grid-row:2;grid-column:1/-1;margin-top:2px}
+  .hero-nn{grid-row:2;grid-column:1/-1;width:auto;margin-top:2px}
+  .hn-head{justify-content:space-between}
+  .hn-note{text-align:left}
   .hero p.sub,.hero .facts{display:none}
   .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
   .sticky-wrap{margin-top:12px}
@@ -2968,8 +3017,9 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
 /* landscape phones: the countdown and the facts share a line */
 @media (max-height:500px) and (orientation:landscape){
   header.hero{padding-top:10px}
-  .hero-when{grid-row:1;grid-column:1;justify-self:end;margin:0}
+  .hero-nn{grid-row:1/4;grid-column:2;width:22rem;margin:0}
   .hero h1{grid-column:1}
+  .facts-short{grid-column:1}
   .facts-short{grid-row:2}
 }
 @media (max-height:500px) and (orientation:landscape){
@@ -3192,7 +3242,10 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </dl>
     </div>
     <div class="hero-side">
-      <p class="hero-when" id="heroWhen"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></p>
+      <section class="hero-nn" id="heroNow" aria-labelledby="heroNowName heroWhen"><span id="heroNowName" hidden></span>
+        <div class="hn-head"><h2 class="hero-when" id="heroWhen" tabindex="-1"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></h2><div class="hn-sw" id="heroNowSw"></div></div>
+        <div class="hn-body" id="heroNowBody"></div>
+      </section>
     </div>
   </div>
 </header>
@@ -3757,6 +3810,9 @@ function loadStars(){
   }
 }
 loadStars();
+// the header's Now and next: from My agenda (the default) or the whole program ('all')
+state.heroSrc = 'agenda';
+try { if (localStorage.getItem('aip2026-hero-src') === 'all') state.heroSrc = 'all'; } catch (e) {}
 try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; } catch (e) {}
 // "Flag talks whose sessions overlap" (possible clashes): on unless turned off, kept as
 // Hide clash warnings is
@@ -3772,6 +3828,7 @@ function paintStarCount(){
   const items = agendaItems(), n = items.length, el = document.getElementById('starCount');
   el.textContent = n;
   el.title = (n === 1 ? '1 item in My agenda' : n + ' items in My agenda') + innerNote(items, ' (', ')');
+  paintHeroNow();
 }
 // Why the count can be lower than the stars: talks saved inside a saved session count
 // with it ("6 saved talks are inside saved sessions"). '' when there are none.
@@ -6030,8 +6087,10 @@ function agendaStatsHtml(shown, whole, filtered){
   return `<span class="ag-cnt"${why ? ` title="${countWord(shown.length, 'item')}: ${why}"` : ''}>${where}${agendaCountText(shown, true)}</span><span class="ag-hrs">, <span class="ag-about">about </span><b>${plannedHours(shown).toFixed(1)} h</b><span class="ag-tz">. All times AEDT</span></span>`;
 }
 // Up next and Now: today's items, on today's tab or All week (not on another day's).
+// While the header's Now and next shows My agenda, this would say the same a little
+// lower on the same screen: it stands aside.
 function agendaUpNext(items){
-  return agendaFiltered() || (state.day !== 'all' && state.day !== todayIdx()) ? '' : upNextHtml(items);
+  return agendaFiltered() || heroFromAgenda() || (state.day !== 'all' && state.day !== todayIdx()) ? '' : upNextHtml(items);
 }
 function renderBuilder(){
   const whole = agendaItems();
@@ -11793,26 +11852,140 @@ function aedtNow(){
 function todayIdx(){ const n = aedtNow(); return DATA.days.findIndex(d => d.date === n.date); }
 function fmtMins(m){ return m >= 60 ? Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + m % 60 + ' min' : '') : m + ' min'; }
 
-function upNextHtml(items){
+// What is on now among items in time order (My agenda's, or the program's sessions as
+// items) and what starts next: the items at the next start time today, or with `ahead`
+// the next start time from now on, whichever day it falls on.
+function nowNextOf(items, ahead){
   const n = aedtNow();
   const today = items.filter(it => it.d.date === n.date);
   const current = today.filter(it => toMin(it.start) <= n.min && n.min < toMin(it.end));
-  const nextStart = today.find(it => toMin(it.start) > n.min)?.start;
-  const next = today.filter(it => it.start === nextStart);
-  if (!current.length && !next.length) return '';
-  // a saved session names the saved talk in it that is on now, or comes next
-  const starred = it => {
-    const t = (it.inner || []).find(t => toMin(t.e) > n.min);
-    if (!t) return '';
-    const on = toMin(t.s) <= n.min, word = it.s.cat === 'poster' ? 'Poster' : 'Talk';
-    return ` <span class="un-in" data-tid="${t.id}"><span class="un-tk">${word} ${on ? 'now' : t.s}</span> <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${on ? ` <span class="un-when">until ${t.e}</span>` : ''}</span>`;
-  };
-  const row = (label, it, when) =>
-    `<div ${itemIdAttrs(it)}><span class="un-k${label === 'Now' ? ' is-now' : ''}">${label}</span><button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${starred(it)}</div>`;
-  return `<div class="up-next" id="upNext">` +
-    current.map(it => row('Now', it, `until ${it.end}`)).join('') +
-    next.map(it => row('Next', it, `${it.start}, in ${fmtMins(toMin(it.start) - n.min)}`)).join('') + `</div>`;
+  const first = (ahead ? items : today).find(it => it.d.date > n.date || (it.d.date === n.date && toMin(it.start) > n.min));
+  const next = first ? items.filter(it => it.d === first.d && it.start === first.start) : [];
+  return { n, current, next };
 }
+// One row of Now and Next (My agenda's block, the header's panel): its label, the item
+// (which opens its details) and when. A saved session names the saved talk in it that is
+// on now, or comes next (on a later day, the first of them).
+function unStarred(it, n){
+  const later = it.d.date > n.date, t = (it.inner || []).find(t => later || toMin(t.e) > n.min);
+  if (!t) return '';
+  const on = !later && toMin(t.s) <= n.min, word = it.s.cat === 'poster' ? 'Poster' : 'Talk';
+  return ` <span class="un-in" data-tid="${t.id}"><span class="un-tk">${word} ${on ? 'now' : t.s}</span> <button class="linkish" data-session-detail="${it.s.id}" data-talk-detail="${t.id}">${esc(t.t)}</button>${on ? ` <span class="un-when">until ${t.e}</span>` : ''}</span>`;
+}
+function unRow(label, it, when, n, k = '', more = '', inner = true){
+  return `<div ${itemIdAttrs(it)}><span class="un-k${label === 'Now' ? ' is-now' : ''}${k}">${label}</span>${more}<button class="linkish" ${calendarDetailAttrs(it)}>${esc(itemTitle(it))}</button> <span class="un-when">${when}</span>${inner ? unStarred(it, n) : ''}</div>`;
+}
+const unIn = (it, n) => `${it.start}<span class="un-soon">, in ${fmtMins(toMin(it.start) - n.min)}</span>`;
+function upNextHtml(items){
+  const { n, current, next } = nowNextOf(items);
+  if (!current.length && !next.length) return '';
+  return `<div class="up-next" id="upNext">` +
+    current.map(it => unRow('Now', it, `until ${it.end}`, n)).join('') +
+    next.map(it => unRow('Next', it, unIn(it, n), n)).join('') + `</div>`;
+}
+
+// ---------- Now and next (the header's right) ----------
+// During the congress: what is on now and what starts next, from My agenda (when it has
+// anything) or the whole program, picked with My agenda | Everything (kept on the device
+// as aip2026-hero-src). Before it: the countdown, then the first saved items (or the
+// opening sessions). After it: the finished note. Each row opens its details, as in My
+// agenda's Up next; the program's longer lists end in "+N", which opens the program there.
+// A shared agenda (#agenda=…) is only a banner until merged: the panel stays the viewer's own.
+const HN_MAX = 2;   // rows per group: a phone's panel stays within four rows
+const HN_FIRST = { plenary: 0, events: 1, social: 2 };   // what everyone is at comes first
+function programItems(){
+  return programItems.all || (programItems.all = DATA.days.flatMap((d, di) => d.slots.map(s => ({ kind: 'session', di, d, s, t: null, start: s.start, end: s.end }))));
+}
+const weekday = d => d.label.split(' ')[0];
+// the panel's source: My agenda when it is chosen and has anything (the viewer's own stars)
+function heroFromAgenda(){ return todayIdx() >= 0 && state.heroSrc !== 'all' && state.starred.size > 0; }
+function heroNowHtml(){
+  const n = aedtNow(), ti = todayIdx(), whens = [];
+  if (n.date > DATA.days[DATA.days.length - 1].date) return { name: '', html: '', whens };
+  // (each time is written as a mark, filled in when painted: what the panel shows, less
+  // its times, tells a new minute from a change)
+  const w = s => (whens.push(s), '\u0001' + (whens.length - 1) + '\u0002');
+  // a group's rows: at most HN_MAX, the rest as "+N" in the label column, which opens the
+  // program at the first of them
+  const group = (label, list, when, sort) => {
+    const all = sort ? [...list].sort((a, b) => (HN_FIRST[a.s.cat] ?? 9) - (HN_FIRST[b.s.cat] ?? 9)) : list;
+    const shown = all.length > HN_MAX ? all.slice(0, HN_MAX) : all, rest = all.slice(shown.length);
+    return shown.map((it, i) => {
+      const more = i === 1 && rest.length ? `<button type="button" class="linkish hn-more" data-hn-more="${rest[0].di}" data-jump="${rest[0].s.id}" aria-label="${rest.length} more ${label === 'Now' ? 'on now' : 'at ' + rest[0].start}: show them in the program" title="${rest.length} more: show them in the program">+${rest.length}</button>` : '';
+      return unRow(label, it, w(when(it)), n, i ? ' un-rep' : '', more);
+    }).join('');
+  };
+  const plate = rows => rows ? `<div class="up-next hn-plate">${rows}</div>` : '';
+  if (ti < 0){
+    const mine = agendaItems();
+    const items = mine.length ? mine.slice(0, 3)
+      // the opening: registration, then the first sessions (not the breaks between them)
+      : programItems().filter((it, i, a) => it.s.cat !== 'social' || a.findIndex(x => x.s.cat === 'social') === i).slice(0, 3);
+    return { name: 'Coming up', cap: mine.length ? 'First in My agenda' : 'Opening sessions', whens,
+      // (a day's later rows: its label for screen readers only, as a group's)
+      html: plate(items.map((it, i) => unRow(dayShort(it.d), it, w(it.start), n, i && items[i - 1].d === it.d ? ' un-day un-rep' : ' un-day', '', false)).join('')) };
+  }
+  const mineOn = heroFromAgenda(), mine = mineOn ? agendaItems() : [];
+  let src = mineOn ? mine : programItems(), note = '';
+  let { current, next } = nowNextOf(src, true);
+  if (mineOn && !current.length && !next.length){
+    note = 'Nothing more in My agenda. The whole program:';
+    src = programItems();
+    ({ current, next } = nowNextOf(src, true));
+  }
+  const everything = src !== mine;
+  if (!current.length && !next.length) note = 'Nothing more on the program.';
+  else if (!current.length && next[0].d.date !== n.date && !note)
+    note = !mineOn ? 'Nothing more today.' : mine.some(it => it.d.date === n.date) ? 'Nothing more in My agenda today.' : 'Nothing in My agenda today.';
+  const rows = group('Now', current, it => `until ${it.end}`, everything)
+    + group('Next', next, it => it.d.date === n.date ? unIn(it, n) : weekday(it.d) + ' ' + it.start, everything);
+  return { name: 'Now and next', whens, sw: state.starred.size > 0, cap: state.starred.size ? '' : 'Whole program',
+    html: (note ? `<p class="hn-note">${note}</p>` : '') + plate(rows) };
+}
+// Painted with the countdown (every 30 s, on a return to the tab, after each redraw) and
+// on every change to My agenda. The times alone change from one minute to the next: then
+// only they are written, so a focused row (or the details it opened) keeps its place.
+function paintHeroNow(){
+  const box = document.getElementById('heroNow');
+  if (!box || !paintHeroNow.ready) return;
+  const r = heroNowHtml();
+  const sw = r.sw ? `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda" aria-pressed="${state.heroSrc !== 'all'}">My agenda</button><button type="button" data-hn-src="all" aria-pressed="${state.heroSrc === 'all'}">Everything</button></div>`
+    : r.cap ? `<span class="hn-cap">${r.cap}</span>` : '';
+  const shape = sw + '|' + r.html;
+  document.getElementById('heroNowName').textContent = r.name ? r.name + ': ' : '';
+  box.classList.toggle('hn-on', !!r.html);
+  if (box._shape === shape){
+    // (the times: in the order they were written)
+    const whens = box.querySelectorAll('.hn-plate > div > .un-when');
+    if (whens.length === r.whens.length) whens.forEach((el, i) => { if (el.innerHTML !== r.whens[i]) el.innerHTML = r.whens[i]; });
+    return;
+  }
+  box._shape = shape;
+  const html = r.html.replace(/\u0001(\d+)\u0002/g, (_, i) => r.whens[i]);
+  const f = document.activeElement, mine = f && box.contains(f);
+  const key = el => el.dataset.hnSrc || el.dataset.hnMore && 'more' + el.closest('.hn-plate > div')?.querySelector('.un-k')?.textContent
+    || (el.dataset.sessionDetail || '') + '/' + (el.dataset.talkDetail || '');
+  const was = mine ? key(f) : null, trigger = dialogTrigger && box.contains(dialogTrigger) ? key(dialogTrigger) : null;
+  document.getElementById('heroNowSw').innerHTML = sw;
+  document.getElementById('heroNowBody').innerHTML = html;
+  const find = k => [...box.querySelectorAll('button')].find(b => key(b) === k);
+  if (was) (find(was) || box.querySelector('button') || document.getElementById('heroWhen')).focus({ preventScroll: true });
+  if (trigger) dialogTrigger = find(trigger) || dialogTrigger;
+}
+document.getElementById('heroNow').addEventListener('click', e => {
+  const src = e.target.closest('[data-hn-src]');
+  if (src){
+    state.heroSrc = src.dataset.hnSrc;
+    try { localStorage.setItem('aip2026-hero-src', state.heroSrc); } catch (err) {}
+    // (My agenda's own Up next shows again when the panel no longer shows the same)
+    paintNow();
+    return;
+  }
+  const more = e.target.closest('[data-hn-more]');
+  if (more) jumpTo(more.dataset.hnMore, more.dataset.jump, '', state.layout === 'calendar' ? 'calendar' : 'list');
+});
+// (painted from here on: the first redraw comes after every name it uses is set)
+paintHeroNow.ready = true;
 
 function paintCountdown(){
   const el = document.getElementById('countdown');
@@ -11824,6 +11997,7 @@ function paintCountdown(){
     : days === 1 ? 'Starts tomorrow' : '7–11 Dec 2026';
   // (the sodium doublet marks "now": it stands beside the countdown only on a congress day)
   el.parentNode.classList.toggle('is-today', ti >= 0);
+  paintHeroNow();
 }
 
 // A day of the list whose every session has ended says so under its summary.
