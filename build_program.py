@@ -2966,19 +2966,28 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   /* (as a slide starts, the option it leaves drops its own fill at once: the indicator is
      still under it, so nothing changes; a fill fading out instead would show, greyed,
      as the indicator moves away from under it) */
-  .agenda-views.seg-moving>button{transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
-  .hz-zoom.seg-moving>button,.seg.seg-moving label>span{transition:color calc(200ms * var(--mo)) var(--ease)}
+  .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
   .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .seg.seg-ind label{z-index:1}
   .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
+  /* (the moving, snap and hold rules name the group, seg-ind and their own class, so they
+     win over the rules above whatever their order; snap, last, over moving) */
+  .hz-zoom.seg-ind.seg-moving>button,.seg.seg-ind.seg-moving label>span{transition:color calc(200ms * var(--mo)) var(--ease)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
-  .seg-ind.seg-snap>button,.seg-ind.seg-snap label>span,.seg-ind.seg-snap small{transition:none}
+  .agenda-views.seg-ind.seg-snap>button,.hz-zoom.seg-ind.seg-snap>button,.seg.seg-ind.seg-snap label>span,.seg.seg-ind.seg-snap small{transition:none}
+  /* (a Display option held until its new look applies, segDisp: as a toolbar switch is,
+     the new choice lit as under a pointer, the one the indicator is under in its colours) */
+  .seg.seg-ind.seg-hold label>span,.seg.seg-ind.seg-hold small{transition:none}
+  .seg.seg-hold input:checked+span,.seg.seg-hold label:hover input:checked+span{background:var(--surface-3);color:var(--ink)}
+  .seg.seg-hold input:checked+span small{color:var(--muted);opacity:1}
+  .seg.seg-hold label.seg-was>span{color:var(--accent-ink)}
+  .seg.seg-hold label.seg-was small{color:var(--accent-ink);opacity:.8}
   /* (held until the new view shows, segWait: the indicator and the colours as they were,
      the new choice lit as under a pointer meanwhile, so the press shows at once) */
-  .agenda-views.seg-hold>button{transition:none}
+  .agenda-views.seg-ind.seg-hold>button{transition:none}
   .agenda-views.seg-hold>button[aria-pressed="true"],.agenda-views.seg-hold>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
   .agenda-views.seg-hold>button.seg-was{color:var(--accent-ink)}
   /* The day tabs: the same indicator, the size of the chosen tab, its corners rounded at
@@ -2998,10 +3007,10 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab:hover::before{z-index:-1;border-color:var(--hover-line);background:var(--surface-2)}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.on::before{background:transparent}
   .daytabs.seg-ind>.daytab,.daytabs.seg-ind>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
-  .daytabs.seg-snap>.daytab,.daytabs.seg-snap>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
+  .daytabs.seg-ind.seg-snap>.daytab,.daytabs.seg-ind.seg-snap>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
   /* (held, segWait: the indicator and the colours as they were, the pressed tab lit; an
      indicator still sliding, a held arrow key's earlier day, lands first) */
-  .daytabs.seg-hold>.daytab,.daytabs.seg-hold>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
+  .daytabs.seg-ind.seg-hold>.daytab,.daytabs.seg-ind.seg-hold>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
   .daytabs.seg-ind.seg-hold>.daytab.on::before{background:var(--surface-3)}
   .daytabs.seg-hold>.daytab.on{color:var(--ink)}
   .daytabs.seg-hold>.daytab.on :is(.dt-wd,.dt-count,.dt-tk){color:var(--muted)}
@@ -6864,9 +6873,14 @@ function txSlideFirst(o, press){
   const t = performance.now(), p = o.pair ? txPairRec(o) : null, redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
   // (List <-> Calendar at its level 0 takes no snapshot: its wait is the redraw alone)
   if (p && o.pair === 'layout' && txPairLevel(o, p) === 0) return redraw > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
-  const wait = redraw + (p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0));
+  // (with no wait of its own seen yet, never less than snapshots take on this device as
+  // fast as it runs now: TX_SNAP_GUESS at a typical desktop's speed, segCpu; the redraw
+  // guessed may have been timed while the device ran faster, at its first drawing)
+  const snap = p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0);
+  const wait = Math.max(redraw + snap, p && p.last ? 0 : TX_SNAP_GUESS * segCpu());
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
 }
+const TX_SNAP_GUESS = 120;
 // Whether the change will take snapshots (a view transition), which hold the page still
 // while it redraws: a switch's slide then waits for the new view (segWait); a change
 // without them (none: drawn in place, at most faded in) slides at the press, on the
@@ -12938,23 +12952,37 @@ const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .daytabs';
 function segWait(g){
   g._segHold = true;
   g.classList.add('seg-hold');
+  // (nothing moves while held: a slide's tail, the chosen fill stepped aside, ends here)
+  clearTimeout(g._segT);
+  g.classList.remove('seg-moving');
   g._segOn.classList.add('seg-was');
   let n = 0;
-  // (from where the option it was under is now: the view's change may have moved it, as
-  // the folded toolbar unfolds)
-  const go = () => {
+  // In the transition's first frame (ready), the slide starts at once, from the boxes
+  // measured at the press (segPlace): reading them now would cost a pass over every
+  // style the transition's start has just changed. Were the toolbar changing size (it
+  // folds or unfolds, which may move the options), they are read in the next frame
+  // instead, from where the option it was under is now.
+  const go = ready => {
     if (!g._segHold) return;
+    const c = g._segPre, on = segOnOf(g);
+    g._segPre = null;
+    if (ready && c && c.on === on && !TB.anim && stickyWrap.classList.contains('tb-compact') === c.compact && !g._segSlide){
+      segUnhold(g);
+      segMoving(g);
+      segAt(g, on, false, false, c.box);
+      return;
+    }
+    if (ready){ requestAnimationFrame(() => go()); return; }
     segUnhold(g);
     const was = g._segOn;
-    if (was && was.isConnected && was.offsetWidth) segAt(g, was, true);
+    // (placed under the option it was under, as it is now: no snap, so the labels'
+    // colours go on to their new ones in the same style pass as the hold ends)
+    if (was && was.isConnected && was.offsetWidth && !g._segSlide) segAt(g, was, true, true);
     segPlace(g, false, true);
   };
   const tick = () => {
     const t = viewTx;
-    // (in the transition's first frame, before its styles are worked out: read at once,
-    // as the transition's own start has just changed every style, the options' places
-    // would cost a second pass over all of them)
-    if (t && t.vt){ t.vt.ready.then(() => requestAnimationFrame(go), go); return; }
+    if (t && t.vt){ t.vt.ready.then(() => go(true), () => go()); return; }
     if (!t || ++n > 90){ go(); return; }
     requestAnimationFrame(tick);
   };
@@ -12965,15 +12993,28 @@ function segUnhold(g){
   g.classList.remove('seg-hold');
   for (const b of g.querySelectorAll(':scope > .seg-was')) b.classList.remove('seg-was');
 }
-function segPlace(g, snap, now){
-  const on = g.classList.contains('seg') ? g.querySelector('input:checked')?.closest('label')
+// (the chosen option: no style is read to find it)
+function segOnOf(g){
+  return g.classList.contains('seg') ? g.querySelector('input:checked')?.closest('label')
     : g.querySelector(':scope > button[aria-pressed="true"]:not([hidden])');
+}
+function segPlace(g, snap, now){
+  // Inside a view change's redraw (inVT), a group drawn anew or changed in size is placed
+  // in the first frame its new view shows: measured now, it would lay the whole new page
+  // out ahead of the transition's own pass. Meanwhile the chosen option keeps its own
+  // fill, as it does before any placing.
+  if (snap && inVT && viewTx && viewTx.vt){ segLate(g, viewTx.vt); return; }
+  g._segLate = false;
+  const on = segOnOf(g);
   if (g._segHold){
+    // (a Display option held until its new look applies, segDisp: placed then, as the look
+    // has laid it out)
+    if (on && g.classList.contains('seg')) return;
     if (!snap && on) return;
     // (resized while held, as the folded toolbar unfolds: the indicator stays with the
     // option it is under, and still slides once the new view shows)
     const was = g._segOn;
-    if (on && was && was.isConnected && was.offsetWidth){ segAt(g, was, true); return; }
+    if (on && was && was.isConnected && was.offsetWidth){ segAt(g, was, true); g._segPre = null; return; }
     segUnhold(g);
   }
   if (!on || !on.offsetWidth){ segStop(g); g.classList.remove('seg-ind', 'seg-moving'); g._segOn = null; return; }
@@ -12981,34 +13022,59 @@ function segPlace(g, snap, now){
   const retarget = snap && g._segOn === on && g.classList.contains('seg-moving') && g.classList.contains('seg-ind');
   if (retarget) segMoving(g);
   else if (snap || !g._segOn || !g.classList.contains('seg-ind')) snap = true;
-  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && viewTx.freeze !== false && !g.classList.contains('seg') && g._segOn.isConnected){ segWait(g); return; }
+  // (held for the new view: never while a slide is on its way, which goes on to the new
+  // choice instead; the new choice's box is read now, while the page is still)
+  else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && viewTx.freeze !== false && !g.classList.contains('seg') && g._segOn.isConnected && !g._segSlide){
+    g._segPre = { on, box: segBox(g, on), compact: stickyWrap.classList.contains('tb-compact') };
+    segWait(g);
+    return;
+  }
   // the slide: the chosen option's own fill waits until the indicator is under it
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
+}
+// (placed in the first frame after the transition's ready, unless placed before then)
+function segLate(g, vt){
+  if (g._segLate) return;
+  g._segLate = true;
+  const f = () => requestAnimationFrame(() => { if (g._segLate && g.isConnected) segPlace(g, true); });
+  vt.ready.then(f, f);
 }
 function segMoving(g){
   g.classList.add('seg-moving');
   clearTimeout(g._segT);
   g._segT = setTimeout(() => g.classList.remove('seg-moving'), 200 * motionK() + 60);
 }
-// The indicator under the option `on` (at once: snap; else it slides there from where it
-// is now, segSlide). Its box is read from the options' offsets, never from its own style,
-// so a slide begun mid-slide (a held arrow key, a resize) starts where it shows.
-function segAt(g, on, snap){
-  // (offsets from the group itself: it is the option's offset parent only once seg-ind
-  // makes it the indicator's containing block, so that goes on first; were the option
-  // still measured from elsewhere (a dialog), its box is taken from the two rects)
-  const had = g.classList.contains('seg-ind');
+// The option's box in the group: offsets from the group itself (it is the option's
+// offset parent only once seg-ind makes it the indicator's containing block, so that goes
+// on first; were the option still measured from elsewhere (a dialog), its box is taken
+// from the two rects; the option's own press scale does not count)
+function segBox(g, on){
   g.classList.add('seg-ind');
   let x = on.offsetLeft, y = on.offsetTop;
   if (on.offsetParent !== g){
     const a = on.getBoundingClientRect(), c = g.getBoundingClientRect();
     x = a.left - c.left - g.clientLeft; y = a.top - c.top - g.clientTop;
   }
-  const to = { x, y, w: on.offsetWidth, h: on.offsetHeight, r: segRound(g, on) };
+  return { x, y, w: on.offsetWidth, h: on.offsetHeight, r: segRound(g, on) };
+}
+// The indicator under the option `on` (at once: snap; else it slides there from where it
+// is now, segSlide). Its box is read from the options' offsets (or given: box), never
+// from its own style, so a slide begun mid-slide (a held arrow key, a resize) starts
+// where it shows. keep: placed at once, but as no snap (the labels' colours go on).
+function segAt(g, on, snap, keep, box){
+  const had = g.classList.contains('seg-ind');
+  const to = box || segBox(g, on);
+  // (the same place again, as the view's own redraw sets aria-pressed anew or a watcher
+  // sees the same size: a slide on its way is left alone, an indicator at rest stays)
+  const same = had && g._segOn === on && g._segBox && ['x', 'y', 'w', 'h'].every(k => Math.abs(g._segBox[k] - to[k]) <= .5);
+  if (same && (!snap || (!g._segSlide && !g.classList.contains('seg-moving')))) return;
+  // (the same option moved by a new layout, with no slide on its way: it goes with it at once)
+  if (!snap && had && g._segOn === on && !g._segSlide) snap = true;
   const from = !snap && had ? segNow(g) : null;
   segStop(g);
-  if (snap){
+  if (snap && keep){ /* (under the option it was under: the colours are left to go on) */ }
+  else if (snap){
     g.classList.add('seg-snap');
     // (the labels' colours change at once too: seg-snap holds their transitions off until
     // that style has been drawn, the next frame, rather than forcing it now)
@@ -13017,8 +13083,6 @@ function segAt(g, on, snap){
     g.classList.remove('seg-moving');
   } else if (g.classList.contains('seg-snap')){ cancelAnimationFrame(g._segSnapF); g.classList.remove('seg-snap'); }
   g.classList.add('seg-ind');
-  // (offsets: the group is the indicator's containing block once seg-ind is on; and the
-  // option's own press scale does not count)
   const s = g.style;
   s.setProperty('--seg-x', to.x + 'px');
   s.setProperty('--seg-y', to.y + 'px');
@@ -13038,11 +13102,24 @@ function segRound(g, on){
   const r = px('--r-ctl'), a = on === g.firstElementChild, b = on === g.lastElementChild;
   return [a ? r : 0, b ? r : 0, b ? r : 0, a ? r : .01];
 }
-// Where the indicator shows now: mid-slide, between the slide's ends by its eased progress.
+// EASE (cubic-bezier(.2,0,0,1)) as a function of time
+const segEase = (() => {
+  const B = (a, b, t) => 3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t;
+  return u => {
+    if (u <= 0) return 0;
+    if (u >= 1) return 1;
+    let lo = 0, hi = 1, t = u;
+    for (let i = 0; i < 24; i++){ t = (lo + hi) / 2; if (B(.2, 0, t) < u) lo = t; else hi = t; }
+    return B(0, 1, t);
+  };
+})();
+// Where the indicator shows now: mid-slide, between the slide's ends by its eased progress,
+// from the clock (not the animation's own time, which reads 0 until the page has drawn a
+// frame of it, while the compositor has been moving it for as long as the page was busy)
 function segNow(g){
   const sl = g._segSlide, to = g._segBox;
   if (!sl || !to) return to;
-  const p = sl.a.effect.getComputedTiming().progress ?? 1, f = sl.from, t = sl.to, m = (u, v) => u + (v - u) * p;
+  const p = segEase((performance.now() - sl.t0) / sl.dur), f = sl.from, t = sl.to, m = (u, v) => u + (v - u) * p;
   return { x: m(f.x, t.x), y: m(f.y, t.y), w: m(f.w, t.w), h: m(f.h, t.h), r: f.r.map((u, i) => m(u, t.r[i])) };
 }
 // The slide: a move (transform) and a clip (its size and corners) of the indicator, both
@@ -13057,8 +13134,10 @@ function segSlide(g, from, to){
   const o = { duration: 200 * motionK(), easing: EASE, pseudoElement: '::before', fill: 'forwards' };
   const a = g.animate([{ transform: `translate(${from.x}px,${from.y}px)` }, { transform: `translate(${to.x}px,${to.y}px)` }], o);
   const c = g.animate([{ clipPath: clip(from) }, { clipPath: clip(to) }], o);
-  const sl = g._segSlide = { a, c, from, to };
+  const sl = g._segSlide = { a, c, from, to, t0: performance.now(), dur: o.duration };
   a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
+  // (the chosen option's fill stays aside for as long as this slide, however late it began)
+  if (g.classList.contains('seg-moving')) segMoving(g);
 }
 // (the slide ends: its box and clip go, the indicator at rest where it ended)
 function segStop(g){
@@ -13071,7 +13150,7 @@ function segStop(g){
   g.classList.remove('seg-slide');
 }
 // (the watchers are made on first use: the calendar may draw its zoom before this point
-// of the script has run)
+// of the script has run; an aria-pressed set again to what it was changes nothing)
 function segObs(){
   return segObs.o || (segObs.o = {
     ro: window.ResizeObserver ? new ResizeObserver(es => {
@@ -13081,6 +13160,7 @@ function segObs(){
     mo: new MutationObserver(ms => {
       const seen = new Map();
       for (const m of ms){
+        if (m.attributeName === 'aria-pressed' && m.oldValue === m.target.getAttribute('aria-pressed')) continue;
         const g = m.target.closest(SEG_GROUPS);
         if (g) seen.set(g, seen.get(g) || (m.target === g && m.attributeName === 'hidden'));
       }
@@ -13101,7 +13181,7 @@ function segAdopt(g, drawn = true){
   segPlace(g, true);
   if (o.ro){ o.ro.observe(g); for (const c of g.children) o.ro.observe(c); }
   g._segKids = [...g.children];
-  o.mo.observe(g, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'hidden'] });
+  o.mo.observe(g, { attributes: true, subtree: true, attributeOldValue: true, attributeFilter: ['aria-pressed', 'hidden'] });
 }
 // (a group whose options were made anew: the size watcher follows the new ones)
 function segRedrawn(g){
@@ -13115,7 +13195,62 @@ function segRedrawn(g){
   segPlace(g, true);
 }
 for (const g of document.querySelectorAll(SEG_GROUPS)) segAdopt(g, false);
-document.addEventListener('change', e => { const g = e.target.closest && e.target.closest('.seg'); if (g) segPlace(g); });
+// A Display option (the dialog's own handler, on the dialog, has already run): a choice
+// whose new look fades in (displayFade: theme, colour, text size, font) is held, as a
+// toolbar switch is (segWait), until that fade's first frame, after the look has been
+// applied; the indicator then slides, or, where the new look (a text size, a face) has
+// moved the option it is under, goes to the new choice at once, under the cross-fade.
+// Anything else (the speed; no fade with reduced motion) moves at once.
+document.addEventListener('change', e => {
+  const g = e.target.closest && e.target.closest('.seg');
+  if (g && g._segOn !== undefined) segDisp(g, e.target.name === 'dsFont' && e.target.value);
+});
+function segDisp(g, face){
+  const was = g._segOn, on = segOnOf(g);
+  const fades = (viewTx && viewTx.vt) || face;
+  if (!fades || g._segSlide || !was || !was.isConnected || !g.classList.contains('seg-ind') || motionReduced() || (on === was && !g._segHold)){ segPlace(g); return; }
+  const n = g._segHoldN = (g._segHoldN || 0) + 1;
+  if (!g._segHold){
+    g._segHold = true;
+    g.classList.add('seg-hold');
+    was.classList.add('seg-was');
+  }
+  const go = () => {
+    if (g._segHoldN !== n || !g._segHold) return;
+    segUnhold(g);
+    const at = g._segBox, b = was.isConnected && was.offsetWidth ? segBox(g, was) : null;
+    segPlace(g, !b || ['x', 'y', 'w', 'h'].some(k => Math.abs(b[k] - at[k]) > .5), true);
+  };
+  // (Archivo loads before its fade starts, setDisplay)
+  let k = 0;
+  const tick = () => {
+    if (g._segHoldN !== n) return;
+    const t = viewTx;
+    if (t && t.vt){ t.vt.ready.then(go, go); return; }
+    if (++k > 2){ go(); return; }
+    requestAnimationFrame(tick);
+  };
+  if (face && !(viewTx && viewTx.vt)) archivoReady().then(tick); else tick();
+}
+// How fast this device runs script now, against a typical desktop's (1: as fast or
+// faster): a fixed piece of work, timed once, at the first press of a toolbar switch (or
+// the first change that asks), for txSlideFirst's first guess.
+const SEG_CPU_MS = 4.5;
+function segCpu(){
+  if (segCpu.k !== undefined) return segCpu.k;
+  // (the whole time of three runs: a slowed device runs in bursts, so the fastest run alone
+  // can miss it)
+  const t0 = performance.now();
+  let a = 0;
+  for (let r = 0; r < 3; r++){
+    const o = [];
+    for (let i = 0; i < 40000; i++){ a = (a + Math.sqrt(i + r) * 1.0001) % 1e6; if (!(i & 63)) o.push({ i, a }); }
+    a += o.length;
+  }
+  segCpu.sink = a;
+  return segCpu.k = Math.max(1, (performance.now() - t0) / SEG_CPU_MS);
+}
+document.addEventListener('pointerdown', e => { if (segCpu.k === undefined && e.target.closest && e.target.closest('.agenda-views')) segCpu(); }, true);
 
 // "Skip to program" moves the focus past the header and toolbar to the main area (the
 // address keeps its view: a #main hash would be read as a view).
