@@ -13634,7 +13634,7 @@ const tbEdge = () => TB.h;
 // (tbCompact: the fold and unfold move a clip, not the height, and the heads stuck under
 // the bar move with its edge)
 const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null,
-  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '' };
+  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '', flipT: -1e9, later: 0 };
 for (const t of ['keydown', 'focusin', 'click']) window.addEventListener(t, tbRootSync, { capture: true, passive: true });
 // (a touch on the page starts a scroll as often as a tap: a tap's click brings it)
 window.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') tbRootSync(); }, { capture: true, passive: true });
@@ -13739,6 +13739,7 @@ function tbCompact(on){
     TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
   }
   TB.on = on;
+  TB.flipT = performance.now();
   if (on){
     const tabs = document.getElementById('daytabs');
     stickyWrap.classList.toggle('tb-notabs', tabs.hidden || getComputedStyle(tabs).display === 'none');
@@ -13839,24 +13840,47 @@ window.addEventListener('pointerdown', e => {
   if (e.target === root && (e.clientX >= root.clientWidth || e.clientY >= root.clientHeight)) TB.drag = true;
 });
 window.addEventListener('pointerup', () => { if (TB.drag){ TB.drag = false; TB.input = performance.now(); } });
+// It folds once the reader has scrolled down 10px past it, and unfolds once they have
+// scrolled back up TB_UP: a small correction or a bounce on a trackpad leaves it as it is.
+// For as long as a fold takes after it has folded or unfolded, it stays so (tbLock): what
+// is scrolled meanwhile still counts, and is looked at again when that time is up. At the
+// top of the page it unfolds at once, and scrolling up it unfolds as soon as the view's
+// head would come loose from the slim bar. Past the end of the page (a rubber band at the
+// bottom, on a phone) the page coming back is not a scroll up.
+const TB_UP = 48;
+const tbLock = () => TB.flipT + MO_L * motionK() - performance.now();
+function tbScrolled(dy){
+  if (TB.acc > 10 && !TB.on && tbMayFold()){
+    if (tbLock() > 0){ tbRecheck(); return; }
+    const hs = tbHeadState(tbSlimH(), stickyWrap.getBoundingClientRect().height);
+    if (!hs || !hs.loose) tbCompact(true);
+  } else if (TB.on && TB.acc < 0){
+    if (TB.acc < -TB_UP){
+      if (tbLock() > 0) tbRecheck();
+      else tbCompact(false);
+    } else if (dy < 0){
+      // (scrolling up, it unfolds before the view's head would come loose from the slim bar)
+      const hs = tbHeadState(TB.anim ? TB.anim.px : stickyWrap.getBoundingClientRect().height, TB.fullPx);
+      if (hs && hs.near < Math.min(40, -dy) + 2) tbCompact(false);
+    }
+  }
+}
+function tbRecheck(){
+  if (!TB.later) TB.later = setTimeout(() => { TB.later = 0; if (tbUserScroll()) tbScrolled(0); }, Math.max(16, tbLock() + 1));
+}
 window.addEventListener('scroll', () => {
   if (TB.raf) return;
   TB.raf = requestAnimationFrame(() => {
     TB.raf = 0;
-    const y = window.scrollY, dy = y - TB.last;
+    const y = window.scrollY, dy = y - TB.last, last = TB.last;
     TB.last = y;
     const past = programTop() + (TB.on ? TB.fullPx : stickyWrap.getBoundingClientRect().height);
     if (y < past){ TB.acc = 0; tbCompact(false); return; }
+    const end = document.documentElement.scrollHeight - innerHeight + 1;
+    if (y > end || last > end) return;
     if (!tbUserScroll() || !dy){ TB.acc = 0; return; }
     TB.acc = (Math.sign(dy) === Math.sign(TB.acc) ? TB.acc : 0) + dy;
-    if (TB.acc > 10 && !TB.on && tbMayFold()){
-      const hs = tbHeadState(tbSlimH(), stickyWrap.getBoundingClientRect().height);
-      if (!hs || !hs.loose) tbCompact(true);
-    } else if (TB.on && dy < 0){
-      // (scrolling up, it unfolds before the view's head would come loose from the slim bar)
-      const hs = TB.acc < -20 ? null : tbHeadState(TB.anim ? TB.anim.px : stickyWrap.getBoundingClientRect().height, TB.fullPx);
-      if (TB.acc < -20 || (hs && hs.near < Math.min(40, -dy) + 2)) tbCompact(false);
-    }
+    tbScrolled(dy);
   });
 }, { passive:true });
 stickyWrap.addEventListener('focusin', e => {
