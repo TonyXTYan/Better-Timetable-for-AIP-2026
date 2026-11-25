@@ -2642,13 +2642,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   /* My agenda's actions: a row that still does not fit wraps instead of widening the page */
   .builder-actions{flex-wrap:wrap}
   .ag-actions .ag-btn{min-width:0;padding-left:6px;padding-right:6px;overflow:hidden;text-overflow:ellipsis}
-  /* room for the search box's own word: Streams drops "All" (it says so when filtered)
-     and the buttons and the magnifier sit a little tighter */
-  .filter-menu:not(.active) #filterBtn .fs-sum{display:none}
-  .controls{gap:6px}
-  .controls .toggle{padding-left:9px;padding-right:9px}
-  .searchbox input{padding-left:1.75rem}
-  .searchbox .mag{left:8px}
+  /* (the controls' row sits tighter from 400px down: Display options, below) */
   /* the Vertical day nav: just the weekday beside a heading without its year, and My
      agenda's one column head keeps its counts (the page heading names it) */
   .vt-go{padding-left:10px;padding-right:10px}
@@ -2706,6 +2700,24 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 :root[data-text="xl"]{font-size:130%}
 /* On phones the sticky toolbar keeps its default size, so larger text doesn't eat the screen. */
 @media (max-width:720px){:root[data-text="xl"] .sticky-wrap{zoom:.9}}
+/* The toolbar's way in (after Now, in every layout of the bar): its sliders, with the word
+   where the controls' row has room (wider screens, unfolded); the name is always "Display
+   options". The footer keeps a second way in. */
+.tb-display .ic{flex:none;color:var(--ink-2)}
+.tb-display .db-l{display:none}
+@media (min-width:721px) and (min-height:501px),(min-width:721px) and (orientation:portrait){.sticky-wrap:not(.tb-compact) .tb-display .db-l{display:inline}}
+/* Phones: the search box keeps room for its own word beside it. Streams drops "All" (it
+   says so when filtered); from 400px down the buttons, the magnifier and the word's end
+   sit a little tighter; under 360px Streams drops its caret too. */
+@media (max-width:480px){.filter-menu:not(.active) #filterBtn .fs-sum{display:none}}
+@media (max-width:400px){
+  .controls{gap:6px}
+  .controls .toggle{padding-left:9px;padding-right:9px}
+  .searchbox input{padding-left:1.75rem}
+  .searchbox input:placeholder-shown{padding-right:6px}
+  .searchbox .mag{left:8px}
+}
+@media (max-width:359px){.controls{gap:5px}#filterBtn .caret{display:none}.searchbox input{padding-left:1.625rem}.searchbox .mag{left:7px}}
 .display-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:.8125rem;font-weight:650}
 .display-btn:hover{border-color:var(--hover-line);background:var(--surface-2)}
 .foot-display{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:2px 0 10px!important}
@@ -2974,8 +2986,8 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
 }
 @media (max-height:500px) and (orientation:landscape){
   /* the toolbar in two rows: the switches, then the day tabs with the search box,
-     Streams and Now beside them (the controls' box steps aside so its parts share the
-     row with the tabs); the result line stays for screen readers only */
+     Streams, Now and Display options beside them (the controls' box steps aside so its
+     parts share the row with the tabs); the result line stays for screen readers only */
   .sticky-wrap:not(.tb-compact) .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-top:6px;padding-bottom:6px}
   .sticky-wrap:not(.tb-compact) .toolbar::after{content:"";order:2;flex:1 0 100%;height:0}
   .sticky-wrap:not(.tb-compact) .toolbar>.schedule-nav{order:1;margin:0;flex:0 1 auto;min-width:0;gap:6px}
@@ -2983,7 +2995,7 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
   .sticky-wrap:not(.tb-compact) .toolbar>.daytabs{order:3;flex:3 1 0;min-width:0;padding:0}
   .sticky-wrap:not(.tb-compact) .searchbox{order:4;flex:0 1 150px}
   .sticky-wrap:not(.tb-compact) .filter-menu{order:5}
-  .sticky-wrap:not(.tb-compact) #nowBtn{order:6}
+  .sticky-wrap:not(.tb-compact) #nowBtn,.sticky-wrap:not(.tb-compact) #displayBtn{order:6}
   .sticky-wrap:not(.tb-compact) .toolbar>.grpill{order:7;margin:0}
   .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:8;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
@@ -3242,6 +3254,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         </div>
       </div>
       <button class="toggle now-pending" id="nowBtn" type="button">Now</button>
+      <button type="button" class="toggle tb-display" id="displayBtn" aria-label="Display options" title="Display options" aria-haspopup="dialog" aria-controls="displayDialog"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M2 4.5h5m4 0h3M2 11.5h2m4 0h6"/><circle cx="9" cy="4.5" r="2"/><circle cx="6" cy="11.5" r="2"/></svg><span class="db-l">Display</span></button>
     </div>
     <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button></div>
     <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
@@ -3469,7 +3482,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </div>
     <div>
       <h2>Tips</h2>
-      <p class="foot-display"><button type="button" class="display-btn" id="displayBtn" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast and motion.</span></p>
+      <p class="foot-display"><button type="button" class="display-btn" id="displayBtnFoot" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast and motion. Also at the right end of the toolbar.</span></p>
       <p>Pick a day tab to focus, or <b>All week</b> for the full program. Search matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>) &mdash; put &ldquo;quotes&rdquo; around words for an exact phrase; matches are highlighted. If a day has no matches, results from the rest of the week appear automatically. <span class="on-fine">Click</span><span class="on-touch">Tap</span> a group badge (e.g. QST, NUPP) to filter to that group. Star individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link. Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). <b>Participants</b> lists every speaker and convener by institution. During the congress, <b>Now</b> jumps to what is on.</p>
       <p>The page address keeps your day, search and filters, so you can bookmark or share a view. Once loaded, the page also works offline.</p>
     </div>
@@ -12507,6 +12520,9 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 const DISPLAY_KEY = 'aip2026-display';
 const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
+// (the button that opened the dialog has the focus back when it closes: the toolbar's, the
+// footer's, or the Colour key's; opened from history, the toolbar's)
+let displayOpener = null;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'] };
@@ -12609,17 +12625,19 @@ function speedDemo(){
   if (motionReduced() || !pv.animate) return;
   pv.animate([{ opacity: 0, transform: 'translateX(-16px)' }, { opacity: 1, transform: 'none' }], { duration: MX_MS * motionK(), easing: MX_EASE });
 }
-function openDisplay(fromHistory){
+function openDisplay(fromHistory, opener){
+  displayOpener = opener || null;
   syncDisplayForm();
   hideToast();
   displayDialog.showModal();
   if (!fromHistory) pnlHistoryOpen('display');
 }
-displayBtn.addEventListener('click', () => openDisplay());
+for (const b of [displayBtn, document.getElementById('displayBtnFoot')]) b.addEventListener('click', () => openDisplay(false, b));
 // (the footer's Colour key opens Display options at the key)
 document.addEventListener('click', e => {
-  if (!e.target.closest('[data-colour-key]')) return;
-  openDisplay();
+  const k = e.target.closest('[data-colour-key]');
+  if (!k) return;
+  openDisplay(false, k);
   document.getElementById('colourKey').scrollIntoView({ block: 'nearest' });
 });
 displayDialog.addEventListener('change', e => {
@@ -12651,7 +12669,12 @@ displayDialog.addEventListener('click', e => {
     toast('Display options reset');
   }
 });
-displayDialog.addEventListener('close', () => { pnlHistoryClose(); displayBtn.focus(); });
+displayDialog.addEventListener('close', () => {
+  pnlHistoryClose();
+  const b = displayOpener && displayOpener.isConnected && displayOpener.getClientRects().length ? displayOpener : displayBtn;
+  displayOpener = null;
+  b.focus();
+});
 for (const q of [motionQuery, darkQuery]){
   const sync = () => { if (displayDialog.open) syncDisplayForm(); };
   if (q.addEventListener) q.addEventListener('change', sync); else if (q.addListener) q.addListener(sync);

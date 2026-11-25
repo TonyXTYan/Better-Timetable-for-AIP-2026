@@ -11,11 +11,11 @@ user site's `404.html` that keeps `?query` and `#hash`).
 ## What it does
 
 - Browse by day or the whole week, as a list or a calendar; filter by stream or group badge.
-  The toolbar (view switches, day tabs, search, Streams, Now) stays at the top of the screen;
-  scrolling down past it folds it to one slim row of day tabs (the Program / My agenda /
-  Participants switch in Participants), a search button and **Now**, and scrolling up, focusing
-  it, opening Streams or pressing `/` brings the whole toolbar back (no animation with reduced
-  motion). Jumps made by the page (links to a talk, the A–Z rail, View in program) leave it as
+  The toolbar (view switches, day tabs, search, Streams, Now, Display options) stays at the top
+  of the screen; scrolling down past it folds it to one slim row of day tabs (the Program / My
+  agenda / Participants switch in Participants), a search button, **Now** and Display options,
+  and scrolling up, focusing it, opening Streams or pressing `/` brings the whole toolbar back
+  (no animation with reduced motion). Jumps made by the page (links to a talk, the A–Z rail, View in program) leave it as
   it is and land just below it.
 - In the list, a talk's row opens its details in a pop-up that grows out of the row (a bottom
   sheet on a phone), over the list as it was: title, speakers with their institutions, day,
@@ -112,8 +112,9 @@ user site's `404.html` that keeps `?query` and `#hash`).
   edge of a session or talk on now in a list; the glyph on today's tab and the Now button.
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
-- **Display options** (the button in the footer): text size (Smaller 90 %, Default, Larger 115 %,
-  Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
+- **Display options** (the sliders button at the right end of the toolbar, labelled Display
+  where the row has room, in every state of the toolbar; the footer's Tips keep a second way
+  in): text size (Smaller 90 %, Default, Larger 115 %, Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
   colour to thin lines and faint tints; Vivid fills each session head, calendar bar and lane
   label with its stream's tint and turns the stream tags solid), high-contrast text and reduce
   motion (follows the device by default). Beside Colour sits the colour key: the spectral rule,
