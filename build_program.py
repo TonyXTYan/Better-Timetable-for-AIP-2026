@@ -3116,7 +3116,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 /* the Tips: one feature a point, its small icon in a fixed column beside the first line */
 .foot-tips{list-style:none;margin:0;padding:0;display:grid;gap:9px}
 .foot-tips li{display:grid;grid-template-columns:1.2em minmax(0,1fr);column-gap:10px;margin:0;line-height:1.6;max-width:62ch}
-.foot-tips .nw{white-space:nowrap}
+.nw{white-space:nowrap}
 .foot-tips .ic{width:1.2em;height:1.2em;margin-top:.2em;color:var(--muted)}
 #displayDialog{max-height:90vh;width:min(30rem,94vw);padding:0;overscroll-behavior:contain}
 #displayDialog::backdrop,#eventDialog::backdrop{background:var(--backdrop)}
@@ -3345,7 +3345,7 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
 /* Mouse and keyboard wording versus touch wording */
 .on-touch{display:none}
 @media (pointer:coarse){.on-touch{display:inline}.on-fine{display:none}}
-.hero kbd,.bd-kbd kbd,.foot-tips kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
+.bd-kbd kbd,.foot-tips kbd{display:inline-block;min-width:1.25rem;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:var(--r-tag);background:var(--card);font:inherit;font-size:.8125rem;font-weight:650;line-height:1.25;text-align:center}
 @media (hover:none),(pointer:coarse),print{.kbd-hint{display:none!important}}
 /* Result line: a quick "Search all week" and what a short form matched */
 .result-line{overflow-wrap:anywhere}
@@ -3878,7 +3878,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </dl>
       <p>Times, rooms and abstracts can still change, so always confirm on the official pages close to the event.</p>
       <div class="foot-issue">
-        <p>Has this page fallen behind the official program, or is something not working? Open an issue on GitHub (in a new tab), filled in with this page&#8217;s details for you to check before you submit.</p>
+        <p>Has this page fallen behind the official program, or is something not working? Open an issue on GitHub (in a new tab), filled in with this page&#8217;s details (its address, with any search; for a problem, also your screen size, display settings and browser) for you to check before you submit.</p>
         <p class="foot-issue-btns"><a class="display-btn" data-issue="data" href="@@ISSUE_DATA_HREF@@" target="_blank" rel="noopener">Request a data update<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a><a class="display-btn" data-issue="bug" href="@@ISSUE_BUG_HREF@@" target="_blank" rel="noopener">Report a problem<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a></p>
       </div>
     </div>
@@ -3898,7 +3898,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </div>
     <div>
       <h2>Tips</h2>
-      <p class="foot-display"><button type="button" class="display-btn" id="displayBtnFoot" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast, motion and pop-up width. Also at the right end of the toolbar.</span></p>
+      <p class="foot-display"><button type="button" class="display-btn" id="displayBtnFoot" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast, motion and pop-up width. Also in the toolbar, as its sliders button.</span></p>
       <ul class="foot-tips" role="list">
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="3.25" width="12" height="10.5" rx="2"/><path d="M2 6.75h12M5.25 1.75v3M10.75 1.75v3"/></svg><span><b>Day tabs</b> focus one day; <b>All week</b> shows the full program.</span></li>
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span><b>Search</b> matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>). Put &ldquo;quotes&rdquo; around words for an exact phrase. Matches are highlighted.</span></li>
@@ -3914,7 +3914,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     </div>
     <div class="colophon">
       <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <button type="button" class="linkish" data-colour-key>Display options</button>, beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
+      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <span class="nw"><button type="button" class="linkish" data-colour-key>Display options</button>,</span> beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>

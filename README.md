@@ -136,7 +136,7 @@ user site's `404.html` that keeps `?query` and `#hash`).
   and a shared agenda link only once it is added (until then it shows your own).
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
   session has its own link (`#t=c191558`, `#s=s190576`).
-- **Display options** (the sliders button at the right end of the toolbar, labelled Display
+- **Display options** (the sliders button in the toolbar, after Now, labelled Display
   where the row has room, in every state of the toolbar; the footer's Tips keep a second way
   in): text size (Smaller 90 %, Default, Larger 115 %, Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
   colour to thin lines and faint tints; Vivid fills each session head, calendar bar and lane
