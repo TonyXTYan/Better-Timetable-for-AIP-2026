@@ -588,7 +588,18 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 /* a page printed during the congress keeps the heading only (My agenda's Up next is not printed either) */
 @media print{.hn-sw,.hn-note{display:none!important}}
 /* (a narrow panel gives a later start its time alone) */
+.hero-nn:not(.hn-on){width:auto;container-type:normal}
+/* With large text on a tablet the panel would squeeze the title onto three lines: the
+   panel (when it has rows) moves under the facts instead */
+header.hero{container:hero / inline-size}
+@media (min-width:721px) and (min-height:501px),(min-width:721px) and (orientation:portrait){
+  @container hero (width < calc(37rem + 72px)){
+    .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
+    .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
+  }
+}
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
+@container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}}
 @media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
 .facts-short{display:none}
 /* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
