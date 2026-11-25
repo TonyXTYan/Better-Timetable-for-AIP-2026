@@ -10300,14 +10300,20 @@ document.getElementById('programOrient').addEventListener('click', e => {
   if (!b || b.dataset.orient === state.orient) return;
   const to = b.dataset.orient;
   withTransition('fade', () => {
-    const keep = orientPlace();
+    const keep = orientPlace(), from = orientMark();
+    // (a switch straight back, nothing scrolled or changed in between: back to the very
+    // place the reader left, not to a place read again off the other view; unless nothing
+    // showed there, an empty stretch of a day: then the place this view shows is kept)
+    const L = orientLast, back = keep && L && L.any && L.to === state.orient && L.hz === keep.hz && L.talks === state.programTalks && orientSame(L.at, from) ? L.from : null;
     state.orient = to;
     try { localStorage.setItem('aip2026-orient', state.orient); } catch (err) {}
     paintOrient();
-    if (keep && keep.m !== null && to === 'h') HZ.left[keep.hz] = keep.m;
+    const m = back ? back.m : keep && keep.m;
+    if (keep && m !== null && to === 'h') HZ.left[keep.hz] = m;
     renderCalendar();
-    orientKeep(keep);
+    if (back) orientReturn(back); else orientKeep(keep);
     revealCalendar();
+    orientLast = keep && { to, hz: keep.hz, talks: state.programTalks, any: keep.seen > 0, from, at: orientMark() };
   }, null, { to: { orient: to }, pair: 'orient', dir: to === 'v' ? 'in' : 'out', reshape: true, sight: true, cap: mxOrientCap(), press: b });
 });
 // Where the reader is in a day's calendar, to keep across Horizontal <-> Vertical: the
@@ -10320,23 +10326,25 @@ function orientPlace(){
   const main = document.getElementById('agenda'), h = main.querySelector('.hz-day'), v = main.querySelector(':scope > .vt-day');
   const top = (tbEdge() || 150) + 3 * remPx(), vh = innerHeight;
   const date = DATA.days[state.day].date, hz = (dvAgenda() ? 'a:' : '') + date;
-  // (the item nearest the top left of the part that shows: by its row, then by how far
-  // it starts from that edge)
-  const first = (els, box) => {
-    let best = null, bs = Infinity;
+  // (the items in sight (seen: how many), and those nearest the top left of the part that
+  // shows: by their row, then by how far they start from that edge; a few, best first, as
+  // the other view takes the first it can show at that place. Vertical's full-width rows
+  // (a meal, a plenary) are seen but not among them: they say nothing about which lanes
+  // to show, and their lane in Horizontal is mostly at the very bottom.)
+  const first = (els, box, place) => {
+    const all = [];
     for (const el of els){
       const r = el.getBoundingClientRect();
       if (r.height < 2 || r.bottom <= box.top + 4 || r.top >= vh - 8 || r.right <= box.left + 4 || r.left >= box.right - 4) continue;
-      const s = Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left);
-      if (s < bs){ bs = s; best = el; }
+      all.push({ s: Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left), ok: place(el), it: { sid: el.dataset.sid || '', tid: el.dataset.tid || '' } });
     }
-    return best && { sid: best.dataset.sid || '', tid: best.dataset.tid || '' };
+    return { seen: all.length, items: all.filter(a => a.ok).sort((a, b) => a.s - b.s).slice(0, 24).map(a => a.it) };
   };
   if (h){
     const vp = h.querySelector('.hz-vp'), head = h.querySelector('.hz-top').getBoundingClientRect(), b = vp.getBoundingClientRect();
     const lab = vp.querySelector('.hz-label'), left = b.left + (lab ? lab.offsetWidth : 0);
     const m = HZ.left[hzKey(h)];
-    return { hz, m: Number.isFinite(m) ? m : null, into: h.getBoundingClientRect().top < top, item: first(h.querySelectorAll('.hz-bar[data-sid], .hz-talk[data-tid]'), { top: Math.max(head.bottom, 0), left, right: b.right }) };
+    return { hz, m: Number.isFinite(m) ? m : null, into: h.getBoundingClientRect().top < top, ...first(h.querySelectorAll('.hz-bar[data-sid], .hz-talk[data-tid]'), { top: Math.max(head.bottom, 0), left, right: b.right }, () => true) };
   }
   if (v){
     const grid = v.querySelector('.vt-grid, .vt-list');
@@ -10349,27 +10357,36 @@ function orientPlace(){
     }
     const w = v.querySelector('.vt-wrap.scroll'), wb = w ? w.getBoundingClientRect() : g;
     const tc = v.querySelector('.vt-tcol'), left = wb.left + (w && tc ? tc.offsetWidth : 0);
-    return { hz, m, into: v.getBoundingClientRect().top < top, item: first(v.querySelectorAll('.vt-card[data-sid], .vt-tk[data-tid]'), { top: y, left, right: wb.right }) };
+    return { hz, m, into: v.getBoundingClientRect().top < top, ...first(v.querySelectorAll('.vt-card:is([data-sid], [data-tid]), .vt-card .vt-tk[data-tid]'), { top: y, left, right: wb.right }, el => !el.closest('.vt-card.band')) };
   }
   return null;
 }
 // ...and the same place in the new direction: Vertical scrolls the page to that minute's
 // row (at once, under the stuck heads: the row the next switch reads back) and its grid
 // sideways to the item's column; Horizontal (its canvas already at that minute: HZ.left)
-// scrolls the page to the item's lane. A page not scrolled into the day stays where it is
-// while the place shows in the upper half of the screen.
+// scrolls the page to the item's lane. The item is the first in sight that has a stream of
+// its own in Vertical and that the other view shows at that place. A page not scrolled
+// into the day stays where it is while the place shows in the upper half of the screen,
+// and a day never ends above the bottom of the screen while it has more above to show.
 function orientKeep(k){
   if (!k) return;
   const main = document.getElementById('agenda'), vh = innerHeight, top = (tbEdge() || 150) + 3 * remPx();
   const sel = it => it.tid ? `[data-tid="${CSS.escape(it.tid)}"]` : `[data-sid="${CSS.escape(it.sid)}"]:not([data-tid])`;
   const h = main.querySelector('.hz-day'), v = main.querySelector(':scope > .vt-day');
+  if (!h && !v) return;
   let dy = 0;
   if (v){
     const marks = [...v.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')];
     const row = k.m === null ? null : marks.filter(el => +el.dataset.m <= k.m + .5).pop() || marks[0];
     if (row){ const t = row.getBoundingClientRect().top; if (k.into || t > vh * .5) dy = t - top + 1; }
-    const w = v.querySelector('.vt-wrap.scroll'), el = w && k.item && (v.querySelector('.vt-card' + sel(k.item)) || v.querySelector('.vt-tk' + sel(k.item)));
-    if (el && !el.closest('.vt-card.band')){
+    let el = null;
+    for (const it of k.items){
+      el = v.querySelector('.vt-card' + sel(it)) || v.querySelector('.vt-tk' + sel(it));
+      if (el && !el.closest('.vt-card.band')) break;
+      el = null;
+    }
+    const w = v.querySelector('.vt-wrap.scroll');
+    if (el && w){
       const wb = w.getBoundingClientRect(), r = el.getBoundingClientRect(), tc = v.querySelector('.vt-tcol'), l = wb.left + (tc ? tc.offsetWidth : 0);
       if (r.left < l || r.right > wb.right){
         w.scrollLeft += r.left - l - 6;
@@ -10377,9 +10394,23 @@ function orientKeep(k){
         if (bar && bar.matches('.vt-hbar')) bar.querySelector('.vt-hsc').scrollLeft = w.scrollLeft;
         sxEdges(w.closest('.sx-box'));
       }
+    } else if (el){
+      // (a phone's list: the sessions starting at that minute one under another, so the
+      // item can be screens below its row's head; then the page goes to the item)
+      const t = el.getBoundingClientRect().top;
+      if (t - dy > vh * .5) dy = t - top - 1;
     }
-  } else if (h && k.item){
-    const el = h.querySelector('.hz-bar' + sel(k.item)) || h.querySelector('.hz-talk' + sel(k.item)) || (k.item.tid && k.item.sid && h.querySelector(`.hz-bar[data-sid="${CSS.escape(k.item.sid)}"]`));
+  } else {
+    // (only an item the canvas shows at that minute: one starting past its right edge
+    // would bring up a lane with nothing in sight)
+    const vp = h.querySelector('.hz-vp'), b = vp.getBoundingClientRect(), lab = vp.querySelector('.hz-label'), l = b.left + (lab ? lab.offsetWidth : 0);
+    let el = null;
+    for (const it of k.items){
+      el = h.querySelector('.hz-bar' + sel(it)) || h.querySelector('.hz-talk' + sel(it)) || (it.tid && it.sid && h.querySelector(`.hz-bar[data-sid="${CSS.escape(it.sid)}"]`));
+      const r = el && el.getBoundingClientRect();
+      if (r && r.right > l + 8 && r.left < b.right - 8) break;
+      el = null;
+    }
     const lane = el && (el.closest('.hz-lane') || el);
     if (lane){
       // (under the toolbar and the slim head, as hzReveal puts a bar)
@@ -10387,7 +10418,30 @@ function orientKeep(k){
       if (k.into || t > vh * .5) dy = t - tbEdge() - head - 8;
     }
   }
+  const d = (h || v).getBoundingClientRect(), fill = d.bottom - (vh - 16);
+  if (fill < dy) dy = Math.max(fill, Math.min(dy, d.top - tbEdge() - 8));
   if (Math.abs(dy) > 1) window.scrollTo({ top: Math.max(0, Math.round(window.scrollY + dy)), behavior: 'instant' });
+}
+// The last switch, to know a switch straight back (orientLast: where it came from and
+// where it put the reader): the page's scroll, the canvas's left minute (Horizontal) or the
+// grid's sideways scroll (Vertical), and the page's height (a redraw in between changes it).
+let orientLast = null;
+function orientMark(){
+  const main = document.getElementById('agenda'), h = main.querySelector('.hz-day'), v = main.querySelector(':scope > .vt-day');
+  const w = v && v.querySelector('.vt-wrap.scroll'), m = h ? HZ.left[hzKey(h)] : null;
+  return { y: window.scrollY, m: Number.isFinite(m) ? m : null, sl: w ? w.scrollLeft : null, ph: document.documentElement.scrollHeight };
+}
+const orientSame = (a, b) => Math.abs(a.y - b.y) < 2 && Math.abs((a.sl || 0) - (b.sl || 0)) < 2 && Math.abs(a.ph - b.ph) < 2
+  && (a.m === null) === (b.m === null) && Math.abs((a.m || 0) - (b.m || 0)) < .5;
+function orientReturn(f){
+  const w = document.querySelector('#agenda > .vt-day .vt-wrap.scroll');
+  if (w && f.sl !== null){
+    w.scrollLeft = f.sl;
+    const bar = w.previousElementSibling;
+    if (bar && bar.matches('.vt-hbar')) bar.querySelector('.vt-hsc').scrollLeft = w.scrollLeft;
+    sxEdges(w.closest('.sx-box'));
+  }
+  if (Math.abs(window.scrollY - f.y) > 1) window.scrollTo({ top: Math.round(f.y), behavior: 'instant' });
 }
 // A switch in the toolbar whose result is out of sight below it (a phone's tall toolbar
 // over All week): bring the calendar's top up under the toolbar, so the change shows.
