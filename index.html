@@ -2714,16 +2714,16 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   /* (as a slide starts, the option it leaves drops its own fill at once: the indicator is
      still under it, so nothing changes; a fill fading out instead would show, greyed,
      as the indicator moves away from under it) */
-  .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
-  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
-  .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
+  .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
   .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .seg.seg-ind label{z-index:1}
-  .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease)}
+  .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
   /* (the moving, snap and hold rules name the group, seg-ind and their own class, so they
      win over the rules above whatever their order; snap, last, over moving) */
-  .hz-zoom.seg-ind.seg-moving>button,.seg.seg-ind.seg-moving label>span{transition:color calc(200ms * var(--mo)) var(--ease)}
+  .hz-zoom.seg-ind.seg-moving>button,.seg.seg-ind.seg-moving label>span{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
   .agenda-views.seg-ind.seg-snap>button,.hz-zoom.seg-ind.seg-snap>button,.seg.seg-ind.seg-snap label>span,.seg.seg-ind.seg-snap small{transition:none}
   /* (a Display option held until its new look applies, segDisp: as a toolbar switch is,
@@ -2754,7 +2754,7 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.zero:not(.on)::before{background:var(--surface-2)}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab:hover::before{z-index:-1;border-color:var(--hover-line);background:var(--surface-2)}
   .daytabs.seg-ind:is(.seg-moving,.seg-hold)>.daytab.on::before{background:transparent}
-  .daytabs.seg-ind>.daytab,.daytabs.seg-ind>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:color calc(200ms * var(--mo)) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .daytabs.seg-ind>.daytab,.daytabs.seg-ind>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .daytabs.seg-ind.seg-snap>.daytab,.daytabs.seg-ind.seg-snap>.daytab :is(.dt-wd,.dt-count,.dt-tk){transition:none}
   /* (held, segWait: the indicator and the colours as they were, the pressed tab lit; an
      indicator still sliding, a held arrow key's earlier day, lands first) */
@@ -12838,9 +12838,10 @@ function segAt(g, on, snap, keep, box){
   s.setProperty('--seg-h', to.h + 'px');
   // (a day tab at either end of the strip has its outer corners rounded)
   if (g.id === 'daytabs') s.setProperty('--seg-r', on === g.firstElementChild ? 'var(--r-ctl) 0 0 var(--r-ctl)' : on === g.lastElementChild ? '0 var(--r-ctl) var(--r-ctl) 0' : '0px');
+  const was = g._segOn, wasBox = g._segBox;
   g._segOn = on;
   g._segBox = to;
-  if (from && !motionReduced() && ['x', 'y', 'w', 'h'].some(k => Math.abs(from[k] - to[k]) > .5)) segSlide(g, from, to);
+  if (from && !motionReduced() && ['x', 'y', 'w', 'h'].some(k => Math.abs(from[k] - to[k]) > .5)) segSlide(g, from, to, was !== on && was, wasBox, !box);
 }
 // The indicator's corners for the option `on`, as a clip's radii in px (never all four 0,
 // which the compositor cannot animate to or from)
@@ -12873,26 +12874,66 @@ function segNow(g){
 // The slide: a move (transform) and a clip (its size and corners) of the indicator, both
 // of which the compositor runs, so it goes on while the page is busy redrawing; the box
 // itself is the larger of the two ends meanwhile.
-function segSlide(g, from, to){
+function segSlide(g, from, to, was, wasBox, live){
   const W = Math.max(from.w, to.w), H = Math.max(from.h, to.h);
   const clip = b => `inset(0px ${W - b.w}px ${H - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`;
   g.style.setProperty('--seg-bw', W + 'px');
   g.style.setProperty('--seg-bh', H + 'px');
   g.classList.add('seg-slide');
   const o = { duration: 200 * motionK(), easing: EASE, pseudoElement: '::before', fill: 'forwards' };
-  const a = g.animate([{ transform: `translate(${from.x}px,${from.y}px)` }, { transform: `translate(${to.x}px,${to.y}px)` }], o);
-  const c = g.animate([{ clipPath: clip(from) }, { clipPath: clip(to) }], o);
-  const sl = g._segSlide = { a, c, from, to, t0: performance.now(), dur: o.duration };
-  a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
+  const sl = { from, to, dur: o.duration, ink: [] };
+  // (the labels' timing first: animate() works out the page's style, and with it begins
+  // their colour changes)
+  if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
+  segInk(sl, g._segOn, to, from, to, false, live);
+  sl.a = g.animate([{ transform: `translate(${from.x}px,${from.y}px)` }, { transform: `translate(${to.x}px,${to.y}px)` }], o);
+  sl.c = g.animate([{ clipPath: clip(from) }, { clipPath: clip(to) }], o);
+  sl.t0 = performance.now();
+  g._segSlide = sl;
+  sl.a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
   // (the chosen option's fill stays aside for as long as this slide, however late it began)
   if (g.classList.contains('seg-moving')) segMoving(g);
 }
+// The two options' labels change colour, with the slide's own ease and length, as the
+// indicator passes the middle of each: half-way through the slide's move to a neighbour,
+// as all their colour changes would; on a longer way, the one it leaves sooner (its
+// colour change shorter) and the one it goes to later (its colour change delayed), so
+// neither shows in its new colours while the indicator is not yet, or no longer, under it.
+// (box: the option's own; p, how far through the move one of the indicator's edges
+// passes its middle; that is at time u of the ease; SEG_INK_MID, where the ease is half-way.
+// live: the options were measured just now, which worked out the new colours' style, and
+// with it began their changes (or an earlier pass did): those are retimed as they run)
+function segInk(sl, el, box, from, to, leaving, live){
+  if (!el || !el.isConnected) return;
+  const v = Math.abs(to.y - from.y) > Math.abs(to.x - from.x), X = v ? 'y' : 'x', W = v ? 'h' : 'w';
+  const d = to[X] - from[X], c = box[X] + box[W] / 2, lo = (a, b) => Math.abs(b) < .5 ? .5 : a / b;
+  const p = leaving
+    ? (d > 0 ? lo(c - from[X], d) : lo(from[X] + from[W] - c, from[X] + from[W] - to[X] - to[W]))
+    : (d > 0 ? lo(c - from[X] - from[W], to[X] + to[W] - from[X] - from[W]) : lo(from[X] - c, from[X] - to[X]));
+  const u = segEaseAt(Math.min(1, Math.max(0, p)));
+  const f = u < SEG_INK_MID ? Math.max(.25, u / SEG_INK_MID) : 1, del = u > SEG_INK_MID ? (u - SEG_INK_MID) * sl.dur : 0;
+  if (f < .95 || del >= 8){
+    el.style.setProperty('--seg-cf', f.toFixed(3));
+    el.style.setProperty('--seg-cd', Math.round(del) + 'ms');
+    sl.ink.push(el);
+  }
+  // (begun even before the slide, at its own speed: a new speed applies as it is chosen)
+  if (live) for (const t of el.getAnimations({ subtree: true })) if (t.transitionProperty === 'color') t.effect.updateTiming({ duration: sl.dur * f, delay: del });
+}
+// (the time at which the ease reaches p)
+function segEaseAt(p){
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 24; i++){ const m = (lo + hi) / 2; if (segEase(m) < p) lo = m; else hi = m; }
+  return (lo + hi) / 2;
+}
+const SEG_INK_MID = segEaseAt(.5);
 // (the slide ends: its box and clip go, the indicator at rest where it ended)
 function segStop(g){
   const sl = g._segSlide;
   if (!sl) return;
   g._segSlide = null;
   sl.a.cancel(); sl.c.cancel();
+  for (const el of sl.ink){ el.style.removeProperty('--seg-cf'); el.style.removeProperty('--seg-cd'); }
   g.style.removeProperty('--seg-bw');
   g.style.removeProperty('--seg-bh');
   g.classList.remove('seg-slide');
