@@ -524,26 +524,41 @@ b,strong{font-weight:650}
 button{font:inherit;cursor:pointer}
 
 /* ---------- header ---------- */
-/* A calm typographic header on the page's grey: the wordmark, one sentence, three facts;
-   Display and the countdown on the right. (The colour key, the spectral rule, lives in
-   Display options beside the Colour setting.) */
+/* A calm typographic header on the page's grey: the wordmark and one sentence (what this
+   page is, and how fresh its program data is) on the left; Now and next on the right. The
+   congress's dates, venue and clock are in the footer's About. (The colour key, the spectral
+   rule, lives in Display options beside the Colour setting.) */
 header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-inner{margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(min(23.5rem,100% - 17rem - 32px),1fr) minmax(0,auto);column-gap:32px;align-items:start}
 .hero-main{min-width:0}
 .hero h1{margin:0;font-size:2.5rem;line-height:1;font-weight:800;font-stretch:var(--stretch-wide);letter-spacing:-.01em;color:var(--ink)}
-.hero p.sub{margin:8px 0 0;max-width:62ch;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
+/* the sentence in two or three balanced lines; under it, quieter, the date of its data (the
+   words quiet, the date itself in ink) */
+.hero p.sub{margin:8px 0 0;max-width:46rem;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
 @media (min-width:1200px){.hero p.sub{max-width:none}}
-/* a tablet keeps the three facts on one line (Sunday's registration is in the program) */
-@media (max-width:1199px){.hero .facts .fx-reg{display:none}}
-/* the three facts on one row: each pair inline, the term quiet */
-.hero .facts{display:flex;flex-wrap:wrap;gap:4px 28px;margin:10px 0 0;font-size:.8125rem;line-height:1.45}
-.hero .facts>div{display:inline-flex;align-items:baseline;gap:6px;min-width:0}
-.hero .facts dt{color:var(--muted);font-weight:500}
-.hero .facts dd{margin:0;color:var(--ink-2);font-weight:560}
+.hero .sub-data{display:block;margin-top:6px;font-size:.8125rem;line-height:1.45;color:var(--muted)}
+.hero .sub-data time,.hero .ss-data time{color:var(--ink-2);font-weight:560;white-space:nowrap}
+/* (the largest text on the narrowest phones breaks it after the dot) */
+.hero .ss-what,.hero .ss-data{white-space:nowrap}
+/* (phones say it in one short line instead) */
+.hero .sub-short{display:none}
 .hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:14px;padding-top:2px}
 .hero-when{display:flex;align-items:center;gap:8px;margin:0;font-size:.8125rem;font-weight:650;line-height:1.3;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .hero-when .na-glyph{display:none}
 .hero-when.is-today .na-glyph{display:inline-block}
+/* Under the countdown, small and quiet, the clock every time in the panel is on: it sits in
+   the head's own height (the switch beside it is taller), so the panel grows by nothing */
+.hn-title{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.hero-nn.hn-on .hero-when{line-height:1.1}
+.hn-tz{margin:1px 0 0;font-size:.6875rem;font-weight:560;line-height:1;color:var(--muted);white-space:nowrap}
+.hn-tz abbr{text-decoration:none}
+.hero-when.is-today+.hn-tz{margin-left:calc(var(--doublet-w) + 8px)}
+.hero-nn:not(.hn-on) .hn-tz{display:none}
+/* (where the switch takes a row of its own, the clock stands beside the countdown instead: the
+   widths below are where the switch no longer fits beside it, at each text size) */
+@container (width < 19.5rem){:root:not([data-text="lg"],[data-text="xl"]) .hero-nn:has(.hn-src) .hn-title{flex-direction:row;align-items:baseline;flex-wrap:wrap;column-gap:10px}:root:not([data-text="lg"],[data-text="xl"]) .hero-nn:has(.hn-src) .hero-when.is-today+.hn-tz{margin-left:0}}
+@container (width < 19rem){:root[data-text="lg"] .hero-nn:has(.hn-src) .hn-title{flex-direction:row;align-items:baseline;flex-wrap:wrap;column-gap:10px}:root[data-text="lg"] .hero-nn:has(.hn-src) .hero-when.is-today+.hn-tz{margin-left:0}}
+@container (width < 18.5rem){:root[data-text="xl"] .hero-nn:has(.hn-src) .hn-title{flex-direction:row;align-items:baseline;flex-wrap:wrap;column-gap:10px}:root[data-text="xl"] .hero-nn:has(.hn-src) .hero-when.is-today+.hn-tz{margin-left:0}}
 /* Now and next: the countdown's place grows into a small panel. Its head is the countdown
    (or "Today: Tue 8 Dec") with My agenda | Everything beside it; under it My agenda's Up
    next plate, made compact: one line a row (the title cut short, the time kept), the doublet
@@ -552,8 +567,11 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-nn{display:flex;flex-direction:column;gap:6px;width:24rem;max-width:100%;min-width:0;container-type:inline-size}
 .hn-head{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 12px;min-height:26px}
 .hero-nn.hn-on .hn-head{justify-content:space-between}
+/* (a caption beside it stands on the countdown's line) */
+.hn-head:has(>.hn-sw>.hn-cap){align-items:baseline}
+.hn-sw:has(>.hn-cap){display:flex}
 .hn-sw:empty,.hn-body:empty{display:none}
-.hn-cap{font-size:.75rem;font-weight:560;color:var(--muted);white-space:nowrap}
+.hn-cap{font-size:.75rem;font-weight:560;line-height:1.2;color:var(--muted);white-space:nowrap}
 .hn-src{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
 .hn-src button{min-height:26px;padding:2px 9px;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink-2);font-size:.75rem;font-weight:650;line-height:1.2;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
 .hn-src button:hover{background:var(--surface-3);color:var(--ink)}
@@ -587,11 +605,13 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
   .hero-nn .up-next>div>.hn-more{padding:3px 8px 3px 0;margin:-3px 0}
 }
 /* a page printed during the congress keeps the heading only (My agenda's Up next is not printed either) */
-@media print{.hn-sw,.hn-note{display:none!important}}
+@media print{.hn-sw,.hn-note,.hn-tz{display:none!important}}
+/* (paper, at any width, has the sentence in full) */
+@media print{.hero p.sub{max-width:none!important;font-size:.875rem!important;color:var(--ink-2)!important}.hero .sub-full{display:inline!important}.hero .sub-short{display:none!important}}
 /* (a narrow panel gives a later start its time alone) */
 .hero-nn:not(.hn-on){width:auto;container-type:normal}
 /* With large text on a tablet the panel would squeeze the title onto three lines: the
-   panel (when it has rows) moves under the facts instead */
+   panel (when it has rows) moves under the sentence instead */
 header.hero{container:hero / inline-size}
 @media (min-width:721px) and (min-height:501px),(min-width:721px) and (orientation:portrait){
   @container hero (width < calc(37rem + 72px)){
@@ -602,7 +622,6 @@ header.hero{container:hero / inline-size}
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
 @container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}}
 @media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
-.facts-short{display:none}
 /* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
    the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
    ticks hanging under it (every 10 nm, longer every 50 nm), labelled at the hundreds. Each
@@ -1618,17 +1637,33 @@ footer p{margin:4px 0}
 footer .colophon .na-glyph{margin-left:2px}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
-/* four columns on the content width (the colour key the fourth), two by two on tablets,
-   one on phones */
+/* four columns on the content width (About, with the congress's facts, as wide as Tips; the
+   colour key the fourth), two by two on tablets, one on phones */
 footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)}}
+@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)}}
 footer p{line-height:1.6;max-width:62ch}
 footer a{color:var(--ink)}
 footer .colophon p{font-size:.8125rem}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
+/* About: the congress's facts as a short list (the term in ink, as the headings), then the
+   two ways to ask for a fix: new GitHub issues, filled in by the page (set as Display
+   options' button beside them) */
+.foot-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:10px 0;max-width:62ch;line-height:1.5}
+.foot-facts>div{display:contents}
+.foot-facts dt{color:var(--ink);font-weight:600}
+.foot-facts dd{margin:0}
+.foot-issue{margin:14px 0 0}
+.foot-issue p{margin:0}
+/* (side by side, sharing the row, where the column has room for both; else one above the
+   other, each the column's width) */
+.foot-issue-btns{display:flex;flex-wrap:wrap;gap:8px;max-width:26rem;margin-top:10px!important}
+footer .foot-issue-btns a.display-btn{flex:1 1 auto;justify-content:center;padding:0 12px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.foot-issue-btns a.display-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (forced-colors:active){footer .foot-issue-btns a.display-btn{color:LinkText;border-color:LinkText}}
+@media print{.foot-issue{display:none!important}}
 .foot-links li{margin:2px 0}
 @media(max-width:720px){.foot-links a{display:inline-block;padding:4px 0}}
 
@@ -3309,29 +3344,31 @@ button.badge{min-height:24px;display:inline-flex;align-items:center}
    many columns as fit. */
 body.participants-view .people-intro{max-width:100ch}
 body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
-/* Compact header on phones and in landscape on phones (about 100px): the wordmark,
-   the countdown and one line of facts */
+/* Compact header on phones and in landscape on phones: the wordmark, one short line (an
+   unofficial timetable, and its data's date), then Now and next */
 @media (max-width:720px),(max-height:500px) and (orientation:landscape){
   header.hero{padding:14px 0 0}
   .hero-inner{padding:0 20px;column-gap:12px}
   .hero-main,.hero-side{display:contents}
   .hero h1{grid-row:1;grid-column:1;align-self:center;font-size:1.375rem;font-stretch:112%;letter-spacing:-.015em}
-  .hero-nn{grid-row:2;grid-column:1/-1;width:auto;margin-top:2px}
+  .hero p.sub{grid-row:2;grid-column:1/-1;max-width:none;margin:2px 0 0;font-size:.75rem;line-height:1.25;color:var(--muted)}
+  .hero .sub-full{display:none}
+  .hero .sub-short{display:inline}
+  .hero-nn{grid-row:3;grid-column:1/-1;width:auto;margin-top:4px}
   .hn-head{justify-content:space-between}
   .hn-note{text-align:left}
-  .hero p.sub,.hero .facts{display:none}
-  .facts-short{display:block;grid-row:3;grid-column:1/-1;margin:1px 0 0;font-size:.8125rem;line-height:1.4;color:var(--ink-2)}
   .sticky-wrap{margin-top:12px}
 }
-/* (the narrowest phones keep the facts to one line) */
-@media (max-width:359px){.facts-short{font-stretch:var(--stretch-cond)}.facts-short .fs-x{display:none}}
-/* landscape phones: the countdown and the facts share a line */
+/* landscape phones: Now and next beside the wordmark, and under the wordmark the sentence in
+   full (the panel beside it is the taller) */
 @media (max-height:500px) and (orientation:landscape){
   header.hero{padding-top:10px}
   .hero-nn{grid-row:1/4;grid-column:2;width:22rem;margin:0}
   .hero h1{grid-column:1}
-  .facts-short{grid-column:1}
-  .facts-short{grid-row:2}
+  .hero p.sub{grid-column:1;margin-top:6px;font-size:.8125rem;line-height:1.45;color:var(--ink-2)}
+  .hero .sub-full{display:inline}
+  .hero .sub-short{display:none}
+  .hero .sub-data{margin-top:3px;font-size:.75rem}
 }
 @media (max-height:500px) and (orientation:landscape){
   /* the toolbar in two rows: the switches, then the day tabs with the search box,
@@ -3521,12 +3558,6 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 @media screen{
 /* the wordmark: a UI face set large wants tighter tracking */
 :root:not([data-font="archivo"]) .hero h1{letter-spacing:-.022em}
-/* the three facts stay on one row */
-:root:not([data-font="archivo"]) .hero .facts{column-gap:20px}
-@media (max-width:1199px){:root:not([data-font="archivo"]) .hero .facts{column-gap:16px}}
-/* the phone's one-line facts: "Dec" for "December" while the line would wrap (and on the
-   narrowest phones a wrap falls between the place and the clock) */
-@media (max-width:439px){:root:not([data-font="archivo"]) .facts-short .fs-x{display:none}}
 /* the list's time column: a rem wide, so a wider face (and a larger text size) still fits it */
 :root:not([data-font="archivo"]) .block{grid-template-columns:5.5rem minmax(0,1fr)}
 :root:not([data-font="archivo"]) .block-time .bt{letter-spacing:-.015em}
@@ -3550,16 +3581,11 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   <div class="hero-inner">
     <div class="hero-main">
       <h1>AIP Congress 2026</h1>
-      <p class="sub">Program explorer for the 26th Australian Institute of Physics Congress, held with ANZCOP (optics and photonics) and COMMAD.</p>
-      <p class="facts-short">7&#8211;11 Dec<span class="fs-x">ember</span> 2026, University&nbsp;of&nbsp;Sydney. All&nbsp;times&nbsp;AEDT.</p>
-      <dl class="facts">
-        <div><dt>Dates</dt><dd>7&#8211;11 December 2026 (AEDT)<span class="fx-reg">, registration Sunday 6</span></dd></div>
-        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney</dd></div>
-      </dl>
+      <p class="sub"><span class="sub-full">An unofficial, easier-to-use timetable for the 26th Australian Institute of Physics Congress (with ANZCOP and COMMAD), built from the <a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">official program</a>. <span class="sub-data">Program data last updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED@@</time>.</span></span><span class="sub-short"><span class="ss-what">Unofficial timetable<span class="ss-sep" aria-hidden="true"> &middot;</span><span class="visually-hidden">,</span></span> <span class="ss-data">data updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED_SHORT@@</time></span></span></p>
     </div>
     <div class="hero-side">
       <section class="hero-nn" id="heroNow" aria-labelledby="heroNowName heroWhen"><span id="heroNowName" hidden></span>
-        <div class="hn-head"><h2 class="hero-when" id="heroWhen" tabindex="-1"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></h2><div class="hn-sw" id="heroNowSw"></div></div>
+        <div class="hn-head"><div class="hn-title"><h2 class="hero-when" id="heroWhen" tabindex="-1"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></h2><p class="hn-tz">Times <abbr title="Australian Eastern Daylight Time, UTC+11">AEDT</abbr></p></div><div class="hn-sw" id="heroNowSw"></div></div>
         <div class="hn-body" id="heroNowBody"></div>
       </section>
     </div>
@@ -3827,10 +3853,19 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 </dialog>
 <footer>
   <div class="cols">
-    <div>
+    <div class="foot-about">
       <h2>About this page</h2>
-      <p>An independent, mobile-friendly view of the AIP Congress 2026 program, built from the official Indico timetable (event 16926), retrieved @@RETRIEVED@@. Session and talk titles are as published; a few obvious typos were corrected.</p>
-      <p>All times are AEDT (Sydney, UTC+11). Times, rooms and abstracts can still change, so always confirm on the official pages close to the event.</p>
+      <p>An unofficial, mobile-friendly view of the AIP Congress 2026 program, built from the official Indico timetable (event 16926). Program data last updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED@@</time>. Session and talk titles are as published; a few obvious typos were corrected.</p>
+      <dl class="foot-facts">
+        <div><dt>Dates</dt><dd>7&#8211;11 December 2026, registration Sunday 6&nbsp;December</dd></div>
+        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney. The organisers will publish detailed rooms and locations closer to the congress, on the <a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">official site</a>.</dd></div>
+        <div><dt>Times</dt><dd>All times are AEDT (Sydney, UTC+11).</dd></div>
+      </dl>
+      <p>Times, rooms and abstracts can still change, so always confirm on the official pages close to the event.</p>
+      <div class="foot-issue">
+        <p>Has this page fallen behind the official program, or is something not working? Open an issue on GitHub (in a new tab), filled in with this page&#8217;s details for you to check before you submit.</p>
+        <p class="foot-issue-btns"><a class="display-btn" data-issue="data" href="@@ISSUE_DATA_HREF@@" target="_blank" rel="noopener">Request a data update<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a><a class="display-btn" data-issue="bug" href="@@ISSUE_BUG_HREF@@" target="_blank" rel="noopener">Report a problem<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a></p>
+      </div>
     </div>
     <div>
       <h2>Links</h2>
@@ -13344,6 +13379,56 @@ displayDialog.addEventListener('change', e => {
   else if (e.target.name === 'dsPopw') setDisplay('popw', e.target.value);
 });
 lightDismiss(displayDialog, () => displayDialog.close());
+// ---------- GitHub issues (the footer's About) ----------
+// "Request a data update" and "Report a problem" open a new issue on GitHub, filled in. The
+// build writes each link whole (its title, its template and the data's date), so it works
+// without the script; just before it is followed (pressed, focused, clicked or opened from
+// its menu) the page adds what the reader is looking at. Nothing is sent from here: GitHub
+// shows the issue to edit before it is submitted.
+const ISSUE_SCOPE = { program: 'Full program', agenda: 'My agenda', participants: 'Participants' };
+function issueView(){
+  const day = state.day === 'all' ? 'All week' : DATA.days[state.day]?.label || String(state.day);
+  let view = ISSUE_SCOPE[state.scope] || state.scope;
+  if (state.scope !== 'participants'){
+    view += ', ' + state.layout;
+    if (state.layout === 'calendar' && state.scope === 'program' && state.day !== 'all')
+      view += ` (${state.programTalks ? 'talks' : 'sessions'}, ${state.orient === 'v' ? 'vertical' : 'horizontal'})`;
+  }
+  const q = state.scope === 'participants' ? state.pq : state.scope === 'agenda' ? state.aq : state.q;
+  const cats = state.scope === 'agenda' ? state.acats : state.cats, all = Object.keys(DATA.cats).length;
+  return `${day}; ${view}` + (q ? `; search "${q.slice(0, 80)}"` : '') + (cats.size < all ? `; streams: ${cats.size} of ${all}` : '');
+}
+function issueDisplay(){
+  const r = document.documentElement, at = (n, d) => r.getAttribute('data-' + n) || d;
+  const mq = q => matchMedia(q).matches;
+  return [
+    'theme ' + at('theme', `system (${mq('(prefers-color-scheme: dark)') ? 'dark' : 'light'})`),
+    'text ' + at('text', 'default'), 'font ' + at('font', 'system'), 'colour ' + at('colour', 'quiet'),
+    'contrast ' + at('contrast', mq('(prefers-contrast: more)') ? 'system (more)' : 'standard'),
+    'motion ' + at('motion', mq('(prefers-reduced-motion: reduce)') ? 'system (reduced)' : 'system'),
+    'speed ' + at('speed', 'default'), 'pop-up width ' + at('popw', 'default'),
+  ].join(', ') + (mq('(forced-colors: active)') ? ', forced colours' : '');
+}
+function issueContext(kind){
+  // (a shared agenda's address can be long: the link keeps well within what GitHub takes)
+  const href = location.href.length > 1500 ? location.href.slice(0, 1500) + '… (cut short)' : location.href;
+  const lines = ['- Page: ' + href];
+  if (kind === 'data') lines.push('- Day and view: ' + issueView());
+  else lines.push(`- Viewport: ${innerWidth} × ${innerHeight} (pixel ratio ${+devicePixelRatio.toFixed(2)})`,
+    '- Display: ' + issueDisplay(), '- Browser: ' + navigator.userAgent.slice(0, 300));
+  return lines.join('\n');
+}
+for (const a of document.querySelectorAll('a[data-issue]')){
+  const base = new URL(a.getAttribute('href')), title = base.searchParams.get('title') || '', body = base.searchParams.get('body') || '';
+  const refresh = () => {
+    try {
+      a.href = base.origin + base.pathname + '?title=' + encodeURIComponent(title)
+        + '&body=' + encodeURIComponent(body.replace(/\n*$/, '\n') + issueContext(a.dataset.issue) + '\n');
+    } catch (e) {}
+  };
+  for (const ev of ['pointerdown', 'focus', 'click', 'contextmenu']) a.addEventListener(ev, refresh);
+}
+
 displayDialog.addEventListener('click', e => {
   if (e.target === displayDialog) return;
   if (e.target.closest('#dsContrast')) setDisplay('contrast', display.contrast === 'high' ? '' : 'high');
@@ -14417,6 +14502,61 @@ def prepare_payload(payload):
     return payload
 
 
+# ---------------------------------------------------------------- GitHub issues
+# The footer's "Request a data update" and "Report a problem" open a new issue, filled in.
+# Each link is written whole here (title, template, the data's date), so it works without
+# the page's script; the script adds the reader's context (the page's address, the day and
+# view, or the viewport, display settings and browser) under the template when it is followed.
+ISSUES_NEW = 'https://github.com/TonyXTYan/Better-Timetable-for-AIP-2026/issues/new'
+ISSUE_DATA_BODY = '''<!-- Thank you for helping keep this timetable in step with the official program. Fill in what you can; the details at the end were added by the page. -->
+
+### What changed on the official program?
+Official pages: [AIP Congress program](https://www.aip.org.au/congress/program), [Indico timetable](https://indico.global/event/16926/timetable/)
+<!-- e.g. a talk moved or was withdrawn, a session renamed, a room announced -->
+
+
+### Which session or talk is affected?
+<!-- its title, day and time, or a link to it (a talk's Share link here, or its Indico page) -->
+
+
+---
+**Page details** (added by the page; edit or remove anything)
+- Page data: {retrieved}
+'''
+ISSUE_BUG_BODY = '''<!-- Thank you for reporting this. The details at the end were added by the page; edit or remove anything you would rather not share. -->
+
+### What happened?
+
+
+### What did you expect to happen?
+
+
+### Steps to reproduce
+1.
+2.
+3.
+
+<!-- Screenshots help: paste or drag them in here. -->
+
+---
+**Page details** (added by the page; edit or remove anything)
+- Page data: {retrieved}
+'''
+
+
+def issue_href(title, body):
+    # a new-issue link, escaped for an HTML attribute
+    from urllib.parse import quote
+    url = f"{ISSUES_NEW}?title={quote(title, safe='')}&body={quote(body, safe='')}"
+    return url.replace('&', '&amp;')
+
+
+def retrieved_forms(retrieved):
+    # the data's date as written ("24 November 2026"), as ISO 8601 and short ("24 Nov 2026")
+    d = datetime.datetime.strptime(retrieved, '%d %B %Y').date()
+    return d.isoformat(), f"{d.day} {d:%b %Y}"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('indico_json', type=Path, nargs='?', help='raw Indico timetable export')
@@ -14440,7 +14580,13 @@ def main():
     print(f"affiliations: {len(page_data['affs']['map'])} distinct strings "
           f"in {len(page_data['affs']['groups'])} groups")
     embedded = json.dumps(page_data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
-    html = HTML.replace('@@FONTS@@', font_faces(root)).replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@VIVID_DARK_TOKENS@@', VIVID_DARK_TOKENS).replace('@@RETRIEVED@@', payload['retrieved']).replace('@@DATA@@', embedded)
+    retrieved = payload['retrieved']
+    retrieved_iso, retrieved_short = retrieved_forms(retrieved)
+    page = (HTML.replace('@@ISSUE_DATA_HREF@@', issue_href(f'Program data update (page data: {retrieved})', ISSUE_DATA_BODY.format(retrieved=retrieved)))
+            .replace('@@ISSUE_BUG_HREF@@', issue_href('Problem: ', ISSUE_BUG_BODY.format(retrieved=retrieved)))
+            .replace('@@RETRIEVED_ISO@@', retrieved_iso).replace('@@RETRIEVED_SHORT@@', retrieved_short)
+            .replace('@@RETRIEVED@@', retrieved))
+    html = page.replace('@@FONTS@@', font_faces(root)).replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@VIVID_DARK_TOKENS@@', VIVID_DARK_TOKENS).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
         (root / name).write_text(html, encoding='utf-8')
         print(f'wrote {name}')
