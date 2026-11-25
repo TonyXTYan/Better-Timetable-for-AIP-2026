@@ -344,7 +344,9 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-nn .up-next .un-in .un-tk{flex:none;margin:0;font-size:.6875rem}
 .hero-nn .up-next .un-in .linkish{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:.75rem;font-weight:560}
 .hero-nn .up-next .un-in .un-when{flex:none;font-size:.6875rem}
-.hero-nn .up-next>div>.hn-more{grid-column:1;grid-row:1;justify-self:start;font-size:.6875rem;font-weight:650;line-height:1.75;color:var(--ink-2);font-variant-numeric:tabular-nums}
+/* (the "+N" says "more" under it, so it never reads as part of its row's title) */
+.hero-nn .up-next>div>.hn-more{grid-column:1;grid-row:1;justify-self:start;font-size:.6875rem;font-weight:650;line-height:1.15;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.hero-nn .up-next>div>.hn-more::after{content:"more";display:block;font-size:.625rem;font-weight:560;line-height:1;color:var(--muted)}
 /* to tap: every name at least 24px tall, never reaching into the next row's */
 @media (pointer:coarse){
   .hn-src button{min-height:36px}
