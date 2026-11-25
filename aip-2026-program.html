@@ -870,7 +870,11 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .controls .tb-mini{display:none}
 .sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent}
 /* the clip would hide the bar's own bottom edge: a line that rides the clip's edge stands in (tbCompact) */
-.sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none;transform:translateY(var(--tb-edge,0))}
+/* (the bar's own value, not passed down to what is in it: only the line asks for it, so
+   setting it as a fold starts and clearing it as it ends restyles the bar and the line,
+   not every control in the bar) */
+@property --tb-edge{syntax:"<length>";inherits:false;initial-value:0px}
+.sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none;--tb-edge:inherit;transform:translateY(var(--tb-edge))}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
