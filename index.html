@@ -2750,6 +2750,11 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .schedule-nav .agenda-views{padding:2px;gap:2px;min-width:0}
   .schedule-nav .agenda-views button{padding:6px 7px;white-space:nowrap}
 }
+/* (Larger and Largest text: the switches' words keep their room, a little less padding
+   round them from 480px down; where they still do not fit, the second switch takes a row
+   of its own rather than cutting a word) */
+@media(max-width:480px){html:is([data-text="lg"],[data-text="xl"]) .nav-main{flex-wrap:wrap}}
+@media(min-width:375px) and (max-width:480px){html:is([data-text="lg"],[data-text="xl"]) .schedule-nav .agenda-views button{padding-left:4px;padding-right:4px}}
 @media(max-width:374px){.schedule-nav .agenda-views button{padding:6px 4px;font-size:.7188rem}
   .nav-main{gap:3px}.schedule-nav .agenda-views{gap:1px}
   /* My agenda's actions: a row that still does not fit wraps instead of widening the page */
@@ -2821,7 +2826,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 @media (min-width:721px) and (min-height:501px),(min-width:721px) and (orientation:portrait){.sticky-wrap:not(.tb-compact) .tb-display .db-l{display:inline}}
 /* Phones: the search box keeps room for its own word beside it. Streams drops "All" (it
    says so when filtered); from 400px down the buttons, the magnifier and the word's end
-   sit a little tighter; under 360px Streams drops its caret too. */
+   sit a little tighter; under 360px Streams drops its caret too. With Larger and Largest
+   text, Streams drops its caret from 400px down, and under 360px all sits tighter still. */
 @media (max-width:480px){.filter-menu:not(.active) #filterBtn .fs-sum{display:none}}
 @media (max-width:400px){
   .controls{gap:6px}
@@ -2831,6 +2837,13 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .searchbox .mag{left:8px}
 }
 @media (max-width:359px){.controls{gap:5px}#filterBtn .caret{display:none}.searchbox input{padding-left:1.625rem}.searchbox .mag{left:7px}}
+@media (max-width:400px){html:is([data-text="lg"],[data-text="xl"]) #filterBtn .caret{display:none}}
+@media (max-width:359px){
+  html:is([data-text="lg"],[data-text="xl"]) .controls{gap:4px}
+  html:is([data-text="lg"],[data-text="xl"]) .controls .toggle{padding-left:6px;padding-right:6px}
+  html:is([data-text="lg"],[data-text="xl"]) .searchbox input{padding-left:1.5rem}
+  html:is([data-text="lg"],[data-text="xl"]) .searchbox .mag{left:6px}
+}
 /* My agenda with nothing saved (search and Streams step aside) and no Now: the controls' row
    would hold Display options alone, so it takes the right end of the day tabs' row instead,
    as in the folded bar (its sliders only), and the bar takes no extra row. (A phone on its
