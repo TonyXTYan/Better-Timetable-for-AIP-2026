@@ -11930,7 +11930,10 @@ function linkTo(hash){
 let toastTimer;
 function toast(msg){
   const el = document.getElementById('toast');
-  (document.querySelector('dialog[open]') || document.body).appendChild(el);
+  // (moved only to another parent, over an open dialog: a move restyles it from nothing, so
+  // its hidden style is taken then, before .show, for its fade and rise in to run)
+  const to = document.querySelector('dialog[open]') || document.body;
+  if (el.parentElement !== to){ to.appendChild(el); void getComputedStyle(el).opacity; }
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
