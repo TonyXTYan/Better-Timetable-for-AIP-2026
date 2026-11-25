@@ -7038,12 +7038,17 @@ function txWatch(vt, t, done){
 // the redraw, and steps down only on what its own morphs add: two in a row whose first
 // moving frame came over TX_ORI_DOWN[0] after the redraw, or whose worst frame took over
 // TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
-// those. Its level 0 takes no snapshot, as List <-> Calendar's.
+// those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
+// takes no snapshot, as List <-> Calendar's.
 const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
 // (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
 const TX_PAIR_NOSNAP = new Set(['layout', 'orient']);
 // Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
 const TX_ORI_DOWN = [400, 250];
+// (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
+// with a screen of talks can still go without the morph; its items move on the
+// compositor, so what a slow device pays is the wait before they move, not the motion)
+const txPairFloor = p => p.pair === 'orient' ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
@@ -7090,7 +7095,7 @@ function txPairNote(p, lv, freeze, jank){
   p.ok = !down && smooth ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
-  p.level = down ? Math.max(TX_PAIR_FLOOR[p.pair] || 0, lv - 1) : up ? Math.min(2, lv + 1) : lv;
+  p.level = down ? Math.max(txPairFloor(p), lv - 1) : up ? Math.min(2, lv + 1) : lv;
   if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
 }
 // (a pair's change made with no snapshot (List <-> Calendar at level 0): two quick
