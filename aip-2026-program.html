@@ -13411,10 +13411,8 @@ function tbFollowers(){
     if (!Number.isFinite(el._tbOff)) continue;
     const r = el.getBoundingClientRect();
     if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
-    // (mid-fold, a head moving by a translate: where it shows, its place and that together)
-    let top = tbEdgeOf(el) + el._tbOff;
-    if (TB.anim && TB.anim.fe.includes(el)) top += parseFloat(getComputedStyle(el).translate.split(' ')[1]) || 0;
-    out.push({ el, top, h: r.height, y: r.top });
+    // (where it shows: mid-fold, with the translate it is moving by)
+    out.push({ el, h: r.height, y: r.top });
   }
   return out;
 }
@@ -13528,6 +13526,11 @@ function tbCompact(on){
     const full = on ? TB.full : h1, ms = MO_L * motionK();
     if (on) stickyWrap.style.height = full + 'px';
     stickyWrap.style.marginBottom = '';
+    // Where each head in sight comes to rest with the new edge: the bar holds its full
+    // height, so the page under it is where it was, and each one's place is read as it is
+    // (stuck under the bar, in its own place lower down, or pushed up by the end of its
+    // box), in one pass.
+    const land = follow.map(f => f.el.getBoundingClientRect());
     stickyWrap.classList.add('tb-anim');
     // (each animated value is also set inline where it starts, held at its end until done:
     // the frame the animations are made in may be drawn before they apply)
@@ -13543,20 +13546,21 @@ function tbCompact(on){
     bar.style.opacity = '0.2';
     const t = bar.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: ms * 0.7, easing: 'ease-out', fill: 'forwards' });
     TB.anim = { a, e, t, f: [], fe: [], from: h0, to: h1, px: h1px };
-    // the heads in sight: from where they were to where the new edge puts them, by a
-    // translate (the compositor's). One whose height follows the edge too (the A–Z rail,
-    // the screen's height less the bar's, its letters centred in it) is laid out at its
-    // end and moved by where its letters were.
-    for (const f of follow){
-      const top = e1 + f.el._tbOff;
-      // (only what sits at the edge or will: one lower down is in its own place either way)
-      if (f.y > Math.max(f.top, top) + 1) continue;
-      const dy = f.top - top + (f.el.classList.contains('pp-rail') ? (top - f.top) / 2 : 0);
-      if (Math.abs(dy) <= 0.5) continue;
-      const k0 = { translate: `0 ${dy}px` }, k1 = { translate: '0 0' };
-      Object.assign(f.el.style, k0);
-      TB.anim.fe.push(f.el);
-      TB.anim.f.push(f.el.animate([k0, k1], opt));
+    // the heads in sight: from where they showed to where they come to rest, by a translate
+    // (the compositor's). One whose height follows the edge too (the A–Z rail, the
+    // screen's height less the bar's, its letters centred in it) is laid out at its end and
+    // moved by where its letters were. (All the starting values are written before any
+    // animation is made: no style is worked out in between.)
+    const moves = [];
+    follow.forEach((f, i) => {
+      const r = land[i];
+      const dy = f.el.classList.contains('pp-rail') ? (f.y + f.h / 2) - (r.top + r.height / 2) : f.y - r.top;
+      if (Math.abs(dy) > 0.5) moves.push([f.el, `0 ${dy}px`]);
+    });
+    for (const [el, tr] of moves) el.style.translate = tr;
+    for (const [el, tr] of moves){
+      TB.anim.fe.push(el);
+      TB.anim.f.push(el.animate([{ translate: tr }, { translate: '0 0' }], opt));
     }
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
