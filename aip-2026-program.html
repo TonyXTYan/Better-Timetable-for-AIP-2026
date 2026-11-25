@@ -6763,15 +6763,28 @@ function txGuards(kind, opts, t){
 const TX_FREEZE = 150, TX_JANK = 50;
 let txFreeze = 0, txJank = 0, txSeen = -1e9;
 const txAged = (x, t) => x * 0.5 ** Math.max(0, (t - txSeen) / 1000);
+// (the slowest frame is read from the browser's long animation frames (those over 50ms)
+// where it reports them, so watching asks for no frame of its own: a transition that runs
+// on the compositor alone leaves the page's main thread idle; elsewhere, by a frame loop)
+const TX_LOAF = (() => { try { return PerformanceObserver.supportedEntryTypes.includes('long-animation-frame'); } catch (e){ return false; } })();
 function txWatch(vt, t, done){
   const t1 = performance.now();
-  let last = t1, worst = 0, on = true;
+  let last = t1, worst = 0, on = true, obs = null;
   const freeze = t1 - t;
   txFreeze = Math.max(freeze, txAged(txFreeze, t1) / 2);
   txSeen = t1;
-  const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
+  // (a frame that began before the transition's first moving one is its wait, not a jank)
+  const take = es => { for (const e of es) if (e.startTime >= t1 - 1) worst = Math.max(worst, e.duration); };
+  if (TX_LOAF){
+    try { obs = new PerformanceObserver(l => { if (on) take(l.getEntries()); }); obs.observe({ type: 'long-animation-frame' }); }
+    catch (e){ obs = null; }
+  }
+  if (!obs){
+    const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
   vt.finished.catch(() => {}).then(() => {
+    if (obs){ take(obs.takeRecords()); obs.disconnect(); }
     on = false;
     const now = performance.now();
     txJank = Math.max(worst, txAged(txJank, now) / 2);
