@@ -8600,7 +8600,9 @@ function hzMorph(h, redraw, ms){
     b.el.style.width = b.W + 'px';
     b.el.style.height = b.H + 'px';
   }
-  // the minimap window: as wide as the wider of its widths
+  // the minimap window: as wide as the wider of its widths (a stuck strip still on its way
+  // lands, so its outline has one motion at a time)
+  for (const a of br.getAnimations({ subtree: true })) if (a instanceof CSSTransition) a.finish();
   hold(br);
   br.style.width = W + 'px'; br.style.translate = '0px 0px';
   // -- where the lanes now sit (the one more layout)
