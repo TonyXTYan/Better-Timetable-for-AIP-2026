@@ -1767,10 +1767,21 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-read{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .hz-zb button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 .hz-read{font-size:.75rem;line-height:1.15;font-weight:650;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hz-map{grid-row:1;grid-column:2;position:relative;height:var(--mapH);margin:var(--mapT) 12px var(--mapB);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-seg);overflow:hidden;transition:height calc(.2s * var(--mo)) ease,margin calc(.2s * var(--mo)) ease}
-.hz-day.stuck .hz-map{height:14px;margin:calc(var(--mapT) + var(--mapH) + var(--mapB) - 15px) 12px 1px}
-.hz-mt{position:absolute;left:0;right:0;top:4px;bottom:16px;transition:top calc(.2s * var(--mo)) ease,bottom calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
-.hz-day.stuck .hz-mt{top:2px;bottom:2px;opacity:.55}
+.hz-map{grid-row:1;grid-column:2;position:relative;height:var(--mapH);margin:var(--mapT) 12px var(--mapB);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-seg);clip-path:inset(0 round var(--r-seg));transition:clip-path calc(.2s * var(--mo)) ease,translate calc(.2s * var(--mo)) ease}
+/* Stuck, the minimap shows as a 14px strip at the foot of its row. Its box keeps its full
+   size (so the head never lays out anew) and only composited properties change: a clip
+   keeps the strip's 14px and the box moves down the 1px its row has below it (each
+   frame where the old height-and-margin change had the strip, exactly); the strip's top
+   edge is the cap (::after), which moves with the clip; the track shrinks to the strip
+   from its own foot; the hour labels fade. (No overflow clip: the clip-path is the clip,
+   and nothing inside reaches past the frame.) */
+.hz-day.stuck .hz-map{clip-path:inset(calc(var(--mapH) - 14px) 0 0 round var(--r-seg));translate:0 calc(var(--mapB) - 1px)}
+.hz-map::after{content:"";position:absolute;z-index:2;left:-1px;right:-1px;top:-1px;height:calc(var(--r-seg) + 1px);box-sizing:border-box;border:1px solid var(--line);border-bottom:0;border-radius:var(--r-seg) var(--r-seg) 0 0;pointer-events:none;transition:translate calc(.2s * var(--mo)) ease}
+.hz-day.stuck .hz-map::after{translate:0 calc(var(--mapH) - 14px)}
+/* (the track: 34px, top 4px and bottom 16px in the full map; 8px, 2px from the strip's
+   top and foot, stuck) */
+.hz-mt{position:absolute;left:0;right:0;top:4px;bottom:16px;transform-origin:50% 100%;transition:transform calc(.2s * var(--mo)) ease,opacity calc(.2s * var(--mo)) ease}
+.hz-day.stuck .hz-mt{transform:translateY(14px) scaleY(.23529);opacity:.55}
 .hz-mtk{position:absolute;border-radius:1px;background:var(--c);min-width:2px;min-height:1px;opacity:.8}
 .hz-mh{position:absolute;top:0;bottom:0;border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 /* a label near the right edge moves in so it is never cut (its left is capped in hzDayView);
@@ -1778,12 +1789,32 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-mlab{position:absolute;z-index:1;bottom:2px;margin-left:3px;padding:1px 2px;border-radius:var(--r-tag);font-size:.6875rem;font-weight:550;line-height:1;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;transition:opacity calc(.2s * var(--mo)) ease}
 .hz-mlab.on-edge{background:color-mix(in srgb,var(--card) 60%,var(--surface-2))}
 .hz-day.stuck .hz-mlab{opacity:0}
-.hz-shade{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none}
-.hz-sl{left:0}.hz-sr{right:0}
-.hz-brush{position:absolute;top:0;bottom:0;box-sizing:border-box;min-width:6px;border:1.5px solid var(--ink);border-radius:5px;background:color-mix(in srgb,var(--ink) 6%,transparent);cursor:grab}
+/* the shades either side of the window: full width, each scaled from its outer edge to
+   where the window starts or ends (hzSync: a transform, no layout) */
+.hz-shade{position:absolute;top:0;bottom:0;width:100%;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none;scale:0 1;will-change:scale}
+.hz-sl{left:0;transform-origin:0 0}.hz-sr{right:0;transform-origin:100% 0}
+/* the window: placed by its width and a translate (hzSync). Its fill (::before) and its
+   1.5px outline (::after, the ring drawn as a clip: hzRing) are clips of its box, so the
+   stuck strip (--bt, the top it starts at; --bq, its corner radius) and a zoom's change
+   of width (hzMorph) are composited too */
+.hz-brush{position:absolute;top:0;bottom:0;left:0;box-sizing:border-box;min-width:6px;cursor:grab;--bt:0px;--bq:5px;--bb:0px;will-change:translate}
+.hz-brush::before,.hz-brush::after{content:"";position:absolute;inset:0;pointer-events:none;transition:clip-path calc(.2s * var(--mo)) ease}
+.hz-brush::before{background:color-mix(in srgb,var(--ink) 6%,transparent);clip-path:inset(var(--bt) 0 calc(0px - var(--bb)) round var(--bq))}
+.hz-brush::after{background:var(--ink)}
+@media (forced-colors:active){.hz-brush::after{forced-color-adjust:none;background:CanvasText}}
 .hz-brush:active{cursor:grabbing}
 .hz-brush:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
-.hz-day.stuck .hz-brush{border-radius:3px}
+.hz-day.stuck .hz-brush{--bt:calc(var(--mapH) - 14px);--bq:3px}
+/* (a touch screen's window is 40px tall at least: stuck, its foot is below the strip) */
+@media (pointer:coarse){.hz-day.stuck .hz-brush{--bb:28px}}
+/* ---- a zoom's motion (hzMorph): the lanes move and clip on the compositor, each above
+   the grid lines as its bars are (and its line under the lane above drawn on its own
+   top); a bar resizing shows its size as a clip, its right and bottom border drawn by a
+   cap that moves with it ---- */
+.hz-rows.hz-zm>*{position:relative;z-index:2}
+.hz-rows.hz-zm>*+*{box-shadow:0 -1px 0 var(--line)}
+.hz-bar.hz-zm{overflow-clip-margin:1px}
+.hz-bar.hz-zm::after{content:"";position:absolute;z-index:3;inset:-1px -1px -1px -3px;box-sizing:border-box;border:1px solid;border-color:inherit;border-top:0;border-left:0;border-radius:0 0 5px 0;pointer-events:none}
 /* now in the minimap: a compact doublet (1.5px lines, 1.5px apart) */
 .hz-ovnow{position:absolute;top:0;bottom:0;width:4.5px;margin-left:-2.25px;background:linear-gradient(90deg,var(--na) 0 1.5px,transparent 0 3px,var(--na) 0 4.5px);pointer-events:none}
 .hz-ovnow[hidden]{display:none}
@@ -8446,6 +8477,30 @@ function hzFitNear(h){
   h._fitPend = keep;
   hzFitBatch(h, hit);
 }
+// The minimap window's 1.5px outline, as a clip of its box (a rounded rectangle less a
+// rounded hole, four points to each quarter circle): the stuck strip and a zoom's change of
+// width then move it on the compositor. t: its top; r: how far in its right edge is; b: how
+// far below the box its foot is; q: its corner radius (CSS lengths). (1.5px as a border
+// draws it: whole device pixels, rounded down)
+const HZ_ARC = [[0, 1], [.07612, .61732], [.29289, .29289], [.61732, .07612], [1, 0]];
+function hzRing(t, r, b, q){
+  const box = (l, t, r, b, q) => {
+    const x = (e, s, k) => `calc(${e} ${s} ${q} * ${k})`, pts = [];
+    for (const [k, m] of HZ_ARC) pts.push(`${x(l, '+', k)} ${x(t, '+', m)}`);
+    for (const [k, m] of [...HZ_ARC].reverse()) pts.push(`${x(r, '-', k)} ${x(t, '+', m)}`);
+    for (const [k, m] of HZ_ARC) pts.push(`${x(r, '-', k)} ${x(b, '-', m)}`);
+    for (const [k, m] of [...HZ_ARC].reverse()) pts.push(`${x(l, '+', k)} ${x(b, '-', m)}`);
+    return [...pts, pts[0]];
+  };
+  const w = Math.max(1, Math.floor(1.5 * devicePixelRatio)) / devicePixelRatio + 'px';
+  return `polygon(evenodd,${[...box('0px', t, `calc(100% - ${r})`, `calc(100% + ${b})`, q),
+    ...box(w, `calc(${t} + ${w})`, `calc(100% - ${r} - ${w})`, `calc(100% + ${b} - ${w})`, `(${q} - ${w})`)].join(',')})`;
+}
+const hzRingCss = document.head.appendChild(document.createElement('style'));
+(function hzRingDpr(){
+  hzRingCss.textContent = `.hz-brush::after{clip-path:${hzRing('var(--bt)', '0px', 'var(--bb)', 'var(--bq)')}}`;
+  matchMedia(`(resolution: ${devicePixelRatio}dppx)`).addEventListener('change', hzRingDpr, { once: true });
+})();
 // Ruler, minimap window and readout follow the canvas's scroll (no redraw).
 function hzSync(h){
   const vp = h.querySelector('.hz-vp'), ppm = +h.dataset.ppm, tw = +h.dataset.tw;
@@ -8466,12 +8521,22 @@ function hzSync(h){
   const a = d0 + sl / ppm, b = Math.min(d1, a + tw / ppm);
   HZ.left[hzKey(h)] = a;
   const f = m => (m - d0) / full * 100;
-  const brush = h.querySelector('.hz-brush');
-  brush.style.left = f(a) + '%'; brush.style.width = (b - a) / full * 100 + '%';
-  brush.setAttribute('aria-valuenow', Math.round(a));
-  brush.setAttribute('aria-valuetext', hzHM(a) + ' to ' + hzHM(b));
-  h.querySelector('.hz-sl').style.width = f(a) + '%';
-  h.querySelector('.hz-sr').style.left = f(b) + '%';
+  // (the window by its width, which only a zoom changes, and a translate, a share of that
+  // width; the shades by a scale: no layout. A zoom's motion moves them meanwhile: hzMorph)
+  const brush = h.querySelector('.hz-brush'), fa = f(a), fb = f(b), fw = Math.max(1e-3, fb - fa);
+  if (!h._zm){
+    const w = fw.toFixed(4) + '%';
+    if (brush.style.width !== w) brush.style.width = w;
+    brush.style.translate = (fa / fw * 100).toFixed(3) + '% 0';
+    h.querySelector('.hz-sl').style.scale = (fa / 100).toFixed(5) + ' 1';
+    h.querySelector('.hz-sr').style.scale = ((100 - fb) / 100).toFixed(5) + ' 1';
+  }
+  // (the slider's value is told once a glide has landed, not each frame on the way)
+  if (!h._glide){
+    const v = String(Math.round(a)), vt = hzHM(a) + ' to ' + hzHM(b);
+    if (brush.getAttribute('aria-valuenow') !== v) brush.setAttribute('aria-valuenow', v);
+    if (brush.getAttribute('aria-valuetext') !== vt) brush.setAttribute('aria-valuetext', vt);
+  }
   // a minimap label under either edge of the window is lifted clear of its outline
   const map = h.querySelector('.hz-map'), mw = +map.dataset.mw;
   if (map._labs && mw){
@@ -8513,16 +8578,24 @@ function hzStuck(){
   // after. Meanwhile a head the page has taken well below the full bar's edge (Home, a
   // jump) is loose whatever the edge does: it lets go at once)
   if (!h) return;
-  if (document.querySelector('.sticky-wrap.tb-anim')){
-    const full = parseFloat(document.documentElement.style.getPropertyValue('--toolbar-full'));
-    if (full && h.classList.contains('stuck') && h.getBoundingClientRect().top > full + 1) h.classList.remove('stuck');
+  // (asked for while a view transition draws the new page: it looks in the first frame
+  // the transition shows, not in the middle of the redraw, which it would lay out early)
+  if (inVT && viewTx && viewTx.vt){
+    if (!hzStuck.wait){
+      hzStuck.wait = true;
+      const go = () => requestAnimationFrame(() => { hzStuck.wait = false; hzStuck(); });
+      viewTx.vt.ready.then(go, go);
+    }
     return;
   }
-  const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+  if (TB.anim){
+    if (TB.fullCss > 0 && h.classList.contains('stuck') && h.getBoundingClientRect().top > TB.fullCss + 1) h.classList.remove('stuck');
+    return;
+  }
   // Stuck once the head has reached its sticky place (its top part under the toolbar):
   // the head keeps its height either way, so toggling moves nothing on the page.
   const top = parseFloat(getComputedStyle(h.querySelector('.hz-top')).top);
-  h.classList.toggle('stuck', h.getBoundingClientRect().top < (Number.isFinite(top) ? top : th) - 0.5);
+  h.classList.toggle('stuck', h.getBoundingClientRect().top < (Number.isFinite(top) ? top : tbEdge()) - 0.5);
 }
 let hzStuckRaf = 0;
 window.addEventListener('scroll', () => {
@@ -8545,7 +8618,7 @@ function hzGo(root, key){
 }
 // Page-scroll a bar to just under the sticky stack (toolbar + slim head); the canvas scrolls itself.
 function hzReveal(bar){
-  const h = bar.closest('.hz-day'), th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+  const h = bar.closest('.hz-day'), th = tbEdge();
   const head = h.querySelector('.hz-ruler').offsetHeight + 18;
   window.scrollTo({ top: Math.max(0, scrollY + bar.getBoundingClientRect().top - th - head - 8), behavior: hzSmooth() });
 }
@@ -8564,14 +8637,26 @@ function hzZoom(root, span, m, at, ms){
 /* ---------- zoom and go-to motion ----------
    A new zoom moves the canvas from the old scale to the new (FLIP): what shows is
    measured, the canvas is redrawn exactly as hzDraw draws it, and each piece then moves
-   and resizes from where it was on screen to where it now is: bars by translate and
-   width (never scaled, so their text stays crisp), ruler labels, grid lines and the now
-   line by translate, lane heights by height, and the minimap window by left and width.
+   from where it was on screen to where it now is, on the compositor (translates and
+   clips; no layout per frame):
+   - a bar is laid out once at the wider and taller of its two sizes, with its content
+     held at its new size (so its title is wrapped as it will be throughout, and nothing
+     re-wraps at the end), and shows the size it has reached as a clip (inset, round 5px),
+     its right and bottom border drawn by a cap that moves with the clip (::after); a
+     title kept in view at the left edge (hzSync's padding) moves by a translate of its
+     text (.hz-in);
+   - each lane is held at the taller of its two heights and clipped to the height it has
+     reached, and moves to where it will be (the lanes above it grow or shrink): its line
+     under the lane above is drawn on its own top meanwhile;
+   - ruler labels, grid lines and the now line move by translate; the minimap window, as
+     wide as the wider of its two widths, moves by translate and shows its width as clips
+     (its outline: hzRing), and the shades scale.
    A piece with nothing to come from starts where the old scale would have drawn it; a
    ruler label or grid line the new scale leaves out stays as a ghost that moves with the
    rest and fades. The animations only lead into the styles hzDraw wrote, and end there.
    A zoom meanwhile starts from wherever things are on screen at that moment (the last
-   one's animations stop there), so quick clicks or a pinch never queue. */
+   one's animations stop there), so quick clicks or a pinch never queue. (A bar outlined
+   as a clash keeps its outline: it is resized as it is drawn, frame by frame.) */
 const HZ_ZOOM_MS = 300, HZ_WHEEL_MS = 180, HZ_GO_MS = 380;
 function hzMorphStop(h){
   const z = h._zm;
@@ -8579,78 +8664,195 @@ function hzMorphStop(h){
   h._zm = null;
   for (const a of z.anims) a.cancel();
   for (const g of z.ghosts) g.remove();
+  // (the sizes the motion held, back to those hzDraw wrote)
+  for (const [el, css] of z.held) el.style.cssText = css;
+  for (const e of h._edge || []) if (z.held.has(e.el)) e.pad = NaN;
+  for (const el of z.cls) el.classList.remove('hz-zm');
+  const root = document.documentElement;
+  if (z.anchor !== undefined) requestAnimationFrame(() => { if (!document.querySelector('.hz-rows.hz-zm')) root.style.overflowAnchor = z.anchor; });
+  if (h.isConnected) hzSync(h);
+}
+// Where a piece shows now: its box, or mid-motion, the size its clip has reached.
+function hzMorphVis(z, el){
+  const m = z && z.at.get(el);
+  if (!m) return null;
+  const p = m.a.effect.getComputedTiming().progress ?? 0;
+  return { w: m.w0 + (m.w1 - m.w0) * p, h: m.h0 + (m.h1 - m.h0) * p };
 }
 function hzMorph(h, redraw, ms){
   if (!ms || motionReduced() || !h.animate || !h.isConnected){ hzMorphStop(h); redraw(); return; }
   hzGlideStop(h);
   const vp = h.querySelector('.hz-vp'), ticks = h.querySelector('.hz-ticks'), lines = h.querySelector('.hz-lines'), map = h.querySelector('.hz-map');
+  const rows = h.querySelector('.hz-rows');
   const keyOf = el => el.dataset.tid ? 't' + el.dataset.tid : 's' + el.dataset.sid;
-  const laneOf = tr => (tr.parentElement.getAttribute('aria-label') || '') + '|' + [...tr.parentElement.parentElement.children].indexOf(tr.parentElement);
-  // before: where everything shows now (mid-animation included), then the old animations go
+  const laneOf = ln => (ln.getAttribute('aria-label') || '') + '|' + [...ln.parentElement.children].indexOf(ln);
+  // before: where everything shows now (mid-motion included), then the old animations go
+  const z0 = h._zm;
   const ppm0 = +h.dataset.ppm, bo0 = lines.getBoundingClientRect().left, to0 = ticks.getBoundingClientRect().left;
-  const bars0 = new Map(), tracks0 = new Map(), ticks0 = new Map(), lines0 = new Map();
-  for (const el of h.querySelectorAll('.hz-rows .hz-bar')){
-    const r = el.getBoundingClientRect();
-    bars0.set(keyOf(el), { r, top: r.top - el.parentElement.getBoundingClientRect().top });
+  const bars0 = new Map(), lanes0 = new Map(), ticks0 = new Map(), lines0 = new Map(), pads0 = new Map();
+  for (const ln of rows.children){
+    const tr = ln.querySelector(':scope > .hz-track'), v = tr && hzMorphVis(z0, tr);
+    lanes0.set(laneOf(ln), { top: ln.getBoundingClientRect().top, th: tr ? (v ? v.h : tr.offsetHeight) : 0 });
   }
-  for (const tr of h.querySelectorAll('.hz-rows .hz-track')) if (tr.style.height) tracks0.set(laneOf(tr), tr.offsetHeight);
-  // (the padding hzSync gives a bar cut by the left edge, which keeps its title in view:
-  // it changes with the scale too, and a bar is never narrower than its padding)
-  const pads0 = new Map();
-  for (const e of h._edge || []) pads0.set(keyOf(e.el.closest('.hz-bar')), getComputedStyle(e.el).paddingLeft);
+  const edge0 = new Map((h._edge || []).map(e => [e.el.closest('.hz-bar'), e]));
+  for (const el of rows.querySelectorAll('.hz-bar')){
+    const r = el.getBoundingClientRect(), v = hzMorphVis(z0, el);
+    bars0.set(keyOf(el), { x: r.left, w: v ? v.w : r.width, ht: v ? v.h : r.height, top: r.top - el.parentElement.getBoundingClientRect().top });
+    // (the padding hzSync gives a bar cut by the left edge, which keeps its title in view;
+    // mid-motion, less the translate that stands in for its change)
+    const e = edge0.get(el);
+    if (e && r.right > 0 && r.left < innerWidth && r.bottom > -120 && r.top < innerHeight + 120){
+      const tx = z0 && z0.pads.get(e.el);
+      pads0.set(keyOf(el), parseFloat(getComputedStyle(e.el).paddingLeft) + (tx ? (parseFloat(getComputedStyle(tx).translate) || 0) : 0));
+    }
+  }
   for (const el of ticks.querySelectorAll('span.t[data-m]:not(.hz-ghost)')) ticks0.set(el.dataset.m, { x: el.getBoundingClientRect().left, el });
   for (const el of lines.querySelectorAll('i[data-m]:not(.hz-ghost)')) lines0.set(el.dataset.m, { x: el.getBoundingClientRect().left, el });
   const nowl = h.querySelector('.hz-nowl'), pill0 = (p => p && !p.hidden && p.getBoundingClientRect().left)(h.querySelector('.hz-nowpill'));
   const now0 = !nowl.hidden && nowl.getBoundingClientRect().left;
-  const mw = map.clientWidth, br = h.querySelector('.hz-brush'), sl = h.querySelector('.hz-sl'), sr = h.querySelector('.hz-sr');
-  const pct = v => (v / (mw || 1) * 100) + '%';
-  const map0 = { bl: pct(br.offsetLeft), bw: pct(br.offsetWidth), sl: pct(sl.offsetWidth), sr: pct(sr.offsetLeft) };
+  const br = h.querySelector('.hz-brush'), sl = h.querySelector('.hz-sl'), sr = h.querySelector('.hz-sr');
+  const mr = map.getBoundingClientRect().left + map.clientLeft, bv = hzMorphVis(z0, br), brr = br.getBoundingClientRect();
+  const map0 = { x: brr.left - mr, w: bv ? bv.w : brr.width, sl: getComputedStyle(sl).scale, sr: getComputedStyle(sr).scale };
   hzMorphStop(h);
   redraw();
   if (!h.isConnected) return;
-  // after: the same pieces as drawn now, each animated from before
+  // after: the same pieces as drawn now, each animated from before. All that is read is
+  // read first, in the one layout the redraw made; then the writes; then one more layout
+  // (the lanes, held at their taller heights); then the animations.
   const ppm1 = +h.dataset.ppm, bo1 = lines.getBoundingClientRect().left, to1 = ticks.getBoundingClientRect().left, k = ppm0 / ppm1;
-  const z = h._zm = { anims: [], ghosts: [] };
-  const opt = { duration: ms * motionK(), easing: EASE_EM };
-  const go = (el, frames, o = opt) => z.anims.push(el.animate(frames, o));
   const vr = vp.getBoundingClientRect(), lw = h.querySelector('.hz-corner').offsetWidth;
   const xa = vr.left + lw - 40, xb = vr.right + 40, ya = -120, yb = innerHeight + 120;
   const seen = (x, w, y, ht) => x + w > xa && x < xb && y + ht > ya && y < yb;
-  // lane heights (talks wrap anew at a new scale)
-  for (const tr of h.querySelectorAll('.hz-rows .hz-track')){
-    const h0 = tracks0.get(laneOf(tr));
-    if (h0 === undefined || !tr.style.height || Math.abs(h0 - tr.offsetHeight) < 0.5) continue;
-    const r = tr.getBoundingClientRect();
-    if (r.bottom < ya - h0 || r.top > yb) continue;
-    go(tr, [{ height: h0 + 'px' }, { height: tr.style.height }]);
-  }
+  const lanes = [...rows.children].map(ln => {
+    const tr = ln.querySelector(':scope > .hz-track');
+    return { ln, tr, was: lanes0.get(laneOf(ln)), top1: ln.getBoundingClientRect().top, th1: tr ? tr.offsetHeight : 0 };
+  });
   const edge = new Map((h._edge || []).map(e => [e.el.closest('.hz-bar'), e]));
-  for (const el of h.querySelectorAll('.hz-rows .hz-bar')){
+  const bars = [];
+  for (const el of rows.querySelectorAll('.hz-bar')){
     const r1 = el.getBoundingClientRect(), was = bars0.get(keyOf(el));
     // (from nowhere: where the old scale had it, in its lane as it is now)
-    const x0 = was ? was.r.left : bo0 + (r1.left - bo1) * k, w0 = was ? was.r.width : r1.width * k;
-    // (up or down within its lane, the lane's own height animating below)
-    const dy = was ? was.top - (r1.top - el.parentElement.getBoundingClientRect().top) : 0;
-    if (!seen(r1.left, r1.width, r1.top, r1.height) && !seen(x0, w0, r1.top + dy, r1.height)) continue;
-    const f = { translate: `${(x0 - r1.left).toFixed(1)}px ${dy.toFixed(1)}px`, width: (parseFloat(el.style.width) + w0 - r1.width).toFixed(1) + 'px' }, t = { translate: '0px 0px', width: el.style.width };
-    if (was && Math.abs(was.r.height - r1.height) > 0.5){ f.height = (parseFloat(el.style.height) + was.r.height - r1.height) + 'px'; t.height = el.style.height; }
-    go(el, [f, t]);
-    const e = edge.get(el), p0 = pads0.get(keyOf(el));
-    if (e && p0){ const p1 = getComputedStyle(e.el).paddingLeft; if (p1 !== p0) go(e.el, [{ paddingLeft: p0 }, { paddingLeft: p1 }]); }
+    const x0 = was ? was.x : bo0 + (r1.left - bo1) * k, w0 = was ? was.w : r1.width * k;
+    if (!seen(r1.left, r1.width, r1.top, r1.height) && !seen(x0, w0, r1.top, r1.height)) continue;
+    const top1 = r1.top - el.parentElement.getBoundingClientRect().top;
+    const b = { el, x0, w0, x1: r1.left, w1: r1.width, h0: was ? was.ht : r1.height, h1: r1.height, dy: was ? was.top - top1 : 0, key: keyOf(el) };
+    b.plain = !el.matches('.has-clash, .has-soft');
+    // its content, as laid out now (fractions kept: a title one pixel short wraps anew)
+    const pl = r1.left + el.clientLeft, pt = r1.top + el.clientTop;
+    if (b.plain) b.kids = [...el.children].map(c => { const q = c.getBoundingClientRect(); return [c, q.left - pl, q.width, q.height, q.top - pt]; });
+    // a title kept in view at the left edge: its padding now and before
+    const e = edge.get(el), p0 = pads0.get(b.key);
+    if (e && (e.pad || p0 !== undefined)){
+      const p1 = parseFloat(getComputedStyle(e.el).paddingLeft);
+      const tx = e.el.classList.contains('hz-in') ? e.el : e.el.querySelector(':scope > .hz-in');
+      if (tx && p0 !== undefined && Math.abs(p0 - p1) > 0.5) b.pad = [e.el, tx, p0 - p1];
+    }
+    bars.push(b);
   }
-  // collapsed groups' ticks and My agenda's clash spans: from where the old scale had them
+  const spans = [];
   for (const el of h.querySelectorAll('.hz-colt, .hz-lines i.cx, .hz-ticks .hz-cx')){
     const r1 = el.getBoundingClientRect(), o0 = el.closest('.hz-ticks') ? to0 : bo0, o1 = el.closest('.hz-ticks') ? to1 : bo1;
     const x0 = o0 + (r1.left - o1) * k;
-    if (!seen(r1.left, r1.width, r1.top, r1.height) && !seen(x0, r1.width * k, r1.top, r1.height)) continue;
-    go(el, [{ translate: `${(x0 - r1.left).toFixed(1)}px 0px`, width: (parseFloat(el.style.width) * k).toFixed(1) + 'px' }, { translate: '0px 0px', width: el.style.width }]);
+    if (seen(r1.left, r1.width, r1.top, r1.height) || seen(x0, r1.width * k, r1.top, r1.height)) spans.push([el, x0 - r1.left]);
   }
+  const markX = (box, sel) => [...box.querySelectorAll(sel)].map(el => [el, el.getBoundingClientRect().left]);
+  const ticks1 = markX(ticks, 'span.t[data-m]'), lines1 = markX(lines, 'i[data-m]');
+  const now1 = !nowl.hidden && nowl.getBoundingClientRect().left;
+  const pill = h.querySelector('.hz-nowpill'), pill1 = pill && !pill.hidden && pill.getBoundingClientRect().left;
+  const brr1 = br.getBoundingClientRect(), x1 = brr1.left - mr, w1 = brr1.width, W = Math.max(map0.w, w1);
+  const stuck = h.classList.contains('stuck'), T = stuck ? map.offsetHeight - 14 + 'px' : '0px', Q = stuck ? '3px' : '5px';
+  const BB = stuck && matchMedia('(pointer: coarse)').matches ? '28px' : '0px';
+  const rad = getComputedStyle(vp).borderBottomLeftRadius;
+  // -- writes
+  const z = h._zm = { anims: [], ghosts: [], held: new Map(), cls: [], at: new Map(), pads: new Map() };
+  const opt = { duration: ms * motionK(), easing: EASE_EM };
+  const go = (el, frames, o = opt) => { const a = el.animate(frames, o); z.anims.push(a); return a; };
+  const hold = el => { if (!z.held.has(el)) z.held.set(el, el.style.cssText); };
+  const zm = el => { el.classList.add('hz-zm'); z.cls.push(el); };
+  // lanes: each at the taller of its heights (the page is not to follow: the motion places
+  // it, so scroll anchoring stays out of it until the end)
+  const anyLane = lanes.some(l => l.was && l.tr && Math.abs(l.was.th - l.th1) > 0.5);
+  if (anyLane){
+    z.anchor = document.documentElement.style.overflowAnchor;
+    document.documentElement.style.overflowAnchor = 'none';
+    for (const l of lanes) if (l.was && l.tr && l.was.th > l.th1 + 0.5){ hold(l.tr); l.tr.style.height = l.was.th + 'px'; }
+    zm(rows);
+  }
+  // bars: laid out at the larger size, their content held at the new one
+  for (const b of bars){
+    if (!b.plain) continue;
+    b.W = Math.max(b.w0, b.w1); b.H = Math.max(b.h0, b.h1);
+    b.clip = b.W - b.w1 >= 0.5 || b.H - b.h1 >= 0.5 || Math.abs(b.w0 - b.w1) > 0.5 || Math.abs(b.h0 - b.h1) > 0.5;
+    if (b.clip) zm(b.el);
+    if (b.W - b.w1 < 0.5 && b.H - b.h1 < 0.5) continue;
+    for (const [c, l, w, ht, tp] of b.kids){
+      hold(c);
+      // (the talk marks along its foot stay where its foot will be)
+      if (c.classList.contains('hz-mark')){ c.style.left = l + 'px'; c.style.width = w + 'px'; c.style.top = tp + 'px'; c.style.bottom = 'auto'; }
+      else { c.style.width = w + 'px'; c.style.height = ht + 'px'; c.style.flex = 'none'; }
+    }
+    hold(b.el);
+    b.el.style.width = b.W + 'px';
+    b.el.style.height = b.H + 'px';
+  }
+  // the minimap window: as wide as the wider of its widths (a stuck strip still on its way
+  // lands, so its outline has one motion at a time)
+  for (const a of br.getAnimations({ subtree: true })) if (a instanceof CSSTransition) a.finish();
+  hold(br);
+  br.style.width = W + 'px'; br.style.translate = '0px 0px';
+  // -- where the lanes now sit (the one more layout)
+  if (anyLane) for (const l of lanes){ l.L = l.ln.getBoundingClientRect().top; l.Ht = l.tr ? l.tr.offsetHeight : 0; }
+  // -- the motion
+  if (anyLane){
+    let vpD0 = 0, vpD1 = 0;
+    for (const l of lanes){
+      if (!l.was) continue;
+      const th0 = l.tr ? l.was.th : 0, th1 = l.th1, L = l.L, Ht = l.Ht;
+      vpD0 += Ht - th0; vpD1 += Ht - th1;
+      const y0 = l.was.top - L, y1 = l.top1 - L;
+      if (!seen(xa, 1, L + Math.min(y0, y1), Ht + Math.abs(y1 - y0))) continue;
+      const f = { translate: `0px ${y0.toFixed(1)}px` }, t = { translate: `0px ${y1.toFixed(1)}px` };
+      if (l.tr && Math.abs(th0 - th1) > 0.5){
+        // (clipped to the height it has reached; its own line below goes, the next lane's
+        // top draws it)
+        const last = l.ln.nextElementSibling ? 1 : 0;
+        f.clipPath = `inset(-1px 0 ${(Ht - th0 + last).toFixed(1)}px 0)`; t.clipPath = `inset(-1px 0 ${(Ht - th1 + last).toFixed(1)}px 0)`;
+        z.at.set(l.tr, { a: go(l.ln, [f, t]), w0: 0, w1: 0, h0: th0, h1: th1 });
+      } else if (Math.abs(y0) > 0.5 || Math.abs(y1) > 0.5) go(l.ln, [f, t]);
+    }
+    // (the canvas's foot follows the lanes' total)
+    if (vpD0 > 0.5 || vpD1 > 0.5){
+      const a = go(vp, [{ clipPath: `inset(0 0 ${vpD0.toFixed(1)}px 0 round 0 0 ${rad} ${rad})` }, { clipPath: `inset(0 0 ${vpD1.toFixed(1)}px 0 round 0 0 ${rad} ${rad})` }]);
+      z.vpD = () => vpD0 + (vpD1 - vpD0) * (a.effect.getComputedTiming().progress ?? 0);
+    }
+  }
+  for (const b of bars){
+    const el = b.el;
+    if (!b.plain){
+      // (outlined as a clash: resized frame by frame, as it is drawn, so its outline stays)
+      const f = { translate: `${(b.x0 - b.x1).toFixed(1)}px ${b.dy.toFixed(1)}px`, width: (parseFloat(el.style.width) + b.w0 - b.w1).toFixed(1) + 'px' }, t = { translate: '0px 0px', width: el.style.width };
+      if (Math.abs(b.h0 - b.h1) > 0.5){ f.height = (parseFloat(el.style.height) + b.h0 - b.h1) + 'px'; t.height = el.style.height; }
+      go(el, [f, t]);
+    } else {
+      const f = { translate: `${(b.x0 - b.x1).toFixed(1)}px ${b.dy.toFixed(1)}px` }, t = { translate: '0px 0px' };
+      if (b.clip){
+        f.clipPath = `inset(0 ${(b.W - b.w0).toFixed(1)}px ${(b.H - b.h0).toFixed(1)}px 0 round 5px)`;
+        t.clipPath = `inset(0 ${(b.W - b.w1).toFixed(1)}px ${(b.H - b.h1).toFixed(1)}px 0 round 5px)`;
+        go(el, [{ translate: `${(b.w0 - b.W).toFixed(1)}px ${(b.h0 - b.H).toFixed(1)}px` }, { translate: `${(b.w1 - b.W).toFixed(1)}px ${(b.h1 - b.H).toFixed(1)}px` }], { ...opt, pseudoElement: '::after' });
+      }
+      z.at.set(el, { a: go(el, [f, t]), w0: b.w0, w1: b.w1, h0: b.h0, h1: b.h1 });
+    }
+    // a title kept in view at the left edge: its new padding, less the old, as a translate
+    if (b.pad){ z.pads.set(b.pad[0], b.pad[1]); go(b.pad[1], [{ translate: `${b.pad[2].toFixed(1)}px 0px` }, { translate: '0px 0px' }]); }
+  }
+  // collapsed groups' ticks and My agenda's clash spans: from where the old scale had them
+  for (const [el, dx] of spans) go(el, [{ translate: `${dx.toFixed(1)}px 0px`, width: (parseFloat(el.style.width) * k).toFixed(1) + 'px' }, { translate: '0px 0px', width: el.style.width }]);
   // ruler labels and grid lines: each from where it was (or would have been); those the new
   // scale leaves out move on as ghosts and fade
-  const marks = (box, was, o0, o1, sel) => {
+  const marks = (box, was, now, o0, o1) => {
     const d0 = +h.dataset.d0, keep = new Set();
-    for (const el of box.querySelectorAll(sel)){
-      const m = el.dataset.m, x1 = el.getBoundingClientRect().left, w = was.get(m);
+    for (const [el, x1] of now){
+      const m = el.dataset.m, w = was.get(m);
       keep.add(m);
       const x0 = w ? w.x : o0 + (x1 - o1) * k;
       if ((x1 < xa || x1 > xb) && (x0 < xa || x0 > xb)) continue;
@@ -8671,17 +8873,21 @@ function hzMorph(h, redraw, ms){
       go(g, [{ translate: `${(w.x - x1).toFixed(1)}px 0px`, opacity: 1 }, { translate: '0px 0px', opacity: 0 }], { ...opt, fill: 'forwards' });
     }
   };
-  marks(ticks, ticks0, to0, to1, 'span.t[data-m]');
-  marks(lines, lines0, bo0, bo1, 'i[data-m]');
-  if (now0 !== false && !nowl.hidden) go(nowl, [{ translate: `${(now0 - nowl.getBoundingClientRect().left).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
-  const pill = h.querySelector('.hz-nowpill');   // (drawn anew with the ruler)
+  marks(ticks, ticks0, ticks1, to0, to1);
+  marks(lines, lines0, lines1, bo0, bo1);
+  if (now0 !== false && now1 !== false) go(nowl, [{ translate: `${(now0 - now1).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
   // (a pill that was showing moves; it does not fade in again as a new one would)
-  if (typeof pill0 === 'number' && pill && !pill.hidden) for (const a of pill.getAnimations()) a.finish();
-  if (typeof pill0 === 'number' && pill && !pill.hidden) go(pill, [{ translate: `${(pill0 - pill.getBoundingClientRect().left).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
-  // the minimap window follows (hzSync has set where it ends)
-  go(br, [{ left: map0.bl, width: map0.bw }, { left: br.style.left, width: br.style.width }]);
-  go(sl, [{ width: map0.sl }, { width: sl.style.width }]);
-  go(sr, [{ left: map0.sr }, { left: sr.style.left }]);
+  if (typeof pill0 === 'number' && typeof pill1 === 'number'){
+    for (const a of pill.getAnimations()) a.finish();
+    go(pill, [{ translate: `${(pill0 - pill1).toFixed(1)}px 0px` }, { translate: '0px 0px' }]);
+  }
+  // the minimap window follows (hzSync has set where it ends): moved by a translate, its
+  // width a clip of its fill and its outline; the shades scale
+  z.at.set(br, { a: go(br, [{ translate: `${map0.x.toFixed(1)}px 0px` }, { translate: `${x1.toFixed(1)}px 0px` }]), w0: map0.w, w1, h0: 0, h1: 0 });
+  go(br, [{ clipPath: `inset(${T} ${(W - map0.w).toFixed(1)}px calc(0px - ${BB}) 0 round ${Q})` }, { clipPath: `inset(${T} ${(W - w1).toFixed(1)}px calc(0px - ${BB}) 0 round ${Q})` }], { ...opt, pseudoElement: '::before' });
+  go(br, [{ clipPath: hzRing(T, (W - map0.w).toFixed(1) + 'px', BB, Q) }, { clipPath: hzRing(T, (W - w1).toFixed(1) + 'px', BB, Q) }], { ...opt, pseudoElement: '::after' });
+  go(sl, [{ scale: map0.sl }, { scale: sl.style.scale }]);
+  go(sr, [{ scale: map0.sr }, { scale: sr.style.scale }]);
   // done: ghosts go; the pieces are where hzDraw put them
   Promise.all(z.anims.map(a => a.finished)).then(() => { if (h._zm === z) hzMorphStop(h); }, () => {});
 }
@@ -8713,7 +8919,8 @@ function hzGlide(h, left){
     if (!vp.isConnected){ h._glide = null; return; }
     const t = Math.min(1, (now - t0) / dur);
     vp.scrollLeft = from + d * hzEase(t);
-    if (t < 1) g.raf = requestAnimationFrame(step); else h._glide = null;
+    if (t < 1) g.raf = requestAnimationFrame(step);
+    else { h._glide = null; hzSync(h); }
   };
   g.raf = requestAnimationFrame(step);
 }
@@ -9232,7 +9439,7 @@ const vtCanScroll = w => w ? [w.scrollLeft > 1, w.scrollLeft < w.scrollWidth - w
 // The time row near the top of the screen, to keep the same time of day in view.
 function vtAnchor(){
   const main = document.getElementById('agenda');
-  const y = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 150) + 3 * remPx();
+  const y = (tbEdge() || 150) + 3 * remPx();
   if (main.getBoundingClientRect().top > y) return null;
   let best = null;
   for (const el of main.querySelectorAll('.vt-line.f[data-m], .vt-lb[data-m]')){
@@ -11097,7 +11304,7 @@ function revealInCard(card, summary){
 function vtStick(el){
   const lb = el.closest('.vt-lb');
   if (lb){
-    const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--toolbar-h')) || 0;
+    const th = tbEdge();
     const low = h => { const cs = h && getComputedStyle(h); return cs && cs.position === 'sticky' ? parseFloat(cs.top) - th + h.offsetHeight : 0; };
     const lh = lb.previousElementSibling, pk = lb.closest('.vt-list')?.previousElementSibling;
     return Math.max(0, low(pk && pk.matches('.vt-picker') ? pk : null), low(lh && lh.matches('.vt-lh') ? lh : null));
@@ -12866,16 +13073,33 @@ document.getElementById('importFile').addEventListener('change', async e => {
 const stickyWrap = document.querySelector('.sticky-wrap');
 // --toolbar-h is what the toolbar covers: sticky rulers and heads sit right under it.
 // --toolbar-full is its unfolded height, for sizes that should not change as it folds.
-// (While it folds or unfolds, it stays as it was on the page and the heads in sight have
-// their own, the edge it is moving to (tbCompact): a new value on the root restyles
-// every element on the page, which on a slow device held up the fold's first frame. It
-// changes once the fold is over.)
+// TB.h is that height as the page has it now (what scripts read: tbEdge). The root is
+// told at once when the bar changes size of itself (a resize, the search box on a
+// phone), but not when it folds or unfolds: a new value on the root restyles every
+// element on the page, which held up the fold's first and last frames. Meanwhile the
+// heads stuck under the bar have the edge as their own (tbCompact), and what reads it only
+// when the page moves to something (the scroll margins that land a card, a bar or a
+// heading under the bar; a panel's height) has it by then: the root is brought up to date
+// (tbRootSync) on the reader's next click, press or key, a new address or a resize, ahead
+// of anything that could move the page.
 function syncToolbarHeight(){
   if (TB.anim) return;
-  const h = Math.round(stickyWrap.getBoundingClientRect().height) + 'px', root = document.documentElement.style;
-  root.setProperty('--toolbar-h', h);
-  if (!TB.on && !stickyWrap.classList.contains('tb-anim')) root.setProperty('--toolbar-full', h);
+  const px = Math.round(stickyWrap.getBoundingClientRect().height), root = document.documentElement.style;
+  if (!TB.on && !stickyWrap.classList.contains('tb-anim') && TB.fullCss !== px){ TB.fullCss = px; root.setProperty('--toolbar-full', px + 'px'); }
+  TB.h = px;
+  // (the height a fold has just ended at waits for tbRootSync; any other change is now)
+  if (px === TB.foldPx) return;
+  TB.foldPx = -1;
+  tbRootSync();
 }
+function tbRootSync(){
+  if (TB.anim){ TB.sync = true; return; }
+  TB.sync = false;
+  if (TB.rootH !== TB.h){ TB.rootH = TB.h; document.documentElement.style.setProperty('--toolbar-h', TB.h + 'px'); }
+  if (TB.lv.length){ for (const el of TB.lv){ el.style.removeProperty('--toolbar-h'); if (el._tbTop) el.style.top = ''; el._tbE = el._tbTop = undefined; } TB.lv = []; }
+}
+// the bar's edge in px, as --toolbar-h has it (for scripts that place things under it)
+const tbEdge = () => TB.h;
 // Scrolled down past the toolbar, it folds to one slim row (tbCompact): the day tabs (the
 // Program / My agenda / Participants switch in a view without them), a search button and
 // Now. Scrolling up, focusing the toolbar, opening Streams or pressing / unfolds it. Only
@@ -12884,7 +13108,12 @@ function syncToolbarHeight(){
 // While folded, a bottom margin makes up the height it lost, so nothing below it moves.
 // (tbCompact: the fold and unfold move a clip, not the height, and the heads stuck under
 // the bar move with its edge)
-const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null };
+const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null,
+  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '' };
+for (const t of ['keydown', 'focusin', 'click']) window.addEventListener(t, tbRootSync, { capture: true, passive: true });
+// (a touch on the page starts a scroll as often as a tap: a tap's click brings it)
+window.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') tbRootSync(); }, { capture: true, passive: true });
+for (const t of ['hashchange', 'popstate', 'resize', 'storage']) window.addEventListener(t, tbRootSync, true);
 const searchMini = document.getElementById('searchMini');
 function tbPaintMini(){
   const q = state[searchKey()] || '';
@@ -12892,23 +13121,36 @@ function tbPaintMini(){
   searchMini.setAttribute('aria-label', q ? `Search: ${q}` : (state.scope === 'participants' ? 'Search participants' : state.scope === 'agenda' ? 'Search my agenda' : 'Search the program'));
 }
 // What sticks under the toolbar (its top is var(--toolbar-h) plus or minus a constant). As
-// the bar folds or unfolds, each of these in sight moves with its edge, frame by frame (an
-// animation of its own top, from where it was to where it will be), instead of jumping
-// when the fold ends: --toolbar-h itself is set once, to the edge the bar is moving to.
+// the bar folds or unfolds, each of these in sight moves with its edge, frame by frame (a
+// translate from where it was to where it will be, on the compositor), instead of jumping
+// when the fold ends: each is given the edge the bar is moving to as its own --toolbar-h.
 const TB_FOLLOW = '.hz-top, .vt-head, .vt-corner, .vt-hbar, .vt-picker, .vt-lh, .week-rul, .block-time, .pp-rail';
+// Their places, from one pass of getBoundingClientRect: each one's offset from the edge
+// (its top less the --toolbar-h it has) is read once and kept (per width, where a phone's
+// layout differs, or a new text size). One in a list block the page has not laid out (content-visibility) is
+// passed over unread: reading it would lay that block out.
 function tbFollowers(){
-  const out = [], all = document.querySelectorAll(TB_FOLLOW);
+  const out = [], all = document.querySelectorAll(TB_FOLLOW), key = innerWidth + 'x' + innerHeight + 'r' + remPx();
   out.all = all;
   for (const el of all){
-    const cs = getComputedStyle(el);
-    if (cs.position !== 'sticky') continue;
-    // (mid-fold, a head moving by a translate: where it shows, its top and that together)
-    const top = parseFloat(cs.top) + (parseFloat(cs.translate.split(' ')[1]) || 0), r = el.getBoundingClientRect();
-    if (!Number.isFinite(top) || !r.height || r.bottom < 0 || r.top > innerHeight) continue;
-    out.push({ el, top, h: parseFloat(cs.height), y: r.top });
+    if (el.checkVisibility && !el.checkVisibility({ contentVisibilityAuto: true })) continue;
+    if (el._tbKey !== key){
+      const cs = getComputedStyle(el);
+      el._tbKey = key;
+      el._tbOff = cs.position === 'sticky' ? parseFloat(cs.top) - tbEdgeOf(el) : NaN;
+    }
+    if (!Number.isFinite(el._tbOff)) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
+    // (mid-fold, a head moving by a translate: where it shows, its place and that together)
+    let top = tbEdgeOf(el) + el._tbOff;
+    if (TB.anim && TB.anim.fe.includes(el)) top += parseFloat(getComputedStyle(el).translate.split(' ')[1]) || 0;
+    out.push({ el, top, h: r.height, y: r.top });
   }
   return out;
 }
+// the edge an element under the bar has: its own (mid-fold, or since), else the root's
+const tbEdgeOf = el => el._tbE ?? TB.rootH;
 // The view's own head (the day calendars' heads and the week's ruler: each the first thing
 // in its box): the toolbar folds only once the head has scrolled up to where it sits under
 // the slim bar, and scrolling back up it unfolds before the head would come loose. So a
@@ -12917,14 +13159,13 @@ function tbFollowers(){
 const TB_HEADS = '#agenda .hz-day > .hz-top, .week-sx > .week-rul, .vt-sx > .vt-hbar, .vt-grid > .vt-head';
 function tbHeadState(slimH, fullH){
   let loose = false, near = Infinity, any = false;
-  const th = parseFloat(document.documentElement.style.getPropertyValue('--toolbar-h')) || 0;
   for (const el of document.querySelectorAll(TB_HEADS)){
     const box = el.parentElement, r = box.getBoundingClientRect();
     if (!r.height || r.bottom < 0 || r.top > innerHeight) continue;
     // its place under the bar, relative to the bar's edge (a constant: read while still;
     // mid-fold, against the edge it has of its own)
-    if (!el.getAnimations().length) el._tbOff = parseFloat(getComputedStyle(el).top) - (parseFloat(el.style.getPropertyValue('--toolbar-h')) || th);
-    const off = el._tbOff;
+    if (!el.getAnimations().length) el._tbHOff = parseFloat(getComputedStyle(el).top) - tbEdgeOf(el);
+    const off = el._tbHOff;
     if (!Number.isFinite(off)) continue;
     const sFull = fullH + off, sSlim = slimH + off;
     // (near its box's end, the box pushes it out: that is not the bar's doing)
@@ -12938,18 +13179,16 @@ function tbHeadState(slimH, fullH){
 }
 // The slim bar's height, kept from its last fold (a guess on the low side before that:
 // the fold then waits a little longer, never less).
-function tbSlimH(){
-  const key = innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
-  return TB.slimKey === key ? TB.slim : 40;
-}
-// A fold's animations stop, and the values they started from inline go
+const tbSlimKey = () => innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
+function tbSlimH(){ return TB.slimKey === tbSlimKey() ? TB.slim : 40; }
+// A fold's animations stop, and the values they started from inline go (the heads keep
+// the edge they were given: tbRootSync)
 function tbAnimEnd(run){
   for (const x of [run.a, run.e, run.t, ...run.f]) if (x) x.cancel();
   stickyWrap.style.clipPath = '';
   stickyWrap.style.removeProperty('--tb-edge');
   stickyWrap.querySelector('.toolbar').style.opacity = '';
-  for (const el of run.fe){ el.style.top = ''; el.style.height = ''; el.style.translate = ''; }
-  for (const el of run.lv) el.style.removeProperty('--toolbar-h');
+  for (const el of run.fe) el.style.translate = '';
   if (TB.anim === run) TB.anim = null;
 }
 // the bar's height in its own pixels, fractions kept (so holding it moves nothing below)
@@ -12986,17 +13225,30 @@ function tbCompact(on){
   const h1 = tbBoxH(), m1 = on ? Math.max(0, TB.full - h1) : 0, h1px = stickyWrap.getBoundingClientRect().height;
   if (on){
     TB.slim = h1px;
-    TB.slimKey = innerWidth + (document.getElementById('daytabs').hidden ? 'n' : 't');
+    TB.slimKey = tbSlimKey();
     // the chosen day stays in view in the sideways-scrolling tabs
     const tabs = document.getElementById('daytabs'), t = tabs.querySelector('[aria-pressed="true"]');
     if (t) tabs.scrollLeft = Math.max(0, dayTabLeft(tabs, t) - (tabs.clientWidth - t.offsetWidth) / 2);
+  }
+  // the edge it is moving to, as the page will have it: the heads under it take it now
+  // (all of them, not only those in sight: one scrolled up to the edge meanwhile sticks at
+  // the new edge, as it would have before). One whose place is known is given its top
+  // (only it restyles); the rest the edge as their own --toolbar-h (with what is in them).
+  const e1 = Math.round(h1px), placed = new Set(follow.map(f => f.el));
+  for (const el of follow.all){
+    if (placed.has(el) && !el.classList.contains('pp-rail')){ el.style.top = e1 + el._tbOff + 'px'; el._tbTop = true; }
+    else { el.style.setProperty('--toolbar-h', e1 + 'px'); if (el._tbTop){ el.style.top = ''; el._tbTop = false; } }
+    el._tbE = e1;
+    if (!TB.lv.includes(el)) TB.lv.push(el);
   }
   const done = () => {
     if (TB.anim) tbAnimEnd(TB.anim);
     stickyWrap.classList.remove('tb-anim');
     stickyWrap.style.height = '';
     stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
+    TB.foldPx = e1;
     syncToolbarHeight();
+    if (TB.sync) tbRootSync();
     hzStuck();
   };
   if (!motionReduced() && Math.abs(h1 - h0) > 1 && stickyWrap.animate){
@@ -13021,29 +13273,18 @@ function tbCompact(on){
     // the row it changes to comes in softly, rather than replacing the old one in a frame
     bar.style.opacity = '0.2';
     const t = bar.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: ms * 0.7, easing: 'ease-out', fill: 'forwards' });
-    TB.anim = { a, e, t, f: [], fe: [], lv: [], from: h0, to: h1, px: h1px };
-    // the heads under it: from where they are to where the new edge puts them (each given
-    // that edge as its own --toolbar-h, until the fold is over)
-    // (all of them, not only those in sight: one scrolled up to the edge meanwhile sticks
-    // at the new edge, as it would have before)
-    const edge = Math.round(h1px) + 'px';
-    for (const el of follow.all){ el.style.setProperty('--toolbar-h', edge); TB.anim.lv.push(el); }
+    TB.anim = { a, e, t, f: [], fe: [], from: h0, to: h1, px: h1px };
+    // the heads in sight: from where they were to where the new edge puts them, by a
+    // translate (the compositor's). One whose height follows the edge too (the A–Z rail,
+    // the screen's height less the bar's, its letters centred in it) is laid out at its
+    // end and moved by where its letters were.
     for (const f of follow){
-      const cs = getComputedStyle(f.el), top = parseFloat(cs.top), h = parseFloat(cs.height);
+      const top = e1 + f.el._tbOff;
       // (only what sits at the edge or will: one lower down is in its own place either way)
       if (f.y > Math.max(f.top, top) + 1) continue;
-      // (a head that keeps its height moves by a translate, which the compositor runs,
-      // from where it was to its new place; one whose height changes too is moved by its
-      // top, with the height, a layout each frame)
-      if (Math.abs(h - f.h) <= 0.5){
-        if (Math.abs(top - f.top) <= 0.5) continue;
-        const k0 = { translate: `0 ${f.top - top}px` }, k1 = { translate: '0 0' };
-        Object.assign(f.el.style, k0);
-        TB.anim.fe.push(f.el);
-        TB.anim.f.push(f.el.animate([k0, k1], opt));
-        continue;
-      }
-      const k0 = { top: f.top + 'px', height: f.h + 'px' }, k1 = { top: top + 'px', height: h + 'px' };
+      const dy = f.top - top + (f.el.classList.contains('pp-rail') ? (top - f.top) / 2 : 0);
+      if (Math.abs(dy) <= 0.5) continue;
+      const k0 = { translate: `0 ${dy}px` }, k1 = { translate: '0 0' };
       Object.assign(f.el.style, k0);
       TB.anim.fe.push(f.el);
       TB.anim.f.push(f.el.animate([k0, k1], opt));
