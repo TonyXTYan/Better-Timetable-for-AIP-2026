@@ -6423,8 +6423,11 @@ function mxClear(){
   mxNamed = []; mxShown = []; mxNew = false;
 }
 // keys are made safe for view-transition-name before they are compared, so two keys
-// never end up as one name (which would abort the whole transition)
-const mxSafe = key => key.replace(/[^\w-]/g, '_');
+// never end up as one name (which would abort the whole transition): in lower case, with
+// any other character as its code between underscores (a Web Animation's pseudoElement
+// finds a name in lower case only; one with a capital, such as a lane's, would run its
+// animation on nothing). A key made safe stays as it is.
+const mxSafe = key => key.replace(/[^a-z0-9_-]/g, c => '_' + c.charCodeAt(0).toString(16) + '_');
 // (in the new state (mxNew), a list's time block or My agenda row the browser has not
 // drawn yet, as one just put on the page by the change: drawn now, or its item would have
 // no picture to move to)
