@@ -1972,7 +1972,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* a talk row at the same time as the heading row above it repeats that time: kept for
    the grid, not shown */
 .vt-t.tk{visibility:hidden}
-.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0 calc(var(--vtw) + 2px);transition:top calc(600ms * var(--mo,1)) linear}
+.vt-nowl{position:absolute;left:calc(var(--vtw) + 2px);right:0;height:var(--doublet-w);margin-top:calc(var(--doublet-w) / -2);z-index:1;pointer-events:none;scroll-margin:calc(var(--toolbar-h,150px) + 3rem) 0 0 calc(var(--vtw) + 2px);top:0;translate:0 var(--y,0px);transition:translate calc(600ms * var(--mo,1)) linear}
 /* two lines of the sodium D doublet (a 2px gap); they part from the centre as the mark appears (na-part) */
 .vt-nowl::before,.vt-nowl::after{content:"";position:absolute;left:0;right:0;height:calc((var(--doublet-w) - 2px) / 2);background:var(--na);animation:na-part calc(360ms * var(--mo,1)) var(--ease-em,ease-out) calc(80ms * var(--mo,1)) both}
 .vt-nowl::before{top:0;--na-from:0 calc(var(--doublet-w) / 4 + .5px)}
@@ -11741,31 +11741,40 @@ function paintNow(){
     x.classList.toggle('is-now', x.dataset.date === n.date && toMin(x.dataset.s) <= n.min && n.min < toMin(x.dataset.e)));
   document.querySelectorAll('#agenda .hz-day').forEach(hzPaintNow);
   weekPaintNow();
-  // Vertical view: a now line at the exact time, between the rows around it.
-  document.querySelectorAll('#agenda .vt-grid').forEach(g => {
-    const line = g.querySelector('.vt-nowl'), end = g.querySelector('.vt-t.end');
+  // Vertical view: a now line at the exact time, between the rows around it. Every grid is
+  // read before any is written (a line or pill shown for the first time is measured once
+  // shown); the line moves by translate (--y), which its transition runs off the main thread.
+  const vts = [...document.querySelectorAll('#agenda .vt-grid')].map(g => {
+    const line = g.querySelector('.vt-nowl'), end = g.querySelector('.vt-t.end'), dot = g.querySelector('.vt-nowd');
     const marks = [...g.querySelectorAll('.vt-line.f'), end].map(e => [+e.dataset.m, e.offsetTop]);
     let y = null;
     if (g.dataset.date === n.date) for (let i = 0; i + 1 < marks.length; i++){
       const [m0, y0] = marks[i], [m1, y1] = marks[i + 1];
       if (m0 <= n.min && n.min < m1){ y = y0 + (n.min - m0) / (m1 - m0) * (y1 - y0); break; }
     }
+    return { g, line, dot, y, sw: g.scrollWidth, ll: line.hidden ? null : line.offsetLeft, dh: dot && !dot.hidden ? dot.offsetHeight : null,
+      ts: [...g.querySelectorAll('.vt-t:not(.tk)')].map(t => [t, t.offsetTop, t.offsetHeight]),
+      subs: [...g.querySelectorAll('.vt-card')].map(c => [c, c.offsetTop, c.offsetHeight]) };
+  });
+  for (const { line, dot, y } of vts){
     line.hidden = y === null;
-    if (y !== null){ line.style.top = y + 'px'; line.style.width = (g.scrollWidth - line.offsetLeft) + 'px'; }
+    // (on the device pixel, where its top used to land, so the doublet stays sharp)
+    if (y !== null) line.style.setProperty('--y', Math.round(y * devicePixelRatio) / devicePixelRatio + 'px');
     // the time itself in the gutter, and the line through any saved session it crosses
-    const dot = g.querySelector('.vt-nowd');
     if (dot){ dot.hidden = y === null; if (y !== null){ dot.style.top = y + 'px'; const hm = hzHM(Math.floor(n.min)); if (dot.textContent !== hm) dot.textContent = hm; } }
+  }
+  for (const v of vts) if (v.y !== null){ if (v.ll === null) v.ll = v.line.offsetLeft; if (v.dot && v.dh === null) v.dh = v.dot.offsetHeight; }
+  for (const { line, dot, y, sw, ll, dh, ts, subs } of vts){
+    if (y !== null) line.style.width = (sw - ll) + 'px';
     // (a gutter time the pill would half cover steps aside)
-    const ph = dot && y !== null ? dot.offsetHeight / 2 + 1 : 0;
-    const under = [...g.querySelectorAll('.vt-t:not(.tk)')].map(t => [t, ph > 0 && t.offsetTop < y + ph && t.offsetTop + t.offsetHeight > y - ph]);
-    for (const [t, on] of under) if (on !== t.classList.contains('now-hid')) t.classList.toggle('now-hid', on);
-    const subs = [...g.querySelectorAll('.vt-card')].map(c => [c, c.offsetTop, c.offsetHeight]);
+    const ph = dot && y !== null ? dh / 2 + 1 : 0;
+    for (const [t, top, h] of ts){ const on = ph > 0 && top < y + ph && top + h > y - ph; if (on !== t.classList.contains('now-hid')) t.classList.toggle('now-hid', on); }
     for (const [c, top, h] of subs){
       const on = y !== null && y > top + 2 && y < top + h - 2;
       if (on) c.style.setProperty('--nowy', (y - top) + 'px');
       if (on !== c.classList.contains('now-in')) c.classList.toggle('now-in', on);
     }
-  });
+  }
   document.querySelectorAll('#builder .ag-row[data-date]').forEach(r => {
     const today = r.dataset.date === n.date;
     r.classList.toggle('past', today && toMin(r.dataset.end) <= n.min);
