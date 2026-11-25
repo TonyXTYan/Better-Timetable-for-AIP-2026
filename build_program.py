@@ -881,7 +881,10 @@ html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(roo
 html[data-view-tx="dayout"]::view-transition-old(root){z-index:1}
 html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* A new theme, contrast or text size (displayFade): the whole page, toolbar and dialog
-   included, cross-fades from the old look to the new one */
+   included, cross-fades from the old look to the new one (and nothing on the page runs a
+   colour transition of its own meanwhile, data-view-tx-disp: each would restyle on the
+   main thread, every frame, under a picture that hides it) */
+html[data-view-tx-disp] *,html[data-view-tx-disp] *::before,html[data-view-tx-disp] *::after{transition:none!important}
 html[data-view-tx="disp"]::view-transition-old(root){animation:var(--dur-l) var(--ease) both week-tx-out}
 html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
 /* a new text size moves every line: the old look goes first and the new one follows
@@ -6907,6 +6910,7 @@ function txStart(kind, fn, from, opts){
   }
   delete root.dataset.viewTxNew;
   delete root.dataset.viewTxQuick;
+  delete root.dataset.viewTxDisp;
   root.dataset.viewTx = kind;
   // (All week -> a day: the day grows out of its row or column, measured in the week now;
   // a day -> All week: it shrinks into the one the new week shows)
@@ -12378,17 +12382,21 @@ function displayFade(fn, seq){
   let ran = false;
   const run = () => { if (!ran){ ran = true; fn(); } };
   root.dataset.viewTx = 'disp';
+  // (no colour transition of the page's own runs under the fade: an attribute of its own,
+  // as one rule for every element would restyle the whole page for every other change too)
+  root.dataset.viewTxDisp = '';
   // (a new text size: the old look fades out before the new one fades in)
   if (seq) root.dataset.viewTxSeq = ''; else delete root.dataset.viewTxSeq;
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; run(); return; }
+  catch (e){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; delete root.dataset.viewTxDisp; run(); return; }
   const tx = viewTx = { vt, run };
   vt.ready.catch(() => {});   // (a skipped fade: a newer change took over)
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; }
+    if (!viewTx || root.dataset.viewTx !== 'disp') delete root.dataset.viewTxDisp;
   });
 }
 // A new speed: the preview card slides in at it, to show how it feels.
