@@ -2718,6 +2718,17 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .searchbox .mag{left:8px}
 }
 @media (max-width:359px){.controls{gap:5px}#filterBtn .caret{display:none}.searchbox input{padding-left:1.625rem}.searchbox .mag{left:7px}}
+/* My agenda with nothing saved (search and Streams step aside) and no Now: the controls' row
+   would hold Display options alone, so it takes the right end of the day tabs' row instead,
+   as in the folded bar (its sliders only), and the bar takes no extra row. (A phone on its
+   side has it in that row already.) */
+@media (min-height:501px),(orientation:portrait){
+  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px}
+  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>*{grid-column:1/-1}
+  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>.daytabs{grid-column:1}
+  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>.controls{grid-column:2;align-self:center;padding-top:0}
+  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .tb-display .db-l{display:none}
+}
 .display-btn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:var(--r-ctl);background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:.8125rem;font-weight:650}
 .display-btn:hover{border-color:var(--hover-line);background:var(--surface-2)}
 .foot-display{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:2px 0 10px!important}
@@ -2997,6 +3008,12 @@ body.participants-view .pp-people{grid-template-columns:repeat(auto-fill,minmax(
   .sticky-wrap:not(.tb-compact) .filter-menu{order:5}
   .sticky-wrap:not(.tb-compact) #nowBtn,.sticky-wrap:not(.tb-compact) #displayBtn{order:6}
   .sticky-wrap:not(.tb-compact) .toolbar>.grpill{order:7;margin:0}
+  /* (in the list, the group pill goes up beside the two switches, its group's name cut short
+     where the row runs out, so the day tabs keep their row's room; in the calendar that row
+     is full) */
+  .sticky-wrap:not(.tb-compact):has(#programOrient[hidden]) .toolbar>.grpill{order:1;flex:1 1 0;min-width:min(11rem,100%);max-width:max-content}
+  .sticky-wrap:not(.tb-compact) #grpname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sticky-wrap:not(.tb-compact) #grpclr{flex:none}
   .sticky-wrap:not(.tb-compact) .toolbar>.result-row{order:8;position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .schedule-nav .nav-long{display:none}.schedule-nav .nav-short{display:inline}
   .schedule-nav .agenda-views button{padding:5px 9px}
@@ -3940,7 +3957,10 @@ function renderChips(){
   const pill = document.getElementById('grpill');
   if (state.group){
     pill.style.display = 'inline-flex';
-    document.getElementById('grpname').textContent = state.group + (DATA.groups[state.group] ? ' — ' + DATA.groups[state.group] : '');
+    const name = document.getElementById('grpname');
+    name.textContent = state.group + (DATA.groups[state.group] ? ' — ' + DATA.groups[state.group] : '');
+    // (a phone on its side may cut the name short)
+    name.title = name.textContent;
   } else pill.style.display = 'none';
 }
 
@@ -13163,6 +13183,9 @@ window.addEventListener('scroll', () => {
   });
 }, { passive:true });
 stickyWrap.addEventListener('focusin', e => {
+  // (not the focus Display options gives back to its button as it closes: the button is in
+  // the folded bar too, and the bar stays as it was)
+  if (e.relatedTarget && displayDialog.contains(e.relatedTarget) && e.target.closest('#displayBtn')) return;
   if (e.target === qEl || stickyWrap.querySelector(':focus-visible')) tbCompact(false);
 });
 // Phones: typing in the search box keeps the toolbar short (tb-typing). Leaving the box
