@@ -355,7 +355,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
   .hero-nn .up-next>div>.hn-more{padding:3px 8px 3px 0;margin:-3px 0}
 }
 /* a page printed during the congress keeps the heading only (My agenda's Up next is not printed either) */
-@media print{.hn-sw,.hn-note,.hn-tz{display:none!important}}
+@media print{.hn-sw,.hn-note,.hn-tz{display:none!important}.hero-nn{width:auto!important;container-type:normal!important}}
 /* (paper, at any width, has the sentence in full) */
 @media print{.hero p.sub{max-width:none!important;font-size:.875rem!important;color:var(--ink-2)!important}.hero .sub-full{display:inline!important}.hero .sub-short{display:none!important}}
 /* (a narrow panel gives a later start its time alone) */
