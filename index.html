@@ -3962,7 +3962,10 @@ function paintStarCount(){
   const items = agendaItems(), n = items.length, el = document.getElementById('starCount');
   el.textContent = n;
   el.title = (n === 1 ? '1 item in My agenda' : n + ' items in My agenda') + innerNote(items, ' (', ')');
-  paintHeroNow();
+  // (a change to My agenda keeps the page below the panel where it was)
+  const key = state.starred.size + '/' + n, keep = paintStarCount.key !== undefined && paintStarCount.key !== key;
+  paintStarCount.key = key;
+  paintHeroNow(keep);
 }
 // Why the count can be lower than the stars: talks saved inside a saved session count
 // with it ("6 saved talks are inside saved sessions"). '' when there are none.
@@ -12274,13 +12277,16 @@ function heroNowHtml(){
 // Painted with the countdown (every 30 s, on a return to the tab, after each redraw) and
 // on every change to My agenda. The times alone change from one minute to the next: then
 // only they are written, so a focused row (or the details it opened) keeps its place.
-function paintHeroNow(){
+// keep (a change to My agenda): what is below the header stays where it was, as the
+// browser's own scroll anchoring does, which does not act at the very top of the page.
+function paintHeroNow(keep){
   const box = document.getElementById('heroNow');
   if (!box || !paintHeroNow.ready) return;
   const r = heroNowHtml();
   const sw = r.sw ? `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda" aria-pressed="${state.heroSrc !== 'all'}">My agenda</button><button type="button" data-hn-src="all" aria-pressed="${state.heroSrc === 'all'}">Everything</button></div>`
     : r.cap ? `<span class="hn-cap">${r.cap}</span>` : '';
   const shape = sw + '|' + r.html;
+  const hero = keep && box._shape !== shape ? box.closest('header') : null, b0 = hero && hero.getBoundingClientRect().bottom;
   document.getElementById('heroNowName').textContent = r.name ? r.name + ': ' : '';
   box.classList.toggle('hn-on', !!r.html);
   if (box._shape === shape){
@@ -12300,6 +12306,10 @@ function paintHeroNow(){
   const find = k => [...box.querySelectorAll('button')].find(b => key(b) === k);
   if (was) (find(was) || box.querySelector('button') || document.getElementById('heroWhen')).focus({ preventScroll: true });
   if (trigger) dialogTrigger = find(trigger) || dialogTrigger;
+  if (hero){
+    const d = hero.getBoundingClientRect().bottom - b0;
+    if (Math.abs(d) >= 0.5) window.scrollBy({ top: d, behavior: 'instant' });
+  }
 }
 document.getElementById('heroNow').addEventListener('click', e => {
   const src = e.target.closest('[data-hn-src]');
