@@ -6221,6 +6221,8 @@ function mxUnderHeads(){
   return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
 }
 let mxNamed = [], mxOwner = null, mxShown = [];
+// (what the last morph named and found, for ?txdebug=1)
+let mxStat = {};
 // (this transition's own rules: each moving group's size, a clip that stays put, a look
 // the page fades itself; set once, in the update callback, before the browser builds the
 // transition's parts, so it styles them once)
@@ -6342,7 +6344,8 @@ function mxBegin(kind, from, opts){
   // (opts.only, a list of keys: those items alone are named, the first before the rest,
   // and with opts.lite the first only; looked up by id, so a long page costs no more)
   const only = opts.only ? new Set((opts.lite ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && [...only][0];
-  if (opts.plain || (!only && mxMany())) return MX_NOOP;
+  mxStat = {};
+  if (opts.plain || (!only && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
   if (from){
@@ -6401,6 +6404,7 @@ function mxBegin(kind, from, opts){
     let cap = y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75;
     if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
     else if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
+    mxStat = { seen: seen.length, cap: Math.round(cap), vis0: seen.filter(it => it.kind === 'item' && it.d === 0).length };
     for (const it of seen){
       if (old.size >= cap) break;
       if (opts.nest && it.p && !old.has(it.p)) continue;
@@ -6587,6 +6591,7 @@ function mxBegin(kind, from, opts){
       const its = cand.filter(x => x.o.kind === 'item' && x.key !== fromKey);
       // (opts.reshape: the change is meant to reshape items, as "Show full sessions" does)
       const wild = !opts.reshape && its.length > 2 && its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length > its.length / 2;
+      Object.assign(mxStat, { old: old.size, now: now.size, its: its.length, wild: its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length + (wild ? ' WILD' : '') });
       // (opts.only, into the list: the item you were at, and of the sessions beside it
       // those whose move shows on the screen at both ends and never crosses another's on
       // the way: in a crowded slot, bars stacked in lanes become cards side by side, much
@@ -6621,6 +6626,9 @@ function mxBegin(kind, from, opts){
         // (the old pictures go quickly: the two pages are too unlike to show together)
         plan.quick = true;
       }
+      mxStat.pairs = plan.pairs.filter(x => x.o.kind === 'item').length;
+      mxStat.vis1 = [...now.values()].filter(it => it.kind === 'item' && it.d === 0).length;
+      mxStat.pv = plan.pairs.filter(x => x.o.kind === 'item' && (x.o.d === 0 || x.n.d === 0)).length;
       // A session that comes or goes around saved talks shown on their own (My agenda's
       // "Show full sessions", or saving or removing the session): it grows out of those
       // talks (emerge) or shrinks back into them (sink), while each talk moves between
@@ -6905,7 +6913,7 @@ function txStart(kind, fn, from, opts){
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
-      if (log) txDbgEnd(log, { redraw, freeze, jank, named });
+      if (log) txDbgEnd(log, { redraw, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' ') });
     });
   }, () => { if (log) txDbgEnd(log, { redraw, skipped: true }); });
   vt.updateCallbackDone.catch(e => console.error(e));
@@ -7074,7 +7082,7 @@ function txDbgEnd(r, m){
   for (const [k, x] of Object.entries(m)) r[k] = typeof x === 'number' ? Math.round(x) : x;
   const vals = Object.entries(r.v).map(([k, x]) => k + '=' + x).join(' ');
   console.log(`[tx] #${r.n} ${r.asked}${r.kind !== r.asked ? '->' + r.kind : ''} ${r.level}${r.pair ? ' (' + r.pair + ')' : ''}${r.why ? ' because ' + r.why : ''} | ${vals}`
-    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.skipped ? ', skipped' : ''));
+    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.mx ? ' | ' + r.mx : '') + (r.skipped ? ', skipped' : ''));
 }
 // The cheap way in for a new view (no snapshot): the main area comes up from half
 // faded, quickly; the old one stays on screen while the new one is drawn. `dir`: 'in'
