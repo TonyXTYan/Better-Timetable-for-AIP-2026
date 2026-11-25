@@ -1,6 +1,6 @@
 # AIP Congress 2026 — Program Explorer
 
-An independent, mobile-friendly view of the
+An unofficial, mobile-friendly view of the
 [AIP Congress 2026](https://www.aip.org.au/congress) program (Sydney, 7–11 December 2026),
 built from the official Indico timetable.
 
@@ -10,6 +10,18 @@ user site's `404.html` that keeps `?query` and `#hash`).
 
 ## What it does
 
+- The header is the title, one sentence (an unofficial, easier-to-use timetable built from the
+  official program, linked) and the date of the program data ("Program data last updated 24
+  November 2026", from `RETRIEVED`); a phone shows it as one short line ("Unofficial timetable ·
+  data updated 24 Nov 2026"). **Now and next** sits on the right (below). The congress's dates,
+  registration day, venue (rooms and detailed locations are to come from the organisers) and
+  clock (AEDT, UTC+11) are in the footer's **About**, with two links that open a new GitHub
+  issue in a new tab: **Request a data update** and **Report a problem**. Each is a complete
+  link without the script (its title, a short template and the data's date, written by the
+  build from `ISSUE_DATA_BODY` and `ISSUE_BUG_BODY`); with it, the page adds what the reader
+  was looking at when the link is followed: the page's address, the day and view for a data
+  update, and the viewport, display settings and browser for a problem. Nothing is sent from
+  the page: GitHub shows the issue to edit first.
 - Browse by day or the whole week, as a list or a calendar; filter by stream or group badge.
   The toolbar (view switches, day tabs, search, Streams, Now, Display options) stays at the top
   of the screen; scrolling down past it folds it to one slim row of day tabs (the Program / My
@@ -110,7 +122,8 @@ user site's `404.html` that keeps `?query` and `#hash`).
   Now is the sodium D doublet (two thin amber lines): the line across each calendar, seen
   between the bars, with two short notches on the edges of a bar or card that is on; the left
   edge of a session or talk on now in a list; the glyph on today's tab and the Now button.
-- **Now and next**, at the header's top right (under the title on a phone): during the congress,
+- **Now and next**, at the header's top right (under the title on a phone), with "Times AEDT"
+  under its heading: during the congress,
   what is on now and what starts next (today, or with its day and time when that is tomorrow),
   from My agenda when it has anything saved, otherwise from the whole program, switched with
   **My agenda | Everything** (remembered on the device as `aip2026-hero-src`). A saved session
@@ -163,6 +176,11 @@ and print are designed alongside.
 python3 build_program.py                    # rebuild from aip2026-data.json
 python3 build_program.py indico-export.json # refresh the data from an Indico timetable export
 ```
+
+`RETRIEVED` at the top of `build_program.py` is the date the data was taken from Indico: a
+refresh from an export stores it in `aip2026-data.json` (as `retrieved`), and the page shows that
+date in the header, in About and in the data-update issue's title (the build also writes it as an
+ISO date for `<time datetime>` and as "24 Nov 2026" for phones), so set it before refreshing.
 
 The build normalises the data (stray HTML and markdown, simple inline LaTeX such as `$_2$` → ₂,
 hard line wraps, all-caps names) and rewrites `aip2026-data.json` if anything changed.
