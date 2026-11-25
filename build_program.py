@@ -1120,7 +1120,10 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 /* Scrolled down past the toolbar, it folds to one slim row: day tabs (or the scope switch
    in a view without them), a search button and Now (tbCompact). */
 .controls .tb-mini{display:none}
-.sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom-color:transparent}
+/* (while it folds, no blur behind it, which would be redrawn each frame: the bar's own
+   tint over the page's colour stands in, so what is under it does not show through
+   sharp for the moment) */
+.sticky-wrap.tb-anim{overflow:clip;backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(var(--sticky-bg),var(--sticky-bg)),var(--bg);border-bottom-color:transparent}
 /* the clip would hide the bar's own bottom edge: a line that rides the clip's edge stands in (tbCompact) */
 /* (the bar's own value, not passed down to what is in it: only the line asks for it, so
    setting it as a fold starts and clearing it as it ends restyles the bar and the line,
