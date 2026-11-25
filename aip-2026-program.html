@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
 <script>
-// Display options (text size, font, theme, contrast, colour, motion, animation speed) go on <html> before
+// Display options (text size, font, theme, contrast, colour, motion, animation speed, pop-up width) go on <html> before
 // the first paint, so the page never flashes the wrong theme. Only overrides are stored.
 window.applyDisplay = function(d){
   var r = document.documentElement;
@@ -24,6 +24,7 @@ window.applyDisplay = function(d){
   set('data-colour', d.colour, ['vivid']);
   set('data-motion', d.motion, ['reduce','full']);
   set('data-speed', d.speed, ['fast','xslow']);
+  set('data-popw', d.popw, ['wide','full']);
   var metas = document.querySelectorAll('meta[name="theme-color"]');
   for (var i = 0; i < metas.length; i++){
     var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
@@ -724,6 +725,18 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .ed-kicker .ed-stream::before{content:"\00b7";margin-right:12px}
 .ed-parent .ed-in{color:var(--muted)}
 #eventDialog a.ag-btn{text-decoration:none}
+/* Display options, Pop-up width: Wide (half as wide again, 960px) or Full width (the window
+   less the page's 20px gutters) for the session and talk details. The reading stays a
+   comfortable measure: the abstracts keep their 72ch, and the title, the speakers and a
+   talk's line in a session's list stop at a length of their own. Not on phones, where the
+   details are a sheet across the screen, nor in print. */
+@media screen and (min-width:721px){
+  html[data-popw="wide"] #eventDialog{width:min(960px,calc(100% - 40px));max-width:none}
+  html[data-popw="full"] #eventDialog{width:calc(100% - 40px);max-width:none}
+  html[data-popw] #eventDialog h2{max-width:65ch}
+  html[data-popw] :is(.ed-who,.ed-parent,.ed-conv,#eventDialog .ev-info){max-width:90ch}
+  html[data-popw] .ed-ttitle{max-width:80ch}
+}
 /* ---------- load stability, deep-link landing, sheets (fixes) ----------
    The toolbar ships with its final geometry: seven empty cells in the day ruler, and the
    Now button laid out but invisible until the first render decides whether it shows. */
@@ -2828,8 +2841,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 .dd-switch[aria-pressed="true"] .sw-track{background:var(--accent);border-color:var(--accent)}
 .dd-switch[aria-pressed="true"] .sw-track::after{background:var(--accent-ink);transform:translateX(calc(2.75rem - 1.5rem + 0px))}
 #dsSpeedGroup{margin-top:16px}
-#dsSpeedGroup:disabled .seg{opacity:.55}
-#dsSpeedGroup:disabled .seg input{cursor:default}
+#dsSpeedGroup:disabled .seg,#dsPopwGroup:disabled .seg{opacity:.55}
+#dsSpeedGroup:disabled .seg input,#dsPopwGroup:disabled .seg input{cursor:default}
 .dd-note{margin:6px 0 0;font-size:.75rem;color:var(--muted)}
 .dd-preview{margin:4px 0 20px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--aip);border-radius:var(--r-plate);background:var(--surface-2)}
 .dd-preview .badge{cursor:default;margin:0 0 4px;display:flex;width:max-content}
@@ -3351,6 +3364,15 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <label><input type="radio" name="dsFont" value=""><span><span class="ff-ag ff-system" aria-hidden="true">Ag</span>System<small>Your device&#8217;s own</small></span></label>
         <label><input type="radio" name="dsFont" value="archivo"><span><span class="ff-ag ff-archivo" aria-hidden="true">Ag</span>Archivo<small>Wide title, narrow times</small></span></label>
       </div>
+    </fieldset>
+    <fieldset class="dd-group" id="dsPopwGroup" aria-describedby="dsPopwNote">
+      <legend>Pop-up width</legend>
+      <div class="seg">
+        <label><input type="radio" name="dsPopw" value=""><span>Normal<small>Default</small></span></label>
+        <label><input type="radio" name="dsPopw" value="wide"><span>Wide</span></label>
+        <label><input type="radio" name="dsPopw" value="full"><span>Full width</span></label>
+      </div>
+      <p class="dd-note" id="dsPopwNote">For the session and talk pop-ups.</p>
     </fieldset>
     <fieldset class="dd-group">
       <legend>Theme</legend>
@@ -12501,7 +12523,7 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 });
 
 // ---------- display options ----------
-// Text size, font (System or Archivo), theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
+// Text size, font (System or Archivo), pop-up width, theme, colour (Quiet or Vivid), high-contrast text and reduced motion. Only choices that differ from
 // the defaults are stored (localStorage 'aip2026-display'); the inline script in <head>
 // applies them before the first paint, and applyDisplay() keeps <html> and theme-color in step.
 const DISPLAY_KEY = 'aip2026-display';
@@ -12509,7 +12531,7 @@ const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'], popw:['wide','full'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
@@ -12531,6 +12553,11 @@ function syncDisplayForm(){
   displayDialog.querySelectorAll('input[name="dsTheme"]').forEach(r => r.checked = r.value === (display.theme || ''));
   displayDialog.querySelectorAll('input[name="dsColour"]').forEach(r => r.checked = r.value === (display.colour || ''));
   displayDialog.querySelectorAll('input[name="dsSpeed"]').forEach(r => r.checked = r.value === (display.speed || ''));
+  displayDialog.querySelectorAll('input[name="dsPopw"]').forEach(r => r.checked = r.value === (display.popw || ''));
+  // (phones: the pop-ups are sheets across the whole screen, whatever is chosen here)
+  document.getElementById('dsPopwGroup').disabled = PHONE_MQ.matches;
+  document.getElementById('dsPopwNote').textContent = PHONE_MQ.matches
+    ? 'On a screen this narrow, pop-ups always fill the width.' : 'For the session and talk pop-ups.';
   // (no speed to choose while nothing moves)
   document.getElementById('dsSpeedGroup').disabled = motionReduced();
   document.getElementById('dsSpeedNote').hidden = !motionReduced();
@@ -12569,9 +12596,10 @@ function setDisplay(key, value){
     // (a new rem or a new face: the calendars measure their text again)
     if (key === 'text' || key === 'font'){ refitCalendars(); platesRefit(); }
   };
-  // a new look fades in; the motion settings themselves apply at once. Archivo loads
+  // a new look fades in; the motion settings themselves apply at once, as does the pop-up
+  // width (nothing on the page changes with it). Archivo loads
   // first, so the fade lands on it (never on a stand-in face) and the calendars measure it.
-  if (key === 'motion' || key === 'speed') go();
+  if (key === 'motion' || key === 'speed' || key === 'popw') go();
   else if (key === 'font' && value) archivoReady().then(() => { if (display.font === value) displayFade(go); });
   else displayFade(go, key === 'text');
 }
@@ -12628,6 +12656,7 @@ displayDialog.addEventListener('change', e => {
   else if (e.target.name === 'dsTheme') setDisplay('theme', e.target.value);
   else if (e.target.name === 'dsColour') setDisplay('colour', e.target.value);
   else if (e.target.name === 'dsSpeed'){ setDisplay('speed', e.target.value); speedDemo(); }
+  else if (e.target.name === 'dsPopw') setDisplay('popw', e.target.value);
 });
 lightDismiss(displayDialog, () => displayDialog.close());
 displayDialog.addEventListener('click', e => {
@@ -12652,7 +12681,7 @@ displayDialog.addEventListener('click', e => {
   }
 });
 displayDialog.addEventListener('close', () => { pnlHistoryClose(); displayBtn.focus(); });
-for (const q of [motionQuery, darkQuery]){
+for (const q of [motionQuery, darkQuery, PHONE_MQ]){
   const sync = () => { if (displayDialog.open) syncDisplayForm(); };
   if (q.addEventListener) q.addEventListener('change', sync); else if (q.addListener) q.addListener(sync);
 }

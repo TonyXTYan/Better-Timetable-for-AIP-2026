@@ -115,8 +115,10 @@ user site's `404.html` that keeps `?query` and `#hash`).
 - **Display options** (the button in the footer): text size (Smaller 90 %, Default, Larger 115 %,
   Largest 130 %), theme (System, Light or Dark), colour (Quiet, the default, keeps stream
   colour to thin lines and faint tints; Vivid fills each session head, calendar bar and lane
-  label with its stream's tint and turns the stream tags solid), high-contrast text and reduce
-  motion (follows the device by default). Beside Colour sits the colour key: the spectral rule,
+  label with its stream's tint and turns the stream tags solid), pop-up width for the session
+  and talk details (Normal, the default, 640 px; Wide, 960 px; Full width, the window less
+  20 px each side; the abstracts keep a readable line length, and phones always show them as
+  a full-width sheet), high-contrast text and reduce motion (follows the device by default). Beside Colour sits the colour key: the spectral rule,
   400 to 700 nm, with each stream's line at its wavelength (point at it or touch it to name a
   line) and a legend of every stream and its source. Saved on the device (`aip2026-display`,
   only the changed settings) and applied before the page paints; printing is always light and
