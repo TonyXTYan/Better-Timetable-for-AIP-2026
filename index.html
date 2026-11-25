@@ -13468,7 +13468,8 @@ function tbCompact(on){
   if (on === TB.on) return;
   // Mid-way through a fold or unfold: the edge it had reached (the new one starts there),
   // and the heads where they had got to.
-  const run = TB.anim, follow = tbFollowers();
+  const run = TB.anim, follow = tbFollowers(), tabs = document.getElementById('daytabs');
+  const notabs = on && (tabs.hidden || getComputedStyle(tabs).display === 'none');
   let vis = null;
   if (run){
     // (no progress yet: it was made this frame and has not started, so the bar still shows
@@ -13477,29 +13478,54 @@ function tbCompact(on){
     vis = p === null ? run.from : run.from + (run.to - run.from) * p;
     tbAnimEnd(run);
   }
-  stickyWrap.classList.remove('tb-anim');
-  stickyWrap.style.height = '';
-  if (run) stickyWrap.style.marginBottom = '';
-  const h0 = vis ?? tbBoxH();
-  if (on){
-    const m0 = parseFloat(stickyWrap.style.marginBottom) || 0;
-    TB.full = tbBoxH() + m0;
-    TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
+  const motion = !motionReduced() && !!stickyWrap.animate;
+  let h0, h1, h1px;
+  if (motion){
+    // The bar's box keeps the room it takes now (its height and the margin under it) while
+    // the row in it changes, so nothing under it moves, not even for a moment: a page that
+    // moved under the bar and back could be scrolled by the browser to keep in place what
+    // the reader sees (scroll anchoring: an unfold near the top of a day's calendar jumped
+    // the page by the fold's height). The new height is read where the bar's row now ends.
+    // (Folding, the bar has its own height, the full one: it is still, or unfolding, which
+    // leaves the height its own.)
+    const cs = getComputedStyle(stickyWrap), box = parseFloat(cs.height) || stickyWrap.offsetHeight;
+    const m0 = parseFloat(stickyWrap.style.marginBottom) || 0, below = parseFloat(cs.paddingBottom) + parseFloat(cs.borderBottomWidth);
+    h0 = vis ?? box;
+    if (on){
+      TB.full = box + m0;
+      TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
+    }
+    stickyWrap.style.height = box + m0 + 'px';
+    stickyWrap.style.marginBottom = '';
+    stickyWrap.classList.add('tb-anim');
+    TB.on = on;
+    TB.flipT = performance.now();
+    if (on){ stickyWrap.classList.toggle('tb-notabs', notabs); tbPaintMini(); }
+    stickyWrap.classList.toggle('tb-compact', on);
+    h1 = h1px = stickyWrap.querySelector('.toolbar').getBoundingClientRect().bottom - stickyWrap.getBoundingClientRect().top + below;
+  } else {
+    stickyWrap.classList.remove('tb-anim');
+    stickyWrap.style.height = '';
+    if (run) stickyWrap.style.marginBottom = '';
+    h0 = vis ?? tbBoxH();
+    if (on){
+      const m0 = parseFloat(stickyWrap.style.marginBottom) || 0;
+      TB.full = tbBoxH() + m0;
+      TB.fullPx = stickyWrap.getBoundingClientRect().height + m0;
+    }
+    TB.on = on;
+    TB.flipT = performance.now();
+    if (on){ stickyWrap.classList.toggle('tb-notabs', notabs); tbPaintMini(); }
+    stickyWrap.classList.toggle('tb-compact', on);
+    h1 = tbBoxH();
+    h1px = stickyWrap.getBoundingClientRect().height;
   }
-  TB.on = on;
-  TB.flipT = performance.now();
-  if (on){
-    const tabs = document.getElementById('daytabs');
-    stickyWrap.classList.toggle('tb-notabs', tabs.hidden || getComputedStyle(tabs).display === 'none');
-    tbPaintMini();
-  }
-  stickyWrap.classList.toggle('tb-compact', on);
-  const h1 = tbBoxH(), m1 = on ? Math.max(0, TB.full - h1) : 0, h1px = stickyWrap.getBoundingClientRect().height;
+  const m1 = on ? Math.max(0, TB.full - h1) : 0;
   if (on){
     TB.slim = h1px;
     TB.slimKey = tbSlimKey();
     // the chosen day stays in view in the sideways-scrolling tabs
-    const tabs = document.getElementById('daytabs'), t = tabs.querySelector('[aria-pressed="true"]');
+    const t = tabs.querySelector('[aria-pressed="true"]');
     if (t) tabs.scrollLeft = Math.max(0, dayTabLeft(tabs, t) - (tabs.clientWidth - t.offsetWidth) / 2);
   }
   // the edge it is moving to, as the page will have it: the heads under it take it now
@@ -13523,20 +13549,19 @@ function tbCompact(on){
     if (TB.sync) tbRootSync();
     hzStuck();
   };
-  if (!motionReduced() && Math.abs(h1 - h0) > 1 && stickyWrap.animate){
+  if (motion && Math.abs(h1 - h0) > 1){
     // While it moves, the bar keeps its full height in the page (folding, the slim row at
     // its top) and only the part of it that shows changes (a clip: no layout per frame);
     // the bottom margin takes over the height it lost when it has folded. The space it
     // takes in the page stays the same throughout.
     const full = on ? TB.full : h1, ms = MO_L * motionK();
-    if (on) stickyWrap.style.height = full + 'px';
-    stickyWrap.style.marginBottom = '';
+    // (unfolding, it takes its own height: the full one)
+    if (!on) stickyWrap.style.height = '';
     // Where each head in sight comes to rest with the new edge: the bar holds its full
     // height, so the page under it is where it was, and each one's place is read as it is
     // (stuck under the bar, in its own place lower down, or pushed up by the end of its
     // box), in one pass.
     const land = follow.map(f => f.el.getBoundingClientRect());
-    stickyWrap.classList.add('tb-anim');
     // (each animated value is also set inline where it starts, held at its end until done:
     // the frame the animations are made in may be drawn before they apply)
     const opt = { duration: ms, easing: EASE, fill: 'forwards' }, bar = stickyWrap.querySelector('.toolbar');
