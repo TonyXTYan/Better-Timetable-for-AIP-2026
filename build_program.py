@@ -13390,6 +13390,8 @@ function openDisplay(fromHistory, opener){
   syncDisplayForm();
   hideToast();
   displayDialog.showModal();
+  // (from the top each time, as the details; the Colour key scrolls on to the key)
+  displayDialog.scrollTop = 0;
   if (!fromHistory) pnlHistoryOpen('display');
 }
 for (const b of [displayBtn, document.getElementById('displayBtnFoot')]) b.addEventListener('click', () => openDisplay(false, b));
