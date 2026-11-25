@@ -553,8 +553,13 @@ html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) header.h
 ::view-transition{pointer-events:none}
 ::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar),::view-transition-group(hero),::view-transition-new(hero){animation:none}
 ::view-transition-old(toolbar),::view-transition-old(hero){display:none}
-/* (the root's own group never moves; it only sets how long the transition lasts) */
-::view-transition-group(root){animation-duration:var(--dur-l)}
+/* (the root's own group never moves, and has no animation: a running one, even one that
+   changes nothing, would draw every frame on the main thread. How long a transition lasts
+   is set by the root's fades or the items' own moves; a morph alone ('mx') holds for the
+   long duration by a fade of its new picture to 99.9%, which runs on the compositor) */
+::view-transition-group(root){animation:none}
+html[data-view-tx="mx"]::view-transition-new(root){animation:var(--dur-l) linear both mx-floor}
+@keyframes mx-floor{to{opacity:.999}}
 ::view-transition-group(toolbar){z-index:4;background:linear-gradient(var(--sticky-bg),var(--sticky-bg)),var(--bg)}
 /* Shared-element morphs (mxBegin): each item moves and resizes from its old box to its
    new one; its old and new looks cross-fade at their own size, pinned to the top left
@@ -566,23 +571,31 @@ html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) header.h
 ::view-transition-group(*.mx-cover){z-index:3}
 ::view-transition-old(*.mx),::view-transition-new(*.mx),::view-transition-old(*.mx-cover),::view-transition-new(*.mx-cover){height:100%;object-fit:none;object-position:left top;overflow:clip}
 ::view-transition-old(*.mx):only-child,::view-transition-old(*.mx-cover):only-child{animation-duration:calc(var(--dur-s) / 2);animation-timing-function:var(--ease)}
+/* (most changes are too unlike to show together, and the old picture goes quickly; All
+   week <-> a day: an item with no place in the other view fades where it is) */
+html[data-view-tx-quick="mx"]::view-transition-old(*.mx):only-child,html[data-view-tx-quick="mx"]::view-transition-old(*.mx-cover):only-child{animation-duration:calc(var(--dur-s) / 3);animation-timing-function:linear}
+html[data-view-tx-band="rect"]::view-transition-old(*.mx):only-child{animation-duration:calc(120ms * var(--mo));animation-timing-function:linear}
 ::view-transition-group(mx-pop){z-index:5}
-/* an item that changes shape (mx-shape): its new look comes in over the old one in the
-   first 40% of the move, and the old one goes by 55% (of 200ms, or of All week <-> a
-   day's 300ms; times the speed setting) */
-::view-transition-new(*.mx-shape){animation:calc(var(--dur-l) * .4) var(--ease) both mx-shape-in;mix-blend-mode:normal}
-::view-transition-old(*.mx-shape){animation:calc(var(--dur-l) * .55) linear both mx-shape-out;mix-blend-mode:normal}
-html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(*.mx-shape){animation-duration:calc(120ms * var(--mo))}
-html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(*.mx-shape){animation-duration:calc(165ms * var(--mo))}
-@keyframes mx-shape-in{from{opacity:0}}
-@keyframes mx-shape-out{0%,40%{opacity:1}to{opacity:0}}
+/* What the page animates itself (mx-own; mxBegin's animate), by Web Animations the
+   compositor runs, and nothing else on each part: its group stays still (it keeps the
+   larger of the item's two sizes, by this transition's own rules, mxRules), and its two
+   looks move, each by a translate and an inset() clip, so its box grows or shrinks from
+   the top left as it goes; one that keeps its size (mx-still) only moves. A moving group
+   would be styled again, with all it holds, in every frame the page itself draws while
+   it moves, and a CSS animation (the browser's own fades, or one that changes nothing)
+   would draw every frame on the main thread. Two looks of the same shape add up as they
+   cross-fade (mx-plus), as the browser's own do; a block that changes shape shows its new
+   look over the old one. A cover that stays where it is (mx-cover-same) shows its new
+   look at once, its old one going quickly over it. */
+::view-transition-group(*.mx-own),::view-transition-group(*.mx-still){animation:none}
+::view-transition-old(*.mx-own),::view-transition-new(*.mx-own){animation:none;mix-blend-mode:normal}
+::view-transition-old(*.mx-plus),::view-transition-new(*.mx-plus){mix-blend-mode:plus-lighter}
+::view-transition-new(*.mx-cover-same){animation:none;mix-blend-mode:normal}
 /* a vertical day scrolled sideways: its time column (the background the cards slide
-   under) moves as a cover too, and the time labels stay over it, so neither the cards
-   nor the bare labels show in the column while items move */
-html[data-view-tx="mx"] .vt-wrap.scroll .vt-tcol{view-transition-name:vt-tcol;view-transition-class:mx-cover}
-html[data-view-tx="mx"] .vt-wrap.scroll .vt-t{view-transition-class:mx-cover!important}
-::view-transition-group(vt-tcol){background:var(--bg)}
-::view-transition-old(vt-tcol),::view-transition-new(vt-tcol){display:none}
+   under) moves as a cover too (named by mxBegin), and the time labels stay over it, so
+   neither the cards nor the bare labels show in the column while items move */
+::view-transition-group(mx-vt-tcol){background:var(--bg)}
+::view-transition-old(mx-vt-tcol),::view-transition-new(mx-vt-tcol){display:none}
 html[data-view-tx="dlg"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
 /* (the old view goes quickly, before the new one comes in, so the two never show
    doubled for long) */
@@ -603,12 +616,9 @@ html[data-view-tx-quick]::view-transition-old(root){animation-duration:calc(var(
    bars or blocks (or back), in Fast's 300ms, times the speed setting */
 html[data-view-tx="lay"]::view-transition-old(root){animation:calc(var(--dur-s) / 2) var(--ease) both week-tx-out}
 html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(--ease) calc(var(--dur-s) / 4) both lay-in;transform-origin:50% 30%}
-html[data-view-tx="lay"]::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* (a card and a bar are too unlike to show together for long: the old look goes at once,
    in 90ms, as the new one comes in, pinned to the top left of the moving box, so a card
-   reads as folding into its bar and a bar as unfolding into its card) */
-html[data-view-tx="lay"]::view-transition-new(*.mx-shape){animation:calc(90ms * var(--mo)) var(--ease) both mx-shape-in}
-html[data-view-tx="lay"]::view-transition-old(*.mx-shape){animation:calc(90ms * var(--mo)) linear both week-tx-out}
+   reads as folding into its bar and a bar as unfolding into its card: mxBegin's animate) */
 @keyframes lay-in{from{opacity:0;transform:scale(.985)}}
 /* (the new page's stuck heads (mx-head) show at once, as the toolbar does, over the items
    moving under them) */
@@ -621,15 +631,19 @@ html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--
 /* ---- All week <-> a day (kinds 'dayin', 'dayout'; txBandAnim) ----
    The day grows out of its row or column in the week, or shrinks back into it: the two
    pictures lie one over the other unblended, the day's on top, and Web Animations clip
-   and fade them (these fades are the fallback). The sessions moving between their week
-   blocks and their bars or cards take as long (300ms, times the speed). */
+   and fade them (these fades are the fallback, off once they do: data-view-tx-band, so
+   each picture has one fade and one clip, both on the compositor). The sessions moving
+   between their week blocks and their bars or cards take as long (300ms, times the speed). */
 html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(root),html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(root){mix-blend-mode:normal}
 html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-old(root){animation:calc(300ms * var(--mo)) var(--ease) both week-tx-out}
 html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
+html[data-view-tx-band]::view-transition-old(root),html[data-view-tx-band]::view-transition-new(root){animation:none}
 html[data-view-tx="dayout"]::view-transition-old(root){z-index:1}
-html:is([data-view-tx="dayin"],[data-view-tx="dayout"])::view-transition-group(*.mx){animation-duration:calc(300ms * var(--mo))}
 /* A new theme, contrast or text size (displayFade): the whole page, toolbar and dialog
-   included, cross-fades from the old look to the new one */
+   included, cross-fades from the old look to the new one (and nothing on the page runs a
+   colour transition of its own meanwhile, data-view-tx-disp: each would restyle on the
+   main thread, every frame, under a picture that hides it) */
+html[data-view-tx-disp] *,html[data-view-tx-disp] *::before,html[data-view-tx-disp] *::after{transition:none!important}
 html[data-view-tx="disp"]::view-transition-old(root){animation:var(--dur-l) var(--ease) both week-tx-out}
 html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(--ease) both week-tx-fade}
 /* a new text size moves every line: the old look goes first and the new one follows
@@ -6164,24 +6178,41 @@ function mxUnderHeads(){
   }
   return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
 }
-let mxNamed = [], mxOwner = null, mxShown = [], mxNew = false;
+let mxNamed = [], mxOwner = null, mxShown = [];
+// (this transition's own rules: each moving group's size, a clip that stays put, a look
+// the page fades itself; set once, in the update callback, before the browser builds the
+// transition's parts, so it styles them once)
+let mxSheet = null;
+function mxRules(css){
+  if (!mxSheet){
+    if (!css) return;
+    try { mxSheet = new CSSStyleSheet(); document.adoptedStyleSheets = [...document.adoptedStyleSheets, mxSheet]; }
+    catch (e){ mxSheet = false; }
+  }
+  if (mxSheet) mxSheet.replaceSync(css);
+}
 function mxClear(){
   for (const el of mxNamed){ el.style.viewTransitionName = ''; el.style.viewTransitionClass = ''; }
   for (const b of mxShown) b.style.contentVisibility = '';
-  mxNamed = []; mxShown = []; mxNew = false;
+  if (mxSheet && mxSheet.cssRules.length) mxSheet.replaceSync('');
+  mxNamed = []; mxShown = [];
 }
 // keys are made safe for view-transition-name before they are compared, so two keys
-// never end up as one name (which would abort the whole transition)
-const mxSafe = key => key.replace(/[^\w-]/g, '_');
-// (in the new state (mxNew), a list's time block or My agenda row the browser has not
-// drawn yet, as one just put on the page by the change: drawn now, or its item would have
-// no picture to move to)
+// never end up as one name (which would abort the whole transition): in lower case, with
+// any other character as its code between underscores (a Web Animation's pseudoElement
+// finds a name in lower case only; one with a capital, such as a lane's, would run its
+// animation on nothing). A key made safe stays as it is.
+const mxSafe = key => key.replace(/[^a-z0-9_-]/g, c => '_' + c.charCodeAt(0).toString(16) + '_');
 function mxName(el, key, cls){
   el.style.viewTransitionName = 'mx-' + mxSafe(key);
   el.style.viewTransitionClass = cls;
   mxNamed.push(el);
-  const cv = mxNew && el.closest('.block, .ag-row');
-  if (cv && !cv.style.contentVisibility){ cv.style.contentVisibility = 'visible'; mxShown.push(cv); }
+}
+// (in the new state, a list's time block or My agenda row the browser has not drawn yet,
+// as one just put on the page by the change: drawn now, once for each, or its item would
+// have no picture to move to)
+function mxShow(blocks){
+  for (const b of blocks) if (!b.style.contentVisibility){ b.style.contentVisibility = 'visible'; mxShown.push(b); }
 }
 const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key) + ')';
 // What is on screen now: items, grid marks (aux) and sticky covers by key, each with its
@@ -6333,15 +6364,143 @@ function mxBegin(kind, from, opts){
       if (opts.nest && it.p && !old.has(it.p)) continue;
       if (!old.has(it.key) && it.el !== from) old.set(it.key, it);
     }
+    // (a vertical day scrolled sideways: its time column, the background the cards slide
+    // under, moves as a cover too, under the hour labels)
+    const tc = kind === 'mx' && document.getElementById('main').querySelector('.vt-wrap.scroll .vt-tcol');
+    if (tc) old.set('vt-tcol', { key: 'vt-tcol', el: tc, r: tc.getBoundingClientRect(), c: null, p: '', kind: 'cover', d: 0 });
   }
-  for (const [key, it] of old) mxName(it.el, key, it.kind === 'cover' ? 'mx-cover' : 'mx');
-  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [], rise: [] }, live = [];
+  // (covers sit above the items; so do a sideways-scrolled vertical day's hour labels,
+  // over its time column)
+  const base = it => it.kind === 'cover' || (kind === 'mx' && it.kind === 'grid' && it.el.classList.contains('vt-t') && !!it.el.closest('.vt-wrap.scroll')) ? 'mx-cover' : 'mx';
+  for (const [key, it] of old) mxName(it.el, key, base(it));
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [], rise: [] }, live = [], anims = [], rules = [];
+  const k = motionK(), MS = opts.band !== undefined || kind === 'lay' ? TX_DAY_MS : MX_MS;
+  // ---- the moves, worked out in the update callback (names and their rules are set before
+  // the browser builds the transition's parts) and started once it has (animate). Each
+  // group stays where the browser puts it (at the new item's place, or the old one's for an
+  // item with no new look), with no animation, and its looks move: every part with a
+  // running animation is styled again in each frame the page itself draws (for whatever
+  // reason: a colour fading in the toolbar), and a moving group would bring all it holds
+  // with it, at several times the cost of its two looks alone.
+  // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
+  // canvas do not spill past its edges while they move)
+  const ins = (r, c) => c ? [c.top - r.top, r.right - c.right, r.bottom - c.bottom, c.left - r.left] : [0, 0, 0, 0];
+  const inset = v => `inset(${v.map(x => Math.max(0, x).toFixed(1) + 'px').join(' ')})`, NO_CLIP = inset([0, 0, 0, 0]);
+  const px = x => +x.toFixed(2) + 'px';
+  const tr = (x, y) => `translate(${px(x)},${px(y)})`;
+  const R = (left, top, width, height) => ({ left, top, width, height, right: left + width, bottom: top + height });
+  const lerp = (a, b, q) => R(a.left + (b.left - a.left) * q, a.top + (b.top - a.top) * q, a.width + (b.width - a.width) * q, a.height + (b.height - a.height) * q);
+  // A look's move from rect a to rect b (ca, cb: its scroll boxes', the parts that show),
+  // its group at g (or, with no g, the group's own move, to the page's top left): it is
+  // moved (translate) and clipped (inset) to the box it would have at that point, from its
+  // top left (it is pinned there, at its own size, in its group, which keeps the larger of
+  // its two sizes: W, H), and to its scroll box's edges: each side of that inset moves on a
+  // straight line with the item, held at 0 once that edge is inside its box, with a
+  // keyframe where it gets there (between two keyframes only, the inset would reach 0 late
+  // and cut the item short of the box's edge; and a negative inset, which would not need
+  // the keyframe, makes every frame repaint). Width and height themselves never animate:
+  // the browser would lay the group out every frame, on the main thread. With `stay`, the
+  // look stays where it is and only the box over it moves (a session growing out of its
+  // talks, or shrinking back into them).
+  const move = (a, ca, b, cb, g, stay) => {
+    const W = Math.max(a.width, b.width), H = Math.max(a.height, b.height);
+    const ia = ins(a, ca), ib = ins(b, cb), at = new Set([0, 1]);
+    for (let i = 0; i < 4; i++) if ((ia[i] > 0) !== (ib[i] > 0)){ const q = ia[i] / (ia[i] - ib[i]); if (q > .002 && q < .998) at.add(q); }
+    const o = g || { left: 0, top: 0, width: W, height: H };
+    // (the box, and the part of it its scroll box shows, from the look's top left: with a
+    // keyframe too where an edge of the box passes the look's)
+    const box = q => {
+      const r = lerp(a, b, q), v = ia.map((x, i) => Math.max(0, x + (ib[i] - x) * q));
+      return [r.top + v[0] - o.top, o.left + o.width - r.right + v[1], o.top + o.height - r.bottom + v[2], r.left + v[3] - o.left];
+    };
+    if (stay){
+      const qs = [...at].sort((x, y) => x - y);
+      for (let j = 1; j < qs.length; j++){
+        const p = box(qs[j - 1]), n = box(qs[j]);
+        for (let i = 0; i < 4; i++) if ((p[i] > 0) !== (n[i] > 0)){ const q = qs[j - 1] + (qs[j] - qs[j - 1]) * p[i] / (p[i] - n[i]); if (q > qs[j - 1] + .002 && q < qs[j] - .002) at.add(q); }
+      }
+    }
+    const frames = [...at].sort((x, y) => x - y).map(q => {
+      if (stay) return { offset: q, clipPath: inset(box(q)) };
+      const r = lerp(a, b, q), v = ia.map((x, i) => Math.max(0, x + (ib[i] - x) * q));
+      v[1] += W - r.width; v[2] += H - r.height;
+      return { offset: q, transform: tr(r.left - o.left, r.top - o.top), clipPath: inset(v) };
+    });
+    const clip = frames.some(f => f.clipPath !== NO_CLIP), still = frames.every(f => f.transform === frames[0].transform && f.clipPath === frames[0].clipPath);
+    if (!clip) for (const f of frames) delete f.clipPath;
+    // (a look that stays is in a group of its own size)
+    return { W: stay ? undefined : W, H, frames: still ? null : frames, clip: still && clip ? frames[0].clipPath : null };
+  };
+  // a look's fade: keyframes (or [from, to] opacities), Fast's duration, its easing, its
+  // delay (a lift, by translate: its move is the transform)
+  const fade = (frames, duration = MS, easing = MX_EASE, delay = 0) => ({ frames: typeof frames[0] === 'number' ? [{ opacity: frames[0] }, { opacity: frames[1] }] : frames, duration, easing, delay });
+  // Each look's move and fade as one animation (each animation costs every frame the page
+  // draws while it runs): their keyframes together where they keep the same time; else on
+  // one timeline as long as both, each keeping its own timing by its keyframes' easing (a
+  // part of two keyframes, or a linear one: a move with keyframes where it meets its
+  // scroll box's edges is eased across them); else one each. And its
+  // group's size and still clip, as rules of this transition's own (each under html: a
+  // rule with no element of its own would restyle every element on the page when it
+  // comes and goes).
+  const ruled = new Set();
+  const offs = t => t.frames.map((x, i) => x.offset ?? i / (t.frames.length - 1));
+  const look = (key, part, m, f) => {
+    if (m && !ruled.has(key)){
+      ruled.add(key);
+      if (m.W !== undefined) rules.push(`html${mxPart('group', key)}{width:${px(m.W)};height:${px(m.H)}}`);
+      if (m.clip) rules.push(`html${mxPart('group', key)}{clip-path:${m.clip}}`);
+    }
+    const ts = [m && m.frames && { frames: m.frames, duration: MS, easing: MX_EASE, delay: m.delay || 0 }, f].filter(Boolean);
+    if (ts.length < 2){ for (const t of ts) anims.push([key, part, t.frames, t]); return; }
+    const [a, b] = ts;
+    if (a.duration === b.duration && a.easing === b.easing && a.delay === b.delay){
+      const at = new Map();
+      for (const t of ts) offs(t).forEach((q, i) => { q = +q.toFixed(4); at.set(q, { ...at.get(q), ...t.frames[i], offset: q }); });
+      anims.push([key, part, [...at.values()].sort((x, y) => x.offset - y.offset), a]);
+      return;
+    }
+    if (!ts.every(t => t.frames.length === 2 || t.easing === 'linear')){ for (const t of ts) anims.push([key, part, t.frames, t]); return; }
+    // (one timeline from the earlier start to the later end: each part held at its first
+    // values before it starts and its last after it ends, its first keyframe carrying its
+    // easing; parts never share a keyframe, so each property keeps its own)
+    const t0 = Math.min(a.delay, b.delay), end = Math.max(a.delay + a.duration, b.delay + b.duration) - t0, frames = [];
+    for (const t of ts){
+      const o = offs(t), at = q => +((t.delay - t0 + q * t.duration) / end).toFixed(4), { offset: _a, ...first } = t.frames[0], { offset: _b, ...last } = t.frames.at(-1);
+      if (at(0) > 0) frames.push({ ...first, offset: 0 });
+      t.frames.forEach((x, i) => frames.push({ ...x, offset: at(o[i]), easing: t.frames.length === 2 && i === 0 ? t.easing : 'linear' }));
+      if (at(1) < 1) frames.push({ ...last, offset: 1 });
+    }
+    anims.push([key, part, frames.sort((x, y) => x.offset - y.offset), { duration: end, easing: 'linear', delay: t0 }]);
+  };
+  // (an item with no new look: its old one's own fade is off, the page fades it itself)
+  const own = key => rules.push(`html${mxPart('old', key)}{animation:none}`);
+  // (only an item that reaches past its box at either end needs the clip)
+  const out = x => x.c && (x.r.left < x.c.left - 1 || x.r.right > x.c.right + 1 || x.r.top < x.c.top - 1 || x.r.bottom > x.c.bottom + 1);
+  const same = (a, b) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2;
+  // a rect inside `a` taken to the same place inside `b`
+  const map = (r, a, b) => {
+    const sx = b.width / (a.width || 1), sy = b.height / (a.height || 1);
+    return R(b.left + (r.left - a.left) * sx, b.top + (r.top - a.top) * sy, r.width * sx, r.height * sy);
+  };
   return {
-    after(target){
-      mxNew = true;
+    after(target, rect){
+      // ---- what the new page shows (all of it measured before anything is named, so the
+      // new view is laid out once: a list's time blocks and My agenda's rows in sight, which
+      // the browser has not drawn yet (just put on the page by the change), are drawn first,
+      // together, before anything in them is measured)
+      if (!pop){
+        const vh = innerHeight, sight = [];
+        for (const b of document.getElementById('main').querySelectorAll('.block, .ag-row')){
+          const r = b.getBoundingClientRect();
+          if (r.top >= vh) break;
+          if (r.bottom > 0) sight.push(b);
+        }
+        mxShow(sight);
+      }
       const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && new Set(old.keys()));
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
+      const names = [], heads = [];
       if (only){
         const under = mxUnderHeads();
         for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
@@ -6349,17 +6508,20 @@ function mxBegin(kind, from, opts){
         // under its stream chips) are shown over the items at once, with the toolbar, so
         // nothing moving crosses over them: mx-head, in the style sheet)
         const bar = stickyWrap.getBoundingClientRect().bottom;
-        let i = 0;
         for (const h of document.getElementById('main').querySelectorAll(MX_HEADS)){
           const r = h.getBoundingClientRect();
-          if (r.height && r.bottom > bar + 1 && r.top < bar + 64 && r.top < innerHeight) mxName(h, 'h-' + i++, 'mx-cover mx-head');
+          if (r.height && r.bottom > bar + 1 && r.top < bar + 64 && r.top < innerHeight) heads.push(h);
         }
+      }
+      if (old.has('vt-tcol')){
+        const tc = document.getElementById('main').querySelector('.vt-wrap.scroll .vt-tcol');
+        if (tc) now.set('vt-tcol', { key: 'vt-tcol', el: tc, r: tc.getBoundingClientRect(), c: null, p: '', kind: 'cover', d: 0 });
       }
       // All week <-> a day: a session of the day whose bar or card (or week block) is not in
       // sight in the new view (scrolled out of the day's side-scrolling canvas, or further
       // down the page) still moves to it, wherever it is, clipped by its scroll box's edges
-      // as it goes in (clipKeys); taken anywhere else (with the day, as it grows out of its
-      // row), it would land where it has no bar
+      // as it goes in; taken anywhere else (with the day, as it grows out of its row), it
+      // would land where it has no bar
       if (opts.band !== undefined && !pop){
         const miss = new Set([...old.keys()].filter(key => !now.has(key)));
         const sel = kind === 'dayout' ? `.week-col[data-day="${opts.band}"] .week-blk` : '.hz-bar, .hz-talk, .vt-card, .vt-tk';
@@ -6409,20 +6571,13 @@ function mxBegin(kind, from, opts){
       }
       for (const x of cand){
         if (wild && x.o.kind === 'item' && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
-        // (a block that changes shape: its new look comes in over the old one early, so the
-        // two never show as doubled text for long; by its class, in the style sheet, which
-        // costs far less than an animation of its own for each; an hour line just
-        // cross-fades as it moves)
-        const shape = x.o.kind !== 'grid' && (Math.abs(x.o.r.width - x.n.r.width) > 6 || Math.abs(x.o.r.height - x.n.r.height) > 6);
-        mxName(x.n.el, x.key, (x.o.kind === 'cover' ? 'mx-cover' : 'mx') + (shape ? ' mx-shape' : ''));
         plan.pairs.push(x);
       }
       if (wild){
         for (const { key, o } of plan.fold) plan.fade.push({ key, o });
         plan.fold = [];
-        // (the old picture goes quickly: the two pages are too unlike to show together)
+        // (the old pictures go quickly: the two pages are too unlike to show together)
         plan.quick = true;
-        document.documentElement.dataset.viewTxQuick = '';
       }
       // A session that comes or goes around saved talks shown on their own (My agenda's
       // "Show full sessions", or saving or removing the session): it grows out of those
@@ -6430,32 +6585,31 @@ function mxBegin(kind, from, opts){
       // its own block and its place inside the session.
       const alone = it => it.kind === 'item' && it.el.dataset.inSid;
       const union = rs => rs.reduce((u, r) => u ? { left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) } : { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, null);
-      const rect = u => u && { left: u.left, top: u.top, right: u.right, bottom: u.bottom, width: u.right - u.left, height: u.bottom - u.top };
+      const box = u => u && { left: u.left, top: u.top, right: u.right, bottom: u.bottom, width: u.right - u.left, height: u.bottom - u.top };
       const band = opts.band !== undefined;
       if (!wild && !pop && !band){
         plan.fade = plan.fade.filter(({ key, o }) => {
           if (o.kind !== 'item' || !key.startsWith('s-')) return true;
-          const to = rect(union([...now.values()].filter(n => n.p === key && alone(n)).map(n => n.r)));
+          const to = box(union([...now.values()].filter(n => n.p === key && alone(n)).map(n => n.r)));
           if (!to) return true;
           plan.sink.push({ key, o, to });
           return false;
         });
         for (const [key, n] of now){
           if (old.has(key) || named.has(n.el) || n.kind !== 'item' || !key.startsWith('s-') || count >= lim) continue;
-          const from = rect(union([...old.values()].filter(o => o.p === key && alone(o)).map(o => o.r)));
+          const from = box(union([...old.values()].filter(o => o.p === key && alone(o)).map(o => o.r)));
           if (!from) continue;
-          // (under the talks moving into it)
-          mxName(n.el, key, 'mx mx-under'); named.add(n.el); count++;
+          named.add(n.el); count++;
           plan.emerge.push({ key, n, from });
         }
       }
       for (const [key, n] of band ? [] : now){
         if (old.has(key) || named.has(n.el) || !near(n) || count >= lim) continue;
         if (n.kind === 'item' && n.p && old.has(n.p) && now.has(n.p) && plan.pairs.some(x => x.key === n.p)){
-          mxName(n.el, key, 'mx'); named.add(n.el); count++;
+          named.add(n.el); count++;
           plan.grow.push({ key, n, po: old.get(n.p), pn: now.get(n.p) });
         } else if (opts.grow && n.kind === 'item' && n.d === 0){
-          mxName(n.el, key, 'mx'); named.add(n.el); count++;
+          named.add(n.el); count++;
           plan.added.push({ key, n });
         }
       }
@@ -6464,12 +6618,20 @@ function mxBegin(kind, from, opts){
       // item you were at first, so the whole screen moves as one, not one item alone
       if (kind === 'lay' && !opts.lite && !pop){
         const under = mxUnderHeads(), vh = innerHeight, vw = innerWidth, y = old.size ? [...old.values()][0].r.top : 0;
-        const rise = [];
+        const rise = [], seen = [], blk = new Map();
         for (const el of document.getElementById('main').querySelectorAll(state.layout === 'list' ? '.card[data-sid], .ag-row[data-sid]' : LAY_CAL)){
           const sid = el.dataset.sid;
           if (!sid || named.has(el) || el.dataset.tid) continue;
           const key = mxSafe('s-' + sid);
           if (old.has(key)) continue;
+          // (a time block off screen is not laid out (content-visibility): measuring an
+          // item in it would lay the whole block out, one block at a time; each block is
+          // measured once, and only items in a block in sight, drawn already, are)
+          const b = el.closest('.block, .ag-row');
+          if (b){ let br = blk.get(b); if (!br) blk.set(b, br = b.getBoundingClientRect()); if (br.bottom <= 0 || br.top >= vh) continue; }
+          seen.push({ el, key });
+        }
+        for (const { el, key } of seen){
           const r = el.getBoundingClientRect();
           if (r.height < 2 || r.bottom <= 0 || r.top >= vh || r.left < 0 || r.right > vw || under(r)) continue;
           // (whole in its scroll box: a named item is drawn above the page, unclipped)
@@ -6480,102 +6642,100 @@ function mxBegin(kind, from, opts){
         rise.sort((p, q) => p.d - q.d);
         for (const x of rise){
           if (count >= mxCap()) break;
-          mxName(x.el, x.key, 'mx'); named.add(x.el); count++;
-          plan.rise.push({ key: x.key, r: x.r, i: plan.rise.length });
+          named.add(x.el); count++;
+          plan.rise.push({ key: x.key, el: x.el, r: x.r, i: plan.rise.length });
         }
       }
-    },
-    // (rect: All week <-> a day, the day's row or column in the week, on screen)
-    animate(rect){
-      const root = document.documentElement, k = motionK(), MS = opts.band !== undefined || kind === 'lay' ? TX_DAY_MS : MX_MS;
-      // durations and delays are Fast's, times the speed setting
-      const run = (key, part, frames, o = {}) => {
-        try { live.push(root.animate(frames, { easing: MX_EASE, fill: 'both', ...o, duration: (o.duration || MS) * k, delay: (o.delay || 0) * k, pseudoElement: mxPart(part, key) })); } catch (e) {}
-      };
-      const box = (r, s = 1) => ({ transform: `translate(${r.left}px,${r.top}px)`, width: r.width + 'px', height: Math.max(0, r.height * s) + 'px' });
-      // a rect inside `a` taken to the same place inside `b`
-      const map = (r, a, b) => {
-        const sx = b.width / (a.width || 1), sy = b.height / (a.height || 1);
-        const left = b.left + (r.left - a.left) * sx, top = b.top + (r.top - a.top) * sy, width = r.width * sx, height = r.height * sy;
-        return { left, top, width, height, right: left + width, bottom: top + height };
-      };
-      // the part of a rect its scroll box shows, as an inset (so items in a side-scrolling
-      // canvas do not spill past its edges while they move)
-      const ins = (r, c) => c ? [c.top - r.top, r.right - c.right, r.bottom - c.bottom, c.left - r.left] : [0, 0, 0, 0];
-      const inset = v => `inset(${v.map(x => Math.max(0, x).toFixed(1) + 'px').join(' ')})`;
-      const clip = (r, c) => inset(ins(r, c));
-      // ...and from one rect to another (with the box moving between them: boxes): each
-      // side's inset moves on a straight line with the item, held at 0 once that edge is
-      // inside its box, with a keyframe where it gets there (between two keyframes only,
-      // the inset would reach 0 late and cut the item short of the box's edge; and a
-      // negative inset, which would not need the keyframe, makes every frame repaint)
-      const lerp = (a, b, q) => ({ left: a.left + (b.left - a.left) * q, top: a.top + (b.top - a.top) * q, width: a.width + (b.width - a.width) * q, height: a.height + (b.height - a.height) * q });
-      const clipKeys = (ra, ca, rb, cb, boxes) => {
-        const a = ins(ra, ca), b = ins(rb, cb), at = new Set([0, 1]);
-        for (let i = 0; i < 4; i++) if ((a[i] > 0) !== (b[i] > 0)){ const q = a[i] / (a[i] - b[i]); if (q > .002 && q < .998) at.add(q); }
-        return [...at].sort((x, y) => x - y).map(q => ({ offset: q, clipPath: inset(a.map((x, i) => x + (b[i] - x) * q)), ...(boxes ? box(lerp(ra, rb, q)) : {}) }));
-      };
-      // (only an item that reaches past its box at either end needs the clip: each
-      // animation costs a style pass, and a grid in a scroll box has dozens of items)
-      const out = x => x.c && (x.r.left < x.c.left - 1 || x.r.right > x.c.right + 1 || x.r.top < x.c.top - 1 || x.r.bottom > x.c.bottom + 1);
-      const clipped = (...xs) => xs.some(out);
-      const same = (a, b) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2;
-      for (const { key, o, n } of plan.pairs){
-        if (clipped(o, n)) run(key, 'group', clipKeys(o.r, o.c, n.r, n.c));
+      // (the other blocks of the new page that hold a named item are drawn too, once each,
+      // and only now that nothing more is measured)
+      const blocks = new Set();
+      for (const el of [...named, ...heads]){ const b = el.closest('.block, .ag-row'); if (b) blocks.add(b); }
+      mxShow(blocks);
+      // ---- each one's move (all Fast's times, as the speed setting scales them in animate)
+      for (const x of plan.pairs){
+        const { key, o, n } = x, cls = base(o);
+        const clipped = out(o) || out(n);
+        const dw = Math.abs(o.r.width - n.r.width), dh = Math.abs(o.r.height - n.r.height);
         // a cover that stays where it is but whose contents change (the ruler and minimap
         // at another zoom, with Now somewhere else): the new one replaces the old quickly,
         // rather than the two showing over each other all the way
         if (o.kind === 'cover' && same(o.r, n.r)){
-          run(key, 'new', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 1, mixBlendMode: 'normal' }], { duration: MO_S / 3 });
-          run(key, 'old', [{ opacity: 1, mixBlendMode: 'normal' }, { opacity: 0, mixBlendMode: 'normal' }], { duration: MO_S / 3, easing: 'linear' });
+          names.push([n.el, key, cls + ' mx-own mx-cover-same']);
+          look(key, 'old', clipped ? { clip: inset(ins(n.r, n.c)) } : null, fade([1, 0], MO_S / 3, 'linear'));
+          continue;
         }
+        // (the time column has no looks, only its group's background, which moves)
+        if (key === 'vt-tcol'){
+          names.push([n.el, key, cls + ' mx-own']);
+          look(key, 'group', move(o.r, o.c, n.r, n.c));
+          continue;
+        }
+        // the same size: its two looks move, as they cross-fade (mx-still); else (a block
+        // that changes shape) its new look comes in over the old one early, so the two never
+        // show as doubled text for long (a card and a bar, between List and Calendar, are
+        // too unlike to show together for long: the old look goes at once, as the new one
+        // comes in); an hour line just cross-fades as it moves
+        const still = dw <= .5 && dh <= .5, shape = !still && o.kind !== 'grid' && (dw > 6 || dh > 6);
+        const looks = !shape ? { old: fade([1, 0]), neu: fade([0, 1]) }
+          : kind === 'lay' ? { old: fade([1, 0], 90, 'linear'), neu: fade([0, 1], 90, EASE) }
+          : { old: fade([{ opacity: 1 }, { opacity: 1, offset: .4 }, { opacity: 0 }], MS * .55, 'linear'), neu: fade([0, 1], MS * .4, EASE) };
+        names.push([n.el, key, cls + ' mx-own' + (still ? ' mx-still' : '') + (shape ? '' : ' mx-plus')]);
+        const m = move(o.r, o.c, n.r, n.c, n.r);
+        look(key, 'old', m, looks.old);
+        look(key, 'new', m, looks.neu);
       }
       plan.grow.forEach(({ key, n, po, pn }, i) => {
-        const from = map(n.r, pn.r, po.r);
-        run(key, 'group', clipKeys(from, po.c, n.r, n.c, true));
-        run(key, 'new', [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }], { duration: MO_S, delay: 25 + Math.min(i, 5) * 12, easing: EASE });
+        names.push([n.el, key, 'mx mx-own']);
+        look(key, 'new', move(map(n.r, pn.r, po.r), po.c, n.r, n.c, n.r), fade([{ opacity: 0, translate: '0px -4px' }, { opacity: 1, translate: '0px 0px' }], MO_S, EASE, 25 + Math.min(i, 5) * 12));
       });
       // folding is unfolding run backwards: each talk shrinks into its place in the
       // session and only then fades (and lifts), the first to unfold the last to go
       plan.fold.forEach(({ key, o, po, pn }, i) => {
-        const to = map(o.r, po.r, pn.r);
-        run(key, 'group', clipKeys(o.r, o.c, to, pn.c, true));
-        run(key, 'old', [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-4px)' }], { duration: MO_S, delay: Math.max(0, MX_MS - MO_S - 25 - Math.min(i, 5) * 12), easing: 'cubic-bezier(1,0,.8,1)' });
+        own(key);
+        look(key, 'old', move(o.r, o.c, map(o.r, po.r, pn.r), pn.c, o.r), fade([{ opacity: 1, translate: '0px 0px' }, { opacity: 0, translate: '0px -4px' }], MO_S, 'cubic-bezier(1,0,.8,1)', Math.max(0, MX_MS - MO_S - 25 - Math.min(i, 5) * 12)));
       });
+      // (the rest go where they are, with their own fade (the style sheet's, with
+      // data-view-tx-quick or data-view-tx-band), clipped to their scroll boxes;
+      // opts.collapse: an item folds up as it goes)
       for (const { key, o } of plan.fade){
-        if (out(o)) run(key, 'group', [{ clipPath: clip(o.r, o.c) }, { clipPath: clip(o.r, o.c) }]);
-        if (plan.quick) run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S / 3, easing: 'linear' });
         if (opts.collapse && o.kind === 'item'){
-          run(key, 'group', [box(o.r), box(o.r, 0)]);
-          run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MO_S, easing: EASE });
-        }
-        // All week <-> a day: an item with no place in the other view (none at all, or too
-        // far away to move to) fades where it is, quickly: stretched with the day as it grows
-        // out of its row (a strip a few pixels high, in Horizontal, when the row is below
-        // the screen) it would fly across the screen to where it has no bar
-        if (rect && o.kind === 'item') run(key, 'old', [{ opacity: 1 }, { opacity: 0 }], { duration: MS * .4, easing: 'linear' });
+          const f = rect ? [MS * .4, 'linear'] : [MO_S, EASE];
+          own(key);
+          look(key, 'old', move(o.r, o.c, R(o.r.left, o.r.top, o.r.width, 0), o.c, o.r), fade([1, 0], f[0], f[1]));
+        } else if (out(o)) look(key, 'old', { clip: inset(ins(o.r, o.c)) });
       }
       for (const { key, n } of plan.added){
-        run(key, 'group', [box(n.r, 0), box(n.r)]);
-        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S, delay: MO_S / 3, easing: EASE });
+        names.push([n.el, key, 'mx mx-own']);
+        look(key, 'new', move(R(n.r.left, n.r.top, n.r.width, 0), null, n.r, null, n.r), fade([0, 1], MO_S, EASE, MO_S / 3));
       }
-      for (const { key, r, i } of plan.rise){
-        const delay = Math.min(i, 10) * 16, from = { left: r.left, top: r.top + Math.min(32, r.height * .25 + 12), width: r.width, height: r.height };
-        run(key, 'group', [box(from), box(r)], { delay });
-        run(key, 'new', [{ opacity: 0 }, { opacity: 1 }], { duration: MS * .7, delay, easing: EASE });
+      for (const { key, el, r, i } of plan.rise){
+        const delay = Math.min(i, 10) * 16;
+        names.push([el, key, 'mx mx-own']);
+        look(key, 'new', { frames: [{ offset: 0, transform: tr(0, Math.min(32, r.height * .25 + 12)) }, { offset: 1, transform: tr(0, 0) }], delay }, fade([0, 1], MS * .7, EASE, delay));
       }
-      // the session's box grows from its talks' to its own, and its picture stays put on
-      // the page as the box uncovers it (object-position makes up for the box's move);
-      // shrinking, the reverse, fading out at the end
-      const at = (r, b) => `${Math.round(r.left - b.left)}px ${Math.round(r.top - b.top)}px`;
+      // the session's box grows from its talks' to its own, its picture staying put on the
+      // page as the box uncovers it; shrinking, the reverse, fading out at the end
       for (const { key, n, from } of plan.emerge){
-        run(key, 'group', clipKeys(from, n.c, n.r, n.c, true));
-        run(key, 'new', [{ objectPosition: at(n.r, from), opacity: 0 }, { opacity: 1, offset: .35 }, { objectPosition: '0px 0px', opacity: 1 }]);
+        // (under the talks moving into it)
+        names.push([n.el, key, 'mx mx-under mx-own']);
+        look(key, 'new', move(from, n.c, n.r, n.c, n.r, true), fade([{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 1 }]));
       }
       for (const { key, o, to } of plan.sink){
-        run(key, 'group', clipKeys(o.r, o.c, to, o.c, true));
-        run(key, 'old', [{ objectPosition: '0px 0px', opacity: 1 }, { opacity: 1, offset: .55 }, { objectPosition: at(o.r, to), opacity: 0 }]);
+        own(key);
+        look(key, 'old', move(o.r, o.c, to, o.c, o.r, true), fade([{ opacity: 1 }, { opacity: 1, offset: .55 }, { opacity: 0 }]));
       }
+      // ---- and now the names, and this transition's rules (nothing is measured after this)
+      for (const [el, key, cls] of names) mxName(el, key, cls);
+      let i = 0;
+      for (const h of heads) mxName(h, 'h-' + i++, 'mx-cover mx-head');
+      if (plan.quick) document.documentElement.dataset.viewTxQuick = 'mx';
+      mxRules(rules.join('\n'));
+    },
+    animate(){
+      const root = document.documentElement;
+      // durations and delays are Fast's, times the speed setting
+      for (const [key, part, frames, o] of anims)
+        try { live.push(root.animate(frames, { fill: 'both', easing: o.easing, duration: o.duration * k, delay: o.delay * k, pseudoElement: mxPart(part, key) })); } catch (e) {}
     },
     // (once the transition is over: its animations, which fill forwards, would otherwise
     // outlive it and pin a later transition's parts of the same name where these ended)
@@ -6633,7 +6793,8 @@ const txTimed = (fn, opts, after) => () => {
 };
 function txStart(kind, fn, from, opts){
   const root = document.documentElement;
-  const noTx = () => { if (!viewTx?.vt){ delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; } };
+  const clear = () => { delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; delete root.dataset.viewTxBand; };
+  const noTx = () => { if (!viewTx?.vt) clear(); };
   if (motionReduced()){ txTimed(fn, opts)(); return; }
   const t = performance.now(), g = txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
   txLast = t;
@@ -6652,6 +6813,8 @@ function txStart(kind, fn, from, opts){
   }
   delete root.dataset.viewTxNew;
   delete root.dataset.viewTxQuick;
+  delete root.dataset.viewTxBand;
+  delete root.dataset.viewTxDisp;
   root.dataset.viewTx = kind;
   // (All week -> a day: the day grows out of its row or column, measured in the week now;
   // a day -> All week: it shrinks into the one the new week shows)
@@ -6662,7 +6825,7 @@ function txStart(kind, fn, from, opts){
     if (ran) return done;
     ran = true;
     mxClear();
-    const finish = target => { mx.after(target || null); root.dataset.viewTxNew = ''; };
+    const finish = target => { mx.after(target || null, rect); root.dataset.viewTxNew = ''; };
     const t0 = performance.now(), y0 = window.scrollY;
     inVT = true;
     let out;
@@ -6671,13 +6834,16 @@ function txStart(kind, fn, from, opts){
     redraw = performance.now() - t0;
     txNote(redraw, opts.to);
     if (kind === 'dayout') rect = txBandRect(opts.band);
+    // (All week <-> a day: the two pictures' fades and clips are txBandAnim's alone; with
+    // the day's row or column in sight, the items with no place in the other view fade
+    // quickly. Both by the style sheet)
+    if (band) root.dataset.viewTxBand = rect ? 'rect' : '';
     // a page that jumped (to the top of a new view): the old picture goes at once, so the
     // two never show doubled (a day growing or shrinking covers the jump itself)
     if (Math.abs(window.scrollY - y0) > 40 && !band) root.dataset.viewTxQuick = '';
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
     return done;
   };
-  const clear = () => { delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; };
   let vt;
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
@@ -6688,7 +6854,7 @@ function txStart(kind, fn, from, opts){
   // cost the next change (back to Sessions) its morph)
   vt.ready.then(() => {
     const named = mxNamed.length;
-    mx.animate(rect);
+    mx.animate();
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
@@ -6756,15 +6922,28 @@ function txGuards(kind, opts, t){
 const TX_FREEZE = 150, TX_JANK = 50;
 let txFreeze = 0, txJank = 0, txSeen = -1e9;
 const txAged = (x, t) => x * 0.5 ** Math.max(0, (t - txSeen) / 1000);
+// (the slowest frame is read from the browser's long animation frames (those over 50ms)
+// where it reports them, so watching asks for no frame of its own: a transition that runs
+// on the compositor alone leaves the page's main thread idle; elsewhere, by a frame loop)
+const TX_LOAF = (() => { try { return PerformanceObserver.supportedEntryTypes.includes('long-animation-frame'); } catch (e){ return false; } })();
 function txWatch(vt, t, done){
   const t1 = performance.now();
-  let last = t1, worst = 0, on = true;
+  let last = t1, worst = 0, on = true, obs = null;
   const freeze = t1 - t;
   txFreeze = Math.max(freeze, txAged(txFreeze, t1) / 2);
   txSeen = t1;
-  const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
+  // (a frame that began before the transition's first moving one is its wait, not a jank)
+  const take = es => { for (const e of es) if (e.startTime >= t1 - 1) worst = Math.max(worst, e.duration); };
+  if (TX_LOAF){
+    try { obs = new PerformanceObserver(l => { if (on) take(l.getEntries()); }); obs.observe({ type: 'long-animation-frame' }); }
+    catch (e){ obs = null; }
+  }
+  if (!obs){
+    const tick = now => { if (!on) return; worst = Math.max(worst, now - last); last = now; requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
   vt.finished.catch(() => {}).then(() => {
+    if (obs){ take(obs.takeRecords()); obs.disconnect(); }
     on = false;
     const now = performance.now();
     txJank = Math.max(worst, txAged(txJank, now) / 2);
@@ -6896,7 +7075,9 @@ function txBandAnim(kind, r){
   const go = (part, frames, o = {}) => {
     try { live.push(root.animate(frames, { duration: TX_DAY_MS * k, easing: EASE_EM, fill: 'both', ...o, pseudoElement: `::view-transition-${part}(root)` })); } catch (e) {}
   };
-  const band = r && `inset(${r.top.toFixed(1)}px ${(vw - r.right).toFixed(1)}px ${(vh - r.bottom).toFixed(1)}px ${r.left.toFixed(1)}px round 8px)`, all = 'inset(0px 0px 0px 0px round 0px)';
+  // (the whole screen's corners are rounded a tenth of a pixel, never 0: a clip whose two
+  // ends are not both rounded runs on the main thread)
+  const band = r && `inset(${r.top.toFixed(1)}px ${(vw - r.right).toFixed(1)}px ${(vh - r.bottom).toFixed(1)}px ${r.left.toFixed(1)}px round 8px)`, all = 'inset(0px 0px 0px 0px round 0.1px)';
   if (kind === 'dayin'){
     if (band) go('new', [{ clipPath: band }, { clipPath: all }]);
     go('new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, easing: EASE });
@@ -12123,17 +12304,21 @@ function displayFade(fn, seq){
   let ran = false;
   const run = () => { if (!ran){ ran = true; fn(); } };
   root.dataset.viewTx = 'disp';
+  // (no colour transition of the page's own runs under the fade: an attribute of its own,
+  // as one rule for every element would restyle the whole page for every other change too)
+  root.dataset.viewTxDisp = '';
   // (a new text size: the old look fades out before the new one fades in)
   if (seq) root.dataset.viewTxSeq = ''; else delete root.dataset.viewTxSeq;
   let vt;
   try { vt = document.startViewTransition(run); }
-  catch (e){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; run(); return; }
+  catch (e){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; delete root.dataset.viewTxDisp; run(); return; }
   const tx = viewTx = { vt, run };
   vt.ready.catch(() => {});   // (a skipped fade: a newer change took over)
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
     if (!viewTx){ delete root.dataset.viewTx; delete root.dataset.viewTxSeq; }
+    if (!viewTx || root.dataset.viewTx !== 'disp') delete root.dataset.viewTxDisp;
   });
 }
 // A new speed: the preview card slides in at it, to show how it feels.
