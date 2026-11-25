@@ -1777,13 +1777,13 @@ html:has(dialog[open]) .undo-bar{display:none}
 .hz-day.stuck .hz-mlab{opacity:0}
 /* the shades either side of the window: full width, each scaled from its outer edge to
    where the window starts or ends (hzSync: a transform, no layout) */
-.hz-shade{position:absolute;top:0;bottom:0;width:100%;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none;scale:0 1}
+.hz-shade{position:absolute;top:0;bottom:0;width:100%;background:color-mix(in srgb,var(--card) 60%,transparent);pointer-events:none;scale:0 1;will-change:scale}
 .hz-sl{left:0;transform-origin:0 0}.hz-sr{right:0;transform-origin:100% 0}
 /* the window: placed by its width and a translate (hzSync). Its fill (::before) and its
    1.5px outline (::after, the ring drawn as a clip: hzRing) are clips of its box, so the
    stuck strip (--bt, the top it starts at; --bq, its corner radius) and a zoom's change
    of width (hzMorph) are composited too */
-.hz-brush{position:absolute;top:0;bottom:0;left:0;box-sizing:border-box;min-width:6px;cursor:grab;--bt:0px;--bq:5px;--bb:0px}
+.hz-brush{position:absolute;top:0;bottom:0;left:0;box-sizing:border-box;min-width:6px;cursor:grab;--bt:0px;--bq:5px;--bb:0px;will-change:translate}
 .hz-brush::before,.hz-brush::after{content:"";position:absolute;inset:0;pointer-events:none;transition:clip-path calc(.2s * var(--mo)) ease}
 .hz-brush::before{background:color-mix(in srgb,var(--ink) 6%,transparent);clip-path:inset(var(--bt) 0 calc(0px - var(--bb)) round var(--bq))}
 .hz-brush::after{background:var(--ink)}
@@ -8336,8 +8336,12 @@ function hzSync(h){
     h.querySelector('.hz-sl').style.scale = (fa / 100).toFixed(5) + ' 1';
     h.querySelector('.hz-sr').style.scale = ((100 - fb) / 100).toFixed(5) + ' 1';
   }
-  brush.setAttribute('aria-valuenow', Math.round(a));
-  brush.setAttribute('aria-valuetext', hzHM(a) + ' to ' + hzHM(b));
+  // (the slider's value is told once a glide has landed, not each frame on the way)
+  if (!h._glide){
+    const v = String(Math.round(a)), vt = hzHM(a) + ' to ' + hzHM(b);
+    if (brush.getAttribute('aria-valuenow') !== v) brush.setAttribute('aria-valuenow', v);
+    if (brush.getAttribute('aria-valuetext') !== vt) brush.setAttribute('aria-valuetext', vt);
+  }
   // a minimap label under either edge of the window is lifted clear of its outline
   const map = h.querySelector('.hz-map'), mw = +map.dataset.mw;
   if (map._labs && mw){
@@ -8718,7 +8722,8 @@ function hzGlide(h, left){
     if (!vp.isConnected){ h._glide = null; return; }
     const t = Math.min(1, (now - t0) / dur);
     vp.scrollLeft = from + d * hzEase(t);
-    if (t < 1) g.raf = requestAnimationFrame(step); else h._glide = null;
+    if (t < 1) g.raf = requestAnimationFrame(step);
+    else { h._glide = null; hzSync(h); }
   };
   g.raf = requestAnimationFrame(step);
 }
