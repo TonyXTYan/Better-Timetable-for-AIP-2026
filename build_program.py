@@ -874,7 +874,7 @@ html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(-
 @keyframes lay-in{from{opacity:0;transform:scale(.985)}}
 /* (the new page's stuck heads (mx-head) show at once, as the toolbar does, over the items
    moving under them) */
-html[data-view-tx="lay"]::view-transition-new(*.mx-head){animation:none}
+html:is([data-view-tx="lay"],[data-view-tx="fade"])::view-transition-new(*.mx-head){animation:none}
 /* (a moving Horizontal bar leaves its stubs of the Now line behind: the line stays put) */
 html[data-view-tx="lay"] .hz-day .hz-bar.is-now.hz-now-in[style*="view-transition-name"]::before{display:none}
 /* A change whose morph is off (recent ones were slow): a short plain cross-fade */
@@ -6808,9 +6808,12 @@ function mxBegin(kind, from, opts){
       if (only){
         const under = mxUnderHeads();
         for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
-        // (and the heads stuck at the top of the new page (a phone's time head sits 50px
-        // under its stream chips) are shown over the items at once, with the toolbar, so
-        // nothing moving crosses over them: mx-head, in the style sheet)
+      }
+      // (and the heads stuck at the top of the new page (a phone's time head sits 50px
+      // under its stream chips) are shown over the items at once, with the toolbar, so
+      // nothing moving crosses over them: mx-head, in the style sheet. Also for a change
+      // whose two views have heads of their own (opts.sight: Horizontal <-> Vertical))
+      if (only || opts.sight){
         const bar = stickyWrap.getBoundingClientRect().bottom;
         for (const h of document.getElementById('main').querySelectorAll(MX_HEADS)){
           const r = h.getBoundingClientRect();
@@ -7035,7 +7038,7 @@ function mxBegin(kind, from, opts){
       // ---- and now the names, and this transition's rules (nothing is measured after this)
       for (const [el, key, cls] of names) mxName(el, key, cls);
       let i = 0;
-      for (const h of heads) mxName(h, 'h-' + i++, 'mx-cover mx-head');
+      for (const h of heads) if (!named.has(h)) mxName(h, 'h-' + i++, 'mx-cover mx-head');   // (one paired as a cover moves instead)
       if (plan.quick) document.documentElement.dataset.viewTxQuick = 'mx';
       mxRules(rules.join('\n'));
     },
