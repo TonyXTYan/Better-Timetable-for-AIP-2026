@@ -1456,7 +1456,7 @@ details.talk-d>summary{display:none}
 .talk-star.on,.talk-star.on:hover{background:var(--starOn-bg);border-color:var(--starOn-line);color:var(--starOn-ink)}
 /* the star's glyph settles in as its chip fills */
 :is(.star,.talk-star).on{animation:star-on var(--dur-s) var(--ease-em)}
-@keyframes star-on{from{scale:.8}}
+@keyframes star-on{from{transform:scale(.8)}}
 /* Breaks, meals and meetings with no talks: slim interval rows on dashed hairlines, not plates */
 .block.ivb{margin-bottom:16px}
 .block.ivb .block-time{padding-top:9px}
@@ -2673,7 +2673,7 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
   #eventDialog .ag-btn{min-height:40px}
   .dd-foot .linkish{min-height:40px}
 }
-@keyframes cardflash{0%{background:var(--flash)}100%{background:var(--card)}}
+@keyframes cardflash{0%{background-color:var(--flash)}100%{background-color:var(--card)}}
 .card.flash{animation:cardflash calc(1.4s * var(--mo)) ease-out}
 /* Animation speed (Display options): every duration is a base (Fast) times --mo: Fast 1,
    Normal 2 (the default), Slow 4. (An older stored "slow", the same speed, reads as Normal.)
