@@ -12750,7 +12750,7 @@ function tbRootSync(){
   if (TB.anim){ TB.sync = true; return; }
   TB.sync = false;
   if (TB.rootH !== TB.h){ TB.rootH = TB.h; document.documentElement.style.setProperty('--toolbar-h', TB.h + 'px'); }
-  if (TB.lv.length){ for (const el of TB.lv) el.style.removeProperty('--toolbar-h'); TB.lv = []; }
+  if (TB.lv.length){ for (const el of TB.lv){ el.style.removeProperty('--toolbar-h'); if (el._tbTop) el.style.top = ''; el._tbE = el._tbTop = undefined; } TB.lv = []; }
 }
 // the bar's edge in px, as --toolbar-h has it (for scripts that place things under it)
 const tbEdge = () => TB.h;
@@ -12804,7 +12804,7 @@ function tbFollowers(){
   return out;
 }
 // the edge an element under the bar has: its own (mid-fold, or since), else the root's
-const tbEdgeOf = el => parseFloat(el.style.getPropertyValue('--toolbar-h')) || TB.rootH;
+const tbEdgeOf = el => el._tbE ?? TB.rootH;
 // The view's own head (the day calendars' heads and the week's ruler: each the first thing
 // in its box): the toolbar folds only once the head has scrolled up to where it sits under
 // the slim bar, and scrolling back up it unfolds before the head would come loose. So a
@@ -12886,9 +12886,15 @@ function tbCompact(on){
   }
   // the edge it is moving to, as the page will have it: the heads under it take it now
   // (all of them, not only those in sight: one scrolled up to the edge meanwhile sticks at
-  // the new edge, as it would have before)
-  const e1 = Math.round(h1px);
-  for (const el of follow.all){ el.style.setProperty('--toolbar-h', e1 + 'px'); if (!TB.lv.includes(el)) TB.lv.push(el); }
+  // the new edge, as it would have before). One whose place is known is given its top
+  // (only it restyles); the rest the edge as their own --toolbar-h (with what is in them).
+  const e1 = Math.round(h1px), placed = new Set(follow.map(f => f.el));
+  for (const el of follow.all){
+    if (placed.has(el) && !el.classList.contains('pp-rail')){ el.style.top = e1 + el._tbOff + 'px'; el._tbTop = true; }
+    else { el.style.setProperty('--toolbar-h', e1 + 'px'); if (el._tbTop){ el.style.top = ''; el._tbTop = false; } }
+    el._tbE = e1;
+    if (!TB.lv.includes(el)) TB.lv.push(el);
+  }
   const done = () => {
     if (TB.anim) tbAnimEnd(TB.anim);
     stickyWrap.classList.remove('tb-anim');
