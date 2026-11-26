@@ -1,6 +1,7 @@
 // slider glide + keyboard press checks
 // usage: node tests/func29.js [repoDir]
 const { chromium, devices } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const W = require('./lib/paths').repo(process.argv[2]);
 let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' : 'FAIL ') + m); };
 (async () => {
@@ -12,7 +13,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     if (speed) await ctx.addInitScript(sp => localStorage.setItem('aip2026-display', JSON.stringify({ speed: sp })), speed);
     const p = await ctx.newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-    await p.goto('file://' + W + '/index.html?now=2026-12-08T11:40');
+    await p.goto(pageUrl(W) + '?now=2026-12-08T11:40');
     await p.waitForTimeout(500);
     await p.evaluate(() => { openBuild(null); bdGo(5); });
     await p.waitForTimeout(700);

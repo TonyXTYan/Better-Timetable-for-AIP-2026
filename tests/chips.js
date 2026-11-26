@@ -1,6 +1,7 @@
 // behaviour of the stream-chip / breaks motion in Build my agenda
 // usage: node tests/chips.js [repoDir]
 const { chromium, devices } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const W = require('./lib/paths').repo(process.argv[2]);
 let fails = 0;
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
@@ -12,7 +13,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++
     await ctx.addInitScript(m => localStorage.setItem('aip2026-display', JSON.stringify({ motion: m })), motion);
     const p = await ctx.newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-    await p.goto('file://' + W + '/index.html?now=2026-12-08T11:40#day=2026-12-08');
+    await p.goto(pageUrl(W) + '?now=2026-12-08T11:40#day=2026-12-08');
     await p.waitForTimeout(600);
     const tag = `[${prof} ${motion}]`;
     await p.evaluate(() => { openBuild(null); bdGo(13); }); await p.waitForTimeout(600);
@@ -158,7 +159,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++
     const ctx = await b.newContext({ viewport: { width: 1280, height: 800 } });
     await ctx.addInitScript(s => localStorage.setItem('aip2026-display', JSON.stringify({ speed: s })), sp);
     const p = await ctx.newPage();
-    await p.goto('file://' + W + '/index.html?now=2026-12-08T11:40#day=2026-12-08'); await p.waitForTimeout(500);
+    await p.goto(pageUrl(W) + '?now=2026-12-08T11:40#day=2026-12-08'); await p.waitForTimeout(500);
     const d = await p.evaluate(async () => { openBuild(null); bdGo(13); await new Promise(r => setTimeout(r, 1200)); document.querySelector('#bdChips [data-bd-cat="anzcop"]').click();
       const an = document.getAnimations().filter(a => buildDialog.contains(a.effect?.target));
       return { waapi: Math.max(...an.filter(a => !(a instanceof CSSTransition)).map(a => a.effect.getComputedTiming().endTime)), css: Math.max(...an.filter(a => a instanceof CSSTransition).map(a => a.effect.getComputedTiming().endTime)) }; });

@@ -2,6 +2,7 @@
 // focus, memory across reloads, keyboard.
 // usage: node tests/sw.js [repoDir]   (or REPO=<dir>)
 const { chromium } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const REPO = require('./lib/paths').repo(process.argv[2] || process.env.REPO);
 let fails = 0;
 const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok', m); };
@@ -11,7 +12,7 @@ const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } else console
     const tag = now.slice(5, 10) + '@' + w;
     const p = await b.newPage({ viewport: { width: w, height: h } });
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file://' + REPO + '/index.html?now=' + now);
+    await p.goto(pageUrl(REPO) + '?now=' + now);
     await p.evaluate(() => { localStorage.clear(); });
     await p.reload(); await p.waitForTimeout(300);
     const st = () => p.evaluate(() => ({
@@ -64,7 +65,7 @@ const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } else console
   }
   // default with saved and no choice: My agenda
   const p = await b.newPage({ viewport: { width: 1280, height: 800 } });
-  await p.goto('file://' + REPO + '/index.html?now=2026-12-08T11:40');
+  await p.goto(pageUrl(REPO) + '?now=2026-12-08T11:40');
   await p.evaluate(() => { localStorage.clear(); localStorage.setItem('aip2026-stars', JSON.stringify(DATA.days[2].slots.filter(s => s.start >= '12:00' && s.cat !== 'social').slice(0, 3).map(s => s.id))); });
   await p.reload(); await p.waitForTimeout(300);
   ok(await p.evaluate(() => document.querySelector('.hn-pane.is-on').dataset.hnPane) === 'agenda', 'default with saved: My agenda');

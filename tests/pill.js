@@ -40,6 +40,7 @@
 // Run it with the machine otherwise quiet (uptime): a loaded machine drops frames.
 //   (frames of failing presses are written to <outDir>/frames/<scenario>/<step>/)
 const { chromium, devices } = require('./lib/pw');
+const { fileUrl } = require('./lib/paths');
 const fs = require('fs'), path = require('path');
 const P = require('./lib/paths');
 const repo = P.repo(process.argv[2]);
@@ -294,7 +295,7 @@ async function scenario(b, dec, sc){
   const errors = [];
   p.on('pageerror', e => errors.push(e.message));
   p.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-  const url = 'file://' + page + (process.env.NOW === 'real' ? '' : '?now=' + (process.env.NOW || '2026-11-26T15:00'));
+  const url = fileUrl(page) + (process.env.NOW === 'real' ? '' : '?now=' + (process.env.NOW || '2026-11-26T15:00'));
   await p.goto(url);
   await p.evaluate(s => { localStorage.setItem('aip2026-stars', JSON.stringify(eval(s))); if (window.__hnSrc) localStorage.setItem('aip2026-hero-src', window.__hnSrc); }, stars(sc.stars));
   // (a new address that differs only in its hash does not load the page again: reload, so the

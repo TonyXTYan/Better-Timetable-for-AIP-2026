@@ -1,6 +1,7 @@
 // Contrast, emoji, uppercase, sideways overflow and JS errors across 36 page states.
 // usage: node tests/audit.js [repoDir] [outJson]   (default out: tests/out/audit/audit.json)
 const { chromium } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const fs = require('fs');
 const P = require('./lib/paths');
 const repo = P.repo(process.argv[2]);
@@ -83,7 +84,7 @@ function pageFn() {
       page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
       page.on('requestfailed', r => { if (r.url().startsWith('file:')) errors.push('requestfailed: ' + r.url()); });
       try {
-        await page.goto('file://' + repo + '/index.html?now=2026-12-08T11:40' + h, { waitUntil: 'load' });
+        await page.goto(pageUrl(repo) + '?now=2026-12-08T11:40' + h, { waitUntil: 'load' });
         await page.waitForTimeout(1500);
         const overflow = await page.evaluate(() => { const s = document.scrollingElement; return s.scrollWidth > innerWidth ? { scrollWidth: s.scrollWidth, innerWidth } : false; });
         const r = await page.evaluate(pageFn);

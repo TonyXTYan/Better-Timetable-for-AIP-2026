@@ -1,10 +1,11 @@
 // keyboard + expand-all behaviour of the Build my agenda dialog
 // usage: node tests/t1-build.js [repoDir]   (screenshot: tests/out/t1-build/)
 const { chromium, devices } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const P = require('./lib/paths');
 const repo = P.repo(process.argv[2]);
 const OUT = P.outDir('t1-build');
-const url = 'file://' + repo + '/index.html?now=2026-12-08T11:40#view=agenda';
+const url = pageUrl(repo) + '?now=2026-12-08T11:40#view=agenda';
 let fails = 0;
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
 (async () => {

@@ -1,10 +1,11 @@
 const { chromium } = require('../tests/lib/pw');
 const path = require('path');
+const { pathToFileURL } = require('url');
 const shot = n => path.join(__dirname, '..', 'shots', n);
 
 (async () => {
   const browser = await chromium.launch();
-  const url = 'file://' + path.resolve(__dirname, '..', 'aip-2026-program.html');
+  const url = pathToFileURL(path.resolve(__dirname, '..', 'aip-2026-program.html')).href;
 
   // ---------- desktop ----------
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });

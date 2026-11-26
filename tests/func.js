@@ -1,6 +1,7 @@
 // behaviour around the slot-change motion in Build my agenda
 // usage: node tests/func.js [repoDir]
 const { chromium, devices } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const W = require('./lib/paths').repo(process.argv[2]);
 let fails = 0;
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
@@ -13,7 +14,7 @@ const mine = () => ({ ghosts: document.querySelectorAll('.bd-ghost').length, ani
       await ctx.addInitScript(m => { localStorage.setItem('aip2026-display', JSON.stringify(m === 'os-reduce' ? {} : { motion: m })); }, motion);
       const p = await ctx.newPage();
       const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-      await p.goto('file://' + W + '/index.html?now=2026-12-08T11:40#day=2026-12-08');
+      await p.goto(pageUrl(W) + '?now=2026-12-08T11:40#day=2026-12-08');
       await p.waitForTimeout(600);
       await p.evaluate(() => { openBuild(null); bdGo(18); }); await p.waitForTimeout(500);
       const tag = `[${prof} ${motion}]`;

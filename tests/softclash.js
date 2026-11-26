@@ -1,6 +1,7 @@
 // Possible (soft) clashes: logic, the toggle and its persistence, calendars, exports, builder.
 // usage: node tests/softclash.js [repoDir] [shots]   (screenshots with 'shots': tests/out/softclash/shots/)
 const { chromium } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const path = require('path'), fs = require('fs');
 const P = require('./lib/paths');
 const repo = P.repo(process.argv[2]);
@@ -12,7 +13,7 @@ fs.mkdirSync(OUT, { recursive: true });
 // c187527 14:30-15:00 (s187520): true clash with c189910 and c187790
 // c187529 15:15-15:30 (s187520): same session as c187527 (never a clash), possible with c189910, c187790
 const SEED = ['s187737', 'c193106', 'c189910', 'c187790', 'c187527', 'c187529'];
-const url = h => 'file://' + repo + '/index.html?now=2026-12-08T11:40' + h;
+const url = h => pageUrl(repo) + '?now=2026-12-08T11:40' + h;
 const errors = [];
 (async () => {
   const browser = await chromium.launch();

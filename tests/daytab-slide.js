@@ -3,6 +3,7 @@
 // a few mid-slide frames; JS errors.
 // usage: node tests/daytab-slide.js [repoDir] [outDir]   (default out: tests/out/daytab-slide/)
 const { chromium } = require('./lib/pw');
+const { pageUrl } = require('./lib/paths');
 const fs = require('fs'), path = require('path');
 const P = require('./lib/paths');
 const repo = P.repo(process.argv[2]), out = process.argv[3] ? path.resolve(process.argv[3]) : P.outDir('daytab-slide');
@@ -16,7 +17,7 @@ async function run(b, name, { vp, disp = {}, hash = '', reduced = false, steps }
   const errors = [];
   p.on('pageerror', e => errors.push(e.message));
   p.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-  await p.goto('file://' + repo + '/index.html?now=2026-12-08T11:40' + hash);
+  await p.goto(pageUrl(repo) + '?now=2026-12-08T11:40' + hash);
   await p.waitForTimeout(900);
   const results = [];
   for (const [i, st] of steps.entries()) {

@@ -3,7 +3,7 @@
 // PASS/FAIL line per test with its key numbers. Exits non-zero if anything fails.
 //
 //   node tests/run.js                  build, then every test except pill
-//   node tests/run.js --full           ... and pill (slow: about 25 minutes)
+//   node tests/run.js --full           ... and pill (slow: 15 to 25 minutes)
 //   node tests/run.js --only a,b       only these tests (names as listed below)
 //   node tests/run.js --no-build       skip the rebuild and the index.html / aip-2026-program.html cmp
 //   node tests/run.js --repo <dir>     test another checkout (default: the folder above tests/)
@@ -22,7 +22,8 @@ const LOGS = outDir('run');
 const T = n => path.join(__dirname, n);
 
 const lines = s => s.split('\n');
-const last = s => lines(s.trimEnd()).pop() || '';
+// last output line, skipping the "Node.js vNN" banner Node prints after an uncaught error
+const last = s => lines(s.trimEnd()).filter(l => l.trim() && !/^Node\.js v\d/.test(l)).pop() || '';
 const count = (s, re) => (s.match(re) || []).length;
 
 // name, how to run it, how to judge its output -> { ok, info }
@@ -60,14 +61,13 @@ const TESTS = [
     const i = o.lastIndexOf('errors ['), l = i < 0 ? 'no errors line' : o.slice(i).replace(/\s+/g, ' ').trim();
     return { ok: l === 'errors []', info: l.slice(0, 200) };
   } },
-  { name: 'daytab-slide', run: [[T('daytab-slide.js'), REPO]], retryBackwards: true, judge: o => {
+  { name: 'daytab-slide', run: [[T('daytab-slide.js'), REPO]], judge: o => {
     const steps = lines(o).filter(l => /endOk=/.test(l));
     const good = steps.filter(l => /endOk=true/.test(l) && /backwards=0\b/.test(l)).length;
     const notEnd = steps.filter(l => /endOk=false/.test(l)).length;
     const back = steps.filter(l => /backwards=[1-9]/.test(l));
     const errs = count(o, /errors=[1-9]/g);
-    const back1Only = !notEnd && !errs && back.length === 1 && /backwards=1\b/.test(back[0]);
-    return { ok: steps.length > 0 && !notEnd && !back.length && !errs, back1Only,
+    return { ok: steps.length > 0 && !notEnd && !back.length && !errs,
       info: `${steps.length} presses, endOk ${steps.length - notEnd}/${steps.length}, backwards>0 in ${back.length}, runs with errors ${errs}, clean ${good}` };
   } },
   { name: 'crash-listcal', run: [['d1280', 'v'], ['phone', 'h'], ['phone', 'v']].map(([p, o]) => [T('crash-listcal.js'), REPO, p, o, '50', '', '8']), judge: (o, parts) => {
@@ -90,6 +90,8 @@ const only = opt('--only') ? opt('--only').split(',').map(s => s.trim()).filter(
 if (only) for (const n of only) if (!TESTS.some(t => t.name === n)) { console.error(`unknown test "${n}"; tests: ${TESTS.map(t => t.name).join(', ')}`); process.exit(2); }
 const chosen = TESTS.filter(t => only ? only.includes(t.name) : (!t.slow || flag('--full')));
 
+// which Playwright the tests load (tests/lib/pw.js: node_modules after npm ci, else the global install)
+{ const w = require('./lib/pw').where; console.log(`playwright ${w.version} from ${w.dir}`); }
 const fmtS = ms => (ms / 1000).toFixed(0) + 's';
 let bad = 0;
 const report = (ok, name, info, ms) => { if (!ok) bad++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name.padEnd(15)} ${info}${ms != null ? '  (' + fmtS(ms) + ')' : ''}`); };
@@ -104,27 +106,33 @@ if (!flag('--no-build')) {
 }
 
 function runOnce(t) {
-  const parts = [], codes = [];
+  const parts = [], codes = [], signals = [];
   for (const a of t.run) {
     const r = spawnSync(process.execPath, a, { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28, timeout: (t.slow ? 150 : 20) * 60e3 });
     parts.push((r.stdout || '') + (r.stderr || '') + (r.error ? `\n[run.js] ${r.error.message}\n` : ''));
-    codes.push(r.status);
+    codes.push(r.status); signals.push(r.signal);
   }
-  return { parts, codes, out: parts.join('\n') };
+  return { parts, codes, signals, out: parts.join('\n') };
+}
+
+// A script that died (non-zero exit, signal, timeout): say how, with its first error line,
+// since its last output line is then Node's version banner and its counts stop at the crash.
+function crashNote(r) {
+  const notes = r.parts.map((s, i) => {
+    const c = r.codes[i], sig = r.signals[i];
+    if (c === 0) return '';
+    const how = c == null ? `killed${sig ? ' by ' + sig : ''}` : `exit ${c}`;
+    const err = lines(s).find(l => /\b[A-Z]\w*Error\b:|^\[run\.js\]/.test(l));
+    return `${how}${err ? ': ' + err.trim().slice(0, 160) : ''}`;
+  }).filter(Boolean);
+  return notes.length ? ' [' + notes.join('; ') + ']' : '';
 }
 
 for (const t of chosen) {
   const t0 = Date.now();
-  let r = runOnce(t), j = t.judge(r.out, r.parts, r.codes), note = '';
+  const r = runOnce(t), j = t.judge(r.out, r.parts, r.codes);
   fs.writeFileSync(path.join(LOGS, t.name + '.log'), r.out);
-  if (!j.ok && t.retryBackwards && j.back1Only) {
-    // one press moving back by a frame is a known transient: run it once more
-    fs.writeFileSync(path.join(LOGS, t.name + '.1.log'), r.out);
-    note = ' [rerun after backwards=1: ' + j.info + ']';
-    r = runOnce(t); j = t.judge(r.out, r.parts, r.codes);
-    fs.writeFileSync(path.join(LOGS, t.name + '.log'), r.out);
-  }
-  report(j.ok, t.name, j.info + note, Date.now() - t0);
+  report(j.ok, t.name, j.info + crashNote(r), Date.now() - t0);
 }
 
 if (!flag('--no-build')) {
