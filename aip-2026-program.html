@@ -2490,6 +2490,10 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
    heading line fading, the plate's moving bottom edge); the plate holds the sessions leaving */
 .bd-body.bd-fxon,.bd-cards.bd-fxon{position:relative}
 .bd-cards.bd-hold{align-content:start}
+/* (where the slot ends up fitting the body, its scrollbar stays away meanwhile: what is held
+   or leaving would bring a classic one back, and the cards would reflow narrower under their
+   motion, then wider again once it ends) */
+.bd-body.bd-fit{overflow-y:hidden}
 .bd-fx{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
 .bd-fx>*,.bd-cards>.bd-leave{position:absolute;margin:0;pointer-events:none}
 /* (the edge drawn over the plate's own bottom and sides: the dialog's ground round and below it) */
@@ -11462,7 +11466,7 @@ function bdFlipDrop(){
   const f = bdFlip;
   if (!f) return;
   bdFlip = null;
-  bdEl('bdBody').classList.remove('bd-fxon');
+  bdEl('bdBody').classList.remove('bd-fxon', 'bd-fit');
 }
 // (prep: the slider's new slots and scale, painted once what shows now is measured: its
 // text can change the header's height and so move the body)
@@ -11516,6 +11520,7 @@ function bdRestream(prep){
   // Last, and the motion from the one to the other
   const ms = MO_L * k, fade = MO_S * k, anims = [], vh = body.clientHeight;
   const now = at(box), off = (r, h) => r.y + h < -8 || r.y > vh + 8;
+  if (body.scrollHeight <= vh) body.classList.add('bd-fit');
   const rs = new Map([...box.children].map(c => [c, at(c)]));   // (all read before any motion starts)
   const dx = plate.x - now.x, dy = plate.y - now.y;
   const glide = { duration: ms, easing: EASE_EM };
@@ -11595,13 +11600,13 @@ function bdRestream(prep){
     kids.forEach((el, i) => { if (diff[i] && !el.hidden) anims.push(el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fade, delay: fade / 3, easing: EASE, fill: 'backwards' })); });
   }
   if (fx.childElementCount){ body.classList.add('bd-fxon'); body.append(fx); }
-  if (!anims.length){ fx.remove(); box.classList.remove('bd-fxon'); return; }
+  if (!anims.length){ fx.remove(); box.classList.remove('bd-fxon'); body.classList.remove('bd-fit'); return; }
   const f = bdFlip = { anims, gone, cap, fin(){
     fx.remove();
     for (const [c] of leave) c.remove();
     box.classList.remove('bd-fxon', 'bd-hold');
     box.style.minHeight = '';
-    body.classList.remove('bd-fxon');
+    body.classList.remove('bd-fxon', 'bd-fit');
   } };
   const last = anims.reduce((a, b) => b.effect.getComputedTiming().endTime > a.effect.getComputedTiming().endTime ? b : a);
   last.finished.then(() => { if (bdFlip === f) bdFlipEnd(); }, () => {});
