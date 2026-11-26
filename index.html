@@ -6756,7 +6756,10 @@ function mxBegin(kind, from, opts){
         }
         mxShow(sight);
       }
-      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either);
+      // (opts.either: every key up to a screen and a half away, as in the old view, not only
+      // the old view's: a saved talk on its own there moves into its session here, which
+      // the old view did not show)
+      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either);
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const names = [], heads = [];
