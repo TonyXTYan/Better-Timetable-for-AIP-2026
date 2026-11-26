@@ -10,9 +10,10 @@
 
 `page_template()` in `build_program.py` replaces each `@@INCLUDE name@@` line with that file's
 text exactly as written, or for a pattern (`js/*.js`) with the text of every file it matches,
-in name order, joined with nothing between them (each file ends with a newline, which becomes
-the end of its last line), then `main()` fills the other `@@...@@` placeholders (data, dates,
-fonts, dark-theme tokens), in the CSS and JS as in the HTML.
+in name order (not names that start with a dot), joined with nothing between them (each file
+must end with a newline, which becomes the end of its last line; the build stops if one does
+not), then `main()` fills the other `@@...@@` placeholders (data, dates, fonts, dark-theme
+tokens), in the CSS and JS as in the HTML.
 
 When code is only moved between these files and `build_program.py`, the built page must stay
 byte-for-byte the same: build before and after and compare with `cmp`.

@@ -21,7 +21,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build the page from build_program.py
+      - name: Build the page from src/ with build_program.py
         run: python3 build_program.py
       - name: Stage static site
         run: |

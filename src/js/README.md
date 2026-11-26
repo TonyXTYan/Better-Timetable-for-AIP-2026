@@ -42,5 +42,15 @@ prefixes leave gaps for a new file between two others.
 | `94-segments.js` | Segmented controls whose selection slides (`segPlace`, `segSlide`, `segInk`), Display option changes, `segCpu` |
 | `97-boot.js` | The skip link, `start()`, hashchange, the now line's timer, service worker registration, dialog close wiring, and the call to `start()` that draws the page |
 
+The `// ---------- name ----------` headers are the script's own section headers, moved as they
+were, so a file can open with a header that names less than the file holds (or more), and a few
+sections run on across two files.
+
+The blank line at the end of most files is the one between two sections of the script: it is
+part of the page, so keep it (an editor set to trim blank lines at the end of a file would change
+the page; `.gitattributes` tells `git diff --check` it is meant). Every file must end with a
+newline (the build stops if one does not). Files whose names start with a dot (an editor's lock
+or swap file) are left out.
+
 To check that a change only moved code, build before and after and compare the pages with
 `cmp`; `cat src/js/*.js` is the whole script.

@@ -11,10 +11,12 @@ needs:
 
 Needs fontTools and brotli (pip install fonttools brotli). For each style it limits the axes
 (roman: wght 400-800, wdth 75-125; italic: wght 400-700 at wdth 100), then keeps only the
-characters found in build_program.py, src/ and aip2026-data.json plus Latin-1 and typographic
-punctuation (other characters fall back to the system font, glyph by glyph), and the OpenType features the page uses. fontsource splits the font
-into a "latin" and a "latin-ext" file; both are kept, each with its own unicode-range, which
-build_program.py reads from fonts/fonts.json.
+characters found in build_program.py, the page's source in src/ (page.html, styles.css and
+js/*.js, as build_program.py joins them; not the READMEs) and aip2026-data.json plus Latin-1 and
+typographic punctuation (other characters fall back to the system font, glyph by glyph), and the
+OpenType features the page uses. fontsource splits the font into a "latin" and a "latin-ext"
+file; both are kept, each with its own unicode-range, which build_program.py reads from
+fonts/fonts.json.
 """
 import json
 import sys
@@ -25,6 +27,8 @@ from fontTools.varLib import instancer
 from fontTools import subset
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from build_program import page_template  # noqa: E402
 OUT = ROOT / 'fonts'
 FEATURES = ['kern', 'liga', 'tnum', 'pnum', 'frac', 'numr', 'dnom', 'case', 'ccmp', 'locl',
             'mark', 'mkmk', 'rvrn']
@@ -36,8 +40,7 @@ STYLES = {
 
 def wanted_codepoints():
     text = (ROOT / 'build_program.py').read_text(encoding='utf-8')
-    for f in sorted(f for f in (ROOT / 'src').rglob('*') if f.is_file()):  # the page's HTML, CSS and JS
-        text += f.read_text(encoding='utf-8')
+    text += page_template(ROOT)   # the page's HTML, CSS and JS, from src/ (not its READMEs)
     text += (ROOT / 'aip2026-data.json').read_text(encoding='utf-8')
     cps = {ord(c) for c in text}
     cps |= set(range(0x20, 0x7F)) | set(range(0xA0, 0x100))

@@ -340,16 +340,27 @@ def font_faces(root):
 # (the main <style>) and js/*.js (the main <script>, in parts by area). page.html names the others
 # on lines of their own, "@@INCLUDE styles.css@@" and "@@INCLUDE js/*.js@@", and each such line is
 # replaced by the text of the file, or of every file the pattern matches in name order, joined
-# with nothing between them, exactly as written (every file ends with a newline). main() then
-# fills the @@...@@ placeholders, in the CSS and JS as in the HTML.
+# with nothing between them, exactly as written (every file ends with a newline). Names that
+# start with a dot are left out (an editor's lock or swap file is no part of the page).
+# main() then fills the @@...@@ placeholders, in the CSS and JS as in the HTML.
+def page_sources(root, pattern):
+    """The files under src/ that an @@INCLUDE pattern@@ line stands for, in name order."""
+    return sorted((f for f in (root / 'src').glob(pattern) if not f.name.startswith('.')),
+                  key=lambda f: f.name)
+
+
 def page_template(root):
     src = root / 'src'
 
     def include(m):
-        files = sorted(src.glob(m.group(1)), key=lambda f: f.name)
+        files = page_sources(root, m.group(1))
         if not files:
             sys.exit(f'src/page.html: no file for @@INCLUDE {m.group(1)}@@')
-        return ''.join(f.read_text(encoding='utf-8') for f in files)
+        texts = [f.read_text(encoding='utf-8') for f in files]
+        for f, text in zip(files, texts):
+            if not text.endswith('\n'):
+                sys.exit(f'{f.relative_to(root)}: does not end with a newline')
+        return ''.join(texts)
     return re.sub(r'^@@INCLUDE (\S+)@@\n', include,
                   (src / 'page.html').read_text(encoding='utf-8'), flags=re.M)
 

@@ -1,0 +1,3 @@
+# The blank line that ends most of src/js/*.js is the one between two sections of the page's
+# script, and part of the page (see src/js/README.md): not a whitespace error.
+src/js/*.js whitespace=-blank-at-eof
