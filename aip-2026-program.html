@@ -1077,6 +1077,11 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0;padding:12px 16px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:1.0625rem;font-weight:700;line-height:1.3;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
 .pp-n{font-size:.8125rem;font-weight:500;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
 .pp-none .pp-aff{color:var(--muted)}
+/* a letter picked on the rail: its headings in the list light up for a moment, then fade */
+@keyframes pp-flash{0%,40%{background-color:var(--mark-bg);box-shadow:inset 3px 0 0 var(--ink)}}
+.pp-aff.pp-flash{animation:pp-flash calc(.8s * var(--mo)) ease-out}
+.pp-aff.pp-flash-still{background-color:var(--mark-bg);box-shadow:inset 3px 0 0 var(--ink)}
+@media (forced-colors:active){.pp-aff.pp-flash,.pp-aff.pp-flash-still{animation:none;outline:2px solid Highlight;outline-offset:-2px}}
 /* columns, so a short card leaves no hole under it; the order runs down each column */
 .pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip;background:var(--card)}
 .pp-person{background:var(--card);border:0;border-radius:0;padding:12px 14px 8px;min-width:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);margin:0}
@@ -11983,7 +11988,7 @@ function ppMore(n){
   requestAnimationFrame(() => setTimeout(() => { if (g === PP.gen) ppMore(120); }, 0));
 }
 // Scroll a heading or person to just below the sticky toolbar.
-function ppJump(id, smooth, focus){
+function ppJump(id, smooth, focus, done){
   if (!document.getElementById(id) && PP.rest.length) ppMore(Infinity);
   const el = document.getElementById(id);
   if (!el) return;
@@ -11994,7 +11999,8 @@ function ppJump(id, smooth, focus){
   if (focus) el.focus({ preventScroll: true });
   // (the sections passed on the way were drawn, so their real heights replaced guessed
   // ones: once there, put it in place again)
-  if (smooth) scrollSettle(el, null, y0, () => ppJump(id, false, false));
+  if (smooth) scrollSettle(el, null, y0, () => { ppJump(id, false, false); if (done) done(); });
+  else if (done) done();
 }
 
 // ---------- participants: alphabet rail ----------
@@ -12037,9 +12043,32 @@ function railLetterAt(y){
   }
   return null;
 }
-function railJump(L, smooth){
+function railJump(L, smooth, flash = true){
   const r = RAIL.data.get(L);
-  if (r) ppJump(r.id, smooth, false);
+  if (r) ppJump(r.id, smooth, false, flash ? () => railFlash(L) : null);
+}
+// The headings a letter stands for (its affiliations, or its one heading in a list by
+// name) light up briefly where the jump lands; with reduced motion they stay lit a moment
+// and go, with no fade.
+function railFlash(L){
+  const r = RAIL.data.get(L);
+  if (!r) return;
+  const ids = new Set([r.id, ...r.items.map(it => it.id).filter(Boolean)]);
+  const still = motionReduced();
+  for (const id of ids){
+    const el = document.getElementById(id);
+    if (!el || !el.classList.contains('pp-aff')) continue;
+    el.classList.remove('pp-flash', 'pp-flash-still');
+    clearTimeout(el._ppFlashT);
+    if (still){
+      el.classList.add('pp-flash-still');
+      el._ppFlashT = setTimeout(() => el.classList.remove('pp-flash-still'), 900);
+    } else {
+      void el.offsetWidth;   // (restart it if the same letter is picked again)
+      el.classList.add('pp-flash');
+      el.addEventListener('animationend', () => el.classList.remove('pp-flash'), { once: true });
+    }
+  }
 }
 function showRailBubble(L){
   clearTimeout(RAIL.bubbleT);
@@ -12102,7 +12131,7 @@ RAIL.letters.addEventListener('pointermove', e => {
   d.L = b.dataset.l;
   for (const x of railButtons()) x.classList.toggle('pp-hot', x === b);
   showRailBubble(d.L);
-  railJump(d.L, false);
+  railJump(d.L, false, false);
 });
 function endRailDrag(e){
   const d = RAIL.drag;
@@ -12110,6 +12139,7 @@ function endRailDrag(e){
   RAIL.drag = null;
   for (const x of RAIL.letters.querySelectorAll('.pp-hot')) x.classList.remove('pp-hot');
   if (e.type === 'pointerup' && !d.moved && d.start.getAttribute('aria-disabled') !== 'true') railJump(d.start.dataset.l, true);
+  else if (d.moved && d.L) railFlash(d.L);
   hideRailBubble(d.touch ? 450 : 250);
 }
 RAIL.letters.addEventListener('pointerup', endRailDrag);
