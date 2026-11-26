@@ -2394,17 +2394,24 @@ html:has(#buildDialog[open]){overflow:hidden}
 .bd-scale{margin:10px 0 0;user-select:none;-webkit-user-select:none}
 .bd-bubble-row,.bd-ticks,.bd-days,.bd-times{position:relative;margin:0 calc(var(--thumb) / 2)}
 .bd-bubble-row{height:26px}
-.bd-bubble{position:absolute;bottom:4px;left:0;white-space:nowrap;font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--accent-ink);background:var(--accent);border-radius:var(--r-seg);padding:1px 8px;font-variant-numeric:tabular-nums;pointer-events:none}
+/* The thumb, the bubble and the filled part of the track all stand at --bd-f (the slot as a
+   fraction of the scale), set on the scale and animated there when the slot changes by
+   anything but a drag (bdThumbTo): registered, so it interpolates and the three glide as one.
+   The thumb drawn is the page's own, over the native one (left in place, unpainted, so the
+   slider works and reads as before); --bw is the bubble's width, for keeping it inside. */
+@property --bd-f{syntax:"<number>";inherits:true;initial-value:0}
+.bd-bubble{position:absolute;bottom:4px;left:min(max(calc(100% * var(--bd-f) - var(--bw,0px) / 2),calc(var(--thumb) / -2)),calc(100% + var(--thumb) / 2 - var(--bw,0px)));white-space:nowrap;font-size:.75rem;font-weight:700;font-stretch:var(--stretch-cond);color:var(--accent-ink);background:var(--accent);border-radius:var(--r-seg);padding:1px 8px;font-variant-numeric:tabular-nums;pointer-events:none}
 /* the slider is a ruled scale with a vernier cursor: a thin baseline, a heavy ink bar up to the slot */
-.bd-range{--f:0;display:block;width:100%;height:30px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.bd-rail{position:relative}
+.bd-range{display:block;width:100%;height:30px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
 .bd-range:focus{outline:none}
-.bd-range::-webkit-slider-runnable-track{height:var(--trk);border-radius:var(--r-line);background:linear-gradient(to right,var(--accent) 0 calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--f)),transparent 0),linear-gradient(var(--field-line),var(--field-line)) center / 100% 2px no-repeat}
-.bd-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:var(--thumb);height:var(--thumb-h);margin-top:calc((var(--trk) - var(--thumb-h)) / 2);border-radius:var(--r-tag);background:var(--accent);border:2px solid var(--surface-2);box-shadow:0 0 0 1px var(--accent)}
-.bd-range::-moz-range-track{height:2px;border-radius:var(--r-line);background:var(--field-line)}
-.bd-range::-moz-range-progress{height:var(--trk);border-radius:var(--r-line);background:var(--accent)}
-.bd-range::-moz-range-thumb{width:var(--thumb);height:var(--thumb-h);box-sizing:border-box;border-radius:var(--r-tag);background:var(--accent);border:2px solid var(--surface-2);box-shadow:0 0 0 1px var(--accent)}
-.bd-range:focus-visible::-webkit-slider-thumb{outline:2px solid var(--ink);outline-offset:3px}
-.bd-range:focus-visible::-moz-range-thumb{outline:2px solid var(--ink);outline-offset:3px}
+.bd-range::-webkit-slider-runnable-track{height:var(--trk);border-radius:var(--r-line);background:linear-gradient(to right,var(--accent) 0 calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--bd-f)),transparent 0),linear-gradient(var(--field-line),var(--field-line)) center / 100% 2px no-repeat}
+.bd-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:var(--thumb);height:var(--thumb-h);margin-top:calc((var(--trk) - var(--thumb-h)) / 2);border:0;background:transparent;opacity:0}
+.bd-range::-moz-range-track{height:var(--trk);border-radius:var(--r-line);background:linear-gradient(to right,var(--accent) 0 calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--bd-f)),transparent 0),linear-gradient(var(--field-line),var(--field-line)) center / 100% 2px no-repeat}
+.bd-range::-moz-range-progress{background:transparent}
+.bd-range::-moz-range-thumb{width:var(--thumb);height:var(--thumb-h);box-sizing:border-box;border:0;background:transparent;opacity:0}
+.bd-thumb{position:absolute;top:50%;left:calc((100% - var(--thumb)) * var(--bd-f));width:var(--thumb);height:var(--thumb-h);margin-top:calc(var(--thumb-h) / -2);box-sizing:border-box;border-radius:var(--r-tag);background:var(--accent);border:2px solid var(--surface-2);box-shadow:0 0 0 1px var(--accent);pointer-events:none}
+.bd-range:focus-visible+.bd-thumb{outline:2px solid var(--ink);outline-offset:3px}
 .bd-ticks{height:10px;margin-top:2px}
 .bd-tick{position:absolute;top:0;width:1px;height:5px;background:var(--faint);transform:translateX(-50%)}
 .bd-tick.day{width:2px;height:9px;background:var(--ink-2)}
@@ -2705,6 +2712,10 @@ button.bd-chip{transition:color calc(200ms * var(--mo,1)) var(--ease),scale calc
 .bd-chip i{transition:background-color calc(200ms * var(--mo,1)) var(--ease)}
 :is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,.seg label):not(:disabled):active,#clr:not(:disabled):active,#grpclr:not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
 .agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
+/* (Back and Next slot pressed from the keyboard, Left and Right: bdKeyPress) */
+/* (on a disabled one too: Left into the first slot presses Back as it disables, as a click
+   presses it before) */
+.bd-foot .toggle.bd-press{scale:.95;filter:var(--press);transition-duration:0s}
 .dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
 :is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
 .vt-card:has(>.vt-hd .vt-open:active){filter:var(--press)}
@@ -2712,10 +2723,10 @@ button.bd-chip{transition:color calc(200ms * var(--mo,1)) var(--ease),scale calc
 .t-open:active{filter:var(--press);background:var(--press-sum);transition-duration:0s}
 .linkish:active{opacity:.6;transition-duration:0s}
 @media (prefers-reduced-motion:reduce){
-  html:not([data-motion="full"]) :active{scale:none!important}
+  html:not([data-motion="full"]) :active,html:not([data-motion="full"]) .bd-press{scale:none!important}
   html:not([data-motion="full"]) dialog::backdrop{transition:none}
 }
-html[data-motion="reduce"] :active{scale:none!important}
+html[data-motion="reduce"] :active,html[data-motion="reduce"] .bd-press{scale:none!important}
 html[data-motion="reduce"] dialog::backdrop{transition:none}
 /* Reduced motion: the system setting unless turned off in Display options, or turned on there. */
 @media (prefers-reduced-motion:reduce){
@@ -3680,9 +3691,9 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </div>
       <button type="button" class="toggle dlg-x" id="bdClose" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
     </div>
-    <div class="bd-scale">
+    <div class="bd-scale" id="bdScale">
       <div class="bd-bubble-row" aria-hidden="true"><span class="bd-bubble" id="bdBubble"></span></div>
-      <input type="range" class="bd-range" id="bdRange" min="0" max="0" step="1" value="0" aria-label="Time slot" autofocus>
+      <div class="bd-rail"><input type="range" class="bd-range" id="bdRange" min="0" max="0" step="1" value="0" aria-label="Time slot" autofocus><span class="bd-thumb" aria-hidden="true"></span></div>
       <div class="bd-ticks" id="bdTicks" aria-hidden="true"></div>
       <div class="bd-days" id="bdDays"></div>
       <div class="bd-times" id="bdTimes" aria-hidden="true"></div>
@@ -11464,16 +11475,16 @@ function bdLayoutScale(){
   bdEl('bdRange').max = Math.max(0, bd.slots.length - 1);
 }
 const BD_CHEV = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function bdPaintScale(){
+// (glide: how the thumb gets there, as bdThumbTo takes it; at once without)
+function bdPaintScale(glide){
   const range = bdEl('bdRange'), slot = bd.slots[bd.i], n = bd.slots.length;
   const [a, b] = bdSpan(slot);
   range.value = bd.i;
-  range.style.setProperty('--f', bdFrac(bd.i));
   range.setAttribute('aria-valuetext', `${slot.d.label}, ${a} to ${b}, slot ${bd.i + 1} of ${n}`);
   const bubble = bdEl('bdBubble');
   bubble.textContent = `${dayShort(slot.d)}, ${a}–${b}`;
-  const row = bubble.parentElement, W = row.clientWidth, pad = parseFloat(getComputedStyle(row).marginLeft) || 0, w = bubble.offsetWidth;
-  bubble.style.left = Math.min(Math.max(bdFrac(bd.i) * W - w / 2, -pad), W + pad - w) + 'px';
+  bubble.style.setProperty('--bw', bubble.offsetWidth + 'px');
+  bdThumbTo(bdFrac(bd.i), glide);
   bdEl('bdDays').querySelectorAll('[data-bd-go]').forEach(btn => btn.classList.toggle('cur', bd.slots[+btn.dataset.bdGo].di === slot.di));
   bdEl('bdProgress').innerHTML = (bd.done ? 'All slots done' : `Slot ${bd.i + 1} of ${n}`) + '<span class="bd-pg-l">. Ticks are saved as you go</span>';
   bdEl('bdBack').disabled = !bd.done && bd.i === 0;
@@ -11481,6 +11492,27 @@ function bdPaintScale(){
   bdEl('bdNext').innerHTML = bd.i === n - 1 ? 'Finish' : 'Next slot' + BD_CHEV;
   bdEl('bdKbd').hidden = bd.done;
   bdEl('bdSkipDay').textContent = bd.slots.slice(bd.i + 1).some(sl => sl.di !== slot.di) ? 'Skip day' : 'Skip to end';
+}
+// The thumb, its bubble and the filled track going to the slot (--bd-f on the scale): with
+// kind ('step', 'jump' or 'quick', as the slot itself moves) they glide there, on the slot's
+// duration (a step and a jump on its ease too), from wherever they show now; at once without,
+// as while the thumb is dragged. A quick one (a key held, fast clicks) leaves at speed and
+// slows down: each starts from where the last had got to, and one that eased in would stall
+// at every repeat and fall further behind.
+let bdGlide = null;
+function bdThumbTo(f, kind){
+  const sc = bdEl('bdScale'), g = bdGlide;
+  const from = kind && g ? parseFloat(getComputedStyle(sc).getPropertyValue('--bd-f')) : +sc.style.getPropertyValue('--bd-f');
+  if (g){ bdGlide = null; g.cancel(); }
+  sc.style.setProperty('--bd-f', f);
+  if (!kind || !sc.animate || !(from >= 0) || Math.abs(from - f) < 1e-4 || motionReduced() || !buildDialog.open) return;
+  const k = motionK(), quick = kind === 'quick';
+  const a = bdGlide = sc.animate([{ '--bd-f': from }, { '--bd-f': f }],
+    { duration: quick ? MO_S * k : MO_L * k * (kind === 'jump' ? 1.25 : 1), easing: quick ? 'cubic-bezier(0,0,.2,1)' : EASE_EM });
+  // (started now, not with the slot's motion: that waits a frame or two for the compositor, and
+  // a key's repeats come faster, so the thumb would never get going)
+  if (document.timeline) a.startTime = document.timeline.currentTime;
+  a.finished.then(() => { if (bdGlide === a) bdGlide = null; }, () => {});
 }
 // Changing slot: the slot's heading and cards come in from the side travelled to while the
 // old ones leave the other way; the dialog's own parts (title, slider, chips, buttons) stay
@@ -11760,12 +11792,17 @@ function bdGo(i, how){
   const at = bd.done ? bd.slots.length : bd.i;
   i = Math.max(0, Math.min(bd.slots.length - 1, i));
   if (how === 'nav' && i === at) how = 'fade';
+  // the thumb moves as the slot will (a drag, or a change of streams, moves it at once); a far
+  // one soon after the last (Home then End) glides as a jump, as the quick one's fast start
+  // would throw the thumb a long way in its first frame
+  const far = Math.abs(i - at);
+  const glide = how !== 'nav' ? null : far <= 2 && bdMove && performance.now() - bdMove.t < MO_S * motionK() ? 'quick' : far > 1 ? 'jump' : 'step';
   const start = bdMovePrep(how, i < at ? -1 : 1, Math.abs(i - at) > 1);
   bd.done = false;
   bd.i = i;
   bd.lastKey = bd.slots[bd.i].key;
   try { sessionStorage.setItem('aip2026-build-pos', bd.lastKey); } catch (e) {}
-  bdPaintScale();
+  bdPaintScale(glide);
   bdRenderSlot();
   bdPaintChecks();
   start?.();
@@ -11815,11 +11852,18 @@ function bdAnnounce(){
 // A press on the slider: on the thumb it drags (each slot passed fades in quickly); on the
 // track the thumb jumps there first, moving as a jump does. Letting go after a drag settles.
 bdEl('bdRange').addEventListener('pointerdown', e => {
-  const r = e.currentTarget, box = r.getBoundingClientRect(), th = parseFloat(getComputedStyle(r).getPropertyValue('--thumb')) || 14;
-  const x = box.left + th / 2 + (box.width - th) * bdFrac(bd.i);
+  const r = e.currentTarget, box = r.getBoundingClientRect(), cs = getComputedStyle(r), th = parseFloat(cs.getPropertyValue('--thumb')) || 14;
+  const f = parseFloat(cs.getPropertyValue('--bd-f')), x = box.left + th / 2 + (box.width - th) * (f >= 0 ? f : bdFrac(bd.i));   // (where it shows, mid-glide too)
   bd.press = { jump: Math.abs(e.clientX - x) > th / 2 + (e.pointerType === 'mouse' ? 3 : 12), n: 0, dragged: false };
 });
-bdEl('bdRange').addEventListener('keydown', () => { bd.press = null; });   // (a press that never ended)
+bdEl('bdRange').addEventListener('keydown', e => {
+  bd.press = null;   // (a press that never ended)
+  // Left and Right on the slider step it themselves: the button that would do the same shows pressed
+  if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.defaultPrevented){
+    const r = e.target, v = +r.value;
+    bdKeyPress(e, e.key === 'ArrowLeft' ? v > +r.min : v < +r.max);
+  }
+});
 for (const t of ['pointerup', 'pointercancel']) document.addEventListener(t, () => {
   const p = bd.press;
   bd.press = null;
@@ -11853,10 +11897,35 @@ document.addEventListener('keydown', e => {
   if (t.closest('textarea, select, [contenteditable]:not([contenteditable="false"]), [role="radiogroup"], [role="tablist"], [role="listbox"], [role="menu"], [role="slider"]')) return;
   if (t.matches('input') && !['checkbox', 'button', 'submit', 'reset'].includes(t.type)) return;
   const btn = bdEl(e.key === 'ArrowLeft' ? 'bdBack' : 'bdNext');
-  if (btn.hidden || btn.disabled) return;
+  if (btn.hidden || btn.disabled){ bdKeyPress(e, false); return; }
   e.preventDefault();
   btn.click();
+  bdKeyPress(e, true);
 });
+// A step made with Left or Right shows the button for it (Back, Next slot) pressed, as a click
+// does (.bd-press, the buttons' :active look): pressed at once and while the key is held, let go
+// on keyup but not before a tap's length from the first press, so a quick tap still shows. A key
+// that does nothing (Left at the first slot) presses nothing, and a repeat that no longer steps
+// lets go. With reduced motion, the tint without the press-in.
+const BD_TAP = 110, bdKeyDown = new Map();   // key: { btn, t, timer }
+function bdKeyPress(e, stepped){
+  const was = bdKeyDown.get(e.key);
+  if (!stepped){ if (was) bdKeyUp(e.key, true); return; }
+  const btn = bdEl(e.key === 'ArrowLeft' ? 'bdBack' : 'bdNext');
+  if (was){ clearTimeout(was.timer); if (was.btn !== btn) was.btn.classList.remove('bd-press'); }
+  btn.classList.add('bd-press');
+  bdKeyDown.set(e.key, { btn, t: was && e.repeat ? was.t : performance.now(), timer: 0 });
+}
+function bdKeyUp(key, now){
+  const p = bdKeyDown.get(key);
+  if (!p) return;
+  clearTimeout(p.timer);
+  const off = () => { if (bdKeyDown.get(key) !== p) return; bdKeyDown.delete(key); p.btn.classList.remove('bd-press'); };
+  const left = now ? 0 : BD_TAP - (performance.now() - p.t);
+  if (left > 0) p.timer = setTimeout(off, left); else off();
+}
+document.addEventListener('keyup', e => bdKeyUp(e.key));
+window.addEventListener('blur', () => { for (const k of [...bdKeyDown.keys()]) bdKeyUp(k, true); });
 bdEl('bdDays').addEventListener('click', e => {
   const b = e.target.closest('[data-bd-go]');
   if (b){ bdGo(+b.dataset.bdGo, 'nav'); bdEl('bdRange').focus(); }
@@ -11930,6 +11999,8 @@ lightDismiss(buildDialog, () => buildDialog.close());
 buildDialog.addEventListener('close', () => {
   bdMoveEnd();
   bdFlipEnd();
+  bdThumbTo(bdFrac(bd.i));
+  for (const k of [...bdKeyDown.keys()]) bdKeyUp(k, true);
   pnlHistoryClose();
   if (bd.nav){ bd.nav = false; return; }
   if (bd.changed) rerender();
