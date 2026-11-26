@@ -973,6 +973,13 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 @property --tb-og{syntax:"*";inherits:false}
 .sticky-wrap.sticky-wrap .toolbar .tb-out.tb-out{display:var(--tb-od)!important;position:absolute!important;left:var(--tb-ox);top:var(--tb-oy);width:var(--tb-ow);height:var(--tb-oh);margin:0!important;gap:var(--tb-og);pointer-events:none}
 .sticky-wrap.tb-anim .controls{position:static}
+/* A change of view's (tbShift): the bar's face is a layer under its parts (its own background
+   off), scaled from the old height to the new one, with the line riding its edge; nothing
+   clips the bar meanwhile. Under a view transition the bar's picture brings that face, and
+   the group's own (the bar's whole box) is off. */
+.sticky-wrap.tb-anim.tb-shift{overflow:visible;background:none}
+.sticky-wrap.tb-shift::before{content:"";position:absolute;left:0;right:0;top:0;z-index:-1;height:var(--tb-hold);transform:scaleY(var(--tb-face));transform-origin:0 0;background:linear-gradient(var(--sticky-bg),var(--sticky-bg)),var(--bg);pointer-events:none}
+html[data-view-tx-tb]::view-transition-group(toolbar){background:none}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -6813,6 +6820,21 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
+  // (with `lay`, the time labels and day heads on the screen (layMarks): each on the screen,
+  // below the toolbar and clear of a calendar's stuck heads (but for one in them), in the
+  // part of its box that shows; the first of a key only. `lay` 'dated': a list's, keyed by
+  // their day as well, Full program <-> My agenda)
+  const marks = () => {
+    const bar = stickyWrap.getBoundingClientRect().bottom, under = mxUnderHeads();
+    for (const [el, key, c] of layMarks(main, lay === 'dated')){
+      if (items.has(key) || off(el, 0)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2 || r.bottom <= bar + 2 || r.top >= vh - 2 || r.right <= 8 || r.left >= vw - 8) continue;
+      if (c && (r.right <= c.left + 8 || r.left >= c.right - 8)) continue;
+      if (!el.closest(MX_HEADS) && under(r)) continue;
+      items.set(key, { key, el, r, c, p: '', kind: 'mark', d: 0 });
+    }
+  };
   const nth = new Map();
   if (!only || cov) for (const el of main.querySelectorAll(MX_COVER)){
     // (a phone's Vertical list heads a group of sessions with their time: a time label)
@@ -6823,8 +6845,19 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
     add(el, 'c-' + cls + '-' + (lane || i), 'cover');
   }
   if (only){
-    for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
+    // (many keys (Full program <-> My agenda's saved items): looked up in one pass over the
+    // page's items, not one search of the whole page each, which on the full list cost
+    // about a millisecond a key; the same elements, in the same order)
+    const by = only.size > 6 ? new Map() : null;
+    if (by) for (const el of main.querySelectorAll('[data-sid], [data-tid]')){
+      const k = el.dataset.tid ? mxSafe('t-' + el.dataset.tid) : mxSafe('s-' + el.dataset.sid);
+      if (!only.has(k)) continue;
+      if (!by.has(k)) by.set(k, []);
+      by.get(k).push(el);
+    }
+    for (const k of only) for (const el of by ? by.get(k) || [] : main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
       if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
+    if (lay && !any) marks();
     return items;
   }
   if (aux) for (const el of main.querySelectorAll(MX_GRID)) add(el, 'g-' + el.classList[0] + '-' + el.dataset.m, 'grid');
@@ -6840,19 +6873,7 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
     add(el, (el.matches('.cards') ? 'p-' : 'c-bt-') + b.dataset.date + '-' + b.dataset.start, el.matches('.cards') ? 'plate' : 'cover');
   }
   for (const el of main.querySelectorAll(x && x.items || MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : el.dataset.sid ? 's-' + el.dataset.sid : 'x-' + el.dataset.weekSid, 'item');
-  if (lay){
-    // (each on the screen, below the toolbar and clear of a calendar's stuck heads (but
-    // for one in them), in the part of its box that shows; the first of a key only)
-    const bar = stickyWrap.getBoundingClientRect().bottom, under = mxUnderHeads();
-    for (const [el, key, c] of layMarks(main)){
-      if (items.has(key) || off(el, 0)) continue;
-      const r = el.getBoundingClientRect();
-      if (r.width < 2 || r.height < 2 || r.bottom <= bar + 2 || r.top >= vh - 2 || r.right <= 8 || r.left >= vw - 8) continue;
-      if (c && (r.right <= c.left + 8 || r.left >= c.right - 8)) continue;
-      if (!el.closest(MX_HEADS) && under(r)) continue;
-      items.set(key, { key, el, r, c, p: '', kind: 'mark', d: 0 });
-    }
-  }
+  if (lay) marks();
   return items;
 }
 // List <-> Calendar: the time labels and day heads either layout shows, keyed by the minute
@@ -6862,8 +6883,11 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
 // sideways with its canvas), or null].
 const LAY_MARK_HEAD = '.vt-lh';
 const LAY_MARKS = '.block-time, .ag-row .ag-t0, .day-head, .hz-ruler .t[data-m], .vt-t[data-m], .vt-lh, .week-axis > span, .week-dayh[data-date]';
-function layMarks(main){
+function layMarks(main, dated){
   const out = [], boxes = new Map(), dayOf = i => DATA.days[+i] && DATA.days[+i].date;
+  // (dated: a list's times by their day too, Full program <-> My agenda, as All week shows
+  // the same time on each day)
+  const at = (el, m) => 'm-' + (dated ? el.dataset.date + '-' : '') + m;
   // (the part of a scroller that shows, past its stuck column of labels: `lab`)
   const box = (sc, lab) => {
     if (!sc) return null;
@@ -6876,8 +6900,8 @@ function layMarks(main){
   for (const el of main.querySelectorAll(LAY_MARKS)){
     if (!el.textContent.trim()) continue;
     let key = null, c = null;
-    if (el.matches('.block-time')){ const b = el.closest('.block'); if (b && !b.classList.contains('hidden')) key = 'm-' + toMin(b.dataset.start); }
-    else if (el.matches('.ag-t0')){ const row = el.closest('.ag-row'); if (row && row.dataset.start) key = 'm-' + toMin(row.dataset.start); }
+    if (el.matches('.block-time')){ const b = el.closest('.block'); if (b && !b.classList.contains('hidden')) key = at(b, toMin(b.dataset.start)); }
+    else if (el.matches('.ag-t0')){ const row = el.closest('.ag-row'); if (row && row.dataset.start) key = at(row, toMin(row.dataset.start)); }
     else if (el.matches('.day-head')){ const b = el.querySelector('[data-goprogram], [data-focusday]'), d = b && dayOf(b.dataset.goprogram ?? b.dataset.focusday); if (d) key = 'd-' + d; }
     else if (el.matches('.vt-lh')){ const lb = el.nextElementSibling; if (lb && lb.dataset.m) key = 'm-' + lb.dataset.m; }
     else if (el.matches('.week-dayh')){
@@ -6945,6 +6969,9 @@ function mxBegin(kind, from, opts){
   // (List <-> Calendar looks only into what shows: a list's time blocks in sight, and the
   // calendar's items; never too many to measure)
   const lay = kind === 'lay';
+  // (and Full program <-> My agenda in the list, opts.marks: a list's day heads and times,
+  // each by its day)
+  const marks = lay || (opts.marks ? 'dated' : false);
   // (a change of the streams shown, opts.was and opts.sees: the sessions shown before and
   // after it, by id. It looks at its own items only, opts.items (a list's session cards,
   // whose talks go with them), never too many to measure: filt)
@@ -6961,7 +6988,7 @@ function mxBegin(kind, from, opts){
   if (!pop){
     // (opts.either: the items up to a screen and a half away, as in the new view, and the
     // covers, which they move under, as Horizontal <-> Vertical's do)
-    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either, lay, fx).values()];
+    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either, marks, fx).values()];
     // (filt: the items on screen are named; those up to a screen and a half off it are only
     // measured, for the ones the change brings onto the screen to come from: far. A talk
     // inside its session's block or card (a week's, a vertical day's) goes in the session's
@@ -7206,7 +7233,7 @@ function mxBegin(kind, from, opts){
       // (opts.either: every key up to a screen and a half away, as in the old view, not only
       // the old view's: a saved talk on its own there moves into its session here, which
       // the old view did not show)
-      const now = pop || (!only && !lay && !filt && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either || lay || filt, lay, fx && { items: fx.items, marks: fx.marks });
+      const now = pop || (!only && !lay && !filt && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either || lay || filt, marks, fx && { items: fx.items, marks: fx.marks });
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const names = [], heads = [];
@@ -7600,15 +7627,18 @@ function txStart(kind, fn, from, opts){
   if (motionReduced()){ txTimed(fn, opts)(); return; }
   const t = performance.now(), g = txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
   txLast = t;
+  // (a change of view that may change the toolbar: its parts where they show now, tbShift)
+  const tb = opts.tb ? tbShiftBegin() : null;
   if (g.none){
     noTx();
-    txTimed(fn, opts, ms => { if (g.enter) viewEnter(opts.enter); if (g.pr) txPairPlain(g.pr, ms); if (log) txDbgEnd(log, { redraw: ms }); })();
+    txTimed(fn, opts, ms => { if (tb) tbShiftStart(tbShiftGo(tb)); if (g.enter) viewEnter(opts.enter); if (g.pr) txPairPlain(g.pr, ms); if (log) txDbgEnd(log, { redraw: ms }); })();
     return;
   }
   kind = g.kind; opts = g.opts;
   const band = opts.band !== undefined;
   if (!document.startViewTransition){
     fn();
+    if (tb) tbShiftStart(tbShiftGo(tb));
     if (kind === 'mx' || kind === 'dlg') return;
     viewEnter(opts.enter);
     return;
@@ -7622,12 +7652,14 @@ function txStart(kind, fn, from, opts){
   // a day -> All week: it shrinks into the one the new week shows)
   let rect = kind === 'dayin' ? txBandRect(opts.band) : null;
   const mx = mxBegin(kind, from, opts), pr = opts.pair ? txPairRec(opts) : null;
-  let ran = false, done, redraw = 0;
+  let ran = false, done, redraw = 0, sh = null, after = 0;
   const run = () => {
     if (ran) return done;
     ran = true;
     mxClear();
-    const finish = target => { mx.after(target || null, rect); root.dataset.viewTxNew = ''; };
+    // (the toolbar's own change is set out once the new view's items are measured: the page
+    // under the bar is not moved by it, and its parts start from where they showed)
+    const finish = target => { const t1 = performance.now(); mx.after(target || null, rect); if (tb) sh = tbShiftGo(tb, true); root.dataset.viewTxNew = ''; after = performance.now() - t1; };
     const t0 = performance.now(), y0 = window.scrollY;
     inVT = true;
     let out;
@@ -7657,12 +7689,13 @@ function txStart(kind, fn, from, opts){
   vt.ready.then(() => {
     const named = mxNamed.length;
     mx.animate();
+    if (sh) tbShiftStart(sh);
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
-      if (log) txDbgEnd(log, { redraw, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' '), plan: mxPlan });
+      if (log) txDbgEnd(log, { redraw, after, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' '), plan: mxPlan });
     });
-  }, () => { if (log) txDbgEnd(log, { redraw, skipped: true }); });
+  }, () => { if (sh) tbShiftStart(sh, true); if (log) txDbgEnd(log, { redraw, skipped: true }); });
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
     if (viewTx === tx) viewTx = null;
@@ -7788,21 +7821,24 @@ const TX_OWN = new Set(['orient', 'scope', 'layout', 'filter']);
 // (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
 // with a screen of talks can still go without the morph; its items move on the
 // compositor, so what a slow device pays is the wait before they move, not the motion)
-const txPairFloor = p => TX_OWN.has(p.pair) ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
+// (and Full program <-> My agenda in the list, anywhere: on a device too slow for its
+// snapshots, the full list's redraw and the page's own toolbar change and fade (tbShift)
+// show sooner than any morph would, so a slow desktop goes without one too: p.any0)
+const txPairFloor = p => TX_OWN.has(p.pair) ? (PHONE_MQ.matches || p.any0 ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
 // (and Horizontal <-> Vertical the orientation itself: by the view and its level; Full
-// program <-> My agenda the view itself: by the calendar it shows, a day or the week, in
-// its orientation; the streams shown, by the view)
+// program <-> My agenda the view itself: by the list, or the calendar it shows, a day or
+// the week, in its orientation; the streams shown, by the view)
 const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks]
   : o.pair === 'orient' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', !!state.programTalks && state.day !== 'all']
-  : o.pair === 'scope' ? [o.pair, state.day === 'all' ? 'all' : 'day', state.orient]
+  : o.pair === 'scope' ? [o.pair, state.layout, state.day === 'all' ? 'all' : 'day', state.orient]
   : o.pair === 'filter' ? [o.pair, state.scope, state.layout, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks && state.day !== 'all']
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
-  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null });
+  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null, any0: o.pair === 'scope' && state.layout === 'list' });
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
@@ -7858,7 +7894,7 @@ function txDbgEnd(r, m){
   for (const [k, x] of Object.entries(m)) r[k] = typeof x === 'number' ? Math.round(x) : x;
   const vals = Object.entries(r.v).map(([k, x]) => k + '=' + x).join(' ');
   console.log(`[tx] #${r.n} ${r.asked}${r.kind !== r.asked ? '->' + r.kind : ''} ${r.level}${r.pair ? ' (' + r.pair + ')' : ''}${r.why ? ' because ' + r.why : ''} | ${vals}`
-    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.mx ? ' | ' + r.mx : '') + (r.skipped ? ', skipped' : ''));
+    + (r.redraw !== undefined ? ` | redraw ${r.redraw}ms` + (r.after ? ` (+${r.after}ms after)` : '') : '') + (r.freeze !== undefined ? `, first frame +${r.freeze}ms, worst frame ${r.jank}ms, ${r.named} named` : '') + (r.mx ? ' | ' + r.mx : '') + (r.skipped ? ', skipped' : ''));
 }
 // The cheap way in for a new view (no snapshot): the main area comes up from half
 // faded, quickly; the old one stays on screen while the new one is drawn. `dir`: 'in'
@@ -10362,14 +10398,16 @@ const layCap = to => to === 'calendar' ? mxOrientCap() : PHONE_MQ.matches ? 36 :
 // other layout starts at its own top, as the page did.
 const LAY_CAL = '.hz-bar, .vt-card, .week-blk:not(.week-off)';
 let layBack = null;
-function layAnchor(){
+function layAnchor(kind = 'lay'){
   const main = document.getElementById('main'), vh = innerHeight, bar = stickyWrap.getBoundingClientRect().bottom;
   let el = null;
   if (state.scope === 'participants') return null;
   // (straight back: the item it landed on still where it landed on the screen; the page's
   // scroll may have crept meanwhile, as blocks above it were drawn and the browser kept it
   // still)
-  let back = layBack && layBack.layout === state.layout && layBack.el.isConnected ? layBack : null;
+  // (Full program <-> My agenda keeps its own: kind 'scope', straight back from the view it
+  // went to)
+  let back = layBack && layBack.kind === kind && layBack.layout === state.layout && (kind !== 'scope' || layBack.scope === state.scope) && layBack.el.isConnected ? layBack : null;
   if (back){
     const r = back.el.getBoundingClientRect();
     if (r.height && Math.abs(r.top - back.top) < 2 && Math.abs(r.left - back.left) < 2) el = back.el;
@@ -10420,7 +10458,7 @@ function layAnchor(){
   const key = tid ? 't-' + tid : 's-' + sid, r = el.getBoundingClientRect();
   const keys = [key, ...DATA.days[day].slots.filter(x => x.start === slot.start && 's-' + x.id !== key).map(x => 's-' + x.id)];
   // (the new page comes in about it)
-  layOrigin(`${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
+  if (kind === 'lay') layOrigin(`${Math.round(r.left + Math.min(r.width, 160) / 2)}px ${Math.round(Math.max(0, r.top))}px`);
   const lead = back && back.key === key && back.ret || key;
   if (lead !== key){ const i = keys.indexOf(lead); if (i > 0) keys.splice(i, 1); keys.unshift(lead); }
   const top = !back && window.scrollY <= programTop() + 8;
@@ -10493,7 +10531,7 @@ function layPrep(a, to){
 // calendar's sticky heads, and in sight), its canvas or sideways scroller showing it.
 // Returns it (the target of the move), or with no such item, starts the new layout at
 // its top if the page was further down.
-function layLand(a){
+function layLand(a, kind = 'lay'){
   const main = document.getElementById('main');
   // (it, or if the other layout does not show it (a phone's week leaves some out), a
   // session starting with it)
@@ -10568,7 +10606,7 @@ function layLand(a){
   // (straight back: from it to where the item you were at was; if this is a session beside
   // that item (a phone's week leaves some out), to that item, not this)
   const ids = layIds(el), key = ids.tid ? 't-' + ids.tid : 's-' + ids.sid, r = el.getBoundingClientRect();
-  layBack = { key, el, top: r.top, left: r.left, y: a.from, layout: state.layout, ret: key !== a.keys[0] ? a.keys[0] : null };
+  layBack = { key, el, top: r.top, left: r.left, y: a.from, layout: state.layout, scope: state.scope, kind, ret: key !== a.keys[0] ? a.keys[0] : null };
   return el;
 }
 // (its own block too: one not drawn yet is only as tall as its estimate, and if that falls
@@ -10597,15 +10635,39 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   // change shape (reshape: My agenda draws a day to its own extent), the rest of either
   // view fading; the reader's place is kept (scopeGo)
   const cal = state.layout === 'calendar' && to !== 'participants' && state.scope !== 'participants';
-  withTransition(cal ? 'fade' : kind, () => {
+  // In the list, the same pair: each saved session and talk moves between its card (or its
+  // row in its session's card) and its My agenda row, the day headings and times with them
+  // (opts.marks), one the other view shows nowhere near folding up or opening out as it
+  // fades (opts.collapse, opts.grow); the item you were at stays where it was on the screen,
+  // or the nearest the other view shows to it in time (scopeListAnchor, layLand)
+  const list = state.layout === 'list' && to !== 'participants' && state.scope !== 'participants';
+  const a = list ? scopeListAnchor(to) : null;
+  // (and the toolbar, which each view has its own way, goes from one to the other as the
+  // view changes: opts.tb)
+  withTransition(cal || list ? 'fade' : kind, () => {
   if (cal){ scopeGo(to); return; }
   if (to === 'agenda') agendaLandOnSaved();
   showView(state.layout, to);
+  if (list){ syncToolbarHeight(); return layLand(a, 'scope'); }
   // scrolled deep into the other view: start this one at its top, under the toolbar
   if (window.scrollY > programTop()) scrollToProgramTop();
-  }, null, cal ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button }
-    : { to: { scope: to }, press: button });
+  }, null, cal || list ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button, tb: true, ...(list ? { marks: true, collapse: true } : {}) }
+    : { to: { scope: to }, press: button, tb: true });
 });
+// The list's place, Full program <-> My agenda: the item at the top of what you read
+// (layAnchor), and after it, should the other view not show it (a session not saved, or a
+// saved one the program's search or streams hide), what that view shows from the same day
+// and time on, then just before it.
+function scopeListAnchor(to){
+  const a = layAnchor('scope');
+  if (!a || a.top || a.again) return a;
+  const at = (d, m) => d * 1440 + m, here = at(a.day, a.min);
+  const its = to === 'agenda'
+    ? agendaSaved().filter(it => state.day === 'all' || it.di === state.day).map(it => ({ key: it.t ? 't-' + it.t.id : 's-' + it.s.id, a: at(it.di, toMin(it.start)), b: at(it.di, toMin(it.end)) }))
+    : DATA.days.flatMap((d, di) => state.day !== 'all' && di !== state.day ? [] : d.slots.map(s => ({ key: 's-' + s.id, a: at(di, toMin(s.start)), b: at(di, toMin(s.end)) })));
+  const next = its.filter(x => x.b > here).sort((p, q) => p.a - q.a).slice(0, 16), prev = its.filter(x => x.b <= here).sort((p, q) => q.a - p.a).slice(0, 4);
+  return { ...a, keys: [...new Set([...a.keys, ...next.map(x => x.key), ...prev.map(x => x.key)])] };
+}
 // The keys of the saved items the calendar shows (the day's, or the week's): each saved
 // session, and each saved talk with its session (which the Full program shows in its
 // place, at Sessions; My agenda, with "Show full sessions"), for mxBegin to look up by id
@@ -10693,7 +10755,10 @@ function weekPlace(){
   }
   if (!col) return null;
   const r = col.getBoundingClientRect(), q = h ? (x - r.left) / (r.width || 1) : (y - r.top) / (r.height || 1);
-  return { di: col.dataset.day, m: t0 + Math.min(1, Math.max(0, q)) * (t1 - t0), at: h ? col.closest('.week-row').getBoundingClientRect().top : r.left, x, y, into: ov.getBoundingClientRect().top < y };
+  // (scrolled into the week: its top near the toolbar's edge or above, as a day's (orientPlace);
+  // not the stuck ruler's bottom, which is below the week's top wherever the page is, so the
+  // page scrolled even from its top, the header and the toolbar jumping with it)
+  return { di: col.dataset.day, m: t0 + Math.min(1, Math.max(0, q)) * (t1 - t0), at: h ? col.closest('.week-row').getBoundingClientRect().top : r.left, x, y, into: ov.getBoundingClientRect().top < tbEdge() + 3 * remPx() };
 }
 function weekKeep(k){
   const ov = document.querySelector('#agenda .week-ov'), sc = ov && ov.querySelector('.week-sc'), col = ov && ov.querySelector(`.week-col[data-day="${k.di}"]`);
@@ -13991,11 +14056,11 @@ window.addEventListener('popstate', e => {
   // (Full program <-> My agenda, the same calendar: the saved items move, as for a click,
   // to the place the step kept)
   else if (a[0] !== b[0] && !a.concat(b).includes('participants') && a[1] === b[1] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3])
-    withTransition('fade', apply, null, { to: {}, pair: 'scope', dir: b[0] === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap() });
+    withTransition('fade', apply, null, { to: {}, pair: 'scope', dir: b[0] === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), tb: true });
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
     : a[4] !== b[4] && cal && state.day !== 'all' ? 'mx' : 'fade', apply, null,
-    a[0] === b[0] && a[1] === b[1] && a[4] !== b[4] && cal && state.day !== 'all' ? { to: {}, pair: 'level', dir: b[4] === '1' ? 'in' : 'out', nest: true, reshape: true } : { to: {} });
+    a[0] === b[0] && a[1] === b[1] && a[4] !== b[4] && cal && state.day !== 'all' ? { to: {}, pair: 'level', dir: b[4] === '1' ? 'in' : 'out', nest: true, reshape: true } : { to: {}, tb: a[0] !== b[0] });
 });
 // A click outside a dialog's box closes it, if the press began outside it too (so a drag
 // that selects text inside it and ends outside does not).
@@ -14706,7 +14771,7 @@ const stickyWrap = document.querySelector('.sticky-wrap');
 // (tbRootSync) on the reader's next click, press or key, a new address or a resize, ahead
 // of anything that could move the page.
 function syncToolbarHeight(){
-  if (TB.anim) return;
+  if (TB.anim || TB.shift) return;
   const px = Math.round(stickyWrap.getBoundingClientRect().height), root = document.documentElement.style;
   if (!TB.on && !stickyWrap.classList.contains('tb-anim') && TB.fullCss !== px){ TB.fullCss = px; root.setProperty('--toolbar-full', px + 'px'); }
   TB.h = px;
@@ -14732,7 +14797,7 @@ const tbEdge = () => TB.h;
 // (tbCompact: the fold and unfold move a clip, not the height, and the heads stuck under
 // the bar move with its edge)
 const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null,
-  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '', flipT: -1e9, later: 0, out: [] };
+  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '', flipT: -1e9, later: 0, out: [], shift: null };
 for (const t of ['keydown', 'focusin', 'click']) window.addEventListener(t, tbRootSync, { capture: true, passive: true });
 // (a touch on the page starts a scroll as often as a tap: a tap's click brings it)
 window.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') tbRootSync(); }, { capture: true, passive: true });
@@ -14919,6 +14984,7 @@ function tbMorph(P0, P1, late){
 const tbBoxH = () => parseFloat(getComputedStyle(stickyWrap).height) || stickyWrap.offsetHeight;
 function tbCompact(on){
   if (on === TB.on) return;
+  if (TB.shift) tbShiftEnd(TB.shift);
   // Mid-way through a fold or unfold: the edge it had reached (the new one starts there),
   // and the heads where they had got to.
   const run = TB.anim, follow = tbFollowers(), tabs = document.getElementById('daytabs');
@@ -15090,6 +15156,138 @@ function tbCompact(on){
     run1.tm = setTimeout(near, ms - 12);
     a.onfinish = end;
   } else done();
+}
+// ---- The toolbar changing with the view ----
+// Each view has its own toolbar: My agenda has no result line (and with nothing saved no
+// search or Streams either, Display options joining the day tabs' row), Participants no
+// day tabs. A change of view (withTransition, opts.tb) takes the bar from the one to the
+// other: each part in both moves from where it showed to its new place, one in only one of
+// them fades in or out with the part nearest it (tbMorph, as the bar folds), and the bar's
+// edge moves from its old height to its new one, with what is below it: under a view
+// transition the new view's picture (and the old one's as it goes, and the heads stuck
+// over it), else the page itself. All by transforms, on the compositor, with the change's
+// own items (MX_MS, MX_EASE), starting when the change itself starts: after the switch's
+// slide has begun, as before. (The bar's face is a layer of its own that a scale takes
+// from the one height to the other, under the line that rides its edge, so the two are
+// one move; a clip animated beside transforms was drawn a frame behind them, the line lost
+// under it as the edge went down. A part that goes, fading, is cut at the edge as it
+// passes, tbShiftCut.)
+// (tbShiftBegin, before the change: where the bar and its parts are; null, nothing to do)
+function tbShiftBegin(){
+  if (TB.shift) tbShiftEnd(TB.shift);
+  if (TB.anim || !stickyWrap.animate) return null;
+  return { p0: tbPartsAt(false, TB_PARTS.map((_, i) => i)), w0: stickyWrap.getBoundingClientRect(), h0: tbBoxH() };
+}
+// Once the new view is drawn (and, under a view transition, its items measured): the bar
+// as it will be, then set back to how it showed, for the first frame. vt: under a view
+// transition (the old bar's picture is not shown: the new one, live, moves). Returns the
+// change, for tbShiftStart, or null when the bar is as it was.
+function tbShiftGo(b, vt){
+  // (the new edge, as the page has it, at once: the heads stuck under the bar take it now,
+  // and move with the page under it)
+  syncToolbarHeight();
+  const h0 = b.h0, h1 = tbBoxH(), w1 = stickyWrap.getBoundingClientRect();
+  const P1 = TB_PARTS.map(el => { const r = el.getBoundingClientRect(); return r.width > 1 && r.height > 1 ? r : null; });
+  // (its parts' old places, in the bar as it is now: the bar itself may have moved, with the
+  // page)
+  const ox = w1.left - b.w0.left, oy = w1.top - b.w0.top;
+  const P0 = b.p0.map(a => a && { ...a, r: new DOMRect(a.r.left + ox, a.r.top + oy, a.r.width, a.r.height) });
+  const moved = P0.some((a, i) => !a !== !P1[i] || (a && (Math.abs(a.r.left - P1[i].left) > .5 || Math.abs(a.r.top - P1[i].top) > .5)));
+  if (Math.abs(h1 - h0) <= .5 && !moved) return null;
+  stickyWrap.classList.add('tb-anim', 'tb-shift');
+  // (what the new bar leaves out stays where it showed, out of the row, as it fades)
+  const gone = [];
+  P0.forEach((a, i) => { if (a && !P1[i]){ tbOut(TB_PARTS[i], a, w1); gone.push(i); } });
+  // The bar keeps the larger of its two heights while it changes, the page under it laid out
+  // for the new one (a margin under it takes back what it holds over); its face shows the
+  // old height to start with
+  const hold = Math.max(h0, h1), m = stickyWrap.style.marginBottom, s = stickyWrap.style;
+  if (hold > h1 + .5){ s.height = hold + 'px'; s.marginBottom = (parseFloat(m) || 0) - (hold - h1) + 'px'; }
+  s.setProperty('--tb-hold', hold + 'px');
+  s.setProperty('--tb-face', (h0 / hold).toFixed(5));
+  s.setProperty('--tb-edge', (h0 - 1) + 'px');
+  // (a part that goes fades where it showed, under the parts that stay, the edge cutting it
+  // as it passes: moved with its neighbour, as in a fold, the day tabs leaving for
+  // Participants rose over the view switches, dimming the pill)
+  const morph = tbMorph(P0, P1, []).map(m => gone.some(i => TB_PARTS[i] === m.el) ? { el: m.el, under: true, kf: [{ opacity: 1 }, { opacity: 0, offset: .5 }, { opacity: 0 }] } : m);
+  for (const { el, kf, under } of morph){
+    if (kf[0].translate) el.style.translate = kf[0].translate;
+    if (kf[0].opacity != null) el.style.opacity = kf[0].opacity;
+    if (under) el.style.zIndex = '-1';
+  }
+  const cut = tbShiftCut(morph, gone.map(i => TB_PARTS[i]), w1.top, h0, h1);
+  for (const { el, kf } of cut) el.style.clipPath = kf[0].clipPath;
+  // (and what is below follows the edge: by its old height less its new one, at first; but
+  // not a page holding something fixed to the screen, which a translate would take with it)
+  const dy = Math.abs(h1 - h0) > .5 ? h0 - h1 : 0, main = document.getElementById('main');
+  const below = !dy || vt || main.querySelector('.undo-bar:not([hidden]), .pp-bubble:not([hidden])') ? [] : [main, document.querySelector('body > footer')].filter(Boolean);
+  for (const el of below) el.style.translate = `0 ${dy}px`;
+  // (under a view transition, the bar's picture brings its own face: the group's, the bar's
+  // whole box, is off meanwhile)
+  if (vt) document.documentElement.dataset.viewTxTb = '';
+  return TB.shift = { hold, h0, h1, m, dy, vt, morph, cut, below, a: [], heads: vt ? mxNamed.filter(el => /\bmx-head\b/.test(el.style.viewTransitionClass)).map(el => el.style.viewTransitionName) : [] };
+}
+// A part going (with tbMorph's keyframes, `morph`), cut at the bar's edge as that passes
+// over it: its clip, in its own box, from the edge's line (top: the bar's top on the
+// screen; h0, h1: the edge's two heights) as each moves on its straight line through the
+// change (keyframes where the edge meets its bottom and its top, so the cut keeps to it).
+function tbShiftCut(morph, gone, top, h0, h1){
+  const out = [];
+  for (const { el, kf } of morph){
+    if (!gone.includes(el)) continue;
+    const r = el.getBoundingClientRect(), t = (kf.at(-1).translate || '0px 0px').split(' ').map(parseFloat), ty = t[1] || 0;
+    // (how much of it the edge leaves below, at q of the way: its box moves by ty, the edge
+    // from h0 to h1)
+    const under = q => Math.min(r.height, Math.max(0, r.bottom + ty * q - (top + h0 + (h1 - h0) * q)));
+    const qs = new Set([0, 1]), lin = (y, a) => { const d = (ty - (h1 - h0)); if (Math.abs(d) > 1e-6){ const q = (top + h0 - r.bottom + y) / d; if (q > .002 && q < .998) qs.add(+q.toFixed(4)); } };
+    lin(0); lin(r.height);
+    const frames = [...qs].sort((x, y) => x - y).map(q => ({ offset: q, clipPath: `inset(0px 0px ${under(q).toFixed(1)}px 0px)` }));
+    if (frames.every(f => f.clipPath === 'inset(0px 0px 0.0px 0px)')) continue;
+    out.push({ el, kf: frames });
+  }
+  return out;
+}
+// The change moves (in the transition's first frame, ready, under one; at once, without);
+// `bare`: the transition was skipped before it showed, so only the page moves
+function tbShiftStart(sh, bare){
+  if (!sh || TB.shift !== sh) return;
+  const ms = MX_MS * motionK(), opt = { duration: ms, easing: MX_EASE, fill: 'forwards' }, root = document.documentElement;
+  const go = (el, kf, o) => { try { sh.a.push(el.animate(kf, o ? { ...opt, ...o } : opt)); } catch (e) {} };
+  go(stickyWrap, [{ transform: `scaleY(${(sh.h0 / sh.hold).toFixed(5)})` }, { transform: `scaleY(${(sh.h1 / sh.hold).toFixed(5)})` }], { pseudoElement: '::before' });
+  go(stickyWrap, [{ transform: `translateY(${sh.h0 - 1}px)` }, { transform: `translateY(${sh.h1 - 1}px)` }], { pseudoElement: '::after' });
+  for (const { el, kf } of sh.morph) go(el, kf);
+  for (const { el, kf } of sh.cut) go(el, kf);
+  for (const el of sh.below) go(el, [{ translate: `0 ${sh.dy}px` }, { translate: '0 0' }]);
+  // (under a view transition: the new view's picture, and the stuck heads shown over it,
+  // come from the old edge, and the old view's picture goes with it)
+  if (sh.vt && !bare && sh.dy){
+    const from = [{ translate: `0 ${sh.dy}px` }, { translate: '0 0' }];
+    go(root, from, { pseudoElement: '::view-transition-new(root)' });
+    go(root, [{ translate: '0 0' }, { translate: `0 ${-sh.dy}px` }], { pseudoElement: '::view-transition-old(root)' });
+    for (const n of sh.heads) go(root, from, { pseudoElement: `::view-transition-new(${n})` });
+  }
+  const end = () => { if (TB.shift === sh) tbShiftEnd(sh); };
+  sh.tm = setTimeout(end, ms + 34);
+  if (sh.a[0]) sh.a[0].onfinish = end;
+}
+// It ends (or is cut short by another change, a fold): the bar and its parts as the page
+// has them
+function tbShiftEnd(sh){
+  clearTimeout(sh.tm);
+  for (const x of sh.a.splice(0)) x.cancel();
+  const s = stickyWrap.style;
+  for (const p of ['--tb-edge', '--tb-hold', '--tb-face']) s.removeProperty(p);
+  s.height = ''; s.marginBottom = sh.m;
+  for (const el of [...sh.morph.map(x => x.el), ...sh.below]){
+    el.style.translate = ''; el.style.opacity = ''; el.style.zIndex = ''; el.style.clipPath = '';
+    if (!el.style.length) el.removeAttribute('style');
+  }
+  tbOutEnd();
+  stickyWrap.classList.remove('tb-anim', 'tb-shift');
+  if (!s.length) stickyWrap.removeAttribute('style');
+  delete document.documentElement.dataset.viewTxTb;
+  if (TB.shift === sh) TB.shift = null;
+  syncToolbarHeight();
 }
 // The toolbar stays whole while a menu is open, while it holds the keyboard focus, and
 // above the point where it has scrolled fully past its own place in the page. (Not for
