@@ -173,7 +173,7 @@ and print are designed alongside.
 ## Build
 
 `index.html` and `aip-2026-program.html` are generated, self-contained pages; edit the page's
-source in `src/` (`page.html`, `styles.css`, `app.js`; see `src/README.md`), `build_program.py`
+source in `src/` (`page.html`, `styles.css`, `js/*.js`; see `src/README.md`), `build_program.py`
 (the build: data, labels, footer links, dark-theme tokens) or `normalize.py` (data clean-up), then:
 
 ```bash

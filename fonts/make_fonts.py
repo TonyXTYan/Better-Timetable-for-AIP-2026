@@ -36,7 +36,7 @@ STYLES = {
 
 def wanted_codepoints():
     text = (ROOT / 'build_program.py').read_text(encoding='utf-8')
-    for f in sorted((ROOT / 'src').iterdir()):  # the page's HTML, CSS and JS
+    for f in sorted(f for f in (ROOT / 'src').rglob('*') if f.is_file()):  # the page's HTML, CSS and JS
         text += f.read_text(encoding='utf-8')
     text += (ROOT / 'aip2026-data.json').read_text(encoding='utf-8')
     cps = {ord(c) for c in text}

@@ -337,14 +337,20 @@ def font_faces(root):
 
 
 # The page's source lives in src/: page.html (the HTML, with the small head scripts), styles.css
-# (the main <style>) and app.js (the main <script>). page.html names the other two on lines of
-# their own, "@@INCLUDE styles.css@@" and "@@INCLUDE app.js@@", and each such line is replaced by
-# that file's text, exactly as written (every file ends with one newline). main() then fills the
-# @@...@@ placeholders, in the CSS and JS as in the HTML.
+# (the main <style>) and js/*.js (the main <script>, in parts by area). page.html names the others
+# on lines of their own, "@@INCLUDE styles.css@@" and "@@INCLUDE js/*.js@@", and each such line is
+# replaced by the text of the file, or of every file the pattern matches in name order, joined
+# with nothing between them, exactly as written (every file ends with a newline). main() then
+# fills the @@...@@ placeholders, in the CSS and JS as in the HTML.
 def page_template(root):
     src = root / 'src'
-    return re.sub(r'^@@INCLUDE (\S+)@@\n',
-                  lambda m: (src / m.group(1)).read_text(encoding='utf-8'),
+
+    def include(m):
+        files = sorted(src.glob(m.group(1)), key=lambda f: f.name)
+        if not files:
+            sys.exit(f'src/page.html: no file for @@INCLUDE {m.group(1)}@@')
+        return ''.join(f.read_text(encoding='utf-8') for f in files)
+    return re.sub(r'^@@INCLUDE (\S+)@@\n', include,
                   (src / 'page.html').read_text(encoding='utf-8'), flags=re.M)
 
 
