@@ -2973,7 +2973,9 @@ button.bd-chip{transition:color calc(200ms * var(--mo,1)) var(--ease),scale calc
 :is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,.seg label):not(:disabled):active,#clr:not(:disabled):active,#grpclr:not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
 .agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
 /* (Back and Next slot pressed from the keyboard, Left and Right: bdKeyPress) */
-.bd-foot .toggle.bd-press:not(:disabled){scale:.95;filter:var(--press);transition-duration:0s}
+/* (on a disabled one too: Left into the first slot presses Back as it disables, as a click
+   presses it before) */
+.bd-foot .toggle.bd-press{scale:.95;filter:var(--press);transition-duration:0s}
 .dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
 :is(.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk):active{scale:.985;filter:var(--press);transition-duration:0s}
 .vt-card:has(>.vt-hd .vt-open:active){filter:var(--press)}
@@ -11927,8 +11929,11 @@ function bdGo(i, how){
   const at = bd.done ? bd.slots.length : bd.i;
   i = Math.max(0, Math.min(bd.slots.length - 1, i));
   if (how === 'nav' && i === at) how = 'fade';
-  // the thumb moves as the slot will (a drag, or a change of streams, moves it at once)
-  const glide = how !== 'nav' ? null : bdMove && performance.now() - bdMove.t < MO_S * motionK() ? 'quick' : Math.abs(i - at) > 1 ? 'jump' : 'step';
+  // the thumb moves as the slot will (a drag, or a change of streams, moves it at once); a far
+  // one soon after the last (Home then End) glides as a jump, as the quick one's fast start
+  // would throw the thumb a long way in its first frame
+  const far = Math.abs(i - at);
+  const glide = how !== 'nav' ? null : far <= 2 && bdMove && performance.now() - bdMove.t < MO_S * motionK() ? 'quick' : far > 1 ? 'jump' : 'step';
   const start = bdMovePrep(how, i < at ? -1 : 1, Math.abs(i - at) > 1);
   bd.done = false;
   bd.i = i;
