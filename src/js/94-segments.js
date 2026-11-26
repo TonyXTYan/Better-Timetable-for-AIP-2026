@@ -16,6 +16,7 @@ const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .hn-src, .daytabs';
 // change. (viewTx: a change pressed and waiting for its frame, or a transition not yet
 // showing)
 function segWait(g){
+  if (TXP) txpAt('hold');
   g._segHold = true;
   g.classList.add('seg-hold');
   // (nothing moves while held: a slide's tail, the chosen fill stepped aside, ends here)
@@ -210,6 +211,8 @@ function segPos(sl, t){
 // while before it is drawn (the new view), the one on its way going on meanwhile: it then
 // takes over from where that one has got to by then, not from where it was at the press.
 function segSlide(g, from, to, was, wasBox, live, prev){
+  // (?txprof=1: the slide of the switch pressed, as it starts)
+  if (TXP && txpLive(txpCur) && txpCur.pill === undefined && (!txpCur.g || txpCur.g === g)){ txpAt('pill'); txpFrame(txpCur, 'pillRaf'); }
   const dur = 200 * motionK(), t0 = performance.now();
   const sl = { from, to, dur, ink: [], t0 };
   if (prev && t0 < segT0(prev) + prev.dur){

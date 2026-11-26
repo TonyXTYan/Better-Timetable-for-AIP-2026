@@ -237,6 +237,9 @@ const state = {
   aq: '', acats: new Set(Object.keys(DATA.cats)),
   psort: 'aff', pcat: '', // the Participants view's sort (aff | first | last) and category
 };
+// ?txprof=1 in the address: view switches timed, phase by phase (txpBegin and the rest, with
+// the view transitions' groundwork); set here, as drawing a view (rerender) is timed too.
+const TXP = /[?&]txprof=1(&|$)/.test(location.search);
 // Every session and talk id in the program: the only ids a star can hold.
 const KNOWN_IDS = new Set(DATA.days.flatMap(d => d.slots.flatMap(s => [s.id, ...s.talks.map(t => t.id)])));
 // A retired id (a talk Indico re-created under a new one) reads as its replacement.

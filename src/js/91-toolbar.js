@@ -398,6 +398,17 @@ function tbCompact(on){
     a.onfinish = end;
   } else done();
 }
+// (?txprof=1: a fold or unfold, a record of its own: the scroll input that set it off, the
+// call, the bar's new state worked out and its animations made, the next frame)
+if (TXP){
+  const f = tbCompact;
+  tbCompact = function(on){
+    if (on === TB.on) return f.apply(this, arguments);
+    const t = performance.now(), R = txpBegin('fold', { on, wt: t, input: t - TB.input < 1000 ? TB.input : undefined }, false);
+    try { return f.apply(this, arguments); }
+    finally { txpAt('built', R); txpFrame(R, 'raf1', true); }
+  };
+}
 // ---- The toolbar changing with the view ----
 // Each view has its own toolbar: My agenda has no result line (and with nothing saved no
 // search or Streams either, Display options joining the day tabs' row), Participants no

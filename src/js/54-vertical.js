@@ -362,6 +362,7 @@ function vtSlideTo(i, { focus = '', toTop = false, edge = false } = {}){
     view.animate([{ transform: `translateX(${dir * 28}%)` }, { transform: 'none' }], { duration: MO_L * k, easing: EASE_EM }),
     view.animate([{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, delay: MO_S / 2 * k, easing: EASE, fill: 'backwards' }),
   ];
+  if (TXP) txpAt('slide0');   // (?txprof=1: its motion made; the frame after it, txPending's)
   const end = () => { if (vtSlideEnd !== end) return; vtSlideEnd = null; for (const a of anims) a.cancel(); ghost.remove(); main.classList.remove('vt-sliding'); };
   vtSlideEnd = end;
   anims[2].onfinish = end;
@@ -529,4 +530,6 @@ function renderCalendar(){
   paintNow();
   writeHash();
 }
+// (?txprof=1: its time, txpRender)
+if (TXP){ const f = renderCalendar; renderCalendar = function(){ return txpRender(f, this, arguments); }; }
 

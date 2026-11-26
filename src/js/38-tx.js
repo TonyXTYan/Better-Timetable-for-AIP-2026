@@ -1,15 +1,20 @@
 // The pressed control (opts.press) shows its new state in the very next frame: the
 // change itself (redraw, snapshot, measuring) starts once that frame is painted.
 function withTransition(kind, fn, from, opts = {}){
+  const tw = TXP ? performance.now() : 0;
   settleTransition();
   dxSettleAll();   // (an abstract still unfolding is snapshotted where it ends)
   if (vtSlideEnd) vtSlideEnd();   // (a day sliding in Vertical lands first, its ghost gone)
+  const R = TXP ? txpBegin(kind, { wt: tw, pair: opts.pair ? opts.pair + ':' + opts.dir : '' }) : null;
+  if (R){ R.d.settle = performance.now() - tw; performance.mark(`tx${R.n} wt`, { startTime: tw }); }
   // No snapshot while a modal dialog is up, but for the details dialog's own opening and
   // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
-  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ fn(); return; }
+  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ if (R) R.kind = 'dialog'; fn(); if (R) txpFrame(R, 'raf1', true); return; }
   if (opts.press){
     const o = { ...opts, press: null };
-    txPending(opts.press, () => txStart(kind, fn, from, o), txTimed(fn, o), txSlideFirst(o, opts.press), txFreezes(kind, o));
+    const go = () => txStart(kind, fn, from, o), now = txTimed(fn, o), slide = txSlideFirst(o, opts.press), freeze = txFreezes(kind, o);
+    if (R){ R.slideWait = slide; R.freezes = freeze; }
+    txPending(opts.press, go, now, slide, freeze);
     return;
   }
   txStart(kind, fn, from, opts);
@@ -46,8 +51,11 @@ function txFreezes(kind, o){
 // fn, timed: its cost is the script and the layout it causes
 const txTimed = (fn, opts, after) => () => {
   const t0 = performance.now();
+  if (TXP) txpAt('cb');
   fn();
+  if (TXP) txpAt('fn1');
   void document.body.offsetHeight;
+  if (TXP) txpAt('reflow');
   const ms = performance.now() - t0;
   txNote(ms, opts.to);
   if (after) after(ms);
@@ -56,14 +64,18 @@ function txStart(kind, fn, from, opts){
   const root = document.documentElement;
   const clear = () => { delete root.dataset.viewTx; delete root.dataset.viewTxNew; delete root.dataset.viewTxQuick; delete root.dataset.viewTxBand; };
   const noTx = () => { if (!viewTx?.vt) clear(); };
-  if (motionReduced()){ txTimed(fn, opts)(); return; }
+  const R = TXP && txpLive(txpCur) ? txpCur : null;
+  if (R) txpAt('go', R);
+  if (motionReduced()){ if (R) R.kind = 'reduced'; txTimed(fn, opts)(); if (R) txpFrame(R, 'raf1', true); return; }
   const t = performance.now(), g = txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
+  if (R){ txpAt('guard', R); R.kind = g.none ? 'none' : g.kind; R.level = g.none ? (g.enter ? 'fade only' : 'instant') : g.opts.plain ? 'plain' : g.opts.lite ? 'lite' : 'full'; R.why = g.why.join(', '); }
   txLast = t;
   // (a change of view that may change the toolbar: its parts where they show now, tbShift)
   const tb = opts.tb ? tbShiftBegin() : null;
   if (g.none){
     noTx();
     txTimed(fn, opts, ms => { if (tb) tbShiftStart(tbShiftGo(tb)); if (g.enter) viewEnter(opts.enter); if (g.pr) txPairPlain(g.pr, ms); if (log) txDbgEnd(log, { redraw: ms }); })();
+    if (R) txpFrame(R, 'raf1', true);
     return;
   }
   kind = g.kind; opts = g.opts;
@@ -71,6 +83,7 @@ function txStart(kind, fn, from, opts){
   if (!document.startViewTransition){
     fn();
     if (tb) tbShiftStart(tbShiftGo(tb));
+    if (R) txpFrame(R, 'raf1', true);
     if (kind === 'mx' || kind === 'dlg') return;
     viewEnter(opts.enter);
     return;
@@ -82,21 +95,27 @@ function txStart(kind, fn, from, opts){
   root.dataset.viewTx = kind;
   // (All week -> a day: the day grows out of its row or column, measured in the week now;
   // a day -> All week: it shrinks into the one the new week shows)
+  const to = R ? txpAt('old0', R) : 0;
   let rect = kind === 'dayin' ? txBandRect(opts.band) : null;
   const mx = mxBegin(kind, from, opts), pr = opts.pair ? txPairRec(opts) : null;
+  if (R){ txpAt('old1', R); txpAdd('old', to, R); R.oldNamed = mxNamed.length; R.seen = mxStat.seen; }
   let ran = false, done, redraw = 0, sh = null, after = 0;
   const run = () => {
     if (ran) return done;
     ran = true;
+    const pv = txpCur;
+    if (R){ txpCur = R; txpAt('cb', R); }
     mxClear();
     // (the toolbar's own change is set out once the new view's items are measured: the page
     // under the bar is not moved by it, and its parts start from where they showed)
-    const finish = target => { const t1 = performance.now(); mx.after(target || null, rect); if (tb) sh = tbShiftGo(tb, true); root.dataset.viewTxNew = ''; after = performance.now() - t1; };
+    const finish = target => { const t1 = performance.now(); mx.after(target || null, rect); if (tb) sh = tbShiftGo(tb, true); root.dataset.viewTxNew = ''; after = performance.now() - t1; if (R) txpAt('after1', R); };
     const t0 = performance.now(), y0 = window.scrollY;
     inVT = true;
     let out;
     try { out = fn(); } finally { inVT = false; }
+    if (R) txpAt('fn1', R);
     void document.body.offsetHeight;
+    if (R) txpAt('reflow', R);
     redraw = performance.now() - t0;
     txNote(redraw, opts.to);
     if (kind === 'dayout') rect = txBandRect(opts.band);
@@ -108,9 +127,11 @@ function txStart(kind, fn, from, opts){
     // two never show doubled (a day growing or shrinking covers the jump itself)
     if (Math.abs(window.scrollY - y0) > 40 && !band) root.dataset.viewTxQuick = '';
     done = out && typeof out.then === 'function' ? out.then(finish) : finish(out);
+    if (R) txpCur = pv;
     return done;
   };
   let vt;
+  if (R){ txpAt('svt', R); R.vt = true; }
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
   const tx = viewTx = mxOwner = { vt, run };
@@ -120,16 +141,20 @@ function txStart(kind, fn, from, opts){
   // cost the next change (back to Sessions) its morph)
   vt.ready.then(() => {
     const named = mxNamed.length;
+    const ta = R ? txpAt('ready', R) : 0;
+    if (R){ R.named = named; txpFrame(R, 'raf1'); }
     mx.animate();
+    if (R) txpAdd('animate', ta, R);
     if (sh) tbShiftStart(sh);
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
       if (log) txDbgEnd(log, { redraw, after, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' '), plan: mxPlan });
     });
-  }, () => { if (sh) tbShiftStart(sh, true); if (log) txDbgEnd(log, { redraw, skipped: true }); });
+  }, () => { if (sh) tbShiftStart(sh, true); if (log) txDbgEnd(log, { redraw, skipped: true }); if (R){ R.skipped = true; txpAt('ready', R); } });
   vt.updateCallbackDone.catch(e => console.error(e));
   vt.finished.catch(() => {}).then(() => {
+    if (R){ txpAt('finished', R); txpEnd(R); }
     if (viewTx === tx) viewTx = null;
     mx.done();
     for (const a of bandAnims.splice(0)) a.cancel();
@@ -443,7 +468,10 @@ function pageHeavy(){
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
 function txPending(press, go, now, slide = 0, freeze = true){
-  if (!press.parentElement){ go(); return; }   // (a button a redraw has since replaced)
+  // (a record of its own, but for withTransition's, just made)
+  const R = !TXP ? null : txpLive(txpCur) && txpCur.press === undefined && performance.now() - txpCur.at < 100 ? txpCur : txpBegin('pending', { own: true });
+  if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
+  if (!press.parentElement){ go(); if (R && R.own) txpFrame(R, 'raf1', true); return; }   // (a button a redraw has since replaced)
   const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
@@ -452,8 +480,12 @@ function txPending(press, go, now, slide = 0, freeze = true){
     ran = true;
     if (viewTx === tx) viewTx = null;
   };
-  const tx = viewTx = { run: () => { if (!ran){ end(); now(); } }, vt: null, slide, freeze, group: press.parentElement, drop: e => { if (!ran){ end(); segDefer(press.parentElement, e); paint(false); } } };
-  requestAnimationFrame(() => setTimeout(() => { if (!ran){ end(); go(); } }, slide));
+  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide, freeze, group: press.parentElement,
+    drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(press.parentElement, e); paint(false); } } };
+  requestAnimationFrame(ts => {
+    if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
+    setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+  });
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
 

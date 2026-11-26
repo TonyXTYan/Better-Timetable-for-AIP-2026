@@ -592,6 +592,8 @@ function rerender(){
   paintStarCount();
   paintNow(); writeHash();
 }
+// (?txprof=1: its time, txpRender)
+if (TXP){ const f = rerender; rerender = function(){ return txpRender(f, this, arguments); }; }
 
 // The toolbar's static position: offsetTop of a stuck sticky element is the scroll position.
 function programTop(){ return document.getElementById('toolbarAnchor').getBoundingClientRect().top + window.scrollY; }

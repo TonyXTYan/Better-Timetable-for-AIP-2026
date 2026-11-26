@@ -583,6 +583,7 @@ function mxBegin(kind, from, opts){
   };
   return {
     after(target, rect){
+      const tn = TXP ? txpAt('new0') : 0;
       // ---- what the new page shows (all of it measured before anything is named, so the
       // new view is laid out once: a list's time blocks and My agenda's rows in sight, which
       // the browser has not drawn yet (just put on the page by the change), are drawn first,
@@ -602,6 +603,8 @@ function mxBegin(kind, from, opts){
       const now = pop || (!only && !lay && !filt && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either || lay || filt, marks, fx && { items: fx.items, marks: fx.marks });
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
+      const tp = TXP ? txpAt('new1') : 0;
+      if (TXP) txpAdd('new', tn);
       const names = [], heads = [];
       if (only && !opts.either){
         const under = mxUnderHeads();
@@ -920,6 +923,11 @@ function mxBegin(kind, from, opts){
       for (const h of heads) if (!named.has(h)) mxName(h, 'h-' + i++, 'mx-cover mx-head');   // (one paired as a cover moves instead)
       if (plan.quick) document.documentElement.dataset.viewTxQuick = 'mx';
       mxRules(rules.join('\n'));
+      if (TXP && txpLive(txpCur)){
+        Object.assign(txpCur, { pairs: plan.pairs.length, folds: plan.fold.length + plan.grow.length, fades: plan.fade.length + plan.sink.length + plan.away.length, adds: plan.added.length + plan.emerge.length + plan.rise.length, anims: anims.length });
+        txpAt('plan1');
+        txpAdd('plan', tp);
+      }
     },
     animate(){
       const root = document.documentElement;

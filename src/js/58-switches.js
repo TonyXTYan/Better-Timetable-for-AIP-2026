@@ -19,6 +19,7 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
   const to = button.dataset.layout, t = performance.now();
   const u = layUndo && layUndo.from === to && layUndo.to === state.layout && t - layUndo.t < 1000 * motionK() && TB.input < layUndo.t ? layUndo : null;
   const a = u ? u.a && { ...u.a, again: true } : layAnchor();
+  if (TXP) txpIn.anchor = { t, ms: performance.now() - t };   // (?txprof=1: the old view's place, measured)
   layUndo = u ? null : { from: state.layout, to, a, t };
   withTransition('lay', () => {
     layPrep(a, to);
@@ -292,7 +293,9 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   // fades (opts.collapse, opts.grow); the item you were at stays where it was on the screen,
   // or the nearest the other view shows to it in time (scopeListAnchor, layLand)
   const list = state.layout === 'list' && to !== 'participants' && state.scope !== 'participants';
+  const ta = TXP ? performance.now() : 0;
   const a = list ? scopeListAnchor(to) : null;
+  if (TXP) txpIn.anchor = { t: ta, ms: performance.now() - ta };   // (?txprof=1: the old view's place, measured)
   // (and the toolbar, which each view has its own way, goes from one to the other as the
   // view changes: opts.tb)
   withTransition(cal || list ? 'fade' : kind, () => {
