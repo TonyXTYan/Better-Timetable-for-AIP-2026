@@ -6771,7 +6771,7 @@ function mxUnderHeads(){
   }
   return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
 }
-let mxNamed = [], mxOwner = null, mxShown = [];
+let mxNamed = [], mxOwner = null, mxShown = [], mxUnshow = new Set();
 // (what the last morph named and found, for ?txdebug=1; and mxPlan, how each item it
 // named moves, by key)
 let mxStat = {}, mxPlan = null;
@@ -6789,7 +6789,15 @@ function mxRules(css){
 }
 function mxClear(){
   for (const el of mxNamed){ el.style.viewTransitionName = ''; el.style.viewTransitionClass = ''; }
-  for (const b of mxShown) b.style.contentVisibility = '';
+  // (the blocks drawn for it are left to the browser again two frames on, not at once: one
+  // far off screen, skipped (content-visibility) in the very frame its item's name comes
+  // off, can crash Chrome's compositor at the next transition; one a later morph draws in
+  // the meantime is its own)
+  if (mxShown.length){
+    const bs = mxShown;
+    for (const b of bs) mxUnshow.add(b);
+    requestAnimationFrame(() => requestAnimationFrame(() => { for (const b of bs) if (mxUnshow.delete(b)) b.style.contentVisibility = ''; }));
+  }
   if (mxSheet && mxSheet.cssRules.length) mxSheet.replaceSync('');
   mxNamed = []; mxShown = [];
 }
@@ -6808,7 +6816,7 @@ function mxName(el, key, cls){
 // as one just put on the page by the change: drawn now, once for each, or its item would
 // have no picture to move to)
 function mxShow(blocks){
-  for (const b of blocks) if (!b.style.contentVisibility){ b.style.contentVisibility = 'visible'; mxShown.push(b); }
+  for (const b of blocks) if (mxUnshow.delete(b) || !b.style.contentVisibility){ b.style.contentVisibility = 'visible'; mxShown.push(b); }
 }
 const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key) + ')';
 // What is on screen now: items, grid marks (aux) and sticky covers by key, each with its
