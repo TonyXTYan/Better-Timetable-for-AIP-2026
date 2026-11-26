@@ -203,5 +203,9 @@ the build only reads those files, so it needs nothing beyond the Python standard
 
 `shots.js` and `shots2.js` take screenshots with Playwright (`node shots.js`).
 
+The regression tests are in `tests/` (Playwright, headless Chromium): `npm test` rebuilds the page,
+checks that `index.html` and `aip-2026-program.html` match, and runs them; `npm run test:full` adds
+the slow sliding-pill test. See `tests/README.md`.
+
 The QR code uses [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 by
 Kazuhiko Arase (MIT), inlined in the page so it works offline.
