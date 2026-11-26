@@ -10904,7 +10904,16 @@ function bdMovePrep(how, dir, far){
     ghost.className = 'bd-body bd-ghost';
     ghost.setAttribute('aria-hidden', 'true');
     ghost.inert = true;
-    Object.assign(ghost.style, { top: body.offsetTop + 'px', left: body.offsetLeft + 'px', width: body.offsetWidth + 'px', height: body.offsetHeight + 'px' });
+    // placed exactly over the body's content (unrounded, against the dialog's padding box,
+    // allowing for the dialog being scaled while it opens) and as wide as the body less its
+    // scrollbar: the ghost has none, so the old content keeps its width and does not re-wrap
+    const par = body.offsetParent, br = body.getBoundingClientRect(), pr = par.getBoundingClientRect();
+    const s = pr.width / par.offsetWidth || 1;
+    Object.assign(ghost.style, {
+      top: (br.top - pr.top) / s - par.clientTop + par.scrollTop + 'px',
+      left: (br.left - pr.left) / s - par.clientLeft + par.scrollLeft + 'px',
+      width: br.width / s - (body.offsetWidth - body.clientWidth) + 'px',
+      height: br.height / s + 'px' });
     ghost.append(...body.childNodes);
     ghost.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
   }
