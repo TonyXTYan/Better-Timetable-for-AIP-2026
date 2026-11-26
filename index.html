@@ -10061,35 +10061,129 @@ function layMeasureAbove(el){
   const hs = above.map(cihOf);
   above.forEach((b, i) => { b.style.contentVisibility = ''; if (hs[i] > 0) b.style.setProperty('--cih', hs[i] + 'px'); });
 }
-const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
   if (!button || button.dataset.scope === state.scope) return;
-  const kind = SCOPE_ORDER.indexOf(button.dataset.scope) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
-  const txo = { to: { scope: button.dataset.scope }, press: button };
-  withTransition(kind, () => {
-  if (button.dataset.scope === 'agenda') agendaLandOnSaved();
-  if (button.dataset.scope === 'participants' || state.scope === 'participants'){
-    showView(state.layout, button.dataset.scope);
-    if (window.scrollY > programTop()) scrollToProgramTop();
-    return;
-  }
-  if (state.layout === 'list'){
-    showView('list', button.dataset.scope);
-    // scrolled deep into the other view: start this one at its top, under the toolbar
-    if (window.scrollY > programTop()) scrollToProgramTop();
-    return;
-  }
-  const previous = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
-  const left = previous?.scrollLeft || 0;
-  if (previous) calendarPositions.set(state.scope + ':' + state.day, previous.scrollTop);
-  showView(state.layout, button.dataset.scope);
-  const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
-  next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
-  // the page's own scroll belonged to the other calendar: start this one at its top
+  const to = button.dataset.scope;
+  const kind = SCOPE_ORDER.indexOf(to) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
+  // Full program <-> My agenda in the calendar: one pair, both ways alike (txGuards), whose
+  // saved items move between their places in the two views (scopeKeys), each free to
+  // change shape (reshape: My agenda draws a day to its own extent), the rest of either
+  // view fading; the reader's place is kept (scopeGo)
+  const cal = state.layout === 'calendar' && to !== 'participants' && state.scope !== 'participants';
+  withTransition(cal ? 'fade' : kind, () => {
+  if (cal){ scopeGo(to); return; }
+  if (to === 'agenda') agendaLandOnSaved();
+  showView(state.layout, to);
+  // scrolled deep into the other view: start this one at its top, under the toolbar
   if (window.scrollY > programTop()) scrollToProgramTop();
-  }, null, txo);
+  }, null, cal ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button }
+    : { to: { scope: to }, press: button });
 });
+// The keys of the saved items the calendar shows (the day's, or the week's): each saved
+// session, and each saved talk with its session (which the Full program shows in its
+// place, at Sessions; My agenda, with "Show full sessions"), for mxBegin to look up by id
+// in both views (opts.only, opts.either): the rest of the Full program is no part of the
+// change, and is not looked into.
+function scopeKeys(){
+  const keys = new Set();
+  for (const it of agendaSaved()){
+    if (state.day !== 'all' && it.di !== state.day) continue;
+    keys.add('s-' + it.s.id);
+    if (it.t) keys.add('t-' + it.t.id);
+  }
+  return [...keys];
+}
+// Full program <-> My agenda in the calendar, keeping the reader's place: a day at the
+// same time of day (Horizontal: the canvas's left minute; Vertical: the time row under
+// the stuck heads: orientPlace and orientKeep), All week at the same day and time
+// (weekPlace); a switch straight back, nothing scrolled or changed in between, back to
+// the very place it left (scopeLast), unless nothing showed there. A view that opens on
+// another day (My agenda with nothing saved on this one: agendaLandOnSaved), or shows no
+// calendar (nothing saved), starts at its top, as before.
+let scopeLast = null;
+function scopeGo(to){
+  const day = state.day, from = scopeMark(), L = scopeLast;
+  const same = L && L.to === state.scope && L.day === day && L.orient === state.orient && L.talks === state.programTalks && scopeSame(L.at, from);
+  const back = same && L.any ? L.from : null;
+  const keep = !back && dayViewShown() ? orientPlace() : null, wk = !back && state.day === 'all' ? weekPlace() : null;
+  if (to === 'agenda') agendaLandOnSaved();
+  const m = back ? back.m : keep && keep.m;
+  if (m !== null && m !== undefined && day !== 'all' && state.day === day && state.orient === 'h') HZ.left[(to === 'agenda' ? 'a:' : '') + DATA.days[day].date] = m;
+  showView(state.layout, to);
+  if (state.day !== day || !document.querySelector('#agenda :is(.hz-day, .vt-day, .week-ov)')){
+    if (window.scrollY > programTop()) scrollToProgramTop();
+    scopeLast = null;
+    return;
+  }
+  if (back) scopeReturn(back);
+  else if (keep) orientKeep(keep);
+  else if (wk) weekKeep(wk);
+  else if (window.scrollY > programTop()) scrollToProgramTop();
+  // (the page's own scroll: the tap on the switch is no scroll of the reader's, and the
+  // toolbar, with the switch in it, stays as it was)
+  TB.input = -1e9; TB.last = window.scrollY;
+  scopeLast = { to, day, orient: state.orient, talks: state.programTalks, any: scopeAny(), from, at: scopeMark() };
+}
+// (where a calendar is: orientMark's page scroll and canvas minute, and All week's
+// sideways scroll)
+function scopeMark(){
+  const sc = document.querySelector('#agenda .week-sc');
+  return { ...orientMark(), wl: sc ? sc.scrollLeft : null };
+}
+const scopeSame = (a, b) => orientSame(a, b) && Math.abs((a.wl || 0) - (b.wl || 0)) < 2;
+function scopeReturn(f){
+  orientReturn(f);
+  const sc = document.querySelector('#agenda .week-sc');
+  if (sc && f.wl !== null && Math.abs(sc.scrollLeft - f.wl) > 1){ sc.scrollLeft = f.wl; sc.onscroll?.(); sxEdges(sc.closest('.sx-box')); }
+}
+// (whether any item shows below the toolbar)
+function scopeAny(){
+  const bar = stickyWrap.getBoundingClientRect().bottom, vh = innerHeight;
+  for (const el of document.querySelectorAll('#agenda :is(.hz-bar, .vt-card, .week-blk:not(.week-off))')){
+    const r = el.getBoundingClientRect();
+    if (r.height && r.bottom > bar && r.top < vh) return true;
+  }
+  return false;
+}
+// All week: the day and the minute at the top left of what shows (Horizontal: the day's
+// row at the line under the stuck ruler, the minute at the left of its scroller, past the
+// day heads; Vertical: the day's column at the left, past the time axis, the minute at
+// the line under the stuck day heads), and where that day's row or column is on the
+// screen. weekKeep puts the same day and minute in the same place in the other week, as
+// far as it goes (the page's scroll only when it is scrolled into the week, and never so
+// far that the week ends above the bottom of the screen).
+function weekPlace(){
+  const ov = document.querySelector('#agenda .week-ov'), sc = ov && ov.querySelector('.week-sc');
+  if (!sc) return null;
+  const h = ov.classList.contains('week-h'), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, b = sc.getBoundingClientRect();
+  const y = Math.max(ov.querySelector('.week-rul').getBoundingClientRect().bottom, tbEdge()), lab = ov.querySelector(h ? '.week-dayh' : '.week-axis');
+  const x = b.left + (lab ? lab.getBoundingClientRect().width : 0);
+  let col = null;
+  for (const c of ov.querySelectorAll('.week-col')){
+    const r = (h ? c.closest('.week-row') : c).getBoundingClientRect();
+    col = c;
+    if (h ? r.bottom > y + 8 : r.right > x + 8) break;
+  }
+  if (!col) return null;
+  const r = col.getBoundingClientRect(), q = h ? (x - r.left) / (r.width || 1) : (y - r.top) / (r.height || 1);
+  return { di: col.dataset.day, m: t0 + Math.min(1, Math.max(0, q)) * (t1 - t0), at: h ? col.closest('.week-row').getBoundingClientRect().top : r.left, x, y, into: ov.getBoundingClientRect().top < y };
+}
+function weekKeep(k){
+  const ov = document.querySelector('#agenda .week-ov'), sc = ov && ov.querySelector('.week-sc'), col = ov && ov.querySelector(`.week-col[data-day="${k.di}"]`);
+  if (!sc || !col) return;
+  const h = ov.classList.contains('week-h'), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, q = Math.min(1, Math.max(0, (k.m - t0) / ((t1 - t0) || 1)));
+  // (sideways first: Horizontal, to the minute; Vertical, the day's column where it was)
+  let r = col.getBoundingClientRect();
+  const dx = h ? r.left + q * r.width - k.x : r.left - k.at;
+  if (Math.abs(dx) > 1){ sc.scrollLeft += dx; sc.onscroll?.(); sxEdges(sc.closest('.sx-box')); }
+  if (!k.into) return;
+  r = col.getBoundingClientRect();
+  let dy = h ? col.closest('.week-row').getBoundingClientRect().top - k.at : r.top + q * r.height - k.y;
+  const d = ov.getBoundingClientRect(), fill = d.bottom - (innerHeight - 16);
+  if (fill < dy) dy = Math.max(fill, Math.min(dy, d.top - tbEdge() - 8));
+  if (Math.abs(dy) > 1) window.scrollTo({ top: Math.max(0, Math.round(window.scrollY + dy)), behavior: 'instant' });
+}
 // All week shows sessions only: there Sessions shows pressed and Talks is greyed out
 // (aria-disabled, still focusable, with a tip and a description saying why, which a
 // press also shows), while the choice itself (programTalks, and talks=1 in the address)
@@ -10173,7 +10267,7 @@ function orientPlace(){
     for (const el of els){
       const r = el.getBoundingClientRect();
       if (r.height < 2 || r.bottom <= box.top + 4 || r.top >= vh - 8 || r.right <= box.left + 4 || r.left >= box.right - 4) continue;
-      all.push({ s: Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left), ok: place(el), it: { sid: el.dataset.sid || '', tid: el.dataset.tid || '' } });
+      all.push({ s: Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left), ok: place(el), it: { sid: el.dataset.sid || el.dataset.inSid || '', tid: el.dataset.tid || '' } });
     }
     return { seen: all.length, items: all.filter(a => a.ok).sort((a, b) => a.s - b.s).slice(0, 24).map(a => a.it) };
   };
@@ -10218,7 +10312,7 @@ function orientKeep(k){
     if (row){ const t = row.getBoundingClientRect().top; if (k.into || t > vh * .5) dy = t - top + 1; }
     let el = null;
     for (const it of k.items){
-      el = v.querySelector('.vt-card' + sel(it)) || v.querySelector('.vt-tk' + sel(it));
+      el = v.querySelector('.vt-card' + sel(it)) || v.querySelector('.vt-tk' + sel(it)) || (it.tid && it.sid && v.querySelector(`.vt-card[data-sid="${CSS.escape(it.sid)}"]:not([data-tid])`));
       if (el && !el.closest('.vt-card.band')) break;
       el = null;
     }
