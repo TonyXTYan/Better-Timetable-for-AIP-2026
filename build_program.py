@@ -6811,6 +6811,17 @@ document.addEventListener('click', e => {
   el.click();
 }, true);
 document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
+// (and a double-click: its second click, landing on the root while the change the first one
+// started still shows, went on to the element under the pointer; so does the double-click,
+// as a stream chip's "only")
+document.addEventListener('dblclick', e => {
+  if (!e.isTrusted || e.target !== document.documentElement) return;
+  settleTransition();
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if (!el || el === document.documentElement || el === document.body) return;
+  e.stopImmediatePropagation();
+  el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, composed: true, detail: 2, clientX: e.clientX, clientY: e.clientY, screenX: e.screenX, screenY: e.screenY }));
+}, true);
 
 // ---------- shared-element morphs ----------
 // Items are matched by data-sid / data-tid ("s-<id>", "t-<id>"). A talk with no
