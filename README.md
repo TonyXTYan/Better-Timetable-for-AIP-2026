@@ -201,7 +201,8 @@ characters the page and the data use); `fonts/fonts.json` lists them with their 
 the build only reads those files, so it needs nothing beyond the Python standard library. Re-run
 `make_fonts.py` (instructions in its docstring) only if new characters need the face.
 
-`shots.js` and `shots2.js` take screenshots with Playwright (`node shots.js`).
+`tools/shots.js` and `tools/shots2.js` take the screenshots in `shots/` with Playwright
+(`node tools/shots.js`).
 
 The regression tests are in `tests/` (Playwright, headless Chromium): `npm test` rebuilds the page,
 checks that `index.html` and `aip-2026-program.html` match, and runs them; `npm run test:full` adds

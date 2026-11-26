@@ -1,9 +1,10 @@
-const { chromium } = require('playwright');
+const { chromium } = require('../tests/lib/pw');
 const path = require('path');
+const shot = n => path.join(__dirname, '..', 'shots', n);
 
 (async () => {
   const browser = await chromium.launch();
-  const url = 'file://' + path.resolve(__dirname, 'aip-2026-program.html');
+  const url = 'file://' + path.resolve(__dirname, '..', 'aip-2026-program.html');
 
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
   await page.goto(url);
@@ -18,27 +19,27 @@ const path = require('path');
     card.scrollIntoView({ block: 'center' });
   });
   await page.waitForTimeout(200);
-  await page.screenshot({ path: 'shots/08-program-talk.png' });
+  await page.screenshot({ path: shot('08-program-talk.png') });
 
   // search with talk-level matches -> auto-open only matching talks, single clear btn
   await page.fill('#q', 'Blanco Redondo');
   await page.waitForTimeout(500);
   await page.evaluate(() => window.scrollTo(0, document.querySelector('.sticky-wrap').offsetTop + 80));
-  await page.screenshot({ path: 'shots/09-search.png' });
+  await page.screenshot({ path: shot('09-search.png') });
 
   // fallback: Mon + Thu-only term
   await page.fill('#q', 'poster session 2');
   await page.waitForTimeout(500);
   await page.evaluate(() => { const z = document.getElementById('fallbackZone'); if (z) z.scrollIntoView({ block: 'start' }); window.scrollBy(0, -260); });
   await page.waitForTimeout(200);
-  await page.screenshot({ path: 'shots/10-fallback.png' });
+  await page.screenshot({ path: shot('10-fallback.png') });
   await page.fill('#q', '');
   await page.waitForTimeout(300);
 
   // builder empty state
   await page.click('#agendaBtn');
   await page.waitForTimeout(200);
-  await page.screenshot({ path: 'shots/11-builder-empty.png' });
+  await page.screenshot({ path: shot('11-builder-empty.png') });
 
   // star: Mon plenary + two 11:30 parallel sessions (clash), then open builder
   await page.click('#backToProgram');
@@ -53,12 +54,12 @@ const path = require('path');
   await page.waitForTimeout(200);
   await page.click('#agendaBtn');
   await page.waitForTimeout(300);
-  await page.screenshot({ path: 'shots/12-builder.png' });
+  await page.screenshot({ path: shot('12-builder.png') });
 
   // ics note
   await page.click('#icsAgenda');
   await page.waitForTimeout(300);
-  await page.screenshot({ path: 'shots/13-builder-ics.png', fullPage: false });
+  await page.screenshot({ path: shot('13-builder-ics.png'), fullPage: false });
   await page.close();
 
   // mobile: program + builder
@@ -67,7 +68,7 @@ const path = require('path');
   await m.waitForTimeout(300);
   await m.evaluate(() => window.scrollTo(0, document.querySelector('.sticky-wrap').offsetTop));
   await m.waitForTimeout(200);
-  await m.screenshot({ path: 'shots/14-mobile-program.png' });
+  await m.screenshot({ path: shot('14-mobile-program.png') });
   await m.evaluate(() => {
     const pick = (name) => [...document.querySelectorAll('#agenda .card')].find(c => c.querySelector('h3').textContent.includes(name));
     const star = pick('Plenary session') && pick('Plenary session').querySelector('.star');
@@ -75,7 +76,7 @@ const path = require('path');
   });
   await m.click('#agendaBtn');
   await m.waitForTimeout(300);
-  await m.screenshot({ path: 'shots/15-mobile-builder.png' });
+  await m.screenshot({ path: shot('15-mobile-builder.png') });
   await m.close();
 
   await browser.close();
