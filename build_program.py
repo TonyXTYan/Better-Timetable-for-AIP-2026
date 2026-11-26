@@ -351,7 +351,7 @@ window.applyDisplay = function(d){
   set('data-colour', d.colour, ['vivid']);
   set('data-motion', d.motion, ['reduce','full']);
   set('data-speed', d.speed, ['fast','xslow']);
-  set('data-popw', d.popw, ['wide','full']);
+  set('data-popw', d.popw, ['narrow','full']);
   var metas = document.querySelectorAll('meta[name="theme-color"]');
   for (var i = 0; i < metas.length; i++){
     var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
@@ -1056,17 +1056,18 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .ed-kicker .ed-stream::before{content:"\00b7";margin-right:12px}
 .ed-parent .ed-in{color:var(--muted)}
 #eventDialog a.ag-btn{text-decoration:none}
-/* Display options, Pop-up width: Wide (half as wide again, 960px) or Full width (the window
-   less the page's 20px gutters) for the session and talk details. The reading stays a
+/* Display options, Pop-up width: Wide (960px, the default), Narrower (the 640px above) or Full
+   width (the window less the page's 20px gutters) for the session and talk details. Wide is
+   what the page paints with, so nothing waits for the script to set it. The reading stays a
    comfortable measure: the abstracts keep their 72ch, and the title, the speakers and a
    talk's line in a session's list stop at a length of their own. Not on phones, where the
    details are a sheet across the screen, nor in print. */
 @media screen and (min-width:721px){
-  html[data-popw="wide"] #eventDialog{width:min(960px,calc(100% - 40px));max-width:none}
+  html:not([data-popw="narrow"]) #eventDialog{width:min(960px,calc(100% - 40px));max-width:none}
   html[data-popw="full"] #eventDialog{width:calc(100% - 40px);max-width:none}
-  html[data-popw] #eventDialog h2{max-width:65ch}
-  html[data-popw] :is(.ed-who,.ed-parent,.ed-conv,#eventDialog .ev-info){max-width:90ch}
-  html[data-popw] .ed-ttitle{max-width:80ch}
+  html:not([data-popw="narrow"]) #eventDialog h2{max-width:65ch}
+  html:not([data-popw="narrow"]) :is(.ed-who,.ed-parent,.ed-conv,#eventDialog .ev-info){max-width:90ch}
+  html:not([data-popw="narrow"]) .ed-ttitle{max-width:80ch}
 }
 /* ---------- load stability, deep-link landing, sheets (fixes) ----------
    The toolbar ships with its final geometry: seven empty cells in the day ruler, and the
@@ -3766,8 +3767,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
     <fieldset class="dd-group" id="dsPopwGroup" aria-describedby="dsPopwNote">
       <legend>Pop-up width</legend>
       <div class="seg">
-        <label><input type="radio" name="dsPopw" value=""><span>Normal<small>Default</small></span></label>
-        <label><input type="radio" name="dsPopw" value="wide"><span>Wide</span></label>
+        <label><input type="radio" name="dsPopw" value="narrow"><span>Narrower</span></label>
+        <label><input type="radio" name="dsPopw" value=""><span>Wide<small>Default</small></span></label>
         <label><input type="radio" name="dsPopw" value="full"><span>Full width</span></label>
       </div>
       <p class="dd-note" id="dsPopwNote">For the session and talk pop-ups.</p>
@@ -13279,7 +13280,7 @@ const displayBtn = document.getElementById('displayBtn');
 let displayOpener = null;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
-const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'], popw:['wide','full'] };
+const DISPLAY_VALUES = { text:['sm','lg','xl'], font:['archivo'], theme:['light','dark'], contrast:['high'], colour:['vivid'], motion:['reduce','full'], speed:['fast','xslow'], popw:['narrow','full'] };
 function readDisplay(){
   let d = {};
   try { d = JSON.parse(localStorage.getItem(DISPLAY_KEY) || '{}') || {}; } catch (e) { d = {}; }
@@ -13442,7 +13443,7 @@ function issueDisplay(){
     'text ' + at('text', 'default'), 'font ' + at('font', 'system'), 'colour ' + at('colour', 'quiet'),
     'contrast ' + at('contrast', mq('(prefers-contrast: more)') ? 'system (more)' : 'standard'),
     'motion ' + at('motion', mq('(prefers-reduced-motion: reduce)') ? 'system (reduced)' : 'system'),
-    'speed ' + at('speed', 'default'), 'pop-up width ' + at('popw', 'default'),
+    'speed ' + at('speed', 'default'), 'pop-up width ' + at('popw', 'wide (default)'),
   ].join(', ') + (mq('(forced-colors: active)') ? ', forced colours' : '');
 }
 function issueContext(kind){
