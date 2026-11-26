@@ -12879,6 +12879,10 @@ window.addEventListener('popstate', e => {
   if (toNav === fromNav){ settleTransition(); apply(); }
   else if (cal && a[1] !== b[1] && (a[1] === 'all') !== (b[1] === 'all')) withTransition(b[1] === 'all' ? 'dayout' : 'dayin', apply, null, txDayOpts(dayDay(b[1]), {}, dayDay(a[1])));
   else if (a[0] === b[0] && a[2] === 'list' && b[2] === 'list' && a[1] !== b[1] && (a[1] === 'all') !== (b[1] === 'all')) withTransition(b[1] === 'all' ? 'zoomout' : 'zoom', apply, null, { ...txListDayOpts(dayDay(b[1])), to: {} });
+  // (Full program <-> My agenda, the same calendar: the saved items move, as for a click,
+  // to the place the step kept)
+  else if (a[0] !== b[0] && !a.concat(b).includes('participants') && a[1] === b[1] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3])
+    withTransition('fade', apply, null, { to: {}, pair: 'scope', dir: b[0] === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap() });
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
     : a[4] !== b[4] && cal && state.day !== 'all' ? 'mx' : 'fade', apply, null,
