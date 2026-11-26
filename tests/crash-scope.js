@@ -2,12 +2,16 @@
 // page must raise no errors.
 // usage: node tests/crash-scope.js <repoDir or ''> <d1280|phone> <list|calendar> <h|v> <seeds> [n switches] [day]
 //   e.g. node tests/crash-scope.js '' phone calendar v 50 8   (GAP=<ms> between switches, default 1500)
-// It prints "switch <i> <scope> ok" after each switch, then one "tx ..." line: the kind/level of
-// every view change (from ?txdebug=1) and "no errors" or "ERR <the page errors>".
+// It prints "switch <i> <scope> ok" after each switch that landed on that scope (state.scope and
+// the pressed button), then one "tx ..." line: the kind/level of every view change (from
+// ?txdebug=1) and "no errors" or "ERR <the page errors>". A step that takes over STEP_MS (default
+// 60000: a page stuck in a loop) stops the run with "FAILED at step timeout".
 const { chromium, devices } = require('./lib/pw');
 const { pageUrl } = require('./lib/paths');
 const [W0, prof, layout, ori, seedN, nS, day] = process.argv.slice(2);
 const W = require('./lib/paths').repo(W0);
+const STEP_MS = +process.env.STEP_MS || 60e3;
+const step = pr => Promise.race([pr, new Promise((_, no) => setTimeout(() => no(new Error('step timeout')), STEP_MS).unref())]);
 (async () => {
   const b = await chromium.launch();
   const sctx = await b.newContext(); const sp = await sctx.newPage();
@@ -25,13 +29,16 @@ const W = require('./lib/paths').repo(W0);
   const to = ['program', 'agenda'];
   try {
     for (let i = 0; i < (+nS || 8); i++) {
-      await p.evaluate(t => document.querySelector(`#scheduleScope [data-scope="${t}"]`).click(), to[i % 2]);
+      await step(p.evaluate(t => document.querySelector(`#scheduleScope [data-scope="${t}"]`).click(), to[i % 2]));
       await p.waitForTimeout(+process.env.GAP || 1500);
       if (crashed) throw new Error('crash');
+      const at = await step(p.evaluate(() => [state.scope, document.querySelector('#scheduleScope [aria-pressed="true"]')?.dataset.scope].join('/')));
+      if (at !== to[i % 2] + '/' + to[i % 2]) throw new Error(`switch ${i + 1} to ${to[i % 2]} is at ${at}`);
       console.log('switch', i + 1, to[i % 2], 'ok');
     }
-    const lg = await p.evaluate(() => window.__txlog.map(r => r.kind + '/' + r.level).join(' '));
+    const lg = await step(p.evaluate(() => window.__txlog.map(r => r.kind + '/' + r.level).join(' ')));
     console.log('tx', lg, errs.length ? 'ERR ' + errs.join(' | ') : 'no errors');
   } catch (e) { console.log('FAILED at', e.message.slice(0, 80)); }
-  await b.close();
+  await Promise.race([b.close(), new Promise(ok => setTimeout(ok, 10e3).unref())]);
+  process.exit(0);
 })();
