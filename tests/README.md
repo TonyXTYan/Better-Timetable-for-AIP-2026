@@ -22,12 +22,12 @@ to `tests/out/<name>/`. `tests/out/` is git-ignored. When a test script dies (no
 signal or timeout) its line says so with the first error line; the details are in its log.
 
 Every test also runs on its own: `node tests/<name>.js [repoDir]` (the repo defaults to the
-folder above `tests/`). `crash-listcal.js` is the exception: it needs its other arguments too
-(see its row below).
+folder above `tests/`). `crash-listcal.js` and `crash-scope.js` are the exceptions: they need
+their other arguments too (see their rows below).
 
 Playwright comes from `node_modules` when `npm ci` has been run, otherwise from the global
 install (`tests/lib/pw.js`); `run.js` prints which one and its version first. The global
-install may be older than the `^1.65.1` in `package.json` (the suite passes on 1.63). The default suite takes about 10 minutes; run it with the
+install may be older than the `^1.65.1` in `package.json` (the suite passes on 1.63). The default suite takes about 12 minutes; run it with the
 machine otherwise quiet, as several tests time animations.
 
 ## The tests
@@ -46,6 +46,7 @@ machine otherwise quiet, as several tests time animations.
 | `footer.js` | Footer columns at six widths (mouse and touch): sizes, link lines, wrapped links; passes with no page errors. Screenshots in `tests/out/footer/`. | ~10 s |
 | `daytab-slide.js` | The day tabs' sliding indicator, frame by frame, for 19 presses (list, calendars, dark vivid XL, My agenda, phone, folded bar, reduced, normal speed): every press ends under its tab and never moves backwards, no errors. | ~95 s |
 | `crash-listcal.js` | My agenda with 50 saved items, eight list and calendar switches (desktop vertical, phone horizontal, phone vertical): the tab must not crash. Usage: `node tests/crash-listcal.js <repo or ''> <d1280\|phone> <v\|h> 50 '' 8`. | ~65 s |
+| `crash-scope.js` | My agenda with 50 saved items, eight Full program <-> My agenda switches in five views (desktop list, phone list, desktop vertical calendar, phone horizontal and vertical calendars): the tab must not crash, and the page raises no errors. Usage: `node tests/crash-scope.js <repo or ''> <d1280\|phone> <list\|calendar> <h\|v> 50 8`. | ~75 s |
 | `pill.js` | The segmented switches' sliding pill, frame by frame on screen (screencast) and in the page, over many presses: never vanishes, doubles, jumps, goes back or ends misaligned. Known older symptoms are reported as KNOWN, not FAIL. Only with `--full` or `--only pill`. | ~15-25 min |
 
 `pill.js` needs the full Chromium build (it launches with `channel: 'chromium'`; the headless

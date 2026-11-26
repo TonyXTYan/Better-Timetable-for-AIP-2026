@@ -26,6 +26,9 @@ const lines = s => s.split('\n');
 const last = s => lines(s.trimEnd()).filter(l => l.trim() && !/^Node\.js v\d/.test(l)).pop() || '';
 const count = (s, re) => (s.match(re) || []).length;
 
+// crash-scope's views: <d1280|phone> <list|calendar> <h|v>
+const SCOPE_VIEWS = ['d1280 list h', 'phone list h', 'd1280 calendar v', 'phone calendar h', 'phone calendar v'];
+
 // name, how to run it, how to judge its output -> { ok, info }
 const TESTS = [
   { name: 'audit', run: [[T('audit.js'), REPO]], judge: o => {
@@ -74,6 +77,12 @@ const TESTS = [
     const res = parts.map(s => last(s));
     const ok = parts.every(s => /^switch 8 list ok$/.test(last(s)) && !/CRASHED|FAILED/.test(s));
     return { ok, info: ['d1280 v', 'phone h', 'phone v'].map((c, i) => `${c}: ${res[i]}`).join(', ') };
+  } },
+  { name: 'crash-scope', run: SCOPE_VIEWS.map(v => [T('crash-scope.js'), REPO, ...v.split(' '), '50', '8']), judge: (o, parts, codes) => {
+    // each view: all 8 switches done, the tx line last with no page errors, no crash
+    const good = parts.map((s, i) => codes[i] === 0 && /^switch 8 agenda ok$/m.test(s) && /^tx .* no errors$/.test(last(s)) && !/CRASHED|FAILED/.test(s));
+    return { ok: good.every(Boolean), info: SCOPE_VIEWS.map((v, i) => `${v}: ${good[i] ? `${count(parts[i], /^switch \d+ \w+ ok$/gm)} switches, no errors`
+      : last(parts[i]).slice(0, 100)}`).join(', ') };
   } },
   { name: 'pill', slow: true, run: [[T('pill.js'), REPO]], judge: (o, parts, codes) => {
     const l = lines(o).filter(x => /^(PASS|FAIL): \d+ presses/.test(x)).pop() || 'no summary line';
