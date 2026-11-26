@@ -2948,10 +2948,14 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
 /* My agenda with nothing saved (search and Streams step aside) and no Now: the controls' row
    would hold Display options alone, so it takes the right end of the day tabs' row instead,
    as in the folded bar (its sliders only), and the bar takes no extra row. (A phone on its
-   side has it in that row already.) */
+   side has it in that row already.) The bar is a grid of that shape at all times, each row
+   across it but there: were it a grid only then, the change of layout would build the whole
+   bar anew as My agenda opens or closes, which starts a switch's sliding pill over from its
+   first frame when a second press comes mid-slide. */
 @media (min-height:501px),(orientation:portrait){
-  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px}
-  .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>*{grid-column:1/-1}
+  .sticky-wrap:not(.tb-compact) .toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px}
+  .sticky-wrap:not(.tb-compact) .toolbar>*{grid-column:1/-1}
+  .sticky-wrap:not(.tb-compact) .toolbar>.grpill{justify-self:start}
   .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>.daytabs{grid-column:1}
   .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .toolbar>.controls{grid-column:2;align-self:center;padding-top:0}
   .agenda-none .sticky-wrap:not(.tb-compact):has(#nowBtn[hidden]) .tb-display .db-l{display:none}
