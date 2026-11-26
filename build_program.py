@@ -535,7 +535,6 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 /* the sentence in two or three balanced lines; under it, quieter, the date of its data (the
    words quiet, the date itself in ink) */
 .hero p.sub{margin:8px 0 0;max-width:46rem;font-size:.9375rem;line-height:1.5;color:var(--ink-2);text-wrap:balance}
-@media (min-width:1200px){.hero p.sub{max-width:none}}
 .hero .sub-data{display:block;margin-top:6px;font-size:.8125rem;line-height:1.45;color:var(--muted)}
 .hero .sub-data time,.hero .ss-data time{color:var(--ink-2);font-weight:560;white-space:nowrap}
 /* (the largest text on the narrowest phones breaks it after the dot) */
@@ -619,6 +618,28 @@ header.hero{container:hero / inline-size}
   @container hero (width < calc(37rem + 72px)){
     .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
     .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
+  }
+}
+/* On a screen at least 721px wide (paper keeps the layout above): the sentence keeps a
+   reading measure, three balanced lines in a left column of at most 30rem, and Now and next
+   takes the rest, up to 44rem (wide enough for nearly every session's title in full, narrow
+   enough that a short title stays near its time), at the right. The wordmark keeps its one
+   line: the left column is never narrower than it (--hero-h1, a little wider in Archivo),
+   and where that would leave the panel under 17rem, the panel moves under the sentence. */
+@media screen and (min-width:721px) and (min-height:501px),screen and (min-width:721px) and (orientation:portrait){
+  :root{--hero-h1:23.5rem}
+  :root[data-font="archivo"]{--hero-h1:28rem}
+  .hero h1{white-space:nowrap}
+  .hero-inner{grid-template-columns:minmax(auto,30rem) minmax(max-content,1fr)}
+  .hero-inner:has(.hn-on){grid-template-columns:minmax(min(var(--hero-h1),100% - 17rem - 32px),30rem) minmax(min(24rem,100% - var(--hero-h1) - 32px),1fr)}
+  .hero-nn.hn-on{width:44rem}
+  @container hero (width < calc(40.5rem + 72px)){
+    :root:not([data-font="archivo"]) .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
+    :root:not([data-font="archivo"]) .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
+  }
+  @container hero (width < calc(45rem + 72px)){
+    :root[data-font="archivo"] .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
+    :root[data-font="archivo"] .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
   }
 }
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
