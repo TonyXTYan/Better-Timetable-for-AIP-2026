@@ -6558,16 +6558,23 @@ let redirectArmed = -1e9;
 document.addEventListener('pointerdown', e => {
   redirectArmed = viewTx && e.isTrusted && e.target === document.documentElement ? performance.now() : -1e9;
 }, true);
+// (and the focus stays where it is until that click, rather than going to the page for the
+// frames between: the press on the root would otherwise blur it)
+document.addEventListener('mousedown', e => {
+  if (e.isTrusted && e.target === document.documentElement && performance.now() - redirectArmed <= 1000) e.preventDefault();
+}, true);
 for (const type of ['pointerdown', 'click', 'keydown', 'input']) document.addEventListener(type, settleTransition, true);
 document.addEventListener('click', e => {
   const armed = redirectArmed;
   redirectArmed = -1e9;
   if (!e.isTrusted || e.target !== document.documentElement || performance.now() - armed > 1000) return;
   const el = document.elementFromPoint(e.clientX, e.clientY);
+  const f = el && el.closest('input, textarea, select, button, a[href], summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]');
+  // (a press on nothing that takes the focus leaves it with the page, as a real press would)
+  if (f && !f.disabled) f.focus({ preventScroll: true });
+  else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
   if (!el || el === document.documentElement || el === document.body) return;
   e.stopImmediatePropagation();
-  const f = el.closest('input, textarea, select, button, a[href], summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]');
-  if (f && !f.disabled) f.focus({ preventScroll: true });
   // a text field only takes the focus; anything else gets its click
   if (f && f.matches('textarea, select, [contenteditable="true"], input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=reset]):not([type=file]):not([type=color]):not([type=range])')) return;
   el.click();
