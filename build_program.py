@@ -17,6 +17,14 @@ from normalize import affiliation_table, normalize_payload  # noqa: E402
 
 RETRIEVED = "24 November 2026"
 
+# The footer's acknowledgement of the tool that built the page: an estimate of the tokens its
+# sessions used, set by hand. (The latest session's own records gave about 2.0 billion
+# tokens processed, nearly all of it cached context read again at each step, and about 8.6
+# million written; it made about two thirds of the commits, so the whole is scaled up.)
+TOKENS_PROCESSED = "about 3 billion"
+TOKENS_WRITTEN = "about 13 million"
+TOKENS_ASOF = "26 November 2026"
+
 # Talks Indico re-created under a new id (same contribution, new timetable entry). The page
 # maps the old id to the new one wherever saved ids come back in (stars on the device,
 # shared agenda links and codes, agenda files, #t= links), so nothing saved is lost.
@@ -1359,6 +1367,11 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
 .pp-aff{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;margin:0;padding:12px 16px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:1.0625rem;font-weight:700;line-height:1.3;scroll-margin-top:calc(var(--toolbar-h,150px) + 12px)}
 .pp-n{font-size:.8125rem;font-weight:500;color:var(--muted);font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums}
 .pp-none .pp-aff{color:var(--muted)}
+/* a letter picked on the rail: its headings in the list light up for a moment, then fade */
+@keyframes pp-flash{0%,40%{background-color:var(--mark-bg);box-shadow:inset 3px 0 0 var(--ink)}}
+.pp-aff.pp-flash{animation:pp-flash calc(.8s * var(--mo)) ease-out}
+.pp-aff.pp-flash-still{background-color:var(--mark-bg);box-shadow:inset 3px 0 0 var(--ink)}
+@media (forced-colors:active){.pp-aff.pp-flash,.pp-aff.pp-flash-still{animation:none;outline:2px solid Highlight;outline-offset:-2px}}
 /* columns, so a short card leaves no hole under it; the order runs down each column */
 .pp-people{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));align-items:stretch;overflow:clip;background:var(--card)}
 .pp-person{background:var(--card);border:0;border-radius:0;padding:12px 14px 8px;min-width:0;box-shadow:-1px 0 0 var(--line),0 -1px 0 var(--line);margin:0}
@@ -1666,17 +1679,18 @@ footer{margin:0 20px;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;b
 footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
-footer .colophon .na-glyph{margin-left:2px}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
-/* four columns on the content width (About, with the congress's facts, as wide as Tips; the
-   colour key the fourth), two by two on tablets, one on phones */
+/* three columns on the content width (About, with the congress's facts, as wide as Tips;
+   Links between them), two on tablets, one on phones (the colour key is in Display options) */
 footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)}}
+@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr)}}
 footer p{line-height:1.6;max-width:62ch}
+/* under the columns, across the width: who and what the page owes */
+footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
-footer .colophon p{font-size:.8125rem}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -2691,7 +2705,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-tog{display:flex;align-items:center;gap:0;width:100%;margin-top:6px;border:0;border-top:1px solid var(--line);background:none;border-radius:0;padding:8px 0;min-height:36px;font-size:.8125rem;font-weight:650;color:var(--ink);text-align:left}
 .bd-tog .caret{position:relative;top:-2px;flex:none;width:6px;height:6px;margin:0 4px 0 auto;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(45deg);transition:transform calc(var(--mo,1) * .12s)}
 .bd-tog[aria-expanded="true"] .caret{top:2px;transform:rotate(-135deg)}
-.bd-tog[aria-expanded="true"] .bd-show,.bd-tog[aria-expanded="false"] .bd-hide{display:none}
+/* open, it keeps its count ("4 talks"); the caret says which way it goes */
+.bd-tog[aria-expanded="true"] .bd-sw{display:none}
 .bd-tcount{color:var(--ink-2);font-weight:500}
 .bd-tc-s{display:none}
 .bd-tlist{list-style:none;margin:0 0 4px;padding:0}
@@ -3546,8 +3561,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   /* paper type: about 9.5pt, whatever the screen's text size (the list is long: abstracts open) */
   html,html[data-text]{font-size:12.5px!important}
   header.hero{background:none}
-  /* the colour key points to Display options, and the tips describe the screen: neither belongs on paper */
-  footer .colophon,footer .cols>div:nth-child(3){display:none}
+  /* the tips describe the screen: they don't belong on paper */
+  footer .cols>div:nth-child(3){display:none}
   footer{padding:10px 0 0;margin-top:0}
   .cards{display:block!important;overflow:visible!important;border:0!important}
   .card{break-inside:auto!important;border-left:3px solid var(--c,var(--ink-2));box-shadow:none!important}
@@ -3942,11 +3957,12 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1.75 6a9 9 0 0 1 12.5 0M4.5 8.9a5 5 0 0 1 7 0M8 12h.01M2.5 2.5l11 11"/></svg><span><b>Offline</b>: once loaded, the page also works without a connection.</span></li>
       </ul>
     </div>
-    <div class="colophon">
-      <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <span class="nw"><button type="button" class="linkish" data-colour-key>Display options</button>,</span> beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
-    </div>
   </div>
+  <section class="foot-ack" aria-labelledby="ackTitle">
+    <h2 id="ackTitle">Acknowledgements</h2>
+    <p>The program is the work of the 26th Australian Institute of Physics Congress organisers, held with ANZCOP and COMMAD, and is published on their <a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Indico timetable</a>. Every title and abstract here belongs to its speakers and conveners. The Archivo typeface, by Omnibus-Type, is used under the SIL Open Font License.</p>
+    <p>This page was built and refined with <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>, Anthropic&#8217;s coding agent. By an estimate on @@TOKENS_ASOF@@, its sessions processed @@TOKENS_PROCESSED@@ tokens, nearly all of that context read again at each step, and wrote @@TOKENS_WRITTEN@@.</p>
+  </section>
 </footer>
 <section id="printDoc" class="print-doc" aria-hidden="true"></section>
 
@@ -11334,7 +11350,7 @@ function bdCard(s, parallel){
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
-    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}"><span class="visually-hidden">${esc(s.title)}: </span><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true"></span></button>
+    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}"><span class="visually-hidden">${esc(s.title)}: </span><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true"></span></button>
       <ul class="bd-tlist" id="bdt-${esc(s.id)}"${open ? '' : ' hidden'}>${talks.map(t => bdTalk(s, t)).join('')}</ul>` : ''}
   </article>`;
 }
@@ -12264,7 +12280,7 @@ function ppMore(n){
   requestAnimationFrame(() => setTimeout(() => { if (g === PP.gen) ppMore(120); }, 0));
 }
 // Scroll a heading or person to just below the sticky toolbar.
-function ppJump(id, smooth, focus){
+function ppJump(id, smooth, focus, done){
   if (!document.getElementById(id) && PP.rest.length) ppMore(Infinity);
   const el = document.getElementById(id);
   if (!el) return;
@@ -12275,7 +12291,8 @@ function ppJump(id, smooth, focus){
   if (focus) el.focus({ preventScroll: true });
   // (the sections passed on the way were drawn, so their real heights replaced guessed
   // ones: once there, put it in place again)
-  if (smooth) scrollSettle(el, null, y0, () => ppJump(id, false, false));
+  if (smooth) scrollSettle(el, null, y0, () => { ppJump(id, false, false); if (done) done(); });
+  else if (done) done();
 }
 
 // ---------- participants: alphabet rail ----------
@@ -12318,9 +12335,32 @@ function railLetterAt(y){
   }
   return null;
 }
-function railJump(L, smooth){
+function railJump(L, smooth, flash = true){
   const r = RAIL.data.get(L);
-  if (r) ppJump(r.id, smooth, false);
+  if (r) ppJump(r.id, smooth, false, flash ? () => railFlash(L) : null);
+}
+// The headings a letter stands for (its affiliations, or its one heading in a list by
+// name) light up briefly where the jump lands; with reduced motion they stay lit a moment
+// and go, with no fade.
+function railFlash(L){
+  const r = RAIL.data.get(L);
+  if (!r) return;
+  const ids = new Set([r.id, ...r.items.map(it => it.id).filter(Boolean)]);
+  const still = motionReduced();
+  for (const id of ids){
+    const el = document.getElementById(id);
+    if (!el || !el.classList.contains('pp-aff')) continue;
+    el.classList.remove('pp-flash', 'pp-flash-still');
+    clearTimeout(el._ppFlashT);
+    if (still){
+      el.classList.add('pp-flash-still');
+      el._ppFlashT = setTimeout(() => el.classList.remove('pp-flash-still'), 900);
+    } else {
+      void el.offsetWidth;   // (restart it if the same letter is picked again)
+      el.classList.add('pp-flash');
+      el.addEventListener('animationend', () => el.classList.remove('pp-flash'), { once: true });
+    }
+  }
 }
 function showRailBubble(L){
   clearTimeout(RAIL.bubbleT);
@@ -12383,7 +12423,7 @@ RAIL.letters.addEventListener('pointermove', e => {
   d.L = b.dataset.l;
   for (const x of railButtons()) x.classList.toggle('pp-hot', x === b);
   showRailBubble(d.L);
-  railJump(d.L, false);
+  railJump(d.L, false, false);
 });
 function endRailDrag(e){
   const d = RAIL.drag;
@@ -12391,6 +12431,7 @@ function endRailDrag(e){
   RAIL.drag = null;
   for (const x of RAIL.letters.querySelectorAll('.pp-hot')) x.classList.remove('pp-hot');
   if (e.type === 'pointerup' && !d.moved && d.start.getAttribute('aria-disabled') !== 'true') railJump(d.start.dataset.l, true);
+  else if (d.moved && d.L) railFlash(d.L);
   hideRailBubble(d.touch ? 450 : 250);
 }
 RAIL.letters.addEventListener('pointerup', endRailDrag);
@@ -13304,8 +13345,8 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 const DISPLAY_KEY = 'aip2026-display';
 const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
-// (the button that opened the dialog has the focus back when it closes: the toolbar's, the
-// footer's, or the Colour key's; opened from history, the toolbar's)
+// (the button that opened the dialog has the focus back when it closes: the toolbar's or the
+// footer's; opened from history, the toolbar's)
 let displayOpener = null;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
@@ -13420,18 +13461,11 @@ function openDisplay(fromHistory, opener){
   syncDisplayForm();
   hideToast();
   displayDialog.showModal();
-  // (from the top each time, as the details; the Colour key scrolls on to the key)
+  // (from the top each time, as the details)
   displayDialog.scrollTop = 0;
   if (!fromHistory) pnlHistoryOpen('display');
 }
 for (const b of [displayBtn, document.getElementById('displayBtnFoot')]) b.addEventListener('click', () => openDisplay(false, b));
-// (the footer's Colour key opens Display options at the key)
-document.addEventListener('click', e => {
-  const k = e.target.closest('[data-colour-key]');
-  if (!k) return;
-  openDisplay(false, k);
-  document.getElementById('colourKey').scrollIntoView({ block: 'nearest' });
-});
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
   else if (e.target.name === 'dsFont') setDisplay('font', e.target.value);
@@ -14653,7 +14687,9 @@ def main():
     page = (HTML.replace('@@ISSUE_DATA_HREF@@', issue_href(f'Program data update (page data: {retrieved})', ISSUE_DATA_BODY.format(retrieved=retrieved)))
             .replace('@@ISSUE_BUG_HREF@@', issue_href('Problem: ', ISSUE_BUG_BODY.format(retrieved=retrieved)))
             .replace('@@RETRIEVED_ISO@@', retrieved_iso).replace('@@RETRIEVED_SHORT@@', retrieved_short)
-            .replace('@@RETRIEVED@@', retrieved))
+            .replace('@@RETRIEVED@@', retrieved)
+            .replace('@@TOKENS_PROCESSED@@', TOKENS_PROCESSED).replace('@@TOKENS_WRITTEN@@', TOKENS_WRITTEN)
+            .replace('@@TOKENS_ASOF@@', TOKENS_ASOF))
     html = page.replace('@@FONTS@@', font_faces(root)).replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@VIVID_DARK_TOKENS@@', VIVID_DARK_TOKENS).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
         (root / name).write_text(html, encoding='utf-8')
