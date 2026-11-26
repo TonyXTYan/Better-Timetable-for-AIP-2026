@@ -5114,7 +5114,18 @@ function filterGo(set, redraw = refresh){
   set();
   renderChips();
   const sees = filterSees();
-  if (state.scope === 'participants' || (was.size === sees.size && [...was].every(id => sees.has(id)))){ redraw(); return; }
+  if (state.scope === 'participants'){ redraw(); return; }
+  // (the same sessions shown: no change to see, but what the view says about its streams,
+  // above the sessions, can change height; the page keeps its place as for a change, the
+  // toolbar stuck at the top staying there)
+  if (was.size === sees.size && [...was].every(id => sees.has(id))){
+    const y0 = window.scrollY, keep = filterPlace(sees);
+    filterUnhold();
+    filterNoAnchor();
+    redraw();
+    filterHold(keep(), y0);
+    return;
+  }
   const list = state.layout !== 'calendar', dir = sees.size > was.size ? 'in' : sees.size < was.size ? 'out' : 'swap';
   withTransition('filt', () => {
     const y0 = window.scrollY, keep = dir === 'in' ? () => y0 : filterPlace(sees);
@@ -5160,14 +5171,21 @@ function filterPlace(sees){
   return () => {
     const sel = best.tid ? `[data-tid="${CSS.escape(best.tid)}"]` : `[data-sid="${CSS.escape(best.sid)}"]:not([data-tid]), [data-week-sid="${CSS.escape(best.sid)}"]`;
     const el = best.el.isConnected && best.el.getClientRects().length ? best.el : [...main.querySelectorAll(sel)].find(x => x.matches(MX_ITEM) && x.getClientRects().length);
-    return el ? Math.round(window.scrollY + el.getBoundingClientRect().top - best.top) : null;
+    if (!el) return null;
+    // (My agenda's rows are drawn anew, each only as tall as its estimate until the browser
+    // draws it: the row kept, and those above it up to a screen and a half, are measured first)
+    if (el.matches('#builderList .ag-row')) layMeasureAbove(el);
+    return Math.round(window.scrollY + el.getBoundingClientRect().top - best.top);
   };
 }
 // The page's scroll after the change: `y` (the place kept, or null: as it is), but with the
 // toolbar stuck at the top before, never so far up that it comes down off it, the open
 // Streams panel with it (the sessions move up instead). While the panel is open, a program
 // too short for that now (a stream or two, or none) is held tall enough, its foot empty,
-// until the panel closes (filterUnhold).
+// until the panel closes (filterUnhold): held at that height as its least (min-height),
+// once it is anywhere near as short, whatever it measures now, since My agenda's rows just
+// drawn are only as tall as their estimates, and most come out shorter once the browser
+// draws them, a frame on.
 let filterHeld = false;
 const tbStuckAt = () => Math.ceil(programTop() + (parseFloat(getComputedStyle(stickyWrap).marginTop) || 0));
 function filterHold(y, y0){
@@ -5175,11 +5193,12 @@ function filterHold(y, y0){
   if (y === null) y = window.scrollY;
   if (y0 >= floor - 1){
     y = Math.max(y, floor);
-    const max = document.documentElement.scrollHeight - innerHeight;
-    if (!filterPanel.hidden && max < y - 1){
-      const main = document.getElementById('main');
-      main.style.minHeight = Math.ceil(main.getBoundingClientRect().height + y - max) + 'px';
-      filterHeld = true;
+    if (!filterPanel.hidden){
+      const main = document.getElementById('main'), r = main.getBoundingClientRect();
+      const below = document.documentElement.scrollHeight - (window.scrollY + r.bottom);
+      const need = Math.ceil(y + innerHeight - below - (window.scrollY + r.top));
+      // (not for one far taller: only rows in sight or near it are drawn, and shrink)
+      if (need > 0 && need > r.height - innerHeight * 1.5){ main.style.minHeight = need + 'px'; filterHeld = true; }
     }
   }
   if (Math.abs(window.scrollY - y) > 1){
@@ -5187,6 +5206,9 @@ function filterHold(y, y0){
     // (the page's own scroll: the toolbar stays as it is)
     TB.input = -1e9; TB.last = window.scrollY;
   }
+  // (and a smooth scroll the redraw started, still to come, is called off: My agenda with
+  // nothing left to show goes up to the program's top, the toolbar down off the top with it)
+  else if (y0 >= floor - 1) window.scrollTo({ top: window.scrollY, behavior: 'instant' });
 }
 // (the browser's own keeping of the place is off meanwhile, until two frames on: it would
 // otherwise move the page again, after this, on the next frame)
