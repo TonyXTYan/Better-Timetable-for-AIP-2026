@@ -326,6 +326,9 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hn-body.hn-anim .hn-pane{visibility:visible}
 .hn-body.hn-anim .hn-pane:not(.is-on){position:relative;z-index:1}
 .hn-body.hn-anim .hn-pane:not(.is-on) .hn-plate.hn-ghost{border-color:transparent;background:transparent}
+/* (forced colours would draw the gone frame again: the frame keeps the colours set here, its rows
+   still take the system's) */
+@media (forced-colors:active){.hn-body.hn-anim .hn-plate.hn-ghost{forced-color-adjust:none}.hn-body.hn-anim .hn-plate.hn-ghost>*{forced-color-adjust:auto}}
 .hn-empty{margin:0;padding:6px 0 0;font-size:.8125rem;line-height:1.4;color:var(--muted)}
 .hn-empty .linkish{font-weight:650}
 .hn-src{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
@@ -7434,7 +7437,7 @@ function txBandAnim(kind, r){
   if (kind === 'dayin'){
     if (band) go('new', [{ clipPath: band }, { clipPath: all }]);
     go('new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, easing: EASE });
-    go('old', [{ opacity: 1 }, { opacity: 0 }], { easing: 'cubic-bezier(.2,0,.5,1)' });
+    go('old', [{ opacity: 1 }, { opacity: 0 }], { easing: 'cubic-bezier(.4,0,1,1)' });
   } else {
     if (band) go('old', [{ clipPath: all }, { clipPath: band }]);
     // (gone by the time it is down to its row or column, where the week's own shows)
@@ -12589,7 +12592,7 @@ function heroPanes(box, src){
 // the button pressed, the rest of the other fades in sliding from it (Everything is the
 // right button: the leaving rows go left, the others come from the right; back, the
 // reverse). The plate's frame, the one of the list picked, grows or shrinks from the
-// leaving one's size. Nothing here changes the panel's size (the body keeps its height
+// leaving one's size. Nothing here changes the panel's size (the body's height is held
 // while the frames move). A switch made while one is on its way goes on from where
 // everything shows: the sources are read from the page, not from where they were going.
 // Reduced motion: at once. Speed: as the rest of the page.
@@ -12605,7 +12608,7 @@ function heroSwapEnd(box){
   }
   for (const el of body.querySelectorAll('[data-hn-hide]')){ el.style.removeProperty('opacity'); el.removeAttribute('data-hn-hide'); }
   for (const el of body.querySelectorAll('.hn-ghost')) el.classList.remove('hn-ghost');
-  body.style.removeProperty('min-height');
+  body.style.removeProperty('height');
   body.classList.remove('hn-anim');
 }
 function heroSwap(box, from, to){
@@ -12626,7 +12629,10 @@ function heroSwap(box, from, to){
   // 2. everything as it lies, no animation on it
   heroSwapEnd(box);
   const gen = box._hnGen;
-  body.style.minHeight = body.getBoundingClientRect().height + 'px';
+  // (its height, not a least one: a pane whose plate starts at the other's size can be the
+  // taller for a moment, a note above it counted; that overflow is only in the layout, as
+  // the plate is moved up over the note by as much while its frame shrinks)
+  body.style.height = body.getBoundingClientRect().height + 'px';
   body.classList.add('hn-anim');
   heroPanes(box, to);
   const lay = new Map();
