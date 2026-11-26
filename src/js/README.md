@@ -20,7 +20,8 @@ prefixes leave gaps for a new file between two others.
 | `22-agenda.js` | My agenda's items, its search and streams, its counts, clashes and possible clashes, the clash panel, `agRow`, the agenda calendar's items |
 | `26-week.js` | The All week overview: `weekOverview`, label fitting and folds, band labels, ruler, now line, keyboard stops, opening a day, tooltips |
 | `30-agenda-view.js` | The empty My agenda, the clash indicator (`renderClashes`), the bar's summary, `renderBuilder` (My agenda drawn) |
-| `34-morph.js` | View transitions' groundwork: animation speed, clicks during a transition, motion tokens, dialog animation (`DLG_JS`), shared-element morphs (`mxScan`, `mxShow`, `mxClear`, `mxUnshow`, `layMarks`, `layLanes`, `mxBegin`) |
+| `32-transitions.js` | View transitions' groundwork: what `withTransition` does (the comment that opens the file; the function is in `38-tx.js`), `viewTx`, animation speed (`motionK`), `settleTransition`, clicks during a transition |
+| `34-morph.js` | Motion tokens, dialog animation (`DLG_JS`), shared-element morphs (`mxScan`, `mxShow`, `mxClear`, `mxUnshow`, `layMarks`, `layLanes`, `mxBegin`) |
 | `38-tx.js` | `withTransition`, `txStart` and its guards, frame watching, pair levels (`TX_OWN`, `txPair*`), `?txdebug=1`, `viewEnter`, All week <-> day, redraw costs, `txPending`, `showView` |
 | `42-export.js` | Export helpers: ICS, the agenda as text, clipboard, download, the Export status line; `programCalendarItems` |
 | `46-horizontal.js` | What both day views share (entries, kind pills, the key, clash spans, `packLanes`) and the Horizontal day view (`hzDayView`, `hzDraw`, minimap, title fitting, scroll and zoom) |
@@ -28,7 +29,8 @@ prefixes leave gaps for a new file between two others.
 | `54-vertical.js` | The Vertical day view (`vtDayView`), moving between days, sideways scroll edges, its title pop-up, empty days, `renderCalendar` |
 | `58-switches.js` | Switches that keep the reader's place: List <-> Calendar (`layAnchor`, `layAt`, `layLand`), Full program <-> My agenda (`scopeGo`), All week, Sessions/Talks, Horizontal <-> Vertical; "Show full sessions" |
 | `62-details.js` | The details dialog: filling, opening and closing it, its clicks |
-| `66-print-undo-export.js` | Print or save as PDF, Undo (removals, Clear all, Replace), the Export menu, the clash panel's and My agenda's buttons |
+| `66-print-undo-export.js` | Print or save as PDF, Undo (removals, Clear all, Replace), the Export menu |
+| `68-agenda-buttons.js` | My agenda's buttons: the clash panel's (show, hide clashes, possible clashes, keep one), Copy, ICS and Share, a row's remove button, Build and the links back to the program |
 | `70-build.js` | Build my agenda: the guided walk through the time slots, its scale, motion, keys and controls |
 | `73-jump.js` | Opening the program at a day, session or talk (`openInProgram`, `jumpTo`, `calendarJump`) |
 | `76-folds-filter.js` | Abstracts that unfold (`dxFold`), Expand all, printing the Horizontal view, the streams filter menu |
@@ -36,7 +38,7 @@ prefixes leave gaps for a new file between two others.
 | `82-now.js` | Congress events, live "now", Up next, the header's Now and next panel, `paintNow`, the Now button |
 | `85-links.js` | The address and history (`stateHash`, `writeHash`, `readHash`, popstate), `lightDismiss`, toasts, share links, a shared agenda |
 | `88-display-move.js` | Display options, the footer's GitHub issue links, Move to another device (QR code, import) |
-| `91-toolbar.js` | The sticky toolbar: its height, `TB`, the slim fold (`tbCompact`), changing with the view (`tbShift*`), folding on scroll, the phone's search box |
+| `91-toolbar.js` | The sticky toolbar: its height, `TB`, the slim fold (`tbCompact`), changing with the view (`tbShift*`), folding on scroll, the phone's search box. (It opens with the script's header `// ---------- start ----------`, whose section runs on to the end of `97-boot.js`, where `start()` is.) |
 | `94-segments.js` | Segmented controls whose selection slides (`segPlace`, `segSlide`, `segInk`), Display option changes, `segCpu` |
 | `97-boot.js` | The skip link, `start()`, hashchange, the now line's timer, service worker registration, dialog close wiring, and the call to `start()` that draws the page |
 
