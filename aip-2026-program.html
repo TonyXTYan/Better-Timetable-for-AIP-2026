@@ -7452,13 +7452,6 @@ function txWatch(vt, t, done){
 // Some never go below a floor (TX_PAIR_FLOOR): Sessions <-> Talks and My agenda's Show
 // full sessions always fold and unfold, if lighter, since a cross-fade there shows
 // nothing of what changed.
-// List <-> Calendar ('layout') is held to a tighter budget, since its snapshots are of
-// whole pages, which cost about what drawing them does, and its level 0 takes none at
-// all: 2 (all both layouts show on the screen moves) for a redraw expected within
-// TX_LAY_COST[0], 1 (half the items) within [1], 0 over that, or going from a
-// long list (pageHeavy) to a layout not drawn yet; and never above its own level, which
-// steps down when a change's snapshots held the page over TX_FREEZE (and up as above,
-// or at level 0 after two quick redraws in a row).
 // Horizontal <-> Vertical ('orient') redraws the same either way, and its items move on
 // the compositor, so it starts at 2 (every item on screen moves: mxOrientCap) whatever
 // the redraw, and steps down only on what its own morphs add: two in a row whose first
@@ -7466,16 +7459,19 @@ function txWatch(vt, t, done){
 // TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
 // those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
 // takes no snapshot, as List <-> Calendar's.
-// Full program <-> My agenda in the calendar ('scope') is held to the same rules: its
-// saved items move on the compositor whatever the two views cost to draw (TX_OWN).
-const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
+// Full program <-> My agenda in the calendar ('scope') and List <-> Calendar ('layout')
+// are held to the same rules: their items move on the compositor whatever the two views
+// cost to draw (TX_OWN), and a change of layout redraws the page either way, morph or not.
+// (A level 0 without a snapshot steps back up to 1 after two redraws in a row within
+// TX_PLAIN_UP.)
+const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_PLAIN_UP = 120;
 // (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
 const TX_PAIR_NOSNAP = new Set(['layout', 'orient', 'scope']);
 // Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
 const TX_ORI_DOWN = [400, 250];
-// (the pairs held to that budget, each with its own record: Horizontal <-> Vertical, and
-// Full program <-> My agenda in the calendar)
-const TX_OWN = new Set(['orient', 'scope']);
+// (the pairs held to that budget, each with its own record: Horizontal <-> Vertical, Full
+// program <-> My agenda in the calendar, and List <-> Calendar)
+const TX_OWN = new Set(['orient', 'scope', 'layout']);
 // (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
 // with a screen of talks can still go without the morph; its items move on the
 // compositor, so what a slow device pays is the wait before they move, not the motion)
@@ -7496,14 +7492,6 @@ function txPairRec(o){
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
-  if (o.pair === 'layout'){
-    if (p.level === null){ p.level = 2; p.why = ''; }
-    const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
-    const by = cost > TX_LAY_COST[1] ? 0 : cost > TX_LAY_COST[0] ? 1 : 2;
-    if (!txCost.has(txKey(o.to)) && pageHeavy()){ p.why = 'page heavy, the other layout not drawn yet'; return 0; }
-    p.why = by < p.level || !p.step ? 'redraw ' + Math.round(cost) + 'ms expected' : p.step;
-    return Math.min(by, p.level);
-  }
   if (p.level !== null) return p.level;
   // (Horizontal <-> Vertical redraws as much either way, morph or not: only what the
   // morph adds counts, as it is measured)
@@ -7514,7 +7502,7 @@ function txPairLevel(o, p){
 }
 function txPairNote(p, lv, freeze, jank){
   p.last = { freeze, jank };
-  let down = freeze > (p.pair === 'layout' ? TX_FREEZE : TX_PAIR_DOWN[0]) || jank > TX_PAIR_DOWN[1];
+  let down = freeze > TX_PAIR_DOWN[0] || jank > TX_PAIR_DOWN[1];
   // (Horizontal <-> Vertical: its own budget, TX_ORI_DOWN, and a step down only when a
   // change was slow twice running (or once, at twice that), so one hiccup (a busy moment
   // of the device's, a slow frame of some other work) costs it nothing)
@@ -7532,11 +7520,11 @@ function txPairNote(p, lv, freeze, jank){
   p.level = down ? Math.max(txPairFloor(p), lv - 1) : up ? Math.min(2, lv + 1) : lv;
   if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
 }
-// (a pair's change made with no snapshot (List <-> Calendar at level 0): two quick
-// redraws in a row lift its own level back to 1)
+// (a pair's change made with no snapshot (at level 0, on a phone: TX_PAIR_NOSNAP): two
+// quick redraws in a row lift its own level back to 1)
 function txPairPlain(p, ms){
   if (p.level !== 0) return;
-  p.ok = ms <= TX_LAY_COST[0] ? (p.ok || 0) + 1 : 0;
+  p.ok = ms <= TX_PLAIN_UP ? (p.ok || 0) + 1 : 0;
   if (p.ok >= 2){ p.ok = 0; p.level = 1; p.last = null; p.why = p.step = `quick at level 0: redraw ${Math.round(ms)}ms`; }
 }
 // ?txdebug=1 in the address: each change's decision (the kind asked for and the kind
@@ -10016,8 +10004,10 @@ function renderCalendar(){
 // session's bar (or out of it), or to its own talk in Talks; each time block's time to
 // that time on the calendar's ruler or axis, and a day's heading to the week's head for
 // that day (layMarks). The rest of the old page goes quickly, and the new one comes in
-// about that item, its other sessions in sight rising into place (a pair, 'layout': level
-// 2 all of it; 1, half the items). Reduced motion keeps the place, with no movement. Pressed back while that change still moves
+// about that item, its other sessions in sight rising into place. A pair of its own
+// ('layout', held to Horizontal <-> Vertical's rules: TX_OWN), so it morphs however much
+// the two layouts cost to draw, a full morph unless its own morphs were slow. Reduced
+// motion keeps the place, with no movement. Pressed back while that change still moves
 // (layUndo: within a second, times the speed setting, and the page not scrolled by you
 // since), it goes back to where that change began, as from there, not to wherever the
 // change had got to.
