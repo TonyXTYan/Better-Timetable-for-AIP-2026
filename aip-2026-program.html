@@ -395,7 +395,9 @@ header.hero{container:hero / inline-size}
 }
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
 @container (max-width:22rem){.hero-nn .un-mo{display:none}}
-@container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}}
+@container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}
+  .hero-nn .up-next>div:has(>.un-when .un-d){grid-template-columns:2.25rem minmax(0,1fr) min-content}
+  .hero-nn .up-next>div>.un-when:has(.un-d){white-space:normal;text-align:end}.hero-nn .un-d{white-space:nowrap}}
 @media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
 /* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
    the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
@@ -12270,12 +12272,14 @@ function heroNowHtml(){
   // its times, tells a new minute from a change)
   const w = s => (whens.push(s), '\u0001' + (whens.length - 1) + '\u0002');
   // a group's rows: at most max, the rest as "+N" in the label column, which opens the
-  // program at the first of them
+  // program at the first of them (before the congress the rest spread over days: its
+  // label names where they start)
   const group = (label, list, when, sort, max = HN_MAX) => {
     const all = sort ? [...list].sort((a, b) => (HN_FIRST[a.s.cat] ?? 9) - (HN_FIRST[b.s.cat] ?? 9)) : list;
     const shown = all.length > max ? all.slice(0, max) : all, rest = all.slice(shown.length);
     return shown.map((it, i) => {
-      const more = i === 1 && rest.length ? `<button type="button" class="linkish hn-more" data-hn-more="${rest[0].di}" data-jump="${rest[0].s.id}" aria-label="${rest.length} more ${label === 'Now' ? 'on now' : 'at ' + rest[0].start}: show them in the program" title="${rest.length} more: show them in the program">+${rest.length}</button>` : '';
+      const where = !rest.length ? '' : label === 'Now' ? 'on now' : ti < 0 ? `from ${rest[0].d.label}, ${rest[0].start}` : 'at ' + rest[0].start;
+      const more = i === 1 && rest.length ? `<button type="button" class="linkish hn-more" data-hn-more="${rest[0].di}" data-jump="${rest[0].s.id}" aria-label="${rest.length} more ${where}: show them in the program" title="${rest.length} more: show them in the program">+${rest.length}</button>` : '';
       return unRow(label, it, w(when(it)), n, i ? ' un-rep' : '', more, ti >= 0);
     }).join('');
   };
@@ -12286,7 +12290,8 @@ function heroNowHtml(){
   const empty = `<p class="hn-empty">Nothing saved yet. <button type="button" class="linkish" data-build>Build my agenda</button></p>`;
   if (ti < 0){
     // its day and time ("Sun 6 Dec, 15:00"; a narrow panel leaves out the month)
-    const when = it => `${dayShort(it.d)}<span class="un-mo"> ${it.d.label.split(' ').pop()}</span>, ${it.start}`;
+    // (the narrowest panel puts the time under the day, leaving the title the room)
+    const when = it => `<span class="un-d">${dayShort(it.d)}<span class="un-mo"> ${it.d.label.split(' ').pop()}</span>,</span> ${it.start}`;
     // the opening: registration, then the first sessions (not the breaks between them)
     const opening = programItems().filter((it, i, a) => it.s.cat !== 'social' || a.findIndex(x => x.s.cat === 'social') === i).slice(0, 3);
     return { name: 'Coming up', sw: true, whens,
