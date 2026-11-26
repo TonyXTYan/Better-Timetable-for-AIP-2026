@@ -15019,7 +15019,7 @@ function segAt(g, on, snap, keep, box){
   if (same && (!snap || (!g._segSlide && !g.classList.contains('seg-moving')))) return;
   // (the same option moved by a new layout, with no slide on its way: it goes with it at once)
   if (!snap && had && g._segOn === on && !g._segSlide) snap = true;
-  const from = !snap && had ? segNow(g) : null;
+  const from = !snap && had ? segNow(g) : null, prev = from && g._segSlide;
   segStop(g);
   if (snap && keep){ /* (under the option it was under: the colours are left to go on) */ }
   else if (snap){
@@ -15041,7 +15041,7 @@ function segAt(g, on, snap, keep, box){
   const was = g._segOn, wasBox = g._segBox;
   g._segOn = on;
   g._segBox = to;
-  if (from && !motionReduced() && ['x', 'y', 'w', 'h'].some(k => Math.abs(from[k] - to[k]) > .5)) segSlide(g, from, to, was !== on && was, wasBox, !box);
+  if (from && !motionReduced() && ['x', 'y', 'w', 'h'].some(k => Math.abs(from[k] - to[k]) > .5)) segSlide(g, from, to, was !== on && was, wasBox, !box, prev);
 }
 // The indicator's corners for the option `on`, as a clip's radii in px (never all four 0,
 // which the compositor cannot animate to or from)
@@ -15062,33 +15062,61 @@ const segEase = (() => {
     return B(0, 1, t);
   };
 })();
-// Where the indicator shows now: mid-slide, between the slide's ends by its eased progress,
-// from the clock (not the animation's own time, which reads 0 until the page has drawn a
-// frame of it, while the compositor has been moving it for as long as the page was busy)
+// Where the indicator shows now: mid-slide, where the slide has it (segPos) by the clock
+// (not the animation's own time, which reads 0 until the page has drawn a frame of it,
+// while the compositor has been moving it for as long as the page was busy)
 function segNow(g){
   const sl = g._segSlide, to = g._segBox;
   if (!sl || !to) return to;
-  const p = segEase((performance.now() - sl.t0) / sl.dur), f = sl.from, t = sl.to, m = (u, v) => u + (v - u) * p;
-  return { x: m(f.x, t.x), y: m(f.y, t.y), w: m(f.w, t.w), h: m(f.h, t.h), r: f.r.map((u, i) => m(u, t.r[i])) };
+  return segPos(sl, performance.now());
+}
+// When a slide began: as the compositor began it once the page has heard (it may be later
+// than the press, the page busy meanwhile), else when it was made.
+const segT0 = sl => sl.s ?? (sl.a && sl.a.startTime !== null ? +sl.a.startTime : sl.t0);
+const segMix = (a, b, p) => ({ x: a.x + (b.x - a.x) * p, y: a.y + (b.y - a.y) * p, w: a.w + (b.w - a.w) * p, h: a.h + (b.h - a.h) * p, r: a.r.map((u, i) => u + (b.r[i] - u) * p) });
+// Where a slide has the indicator at time t: on its eased way from one end to the other;
+// or, begun while another was on its way (a new choice mid-slide), on that one's own way
+// with the change of end added in, eased, over its own length (so it starts at that one's
+// pace, never back from where that one showed)
+function segPos(sl, t){
+  const e = segEase((t - segT0(sl)) / sl.dur);
+  if (!sl.prev && !sl.base) return segMix(sl.from, sl.to, e);
+  const o = sl.prev ? (t < segT0(sl.prev) + sl.prev.dur ? segPos(sl.prev, t) : sl.prev.to) : sl.base, d = sl.d;
+  return { x: o.x + d.x * e, y: o.y + d.y * e, w: o.w + d.w * e, h: o.h + d.h * e, r: o.r.map((u, i) => u + d.r[i] * e) };
 }
 // The slide: a move (transform) and a clip (its size and corners) of the indicator, both
 // of which the compositor runs, so it goes on while the page is busy redrawing; the box
 // itself is the larger of the two ends meanwhile.
-function segSlide(g, from, to, was, wasBox, live){
-  const W = Math.max(from.w, to.w), H = Math.max(from.h, to.h);
+// One begun while another is on its way (prev) follows that one's way with the new end
+// added in: as keyframes along it, from the time it is made. The page may be busy for a
+// while before it is drawn (the new view), the one on its way going on meanwhile: it then
+// takes over from where that one has got to by then, not from where it was at the press.
+function segSlide(g, from, to, was, wasBox, live, prev){
+  const dur = 200 * motionK(), t0 = performance.now();
+  const sl = { from, to, dur, ink: [], t0 };
+  if (prev && t0 < segT0(prev) + prev.dur){
+    sl.d = { x: to.x - prev.to.x, y: to.y - prev.to.y, w: to.w - prev.to.w, h: to.h - prev.to.h, r: to.r.map((u, i) => u - prev.to.r[i]) };
+    // (one whose own one on its way has ended goes on from that one's end)
+    if (prev.prev && t0 >= segT0(prev.prev) + prev.prev.dur){ prev.base = prev.prev.to; prev.prev = null; }
+    sl.prev = prev;
+    sl.s = t0;
+  }
+  const n = sl.prev ? Math.max(6, Math.round(dur / 16)) : 1, pts = [];
+  for (let k = 0; k <= n; k++) pts.push(n === 1 ? (k ? to : from) : segPos(sl, t0 + dur * k / n));
+  const W = Math.max(...pts.map(b => b.w)), H = Math.max(...pts.map(b => b.h));
   const clip = b => `inset(0px ${W - b.w}px ${H - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`;
   g.style.setProperty('--seg-bw', W + 'px');
   g.style.setProperty('--seg-bh', H + 'px');
   g.classList.add('seg-slide');
-  const o = { duration: 200 * motionK(), easing: EASE, pseudoElement: '::before', fill: 'forwards' };
-  const sl = { from, to, dur: o.duration, ink: [] };
+  const o = { duration: dur, easing: n === 1 ? EASE : 'linear', pseudoElement: '::before', fill: n === 1 ? 'forwards' : 'both' };
   // (the labels' timing first: animate() works out the page's style, and with it begins
   // their colour changes)
   if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
   segInk(sl, g._segOn, to, from, to, false, live);
-  sl.a = g.animate([{ transform: `translate(${from.x}px,${from.y}px)` }, { transform: `translate(${to.x}px,${to.y}px)` }], o);
-  sl.c = g.animate([{ clipPath: clip(from) }, { clipPath: clip(to) }], o);
-  sl.t0 = performance.now();
+  sl.a = g.animate(pts.map(b => ({ transform: `translate(${b.x}px,${b.y}px)` })), o);
+  sl.c = g.animate(pts.map(b => ({ clipPath: clip(b) })), o);
+  // (its time runs from when it was made, however late it is first drawn)
+  if (sl.prev) sl.a.startTime = sl.c.startTime = t0;
   g._segSlide = sl;
   sl.a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
   // (the chosen option's fill stays aside for as long as this slide, however late it began)
@@ -15132,6 +15160,8 @@ function segStop(g){
   const sl = g._segSlide;
   if (!sl) return;
   g._segSlide = null;
+  // (its start kept: a slide that takes over from it goes on along its way)
+  sl.s = segT0(sl);
   sl.a.cancel(); sl.c.cancel();
   for (const el of sl.ink){ el.style.removeProperty('--seg-cf'); el.style.removeProperty('--seg-cd'); }
   g.style.removeProperty('--seg-bw');
