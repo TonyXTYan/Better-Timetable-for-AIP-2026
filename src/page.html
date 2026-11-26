@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>AIP Congress 2026 — Program Explorer</title>
+<meta name="description" content="Search the AIP Congress 2026 program (Sydney, 7–11 Dec), plan your own agenda, export it to your calendar and see what is on now.">
+<meta property="og:title" content="AIP Congress 2026 — Program Explorer">
+<meta property="og:description" content="Search the program, plan your agenda and see what is on now. Sydney, 7–11 December 2026.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F3F4F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
+<script>
+// Display options (text size, font, theme, contrast, colour, motion, animation speed, pop-up width) go on <html> before
+// the first paint, so the page never flashes the wrong theme. Only overrides are stored.
+window.applyDisplay = function(d){
+  var r = document.documentElement;
+  function set(name, value, ok){ if (ok.indexOf(value) >= 0) r.setAttribute(name, value); else r.removeAttribute(name); }
+  set('data-text', d.text, ['sm','lg','xl']);
+  set('data-font', d.font, ['archivo']);
+  set('data-theme', d.theme, ['light','dark']);
+  set('data-contrast', d.contrast, ['high']);
+  set('data-colour', d.colour, ['vivid']);
+  set('data-motion', d.motion, ['reduce','full']);
+  set('data-speed', d.speed, ['fast','xslow']);
+  set('data-popw', d.popw, ['narrow','full']);
+  var metas = document.querySelectorAll('meta[name="theme-color"]');
+  for (var i = 0; i < metas.length; i++){
+    var dark = d.theme ? d.theme === 'dark' : /dark/.test(metas[i].media);
+    metas[i].content = dark ? '#0F1012' : '#F3F4F5';
+  }
+};
+(function(){
+  var d = {};
+  try { d = JSON.parse(localStorage.getItem('aip2026-display') || '{}') || {}; } catch (e) {}
+  try { window.applyDisplay(d); } catch (e) {}
+})();
+</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316181C'/%3E%3Crect x='12.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3Crect x='17.5' y='8' width='2.5' height='16' fill='%23FFB224'/%3E%3C/svg%3E">
+<style>
+@@FONTS@@
+</style>
+<script>
+// Archivo (Display options, Font) is decoded only when it is chosen: then its faces start
+// loading now, before the first paint needs them. The System font needs nothing.
+try{if(document.documentElement.getAttribute('data-font')==='archivo'){var F=document.fonts;F.load('420 16px Archivo');F.load('700 16px Archivo');F.load('italic 480 16px Archivo')}}catch(e){}
+</script>
+<style>
+@@INCLUDE styles.css@@
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main" id="skipLink">Skip to program</a>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-main">
+      <h1>AIP Congress 2026</h1>
+      <p class="sub"><span class="sub-full">An unofficial, easier-to-use timetable for the 26th Australian Institute of Physics Congress (with ANZCOP and COMMAD), built from the <a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">official program</a>. <span class="sub-data">Program data last updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED@@</time>.</span></span><span class="sub-short"><span class="ss-what">Unofficial timetable<span class="ss-sep" aria-hidden="true"> &middot;</span><span class="visually-hidden">,</span></span> <span class="ss-data">data updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED_SHORT@@</time></span></span></p>
+    </div>
+    <div class="hero-side">
+      <section class="hero-nn" id="heroNow" aria-labelledby="heroNowName heroWhen"><span id="heroNowName" hidden></span>
+        <div class="hn-head"><div class="hn-title"><h2 class="hero-when" id="heroWhen" tabindex="-1"><span class="na-glyph na-resolve" aria-hidden="true"></span><span id="countdown">7&#8211;11 Dec 2026</span></h2><p class="hn-tz">Times <abbr title="Australian Eastern Daylight Time, UTC+11">AEDT</abbr></p></div><div class="hn-sw" id="heroNowSw"></div></div>
+        <div class="hn-body" id="heroNowBody"></div>
+      </section>
+    </div>
+  </div>
+</header>
+<section class="shared-banner" id="sharedBanner" aria-label="Shared agenda" hidden></section>
+
+
+<div id="toolbarAnchor"></div>
+<nav class="sticky-wrap" aria-label="Program controls">
+  <div class="toolbar">
+    <div class="schedule-nav">
+      <div class="nav-main">
+      <div id="scheduleScope" class="agenda-views" role="group" aria-label="Schedule">
+        <button data-scope="program" aria-pressed="true"><span class="nav-long">Full program</span><span class="nav-short">Program</span></button>
+        <button data-scope="agenda" aria-pressed="false"><span class="nav-long">My agenda</span><span class="nav-short">Agenda</span> <span id="starCount">0</span></button>
+        <button data-scope="participants" aria-pressed="false"><span class="nav-long">Participants</span><span class="nav-short">People</span></button>
+      </div>
+      <div id="scheduleLayout" class="agenda-views" role="group" aria-label="Layout">
+        <button data-layout="list" aria-pressed="true">List</button>
+        <button data-layout="calendar" aria-pressed="false">Calendar</button>
+      </div>
+      </div>
+      <div id="programLevel" class="agenda-views" role="group" aria-label="Calendar shows" hidden>
+        <button data-level="sessions" aria-pressed="true">Sessions</button>
+        <button data-level="talks" aria-pressed="false">Talks</button>
+      </div>
+      <span id="levelWhy" class="visually-hidden" hidden>Talks are shown one day at a time: pick a day</span>
+      <div id="programOrient" class="agenda-views" role="group" aria-label="Day calendar direction" hidden>
+        <button data-orient="h" aria-pressed="true">Horizontal</button>
+        <button data-orient="v" aria-pressed="false">Vertical</button>
+      </div>
+    </div>
+    <div class="daytabs" id="daytabs" role="toolbar" aria-label="Congress days"><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span><span class="daytab ph" aria-hidden="true"><span class="dt-wd">&nbsp;</span> <span class="dt-dm">&nbsp;</span><span class="dt-count">&nbsp;</span></span></div>
+    <div class="controls">
+      <button type="button" class="toggle tb-mini" id="searchMini" title="Search (/)"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span class="tb-q" id="searchMiniQ"></span></button>
+      <div class="searchbox" role="search">
+        <span class="mag" aria-hidden="true"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg></span>
+        <input id="q" type="search" placeholder="Search talks, speakers, topics, abstracts…" aria-label="Search the program" autocomplete="off" spellcheck="false" maxlength="200">
+        <button class="clr" id="clr" aria-label="Clear search"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button>
+      </div>
+      <div class="filter-menu" id="filterMenu">
+        <button class="toggle" id="filterBtn" type="button" aria-expanded="false" aria-controls="filterPanel">Streams <span id="filterSummary" class="fs-sum">All</span><svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></button>
+        <div class="filter-panel" id="filterPanel" hidden>
+          <div class="fp-head"><b>Show streams</b><div class="fp-actions"><button type="button" class="fp-all" id="filterAll">Select all</button><button type="button" class="fp-all" id="filterNone">Deselect all</button><button type="button" class="fp-all" id="filterReset" title="Show every stream and clear the group filter and search">Reset filters</button></div></div>
+          <div class="chips" id="chips" role="group" aria-label="Filter by stream"></div>
+          <p class="fp-none" id="filterEmpty" hidden>No streams selected. <button type="button" class="linkish" data-select-all-streams>Select all</button></p>
+          <p class="fp-tip"><span class="on-fine">Click a stream to show or hide it; <b>only</b> (or a double-click) shows just that stream.<span class="fp-grp"> Click a group badge on a session (e.g. QST) to show only that group.</span></span><span class="on-touch">Tap a stream to show or hide it; tap <b>only</b> to show just that stream.<span class="fp-grp"> Tap a group badge on a session (e.g. QST) to show only that group.</span></span></p>
+        </div>
+      </div>
+      <button class="toggle now-pending" id="nowBtn" type="button">Now</button>
+      <button type="button" class="toggle tb-display" id="displayBtn" aria-label="Display options" title="Display options" aria-haspopup="dialog" aria-controls="displayDialog"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M2 4.5h5m4 0h3M2 11.5h2m4 0h6"/><circle cx="9" cy="4.5" r="2"/><circle cx="6" cy="11.5" r="2"/></svg><span class="db-l">Display</span></button>
+    </div>
+    <div class="grpill" id="grpill">Group: <span id="grpname"></span> <button id="grpclr" aria-label="Clear group filter"><svg class="ic" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9"/></svg></button></div>
+    <div class="result-row"><div class="result-line" id="resultLine" role="status" aria-live="polite"></div><button class="linkish" id="expandAll" type="button">Expand all<span class="xa-word"> abstracts</span></button></div>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="share-box" id="shareBox" role="group" aria-labelledby="shareBoxLabel" hidden>
+  <label id="shareBoxLabel" for="shareBoxInput">Copying is blocked here. Copy this link:</label>
+  <div class="share-box-row"><input id="shareBoxInput" readonly spellcheck="false"><button type="button" class="toggle primary" id="shareBoxCopy">Copy</button><button type="button" class="toggle" id="shareBoxClose" aria-label="Close">&#10005;</button></div>
+  <p class="share-box-note" id="shareBoxNote" role="status"></p>
+</div>
+
+
+
+<main id="main" aria-label="Full program" tabindex="-1">
+<section id="builder" class="builder" hidden>
+  <div class="ag-bar">
+    <div class="ag-bar-main">
+      <h2 id="builderTitle" tabindex="-1">My agenda</h2>
+      <p class="builder-stats" id="builderStats" aria-live="polite"></p>
+      <span class="ag-clash-slot" id="clashSlot"></span>
+    </div>
+    <div class="builder-actions">
+      <label class="ag-opt" id="parentOption" hidden><input type="checkbox" id="includeParents"> <span><span class="ag-opt-show">Show f</span><span class="ag-opt-f">F</span>ull sessions<span class="ag-opt-long"> for saved talks</span></span></label>
+      <button class="toggle primary" id="buildAgenda" data-build><span>Build<span class="ag-build-long"> my agenda</span></span></button>
+      <div class="ag-menu" id="exportWrap">
+        <button type="button" class="toggle" id="exportBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">Export <svg class="ic caret" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></button>
+        <div class="ag-menu-list" id="exportMenu" role="menu" aria-labelledby="exportBtn" hidden>
+          <p class="ag-menu-note" id="exportNote" role="none" hidden></p>
+          <button type="button" role="menuitem" tabindex="-1" id="printAgenda">Print or save as PDF</button>
+          <button type="button" role="menuitem" tabindex="-1" id="copyAgenda">Copy as text</button>
+          <button type="button" role="menuitem" tabindex="-1" id="icsAgenda">Download .ics</button>
+          <button type="button" role="menuitem" tabindex="-1" id="shareAgenda">Share link</button>
+          <button type="button" role="menuitem" tabindex="-1" id="moveAgenda" aria-haspopup="dialog">Move to another device&#8230;</button>
+          <div class="ag-menu-sep" role="separator"></div>
+          <button type="button" role="menuitem" tabindex="-1" class="danger" id="clearAgenda">Clear all</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="undo-bar" id="undoBar" hidden>
+    <span id="undoMsg" role="status"></span>
+    <span class="undo-actions"><button type="button" class="toggle" id="undoBtn" aria-describedby="undoMsg" title="Undo (Ctrl+Z)">Undo</button><button type="button" class="toggle" id="undoDismiss" aria-label="Dismiss">&#10005;</button></span>
+  </div>
+  <div class="clash-box" id="clashBox" hidden></div>
+  <p class="export-status" id="exportStatus" role="status"></p>
+  <div class="ics-note" id="copyNote" hidden>
+    <label for="copyBox">Select and copy your agenda text below.</label>
+    <textarea id="copyBox" readonly rows="6"></textarea>
+  </div>
+  <details class="ics-note" id="icsNote" hidden>
+    <summary>Download didn&#8217;t start? Show the calendar text</summary>
+    <p>Copy the text below and save it as <b>my-agenda.ics</b>, or paste it into any calendar app that accepts imports.</p>
+    <textarea id="icsBox" readonly rows="6" aria-label="Calendar file text"></textarea>
+  </details>
+  <div id="builderBody">
+    <div id="builderList"></div>
+  </div>
+</section>
+
+<section id="people" class="people" aria-labelledby="peopleTitle" hidden>
+  <div class="people-head">
+    <h2 id="peopleTitle" class="people-title" tabindex="-1">Participants</h2>
+  </div>
+  <p class="people-intro">Every speaker and convener. Sort by institution or by name, narrow to a category, or search a name or an institution, short forms such as <i>unsw</i>, <i>anu</i> or <i>usyd</i> included. Select a talk or session for its details.</p>
+  <div class="pp-controls">
+    <span class="pp-ctl"><span id="ppSortLabel">Sort</span>
+      <span id="peopleSort" class="agenda-views pp-sort" role="group" aria-labelledby="ppSortLabel">
+        <button type="button" data-psort="aff" aria-pressed="true">Affiliation</button>
+        <button type="button" data-psort="first" aria-pressed="false">First name</button>
+        <button type="button" data-psort="last" aria-pressed="false">Last name</button>
+      </span></span>
+    <label class="pp-ctl">Category <span class="pp-sel"><select id="peopleCat"></select><svg class="pp-chev" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false"><path d="m4 6 4 4 4-4"/></svg></span></label>
+  </div>
+  <div class="pp-body">
+    <div id="peopleList"></div>
+    <nav class="pp-rail" id="ppRail" aria-label="Jump to a letter" hidden><div class="pp-rail-in"><ol class="pp-letters" id="ppLetters"></ol><div class="pp-panel" id="ppPanel" hidden></div></div></nav>
+  </div>
+  <div class="pp-bubble" id="ppBubble" aria-hidden="true" hidden></div>
+</section>
+<div id="agenda" class="agenda"></div>
+<div class="empty-note" id="emptyNote">Nothing matches your search or filters. Try clearing them or browsing another day.</div>
+</main>
+
+<dialog id="eventDialog" aria-labelledby="eventTitle">
+  <form method="dialog"><button class="toggle dlg-x" aria-label="Close" title="Close" autofocus><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></form>
+  <div id="eventContent"></div>
+</dialog>
+<dialog id="displayDialog" aria-labelledby="displayTitle">
+  <div class="dd-head">
+    <h2 id="displayTitle">Display options</h2>
+    <form method="dialog"><button class="toggle dlg-x" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></form>
+  </div>
+  <div class="dd-body">
+    <fieldset class="dd-group">
+      <legend>Text size</legend>
+      <div class="seg sizes" style="--n:4">
+        <label><input type="radio" name="dsText" value="sm"><span><span class="sz-a" style="font-size:.85em" aria-hidden="true">A</span>Smaller</span></label>
+        <label><input type="radio" name="dsText" value=""><span><span class="sz-a" aria-hidden="true">A</span>Default</span></label>
+        <label><input type="radio" name="dsText" value="lg"><span><span class="sz-a" style="font-size:1.15em" aria-hidden="true">A</span>Larger</span></label>
+        <label><input type="radio" name="dsText" value="xl"><span><span class="sz-a" style="font-size:1.3em" aria-hidden="true">A</span>Largest</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="dd-group dd-font">
+      <legend>Font</legend>
+      <div class="seg" style="--n:2">
+        <label><input type="radio" name="dsFont" value=""><span><span class="ff-ag ff-system" aria-hidden="true">Ag</span>System<small>Your device&#8217;s own</small></span></label>
+        <label><input type="radio" name="dsFont" value="archivo"><span><span class="ff-ag ff-archivo" aria-hidden="true">Ag</span>Archivo<small>Wide title, narrow times</small></span></label>
+      </div>
+    </fieldset>
+    <fieldset class="dd-group" id="dsPopwGroup" aria-describedby="dsPopwNote">
+      <legend>Pop-up width</legend>
+      <div class="seg">
+        <label><input type="radio" name="dsPopw" value="narrow"><span>Narrower</span></label>
+        <label><input type="radio" name="dsPopw" value=""><span>Wide<small>Default</small></span></label>
+        <label><input type="radio" name="dsPopw" value="full"><span>Full width</span></label>
+      </div>
+      <p class="dd-note" id="dsPopwNote">For the session and talk pop-ups.</p>
+    </fieldset>
+    <fieldset class="dd-group">
+      <legend>Theme</legend>
+      <div class="seg">
+        <label><input type="radio" name="dsTheme" value=""><span>System<small id="dsSystemNote">Follows device</small></span></label>
+        <label><input type="radio" name="dsTheme" value="light"><span>Light</span></label>
+        <label><input type="radio" name="dsTheme" value="dark"><span>Dark</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="dd-group dd-colour">
+      <legend>Colour</legend>
+      <div class="seg" style="--n:2">
+        <label><input type="radio" name="dsColour" value=""><span><span class="cs-sw cs-quiet" aria-hidden="true"><i></i><i></i><i></i></span>Quiet<small>Colour marks the streams</small></span></label>
+        <label><input type="radio" name="dsColour" value="vivid"><span><span class="cs-sw cs-vivid" aria-hidden="true"><i></i><i></i><i></i></span>Vivid<small>Colour fills the streams</small></span></label>
+      </div>
+    </fieldset>
+    <section class="sp-key" id="colourKey" aria-labelledby="spKeyTitle">
+      <h3 id="spKeyTitle">Colour key</h3>
+      <p class="sp-intro">Each stream takes its colour from a real spectral line, set here at its wavelength. Point at the scale or tap it to name a line.</p>
+      <div class="spectral" aria-hidden="true"><div class="sp-scale"><div class="sp-tip" hidden><b></b><span></span></div><i style="--nm:410.2;--c:var(--poster)" data-k="poster" data-n="Posters" data-d="Hydrogen H&#948;, 410.2 nm"></i><i style="--nm:455;--c:var(--commad)" data-k="commad" data-n="COMMAD" data-d="InGaN blue LED, 455 nm"></i><i style="--nm:467;--c:var(--special)" data-k="special" data-n="Forums &amp; Special Events" data-d="Ytterbium-ion clock line, 467 nm"></i><i style="--nm:486.1;--c:var(--aip)" data-k="aip" data-n="AIP Sessions" data-d="Hydrogen H&#946;, 486.1 nm"></i><i style="--nm:546.1;--c:var(--focus)" data-k="focus" data-n="Focus Sessions" data-d="Mercury e-line, 546.1 nm"></i><i style="--nm:578.0;--c:var(--edu)" data-k="edu" data-n="Education &amp; PEG" data-d="Mercury yellow lines, 577 and 579 nm"></i><i style="--nm:632.8;--c:var(--anzcop)" data-k="anzcop" data-n="ANZCOP" data-d="Helium&#8211;neon laser, 632.8 nm"></i><i style="--nm:656.3;--c:var(--events)" data-k="events" data-n="Congress events" data-d="Hydrogen lamp, H&#945; 656.3 nm (the tube glows magenta)"></i><i class="sp-na" style="--nm:589.3" data-k="now" data-n="Now" data-d="Sodium D doublet, 589.0 and 589.6 nm"><span class="na-glyph"></span></i></div><div class="sp-axis"><span style="--nm:400">400 nm</span><span style="--nm:500">500</span><span style="--nm:600">600</span><span style="--nm:700">700 nm</span></div></div>
+      <ul class="sp-legend"><li data-k="poster" style="--c:var(--poster);--cbg:var(--poster-bg)"><i aria-hidden="true"></i><b>Posters</b><span>Hydrogen H&#948;, 410.2&nbsp;nm</span></li><li data-k="commad" style="--c:var(--commad);--cbg:var(--commad-bg)"><i aria-hidden="true"></i><b>COMMAD</b><span>InGaN blue LED, 455&nbsp;nm</span></li><li data-k="special" style="--c:var(--special);--cbg:var(--special-bg)"><i aria-hidden="true"></i><b>Forums &amp; Special Events</b><span>Ytterbium-ion clock, 467&nbsp;nm</span></li><li data-k="aip" style="--c:var(--aip);--cbg:var(--aip-bg)"><i aria-hidden="true"></i><b>AIP Sessions</b><span>Hydrogen H&#946;, 486.1&nbsp;nm</span></li><li data-k="focus" style="--c:var(--focus);--cbg:var(--focus-bg)"><i aria-hidden="true"></i><b>Focus Sessions</b><span>Mercury e-line, 546.1&nbsp;nm</span></li><li data-k="edu" style="--c:var(--edu);--cbg:var(--edu-bg)"><i aria-hidden="true"></i><b>Education &amp; PEG</b><span>Mercury yellow pair, 577 and 579&nbsp;nm</span></li><li data-k="anzcop" style="--c:var(--anzcop);--cbg:var(--anzcop-bg)"><i aria-hidden="true"></i><b>ANZCOP</b><span>Helium&#8211;neon laser, 632.8&nbsp;nm</span></li><li data-k="events" style="--c:var(--events);--cbg:var(--events-bg)"><i aria-hidden="true"></i><b>Congress events</b><span>Hydrogen lamp, H&#945; 656.3&nbsp;nm</span></li><li data-k="plenary" class="sp-x" style="--c:var(--plenary);--cbg:var(--plenary-bg)"><i aria-hidden="true"></i><b>Plenary &amp; Welcome</b><span>White light, every line at once</span></li><li data-k="greys" class="sp-x sp-grey" style="--c:var(--social);--cbg:var(--social-bg)"><i aria-hidden="true"></i><b>Meals and meetings</b><span>Neutral greys</span></li><li data-k="now" class="sp-x sp-now"><span class="na-glyph" aria-hidden="true"></span><b>Now</b><span>Sodium D doublet, 589.0 and 589.6&nbsp;nm</span></li><li data-k="clash" class="sp-x sp-cx" style="--cbg:transparent"><i class="cx-fr" aria-hidden="true"></i><b>Clash</b><span>Saved items that overlap: fine fringes, on hazard yellow in Vivid</span></li></ul>
+    </section>
+    <button type="button" class="dd-switch" id="dsContrast" aria-pressed="false"><span><b>High-contrast text</b><small>Stronger text and lines, in both themes</small></span><span class="sw-track" aria-hidden="true"></span></button>
+    <button type="button" class="dd-switch" id="dsMotion" aria-pressed="false"><span><b>Reduce motion</b><small id="dsMotionNote">Follows your device setting</small></span><span class="sw-track" aria-hidden="true"></span></button>
+    <fieldset class="dd-group" id="dsSpeedGroup" aria-describedby="dsSpeedNote">
+      <legend>Animation speed</legend>
+      <div class="seg">
+        <label><input type="radio" name="dsSpeed" value="fast"><span>Fast</span></label>
+        <label><input type="radio" name="dsSpeed" value=""><span>Normal<small>Default</small></span></label>
+        <label><input type="radio" name="dsSpeed" value="xslow"><span>Slow</span></label>
+      </div>
+      <p class="dd-note" id="dsSpeedNote" hidden>Nothing moves while Reduce motion is on.</p>
+    </fieldset>
+    <div class="dd-preview" aria-hidden="true"><span class="badge" style="--c:var(--aip);--cbg:var(--aip-bg)">QST</span><span class="pv-title">Preview: silicon spin qubits at scale</span><span class="pv-meta">Tue 8 Dec, 10:30–12:30 AEDT, Room 2.01</span></div>
+    <div class="dd-foot">
+      <button type="button" class="linkish" id="dsReset">Reset display options</button>
+      <p>Saved on this device only.</p>
+    </div>
+  </div>
+</dialog>
+<dialog id="moveDialog" aria-labelledby="moveTitle">
+  <form method="dialog"><button class="toggle dlg-x" aria-label="Close" title="Close" autofocus><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></form>
+  <h2 id="moveTitle">Move to another device</h2>
+  <p class="md-intro">Carry your agenda between your computer and your phone. Nothing is uploaded: the link, code or file holds the whole list.</p>
+  <section class="md-sec" aria-labelledby="mdSendTitle">
+    <h3 id="mdSendTitle">Send from this device</h3>
+    <div id="moveSend"></div>
+    <div class="md-copy-fallback" id="moveCopyFallback" hidden>
+      <label for="moveCopyBox">Copying is blocked here. Select and copy this text:</label>
+      <input id="moveCopyBox" readonly>
+    </div>
+  </section>
+  <section class="md-sec" aria-labelledby="mdGetTitle">
+    <h3 id="mdGetTitle">Bring an agenda to this device</h3>
+    <div class="md-row">
+      <button type="button" class="toggle" id="importFileBtn">Import file&#8230;</button>
+      <input type="file" id="importFile" class="visually-hidden" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+    </div>
+    <label class="md-label" for="importText">Paste a link, code or file contents</label>
+    <textarea id="importText" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="https://…#agenda=…, s190576,c191558,… or the file's text"></textarea>
+    <div class="md-row"><button type="button" class="toggle" id="importTextBtn">Import</button></div>
+    <div class="import-result" id="importResult" role="status" aria-live="polite"></div>
+  </section>
+</dialog>
+<dialog id="buildDialog" aria-labelledby="bdTitle">
+  <div class="bd-top">
+    <div class="bd-titlebar">
+      <div class="bd-titles">
+        <h2 id="bdTitle">Build my agenda</h2>
+        <p class="bd-intro">Go through the congress one time slot at a time and tick the sessions or talks you want to attend. Drag the slider to jump around the week.</p>
+      </div>
+      <div class="bd-opts">
+        <span id="bdProgress"></span>
+        <span class="bd-optset"><label title="Show every session's talks"><input type="checkbox" id="bdExpand"><span class="bd-opt-t"><span class="bd-opt-w">Expand all</span><span class="bd-opt-s">All</span> talks</span></label><label title="Include breaks and meetings"><input type="checkbox" id="bdAdmin"><span class="bd-opt-t">Include breaks<span class="bd-opt-x"> and meetings</span></span></label></span>
+      </div>
+      <button type="button" class="toggle dlg-x" id="bdClose" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="bd-scale" id="bdScale">
+      <div class="bd-bubble-row" aria-hidden="true"><span class="bd-bubble" id="bdBubble"></span></div>
+      <div class="bd-rail"><input type="range" class="bd-range" id="bdRange" min="0" max="0" step="1" value="0" aria-label="Time slot" autofocus><span class="bd-thumb" aria-hidden="true"></span></div>
+      <div class="bd-ticks" id="bdTicks" aria-hidden="true"></div>
+      <div class="bd-days" id="bdDays"></div>
+      <div class="bd-times" id="bdTimes" aria-hidden="true"></div>
+    </div>
+    <div class="bd-chips" id="bdChips" role="group" aria-label="Streams to show"></div>
+  </div>
+  <div class="bd-body" id="bdBody"></div>
+  <div class="bd-foot">
+    <button type="button" class="toggle" id="bdBack" aria-keyshortcuts="ArrowLeft"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
+    <button type="button" class="toggle" id="bdSkipDay">Skip day</button>
+    <p class="bd-kbd" id="bdKbd">Tip: <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move between slots</p>
+    <span class="visually-hidden" id="bdLive" aria-live="polite"></span>
+    <button type="button" class="toggle primary" id="bdNext" aria-keyshortcuts="ArrowRight">Next slot<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</dialog>
+<footer>
+  <div class="cols">
+    <div class="foot-about">
+      <h2>About this page</h2>
+      <p>An unofficial, mobile-friendly view of the AIP Congress 2026 program, built from the official Indico timetable (event 16926). Program data last updated <time datetime="@@RETRIEVED_ISO@@">@@RETRIEVED@@</time>. Session and talk titles are as published; a few obvious typos were corrected.</p>
+      <dl class="foot-facts">
+        <div><dt>Dates</dt><dd>7&#8211;11 December 2026, registration Sunday 6&nbsp;December</dd></div>
+        <div><dt>Venue</dt><dd>Belinda Hutchinson Building, University of Sydney. The organisers will publish detailed rooms and locations closer to the congress, on the <a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">official site</a>.</dd></div>
+        <div><dt>Times</dt><dd>All times are AEDT (Sydney, UTC+11).</dd></div>
+      </dl>
+      <p>Times, rooms and abstracts can still change, so always confirm on the official pages close to the event.</p>
+      <div class="foot-issue">
+        <p>Has this page fallen behind the official program, or is something not working? Open an issue on GitHub (in a new tab), filled in with this page&#8217;s details (its address, with any search; for a problem, also your screen size, display settings and browser) for you to check before you submit.</p>
+        <p class="foot-issue-btns"><a class="display-btn" data-issue="data" href="@@ISSUE_DATA_HREF@@" target="_blank" rel="noopener">Request a data update<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a><a class="display-btn" data-issue="bug" href="@@ISSUE_BUG_HREF@@" target="_blank" rel="noopener">Report a problem<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a></p>
+      </div>
+    </div>
+    <div class="foot-tipcol">
+      <h2>Tips</h2>
+      <p class="foot-display"><button type="button" class="display-btn" id="displayBtnFoot" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast, motion and pop-up width. Also in the toolbar, as its sliders button.</span></p>
+      <ul class="foot-tips" role="list">
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="3.25" width="12" height="10.5" rx="2"/><path d="M2 6.75h12M5.25 1.75v3M10.75 1.75v3"/></svg><span><b>Day tabs</b> focus one day; <b>All week</b> shows the full program.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4"/></svg><span><b>Search</b> matches <b>every word in any order</b>, ignoring accents (e.g. <i>dzurak silicon</i>). Put &ldquo;quotes&rdquo; around words for an exact phrase. Matches are highlighted.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6.75" cy="6.75" r="4.75"/><path d="m10.25 10.25 4 4M4.75 6.75h4M6.75 4.75v4"/></svg><span>Short forms of institutions work too (<i>unsw</i>, <i>anu</i>, <i>usyd</i>). If a day has no matches, results from the rest of the week appear automatically.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="1.75" y="4.5" width="12.5" height="7" rx="3.5"/><path d="M5.5 8h5"/></svg><span><b>Group badges</b>: <span class="on-fine">click</span><span class="on-touch">tap</span> one (e.g. QST, NUPP) to filter to that group.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 1.75l1.9 3.9 4.25.6-3.1 3 .75 4.2L8 11.4l-3.8 2.05.75-4.2-3.1-3 4.25-.6z"/></svg><span><b>Star</b> individual talks or whole sessions, then open <b>My agenda</b> to see them in a list or calendar, export them, or share them as a link.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="5.25" r="2.5"/><path d="M1.5 13.5c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4M11 3.1a2.5 2.5 0 0 1 0 4.3M12.5 9.8c1.2.6 2 1.7 2 3.7"/></svg><span><b>Participants</b> lists every speaker and convener by institution.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.25"/><path d="M8 4.5V8l2.25 1.5"/></svg><span>During the congress, <b>Now</b> jumps to what is on.</span></li>
+        <li class="kbd-hint"><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="1.5" y="3.75" width="13" height="8.5" rx="2"/><path d="M4.5 7h.01M7 7h.01M9.5 7h.01M12 7h.01M5 9.75h6"/></svg><span><b>Keyboard</b>: <kbd>/</kbd> to search, <kbd>Esc</kbd> to leave the search box, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> on a day tab or in <b>Build my agenda</b> to step through, <span class="nw"><kbd>Ctrl</kbd> or <kbd>&#8984;</kbd> + <kbd>Z</kbd></span> to undo a removal.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.75 9.25a3 3 0 0 0 4.25 0l2-2a3 3 0 0 0-4.25-4.25l-.75.75M9.25 6.75a3 3 0 0 0-4.25 0l-2 2a3 3 0 0 0 4.25 4.25l.75-.75"/></svg><span><b>Shareable links</b>: the page address keeps your day, search and filters, so you can bookmark or share a view.</span></li>
+        <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1.75 6a9 9 0 0 1 12.5 0M4.5 8.9a5 5 0 0 1 7 0M8 12h.01M2.5 2.5l11 11"/></svg><span><b>Offline</b>: once loaded, the page also works without a connection.</span></li>
+      </ul>
+    </div>
+    <div>
+      <h2>Links</h2>
+      <ul class="foot-links">
+        <li><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a></li>
+        <li><a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official program page</a></li>
+        <li><a href="https://www.aip.org.au/congress/register" target="_blank" rel="noopener">Register</a></li>
+        <li><a href="https://www.aip.org.au/congress/activities" target="_blank" rel="noopener">Activities &amp; social events</a></li>
+        <li><a href="https://www.aip.org.au/congress/speakers" target="_blank" rel="noopener">Speakers</a></li>
+        <li><a href="https://www.aip.org.au/congress/workshops" target="_blank" rel="noopener">Workshops</a></li>
+        <li><a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Source timetable (Indico)</a></li>
+        <li><a href="https://github.com/TonyXTYan/Better-Timetable-for-AIP-2026" target="_blank" rel="noopener">This page on GitHub (code, issues)</a></li>
+      </ul>
+      <p>Public lectures, the Welcome Reception, the Congress Dinner, Teachers Day and the Career Fair: <a href="#streams=events" data-show-stream="events">show the Congress events stream</a>.</p>
+    </div>
+  </div>
+  <section class="foot-ack" aria-labelledby="ackTitle">
+    <h2 id="ackTitle">Acknowledgements</h2>
+    <p>The program is the work of the 26th Australian Institute of Physics Congress organisers, held with ANZCOP and COMMAD, and is published on their <a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Indico timetable</a>. Every title and abstract here belongs to its speakers and conveners. The Archivo typeface, by Omnibus-Type, is used under the SIL Open Font License.</p>
+    <p>This page was built and refined with Claude Code, Anthropic&#8217;s coding agent. By an estimate on @@TOKENS_ASOF@@, its sessions processed @@TOKENS_PROCESSED@@ tokens, nearly all of that context read again at each step, and wrote @@TOKENS_WRITTEN@@.</p>
+  </section>
+</footer>
+<section id="printDoc" class="print-doc" aria-hidden="true"></section>
+
+<script>
+// qrcode-generator 2.0.4 (npm), minified; draws the QR code in "Move to another device".
+// https://github.com/kazuhikoarase/qrcode-generator
+// QR Code Generator for JavaScript
+// Copyright (c) 2009 Kazuhiko Arase
+// URL: http://www.d-project.com/
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,(function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1}))},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}((function(){return qrcode}));
+</script>
+<script>
+@@INCLUDE app.js@@
+</script>
+</body>
+</html>

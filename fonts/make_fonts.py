@@ -11,7 +11,7 @@ needs:
 
 Needs fontTools and brotli (pip install fonttools brotli). For each style it limits the axes
 (roman: wght 400-800, wdth 75-125; italic: wght 400-700 at wdth 100), then keeps only the
-characters found in build_program.py and aip2026-data.json plus Latin-1 and typographic
+characters found in build_program.py, src/ and aip2026-data.json plus Latin-1 and typographic
 punctuation (other characters fall back to the system font, glyph by glyph), and the OpenType features the page uses. fontsource splits the font
 into a "latin" and a "latin-ext" file; both are kept, each with its own unicode-range, which
 build_program.py reads from fonts/fonts.json.
@@ -36,6 +36,8 @@ STYLES = {
 
 def wanted_codepoints():
     text = (ROOT / 'build_program.py').read_text(encoding='utf-8')
+    for f in sorted((ROOT / 'src').iterdir()):  # the page's HTML, CSS and JS
+        text += f.read_text(encoding='utf-8')
     text += (ROOT / 'aip2026-data.json').read_text(encoding='utf-8')
     cps = {ord(c) for c in text}
     cps |= set(range(0x20, 0x7F)) | set(range(0xA0, 0x100))

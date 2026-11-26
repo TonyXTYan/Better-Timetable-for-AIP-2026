@@ -172,8 +172,9 @@ and print are designed alongside.
 
 ## Build
 
-`index.html` and `aip-2026-program.html` are generated, self-contained pages; edit
-`build_program.py` (page template, styles and script) or `normalize.py` (data clean-up), then:
+`index.html` and `aip-2026-program.html` are generated, self-contained pages; edit the page's
+source in `src/` (`page.html`, `styles.css`, `app.js`; see `src/README.md`), `build_program.py`
+(the build: data, labels, footer links, dark-theme tokens) or `normalize.py` (data clean-up), then:
 
 ```bash
 python3 build_program.py                    # rebuild from aip2026-data.json
