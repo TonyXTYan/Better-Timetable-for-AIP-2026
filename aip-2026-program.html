@@ -660,7 +660,12 @@ header.hero{container:hero / inline-size}
    the same colour, and a live blur over the moving page would be redone every frame) */
 html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) .sticky-wrap{view-transition-name:toolbar;backdrop-filter:none;-webkit-backdrop-filter:none}
 html[data-view-tx]:not([data-view-tx="dlg"]):not([data-view-tx="disp"]) header.hero{view-transition-name:hero}
-::view-transition{pointer-events:none}
+/* (between the old picture going and the new one coming, the page shows through them to
+   what lies under the transition: the page's own background in a page of its own, but in
+   a frame (an embedded viewer) whatever is behind the frame, often white, which flashed
+   in the gap between the header and the toolbar and over the view. The transition keeps
+   the page's background under it.) */
+::view-transition{pointer-events:none;background:var(--bg)}
 ::view-transition-old(root),::view-transition-new(root),::view-transition-group(toolbar),::view-transition-new(toolbar),::view-transition-group(hero),::view-transition-new(hero){animation:none}
 ::view-transition-old(toolbar),::view-transition-old(hero){display:none}
 /* (the root's own group never moves, and has no animation: a running one, even one that
@@ -762,7 +767,6 @@ html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(
    (through the page's own background, dimmed under an open dialog), never both at once */
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
-html[data-view-tx="disp"][data-view-tx-seq]::view-transition{background:var(--bg)}
 html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
