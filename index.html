@@ -6509,8 +6509,9 @@ function mxUnderHeads(){
   return r => hs.some(h => h.bottom > r.top + 1 && h.top < r.bottom - 1 && h.right > r.left + 1 && h.left < r.right - 1);
 }
 let mxNamed = [], mxOwner = null, mxShown = [];
-// (what the last morph named and found, for ?txdebug=1)
-let mxStat = {};
+// (what the last morph named and found, for ?txdebug=1; and mxPlan, how each item it
+// named moves, by key)
+let mxStat = {}, mxPlan = null;
 // (this transition's own rules: each moving group's size, a clip that stays put, a look
 // the page fades itself; set once, in the update callback, before the browser builds the
 // transition's parts, so it styles them once)
@@ -6637,7 +6638,7 @@ function mxBegin(kind, from, opts){
   // agenda's saved items): none goes first, each is looked for in the new view too, not
   // only those the old one showed, and opts.lite names the nearer half)
   const only = opts.only ? new Set((opts.lite && !opts.either ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && !opts.either && [...only][0];
-  mxStat = {};
+  mxStat = {}; mxPlan = null;
   if (opts.plain || (!only && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
@@ -7089,6 +7090,13 @@ function mxBegin(kind, from, opts){
         own(key);
         look(key, 'old', move(o.r, o.c, to, o.c, o.r, true), fade([{ opacity: 1 }, { opacity: 1, offset: .55 }, { opacity: 0 }]));
       }
+      // (?txdebug=1: each item named, by key, as it moves: from its old place to its new
+      // (pair), into or out of its session (fold, grow), going (fade, sink) or coming
+      // (added, emerge, rise))
+      if (TX_DEBUG){
+        const ks = xs => xs.map(x => x.key);
+        mxPlan = { pair: ks(plan.pairs), fold: ks(plan.fold), grow: ks(plan.grow), fade: ks(plan.fade), sink: ks(plan.sink), added: ks(plan.added), emerge: ks(plan.emerge), rise: ks(plan.rise) };
+      }
       // ---- and now the names, and this transition's rules (nothing is measured after this)
       for (const [el, key, cls] of names) mxName(el, key, cls);
       let i = 0;
@@ -7228,7 +7236,7 @@ function txStart(kind, fn, from, opts){
     if (band) bandAnims = txBandAnim(kind, rect);
     txWatch(vt, t + redraw, (freeze, jank) => {
       if (pr) txPairNote(pr, opts.level, freeze, jank);
-      if (log) txDbgEnd(log, { redraw, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' ') });
+      if (log) txDbgEnd(log, { redraw, freeze, jank, named, mx: Object.entries(mxStat).map(([k, x]) => k + '=' + x).join(' '), plan: mxPlan });
     });
   }, () => { if (log) txDbgEnd(log, { redraw, skipped: true }); });
   vt.updateCallbackDone.catch(e => console.error(e));
