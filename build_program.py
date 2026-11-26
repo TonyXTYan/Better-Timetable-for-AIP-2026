@@ -2661,7 +2661,8 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-tog{display:flex;align-items:center;gap:0;width:100%;margin-top:6px;border:0;border-top:1px solid var(--line);background:none;border-radius:0;padding:8px 0;min-height:36px;font-size:.8125rem;font-weight:650;color:var(--ink);text-align:left}
 .bd-tog .caret{position:relative;top:-2px;flex:none;width:6px;height:6px;margin:0 4px 0 auto;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:rotate(45deg);transition:transform calc(var(--mo,1) * .12s)}
 .bd-tog[aria-expanded="true"] .caret{top:2px;transform:rotate(-135deg)}
-.bd-tog[aria-expanded="true"] .bd-show,.bd-tog[aria-expanded="false"] .bd-hide{display:none}
+/* open, it keeps its count ("4 talks"); the caret says which way it goes */
+.bd-tog[aria-expanded="true"] .bd-sw{display:none}
 .bd-tcount{color:var(--ink-2);font-weight:500}
 .bd-tc-s{display:none}
 .bd-tlist{list-style:none;margin:0 0 4px;padding:0}
@@ -11304,7 +11305,7 @@ function bdCard(s, parallel){
       <button type="button" class="linkish bd-info" data-session-detail="${esc(s.id)}" data-talk-detail="" aria-label="Details of ${esc(s.title)}">Details</button></div>
     <label class="bd-check bd-sess"><input type="checkbox" data-bd-id="${esc(s.id)}"${state.starred.has(s.id) ? ' checked' : ''}>
       <span class="bd-sess-main"><span class="bd-title">${esc(s.title)}</span>${meta ? `<span class="bd-meta">${esc(meta)}</span>` : ''}<span class="bd-hint">${hint}</span></span></label>
-    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}"><span class="visually-hidden">${esc(s.title)}: </span><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-hide">Hide talks</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true"></span></button>
+    ${n ? `<button type="button" class="bd-tog" aria-expanded="${open}" aria-controls="bdt-${esc(s.id)}"><span class="visually-hidden">${esc(s.title)}: </span><span class="bd-show"><span class="bd-sw">Show </span>${n}${word}</span><span class="bd-tcount"></span><span class="caret" aria-hidden="true"></span></button>
       <ul class="bd-tlist" id="bdt-${esc(s.id)}"${open ? '' : ' hidden'}>${talks.map(t => bdTalk(s, t)).join('')}</ul>` : ''}
   </article>`;
 }
