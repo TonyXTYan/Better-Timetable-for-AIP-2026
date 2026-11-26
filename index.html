@@ -5096,22 +5096,134 @@ document.getElementById('daytabs').addEventListener('click', e => {
   else withTransition(day === 'all' || (state.day !== 'all' && day < state.day) ? 'back' : 'fwd', go, null, { to: { day }, press: b });
 });
 
+// A change of what the program shows by stream or group (a stream ticked or unticked, its
+// "only", Select all, Deselect all, Reset filters, a group badge, the group pill's clear):
+// `set` changes the choice, and the chips show it at once (the toolbar, with the open
+// Streams panel in it, is drawn live over the change and keeps the focus where it is); the
+// program is redrawn (`redraw`) as a change of its own ('filter': a pair held to Horizontal
+// <-> Vertical's rules, TX_OWN), keyed on the sessions shown before and after (opts.was,
+// opts.sees). In a list, a session from a stream hidden now fades and folds away where it
+// was, one shown now unfolds in its place, and the rest glide to their new places, closing
+// the gaps or making room (session cards only: their talks go with them); in the calendar,
+// a hidden one fades out, one shown now fades in, and the rest move to their new lanes or
+// columns, at their new sizes. Each change takes over from the last (any click settles the
+// one still moving: settleTransition); with reduced motion, a plain swap.
+function filterGo(set, redraw = refresh){
+  settleTransition();
+  const was = filterSees();
+  set();
+  renderChips();
+  const sees = filterSees();
+  if (state.scope === 'participants' || (was.size === sees.size && [...was].every(id => sees.has(id)))){ redraw(); return; }
+  const list = state.layout !== 'calendar', dir = sees.size > was.size ? 'in' : sees.size < was.size ? 'out' : 'swap';
+  withTransition('filt', () => {
+    const y0 = window.scrollY, keep = dir === 'in' ? () => y0 : filterPlace(sees);
+    filterUnhold();
+    filterNoAnchor();
+    redraw();
+    filterHold(keep(), y0);
+  }, null, { to: {}, pair: 'filter', dir, was, sees,
+    reshape: true, cap: mxOrientCap(), items: !list ? null : state.scope === 'agenda' ? '.ag-row' : '.card[data-sid]', collapse: list, appear: list ? 'fold' : 'fade', aux: !list,
+    marks: list && state.scope === 'program' ? '.block-time, .block > .cards, .day-head' : null });
+}
+// The reader's place, for a page scrolled into the program, as sessions are hidden: the first
+// session in sight (the highest, then the leftmost, under the toolbar) that the change leaves
+// shown stays where it is on the screen, and the rest close up under it (a calendar is drawn
+// anew, and its lanes hidden above would otherwise take the page's place with them). Not as
+// sessions come in: the page keeps its scroll, and they show where they belong, what is under
+// them making room (the browser's own keeping of a list's place could hold on to whatever is
+// under the program, with no session shown its foot, and take the page down past all that
+// comes in above it). Returns the function that gives the page's new scroll (or null: as it
+// is), once the new view is drawn.
+function filterPlace(sees){
+  if (window.scrollY <= programTop() + 1) return () => null;
+  const bar = tbEdge(), vh = innerHeight, vw = innerWidth, main = document.getElementById('main');
+  let best = null;
+  const take = el => {
+    const sid = el.dataset.sid || el.dataset.weekSid;
+    if (!sid || !sees.has(sid)) return;
+    const r = el.getBoundingClientRect();
+    if (r.height < 2 || r.top < bar || r.top >= vh || r.right <= 0 || r.left >= vw) return;
+    const sc = el.closest(MX_SCROLL);
+    if (sc){ const c = sc.getBoundingClientRect(); if (r.right <= c.left + 8 || r.left >= c.right - 8) return; }
+    if (!best || r.top < best.top - 1 || (Math.abs(r.top - best.top) <= 1 && r.left < best.left)) best = { el, top: r.top, left: r.left, sid, tid: el.dataset.tid || '' };
+  };
+  // (a list's time blocks first, so that only those in sight are looked into)
+  for (const b of main.querySelectorAll('#agenda > .block:not(.hidden), #agenda > .day-section:not(.hidden) .block:not(.hidden), #builderList .ag-row')){
+    const r = b.getBoundingClientRect();
+    if (r.bottom <= bar || r.top >= vh) continue;
+    if (b.matches('.ag-row')) take(b); else for (const c of b.querySelectorAll('.card[data-sid]:not(.hidden)')) take(c);
+    if (best) break;
+  }
+  if (!best) for (const el of main.querySelectorAll('#agenda :is(.hz-bar, .hz-talk, .vt-card, .week-blk:not(.week-off))')) take(el);
+  if (!best) return () => null;
+  return () => {
+    const sel = best.tid ? `[data-tid="${CSS.escape(best.tid)}"]` : `[data-sid="${CSS.escape(best.sid)}"]:not([data-tid]), [data-week-sid="${CSS.escape(best.sid)}"]`;
+    const el = best.el.isConnected && best.el.getClientRects().length ? best.el : [...main.querySelectorAll(sel)].find(x => x.matches(MX_ITEM) && x.getClientRects().length);
+    return el ? Math.round(window.scrollY + el.getBoundingClientRect().top - best.top) : null;
+  };
+}
+// The page's scroll after the change: `y` (the place kept, or null: as it is), but with the
+// toolbar stuck at the top before, never so far up that it comes down off it, the open
+// Streams panel with it (the sessions move up instead). While the panel is open, a program
+// too short for that now (a stream or two, or none) is held tall enough, its foot empty,
+// until the panel closes (filterUnhold).
+let filterHeld = false;
+const tbStuckAt = () => Math.ceil(programTop() + (parseFloat(getComputedStyle(stickyWrap).marginTop) || 0));
+function filterHold(y, y0){
+  const floor = tbStuckAt();
+  if (y === null) y = window.scrollY;
+  if (y0 >= floor - 1){
+    y = Math.max(y, floor);
+    const max = document.documentElement.scrollHeight - innerHeight;
+    if (!filterPanel.hidden && max < y - 1){
+      const main = document.getElementById('main');
+      main.style.minHeight = Math.ceil(main.getBoundingClientRect().height + y - max) + 'px';
+      filterHeld = true;
+    }
+  }
+  if (Math.abs(window.scrollY - y) > 1){
+    window.scrollTo({ top: y, behavior: 'instant' });
+    // (the page's own scroll: the toolbar stays as it is)
+    TB.input = -1e9; TB.last = window.scrollY;
+  }
+}
+// (the browser's own keeping of the place is off meanwhile, until two frames on: it would
+// otherwise move the page again, after this, on the next frame)
+let filterNA = 0;
+function filterNoAnchor(){
+  const st = document.documentElement.style, n = ++filterNA;
+  st.overflowAnchor = 'none';
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (n === filterNA) st.overflowAnchor = ''; }));
+}
+function filterUnhold(){
+  if (!filterHeld) return;
+  filterHeld = false;
+  document.getElementById('main').style.minHeight = '';
+}
+// (the ids of the sessions the view's streams, group and search leave shown, on any day; in
+// My agenda, of its saved items)
+function filterSees(){
+  if (state.scope === 'agenda') return new Set(agendaSaved().filter(agendaMatch).map(it => it.s.id));
+  const out = new Set();
+  for (const d of DATA.days) for (const s of d.slots) if (slotMatches(s)) out.add(s.id);
+  return out;
+}
 // A click toggles one stream; "only" or a double-click shows just that stream.
 // An empty selection stays empty (the page says so and offers Select all).
-function soloStream(k){ setViewCats(new Set([k])); renderChips(); refresh(); }
+function soloStream(k){ filterGo(() => setViewCats(new Set([k]))); }
 document.getElementById('chips').addEventListener('click', e => {
   const only = e.target.closest('[data-only]');
   if (only){ soloStream(only.dataset.only); return; }
   const b = e.target.closest('.chip'); if (!b) return;
-  const k = b.dataset.cat, cats = viewCats();
-  if (cats.has(k)) cats.delete(k); else cats.add(k);
-  renderChips(); refresh();
+  const k = b.dataset.cat;
+  filterGo(() => { const cats = viewCats(); if (cats.has(k)) cats.delete(k); else cats.add(k); });
 });
 document.getElementById('chips').addEventListener('dblclick', e => {
   const b = e.target.closest('.chip');
   if (b) soloStream(b.dataset.cat);
 });
-function selectAllStreams(){ setViewCats(new Set(Object.keys(DATA.cats))); renderChips(); refresh(); }
+function selectAllStreams(){ filterGo(() => setViewCats(new Set(Object.keys(DATA.cats)))); }
 document.addEventListener('click', e => {
   if (e.target.closest('[data-select-all-streams]')) selectAllStreams();
 });
@@ -5152,8 +5264,7 @@ document.getElementById('agenda').addEventListener('click', e => {
   }
   const badge = e.target.closest('.badge[data-grp]');
   if (badge){
-    state.group = state.group === badge.dataset.grp ? null : badge.dataset.grp;
-    renderChips(); refresh();
+    filterGo(() => { state.group = state.group === badge.dataset.grp ? null : badge.dataset.grp; });
     return;
   }
   const s = e.target.closest('[data-sstar]');
@@ -5179,7 +5290,7 @@ document.getElementById('agenda').addEventListener('click', e => {
 });
 
 document.getElementById('grpclr').addEventListener('click', () => {
-  state.group = null; renderChips(); refresh();
+  filterGo(() => { state.group = null; });
 });
 
 const qEl = document.getElementById('q');
@@ -12487,6 +12598,7 @@ function setFilterOpen(open){
   if (open) tbCompact(false);
   filterPanel.hidden = !open;
   filterBtn.setAttribute('aria-expanded', open);
+  if (!open) filterUnhold();
   // Opened from the top of the page on a phone, the menu would hang below the screen.
   if (open && filterPanel.getBoundingClientRect().bottom > window.innerHeight)
     window.scrollTo({ top: programTop(), behavior: 'instant' });
@@ -12498,14 +12610,14 @@ document.addEventListener('click', e => {
 });
 document.getElementById('filterAll').addEventListener('click', selectAllStreams);
 document.getElementById('filterNone').addEventListener('click', () => {
-  setViewCats(new Set());
-  renderChips(); refresh();
+  filterGo(() => setViewCats(new Set()));
 });
 function resetFilters(){
-  if (state.scope !== 'agenda') state.group = null;
-  setViewCats(new Set(Object.keys(DATA.cats)));
-  clearSearch();
-  rerender();
+  filterGo(() => {
+    if (state.scope !== 'agenda') state.group = null;
+    setViewCats(new Set(Object.keys(DATA.cats)));
+    clearSearch();
+  }, rerender);
 }
 document.getElementById('filterReset').addEventListener('click', () => { resetFilters(); toast('Filters reset'); });
 // the empty program's way out: the button goes with the note, so the focus moves to the search box
