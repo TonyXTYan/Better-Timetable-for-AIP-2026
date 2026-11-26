@@ -6553,8 +6553,8 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // further): up to a screen and a half away. With `only` (a set of keys): those items
 // alone, looked up by their ids, and no grid marks or covers; with `any` as well, each
 // wherever it is, even scrolled out of its box or off the screen (and with `sel`, only
-// those matching it).
-function mxScan(aux, keep, only, any, sel){
+// those matching it); with `cov`, the covers too.
+function mxScan(aux, keep, only, any, sel, cov){
   const vw = innerWidth, vh = innerHeight, mn = Math.max(240, vh * .5), mf = vh * 1.5;
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
@@ -6595,7 +6595,9 @@ function mxScan(aux, keep, only, any, sel){
     if (r.width < 2 || r.height < 2) return;
     if (!any && (r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2)) return;
     const c = box(el, kind);
-    if (c && !any && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
+    // (scrolled out of its box; but with `cov` (opts.either), one of `keep` slides in or out
+    // across its box's edge, clipped by it)
+    if (c && !any && !(cov && keep && keep.has(key)) && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;
     const was = items.get(key);
     if (was && was.r.width * was.r.height >= r.width * r.height) return;
     const ps = kind === 'item' && !el.dataset.inSid && el.parentElement.closest('[data-sid]');
@@ -6603,17 +6605,17 @@ function mxScan(aux, keep, only, any, sel){
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
-  if (only){
-    for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
-      if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
-    return items;
-  }
   const nth = new Map();
-  for (const el of main.querySelectorAll(MX_COVER)){
+  if (!only || cov) for (const el of main.querySelectorAll(MX_COVER)){
     const cls = el.classList[0], i = nth.get(cls) || 0;
     nth.set(cls, i + 1);
     const lane = cls === 'hz-label' && el.parentElement.getAttribute('aria-label');
     add(el, 'c-' + cls + '-' + (lane || i), 'cover');
+  }
+  if (only){
+    for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
+      if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
+    return items;
   }
   if (aux) for (const el of main.querySelectorAll(MX_GRID)) add(el, 'g-' + el.classList[0] + '-' + el.dataset.m, 'grid');
   for (const el of main.querySelectorAll(MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, 'item');
@@ -6630,8 +6632,11 @@ function mxMany(){
 function mxBegin(kind, from, opts){
   mxClear();
   // (opts.only, a list of keys: those items alone are named, the first before the rest,
-  // and with opts.lite the first only; looked up by id, so a long page costs no more)
-  const only = opts.only ? new Set((opts.lite ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && [...only][0];
+  // and with opts.lite the first only; looked up by id, so a long page costs no more.
+  // With opts.either, the keys of items either view may show (Full program <-> My
+  // agenda's saved items): none goes first, each is looked for in the new view too, not
+  // only those the old one showed, and opts.lite names the nearer half)
+  const only = opts.only ? new Set((opts.lite && !opts.either ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && !opts.either && [...only][0];
   mxStat = {};
   if (opts.plain || (!only && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
@@ -6641,7 +6646,9 @@ function mxBegin(kind, from, opts){
     old.set(fromKey, { key: fromKey, el: from, r: from.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
   }
   if (!pop){
-    let seen = [...mxScan(kind === 'mx' || opts.aux, null, only).values()];
+    // (opts.either: the items up to a screen and a half away, as in the new view, and the
+    // covers, which they move under, as Horizontal <-> Vertical's do)
+    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either).values()];
     // A change that starts at one place (opts.near: a card opening or closing, the page
     // kept still around it): what is above it stays put and needs no name; the rest are
     // named nearest first, and fewer of them (the others go with the page).
@@ -6670,7 +6677,7 @@ function mxBegin(kind, from, opts){
     // (opts.only: a named item is drawn above the whole page, so one partly under a
     // calendar's stuck heads would cover them while it moves; but for the first, those
     // are left to the page, at either end)
-    if (only){
+    if (only && !opts.either){
       const under = mxUnderHeads();
       seen = seen.filter(it => it.key === first || !under(it.r)).sort((a, b) => (b.key === first) - (a.key === first) || a.d - b.d);
     }
@@ -6693,7 +6700,8 @@ function mxBegin(kind, from, opts){
     // sessions in sight)
     // (opts.cap: a change's own budget, as Horizontal <-> Vertical's, mxOrientCap)
     let cap = opts.cap || (y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75);
-    if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
+    if (only && opts.either) cap = Math.min(opts.cap || mxCap(), seen.length - (opts.lite ? Math.floor(seen.filter(it => it.kind === 'item').length / 2) : 0));
+    else if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
     else if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
     mxStat = { seen: seen.length, cap: Math.round(cap), vis0: seen.filter(it => it.kind === 'item' && it.d === 0).length };
     for (const it of seen){
@@ -6834,11 +6842,14 @@ function mxBegin(kind, from, opts){
         }
         mxShow(sight);
       }
-      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && new Set(old.keys()));
+      // (opts.either: every key up to a screen and a half away, as in the old view, not only
+      // the old view's: a saved talk on its own there moves into its session here, which
+      // the old view did not show)
+      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either);
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const names = [], heads = [];
-      if (only){
+      if (only && !opts.either){
         const under = mxUnderHeads();
         for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
       }
@@ -6872,9 +6883,19 @@ function mxBegin(kind, from, opts){
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
       let count = old.size;
-      const lim = (opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);   // (room for the talks that unfold)
+      const lim = (opts.either && opts.cap ? opts.cap : opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);   // (room for the talks that unfold)
+      // (opts.either: a session the new view shows only as the one saved talk in it, or a
+      // saved talk on its own that the new view shows only as its session, moves into that
+      // talk or session, as one item: Full program at Sessions <-> My agenda)
+      const lone = it => it.kind === 'item' && !!it.el.dataset.inSid;
+      const standIn = (key, o) => {
+        if (!opts.either || o.kind !== 'item') return null;
+        const ns = key.startsWith('s-') ? [...now.values()].filter(n => n.p === key && lone(n) && !old.has(n.key))
+          : lone(o) && !old.has(o.p) && now.has(o.p) && [...old.values()].filter(x => x.p === o.p && lone(x)).length === 1 ? [now.get(o.p)] : [];
+        return ns.length === 1 && !named.has(ns[0].el) ? ns[0] : null;
+      };
       for (const [key, o] of old){
-        const n = now.get(key);
+        const n = now.get(key) || standIn(key, o);
         if (n && !named.has(n.el)){ named.add(n.el); cand.push({ key, o, n }); }
         else if (o.p && old.has(o.p) && now.has(o.p)) plan.fold.push({ key, o, po: old.get(o.p), pn: now.get(o.p) });
         else plan.fade.push({ key, o });
@@ -7325,21 +7346,29 @@ function txWatch(vt, t, done){
 // TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
 // those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
 // takes no snapshot, as List <-> Calendar's.
+// Full program <-> My agenda in the calendar ('scope') is held to the same rules: its
+// saved items move on the compositor whatever the two views cost to draw (TX_OWN).
 const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
 // (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
-const TX_PAIR_NOSNAP = new Set(['layout', 'orient']);
+const TX_PAIR_NOSNAP = new Set(['layout', 'orient', 'scope']);
 // Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
 const TX_ORI_DOWN = [400, 250];
+// (the pairs held to that budget, each with its own record: Horizontal <-> Vertical, and
+// Full program <-> My agenda in the calendar)
+const TX_OWN = new Set(['orient', 'scope']);
 // (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
 // with a screen of talks can still go without the morph; its items move on the
 // compositor, so what a slow device pays is the wait before they move, not the motion)
-const txPairFloor = p => p.pair === 'orient' ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
+const txPairFloor = p => TX_OWN.has(p.pair) ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
-// (and Horizontal <-> Vertical the orientation itself: by the view and its level)
+// (and Horizontal <-> Vertical the orientation itself: by the view and its level; Full
+// program <-> My agenda the view itself: by the calendar it shows, a day or the week, in
+// its orientation)
 const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks]
   : o.pair === 'orient' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', !!state.programTalks && state.day !== 'all']
+  : o.pair === 'scope' ? [o.pair, state.day === 'all' ? 'all' : 'day', state.orient]
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
@@ -7358,7 +7387,7 @@ function txPairLevel(o, p){
   if (p.level !== null) return p.level;
   // (Horizontal <-> Vertical redraws as much either way, morph or not: only what the
   // morph adds counts, as it is measured)
-  if (o.pair === 'orient'){ p.why = ''; return p.level = 2; }
+  if (TX_OWN.has(o.pair)){ p.why = ''; return p.level = 2; }
   const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
   p.why = 'redraw ' + Math.round(cost) + 'ms expected';
   return p.level = Math.max(TX_PAIR_FLOOR[p.pair] || 0, cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2);
@@ -7369,14 +7398,14 @@ function txPairNote(p, lv, freeze, jank){
   // (Horizontal <-> Vertical: its own budget, TX_ORI_DOWN, and a step down only when a
   // change was slow twice running (or once, at twice that), so one hiccup (a busy moment
   // of the device's, a slow frame of some other work) costs it nothing)
-  if (p.pair === 'orient'){
+  if (TX_OWN.has(p.pair)){
     const bad = freeze > TX_ORI_DOWN[0] || jank > TX_ORI_DOWN[1];
     p.bad = bad ? (p.bad || 0) + 1 : 0;
     down = p.bad >= 2 || freeze > 2 * TX_ORI_DOWN[0] || jank > 2 * TX_ORI_DOWN[1];
     if (down) p.bad = 0;
   }
   // (smooth: within TX_FREEZE and TX_JANK; Horizontal <-> Vertical, within half its own)
-  const smooth = p.pair === 'orient' ? freeze < TX_ORI_DOWN[0] / 2 && jank <= TX_ORI_DOWN[1] / 2 : freeze < TX_FREEZE && jank <= TX_JANK;
+  const smooth = TX_OWN.has(p.pair) ? freeze < TX_ORI_DOWN[0] / 2 && jank <= TX_ORI_DOWN[1] / 2 : freeze < TX_FREEZE && jank <= TX_JANK;
   p.ok = !down && smooth ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
@@ -10121,35 +10150,129 @@ function layMeasureAbove(el){
   const hs = above.map(cihOf);
   above.forEach((b, i) => { b.style.contentVisibility = ''; if (hs[i] > 0) b.style.setProperty('--cih', hs[i] + 'px'); });
 }
-const calendarPositions = new Map();
 document.getElementById('scheduleScope').addEventListener('click', e => {
   const button = e.target.closest('[data-scope]');
   if (!button || button.dataset.scope === state.scope) return;
-  const kind = SCOPE_ORDER.indexOf(button.dataset.scope) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
-  const txo = { to: { scope: button.dataset.scope }, press: button };
-  withTransition(kind, () => {
-  if (button.dataset.scope === 'agenda') agendaLandOnSaved();
-  if (button.dataset.scope === 'participants' || state.scope === 'participants'){
-    showView(state.layout, button.dataset.scope);
-    if (window.scrollY > programTop()) scrollToProgramTop();
-    return;
-  }
-  if (state.layout === 'list'){
-    showView('list', button.dataset.scope);
-    // scrolled deep into the other view: start this one at its top, under the toolbar
-    if (window.scrollY > programTop()) scrollToProgramTop();
-    return;
-  }
-  const previous = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
-  const left = previous?.scrollLeft || 0;
-  if (previous) calendarPositions.set(state.scope + ':' + state.day, previous.scrollTop);
-  showView(state.layout, button.dataset.scope);
-  const next = document.querySelector('#agenda .week-scroll, #agenda .cal-scroll');
-  next?.scrollTo({left, top:calendarPositions.get(state.scope + ':' + state.day) || 0, behavior:'instant'});
-  // the page's own scroll belonged to the other calendar: start this one at its top
+  const to = button.dataset.scope;
+  const kind = SCOPE_ORDER.indexOf(to) > SCOPE_ORDER.indexOf(state.scope) ? 'fwd' : 'back';
+  // Full program <-> My agenda in the calendar: one pair, both ways alike (txGuards), whose
+  // saved items move between their places in the two views (scopeKeys), each free to
+  // change shape (reshape: My agenda draws a day to its own extent), the rest of either
+  // view fading; the reader's place is kept (scopeGo)
+  const cal = state.layout === 'calendar' && to !== 'participants' && state.scope !== 'participants';
+  withTransition(cal ? 'fade' : kind, () => {
+  if (cal){ scopeGo(to); return; }
+  if (to === 'agenda') agendaLandOnSaved();
+  showView(state.layout, to);
+  // scrolled deep into the other view: start this one at its top, under the toolbar
   if (window.scrollY > programTop()) scrollToProgramTop();
-  }, null, txo);
+  }, null, cal ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button }
+    : { to: { scope: to }, press: button });
 });
+// The keys of the saved items the calendar shows (the day's, or the week's): each saved
+// session, and each saved talk with its session (which the Full program shows in its
+// place, at Sessions; My agenda, with "Show full sessions"), for mxBegin to look up by id
+// in both views (opts.only, opts.either): the rest of the Full program is no part of the
+// change, and is not looked into.
+function scopeKeys(){
+  const keys = new Set();
+  for (const it of agendaSaved()){
+    if (state.day !== 'all' && it.di !== state.day) continue;
+    keys.add('s-' + it.s.id);
+    if (it.t) keys.add('t-' + it.t.id);
+  }
+  return [...keys];
+}
+// Full program <-> My agenda in the calendar, keeping the reader's place: a day at the
+// same time of day (Horizontal: the canvas's left minute; Vertical: the time row under
+// the stuck heads: orientPlace and orientKeep), All week at the same day and time
+// (weekPlace); a switch straight back, nothing scrolled or changed in between, back to
+// the very place it left (scopeLast), unless nothing showed there. A view that opens on
+// another day (My agenda with nothing saved on this one: agendaLandOnSaved), or shows no
+// calendar (nothing saved), starts at its top, as before.
+let scopeLast = null;
+function scopeGo(to){
+  const day = state.day, from = scopeMark(), L = scopeLast;
+  const same = L && L.to === state.scope && L.day === day && L.orient === state.orient && L.talks === state.programTalks && scopeSame(L.at, from);
+  const back = same && L.any ? L.from : null;
+  const keep = !back && dayViewShown() ? orientPlace() : null, wk = !back && state.day === 'all' ? weekPlace() : null;
+  if (to === 'agenda') agendaLandOnSaved();
+  const m = back ? back.m : keep && keep.m;
+  if (m !== null && m !== undefined && day !== 'all' && state.day === day && state.orient === 'h') HZ.left[(to === 'agenda' ? 'a:' : '') + DATA.days[day].date] = m;
+  showView(state.layout, to);
+  if (state.day !== day || !document.querySelector('#agenda :is(.hz-day, .vt-day, .week-ov)')){
+    if (window.scrollY > programTop()) scrollToProgramTop();
+    scopeLast = null;
+    return;
+  }
+  if (back) scopeReturn(back);
+  else if (keep) orientKeep(keep);
+  else if (wk) weekKeep(wk);
+  else if (window.scrollY > programTop()) scrollToProgramTop();
+  // (the page's own scroll: the tap on the switch is no scroll of the reader's, and the
+  // toolbar, with the switch in it, stays as it was)
+  TB.input = -1e9; TB.last = window.scrollY;
+  scopeLast = { to, day, orient: state.orient, talks: state.programTalks, any: scopeAny(), from, at: scopeMark() };
+}
+// (where a calendar is: orientMark's page scroll and canvas minute, and All week's
+// sideways scroll)
+function scopeMark(){
+  const sc = document.querySelector('#agenda .week-sc');
+  return { ...orientMark(), wl: sc ? sc.scrollLeft : null };
+}
+const scopeSame = (a, b) => orientSame(a, b) && Math.abs((a.wl || 0) - (b.wl || 0)) < 2;
+function scopeReturn(f){
+  orientReturn(f);
+  const sc = document.querySelector('#agenda .week-sc');
+  if (sc && f.wl !== null && Math.abs(sc.scrollLeft - f.wl) > 1){ sc.scrollLeft = f.wl; sc.onscroll?.(); sxEdges(sc.closest('.sx-box')); }
+}
+// (whether any item shows below the toolbar)
+function scopeAny(){
+  const bar = stickyWrap.getBoundingClientRect().bottom, vh = innerHeight;
+  for (const el of document.querySelectorAll('#agenda :is(.hz-bar, .vt-card, .week-blk:not(.week-off))')){
+    const r = el.getBoundingClientRect();
+    if (r.height && r.bottom > bar && r.top < vh) return true;
+  }
+  return false;
+}
+// All week: the day and the minute at the top left of what shows (Horizontal: the day's
+// row at the line under the stuck ruler, the minute at the left of its scroller, past the
+// day heads; Vertical: the day's column at the left, past the time axis, the minute at
+// the line under the stuck day heads), and where that day's row or column is on the
+// screen. weekKeep puts the same day and minute in the same place in the other week, as
+// far as it goes (the page's scroll only when it is scrolled into the week, and never so
+// far that the week ends above the bottom of the screen).
+function weekPlace(){
+  const ov = document.querySelector('#agenda .week-ov'), sc = ov && ov.querySelector('.week-sc');
+  if (!sc) return null;
+  const h = ov.classList.contains('week-h'), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, b = sc.getBoundingClientRect();
+  const y = Math.max(ov.querySelector('.week-rul').getBoundingClientRect().bottom, tbEdge()), lab = ov.querySelector(h ? '.week-dayh' : '.week-axis');
+  const x = b.left + (lab ? lab.getBoundingClientRect().width : 0);
+  let col = null;
+  for (const c of ov.querySelectorAll('.week-col')){
+    const r = (h ? c.closest('.week-row') : c).getBoundingClientRect();
+    col = c;
+    if (h ? r.bottom > y + 8 : r.right > x + 8) break;
+  }
+  if (!col) return null;
+  const r = col.getBoundingClientRect(), q = h ? (x - r.left) / (r.width || 1) : (y - r.top) / (r.height || 1);
+  return { di: col.dataset.day, m: t0 + Math.min(1, Math.max(0, q)) * (t1 - t0), at: h ? col.closest('.week-row').getBoundingClientRect().top : r.left, x, y, into: ov.getBoundingClientRect().top < y };
+}
+function weekKeep(k){
+  const ov = document.querySelector('#agenda .week-ov'), sc = ov && ov.querySelector('.week-sc'), col = ov && ov.querySelector(`.week-col[data-day="${k.di}"]`);
+  if (!sc || !col) return;
+  const h = ov.classList.contains('week-h'), t0 = +ov.dataset.t0, t1 = +ov.dataset.t1, q = Math.min(1, Math.max(0, (k.m - t0) / ((t1 - t0) || 1)));
+  // (sideways first: Horizontal, to the minute; Vertical, the day's column where it was)
+  let r = col.getBoundingClientRect();
+  const dx = h ? r.left + q * r.width - k.x : r.left - k.at;
+  if (Math.abs(dx) > 1){ sc.scrollLeft += dx; sc.onscroll?.(); sxEdges(sc.closest('.sx-box')); }
+  if (!k.into) return;
+  r = col.getBoundingClientRect();
+  let dy = h ? col.closest('.week-row').getBoundingClientRect().top - k.at : r.top + q * r.height - k.y;
+  const d = ov.getBoundingClientRect(), fill = d.bottom - (innerHeight - 16);
+  if (fill < dy) dy = Math.max(fill, Math.min(dy, d.top - tbEdge() - 8));
+  if (Math.abs(dy) > 1) window.scrollTo({ top: Math.max(0, Math.round(window.scrollY + dy)), behavior: 'instant' });
+}
 // All week shows sessions only: there Sessions shows pressed and Talks is greyed out
 // (aria-disabled, still focusable, with a tip and a description saying why, which a
 // press also shows), while the choice itself (programTalks, and talks=1 in the address)
@@ -10233,7 +10356,7 @@ function orientPlace(){
     for (const el of els){
       const r = el.getBoundingClientRect();
       if (r.height < 2 || r.bottom <= box.top + 4 || r.top >= vh - 8 || r.right <= box.left + 4 || r.left >= box.right - 4) continue;
-      all.push({ s: Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left), ok: place(el), it: { sid: el.dataset.sid || '', tid: el.dataset.tid || '' } });
+      all.push({ s: Math.max(0, r.top - box.top) * 4 + Math.abs(Math.max(r.left, box.left) - box.left), ok: place(el), it: { sid: el.dataset.sid || el.dataset.inSid || '', tid: el.dataset.tid || '' } });
     }
     return { seen: all.length, items: all.filter(a => a.ok).sort((a, b) => a.s - b.s).slice(0, 24).map(a => a.it) };
   };
@@ -10278,7 +10401,7 @@ function orientKeep(k){
     if (row){ const t = row.getBoundingClientRect().top; if (k.into || t > vh * .5) dy = t - top + 1; }
     let el = null;
     for (const it of k.items){
-      el = v.querySelector('.vt-card' + sel(it)) || v.querySelector('.vt-tk' + sel(it));
+      el = v.querySelector('.vt-card' + sel(it)) || v.querySelector('.vt-tk' + sel(it)) || (it.tid && it.sid && v.querySelector(`.vt-card[data-sid="${CSS.escape(it.sid)}"]:not([data-tid])`));
       if (el && !el.closest('.vt-card.band')) break;
       el = null;
     }
@@ -13363,6 +13486,10 @@ window.addEventListener('popstate', e => {
   if (toNav === fromNav){ settleTransition(); apply(); }
   else if (cal && a[1] !== b[1] && (a[1] === 'all') !== (b[1] === 'all')) withTransition(b[1] === 'all' ? 'dayout' : 'dayin', apply, null, txDayOpts(dayDay(b[1]), {}, dayDay(a[1])));
   else if (a[0] === b[0] && a[2] === 'list' && b[2] === 'list' && a[1] !== b[1] && (a[1] === 'all') !== (b[1] === 'all')) withTransition(b[1] === 'all' ? 'zoomout' : 'zoom', apply, null, { ...txListDayOpts(dayDay(b[1])), to: {} });
+  // (Full program <-> My agenda, the same calendar: the saved items move, as for a click,
+  // to the place the step kept)
+  else if (a[0] !== b[0] && !a.concat(b).includes('participants') && a[1] === b[1] && a[2] === 'calendar' && b[2] === 'calendar' && a[3] === b[3])
+    withTransition('fade', apply, null, { to: {}, pair: 'scope', dir: b[0] === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap() });
   // a new view or day slides in from the side Back or Forward points to
   else withTransition(a[0] !== b[0] || a[1] !== b[1] ? dir
     : a[4] !== b[4] && cal && state.day !== 'all' ? 'mx' : 'fade', apply, null,
