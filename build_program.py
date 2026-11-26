@@ -6950,6 +6950,26 @@ function layMarks(main){
   }
   return out;
 }
+// A session's talks whose times overlap, each in a lane of its own, by start (and their
+// order): talk -> [its lane, the lanes of the run of overlapping talks it is in]. Most
+// sessions' talks follow one another: one lane each.
+function layLanes(s){
+  if (!layLanes.m) layLanes.m = new WeakMap();
+  let m = layLanes.m.get(s);
+  if (m) return m;
+  m = new Map();
+  const ts = s.talks.map(t => ({ t, a: toMin(t.s), b: toMin(t.e) })).sort((p, q) => p.a - q.a);
+  let run = [], ends = [], hi = -1;
+  const close = () => { for (const [t, i] of run) m.set(t, [i, ends.length]); run = []; ends = []; };
+  for (const x of ts){
+    if (x.a >= hi) close();
+    let i = ends.findIndex(e => e <= x.a);
+    if (i < 0) i = ends.push(0) - 1;
+    ends[i] = x.b; hi = Math.max(hi, x.b); run.push([x.t, i]);
+  }
+  close();
+  return m;
+}
 // How far an item's time is from `at` (a day's date and a minute): its session's (or its
 // own, a talk's; a "+N" chip's first) start, the days between counting most.
 function layFar(at){
@@ -7190,14 +7210,20 @@ function mxBegin(kind, from, opts){
   // card or week block that its own times take, along the calendar's time axis (across in
   // Horizontal, down in Vertical); else (a list's card) it keeps its place inside it, as
   // map does. `r`, `key`: the talk's rect and key; `a` its session's item where the talk
-  // is, `b` the one it goes into.
+  // is, `b` the one it goes into. Talks whose times overlap (a poster session's, all at
+  // once) share their stretch's height, each its own band of it, top to bottom in their
+  // order: as the list stacks them, so none moves over another (layLanes).
   const into = (r, key, a, b) => {
     const x = lay && b.el.closest('.hz-day, .vt-day, .week-ov') ? talkById(key.slice(2)) : null;
     if (!x) return map(r, a.r, b.r);
     const s0 = toMin(x.s.start), d = Math.max(1, toMin(x.s.end) - s0), q = b.r;
     const f0 = Math.min(1, Math.max(0, (toMin(x.t.s) - s0) / d)), f1 = Math.min(1, Math.max(f0, (toMin(x.t.e) - s0) / d));
-    return b.el.closest('.hz-day, .week-h') ? R(q.left + f0 * q.width, q.top, Math.max(2, (f1 - f0) * q.width), q.height)
+    const z = b.el.closest('.hz-day, .week-h') ? R(q.left + f0 * q.width, q.top, Math.max(2, (f1 - f0) * q.width), q.height)
       : R(q.left, q.top + f0 * q.height, q.width, Math.max(2, (f1 - f0) * q.height));
+    const [i, n] = layLanes(x.s).get(x.t) || [0, 1];
+    if (n < 2) return z;
+    const h = Math.max(1, z.height / n);
+    return R(z.left, z.top + (z.height - h) * i / (n - 1), z.width, h);
   };
   return {
     after(target, rect){
