@@ -2673,7 +2673,10 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-optset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 16px}
 .bd-opt-s{display:none}
 .bd-opts input,.bd-check input{accent-color:var(--accent)}
-.bd-body{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:16px 20px 20px}
+/* (sideways hidden: a slot coming in from the side never makes it scroll that way) */
+.bd-body{flex:1 1 auto;overflow:hidden auto;overscroll-behavior:contain;padding:16px 20px 20px}
+/* the slot just left, over the body while it moves away (bdMovePrep) */
+.bd-ghost{position:absolute;flex:none;margin:0;overflow:hidden;pointer-events:none}
 .bd-slot-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin:0 0 12px}
 .bd-slot-head h3{margin:0;font-size:1.125rem;font-weight:700}
 .bd-slot-t{font-stretch:var(--stretch-cond);font-variant-numeric:tabular-nums;margin-left:.35em}
@@ -11209,7 +11212,7 @@ const buildDialog = document.getElementById('buildDialog');
 const ADMIN_CATS = new Set(['social', 'business']);
 const isAdminSession = s => ADMIN_CATS.has(s.cat);
 const bdEl = id => document.getElementById(id);
-const bd = { slots: [], i: 0, done: false, admin: false, expand: false, folds: new Map(), cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null };
+const bd = { slots: [], i: 0, done: false, admin: false, expand: false, folds: new Map(), cats: new Set(), before: null, changed: false, nav: false, trigger: null, lastKey: null, press: null };
 try { bd.admin = sessionStorage.getItem('aip2026-build-admin') === '1'; } catch (e) {}
 try { bd.expand = sessionStorage.getItem('aip2026-build-expand') === '1'; } catch (e) {}
 try { (sessionStorage.getItem('aip2026-build-cats') || '').split(',').filter(k => k in DATA.cats).forEach(k => bd.cats.add(k)); } catch (e) {}
@@ -11485,7 +11488,7 @@ function bdPaintChecks(){
 bdEl('bdBody').addEventListener('click', e => {
   const k = e.target.closest('#bdCxKey');
   if (!k || k.dataset.next === '') return;
-  bdGo(+k.dataset.next);
+  bdGo(+k.dataset.next, 'nav');
   bdEl('bdCxKey').focus();
 });
 
@@ -11546,20 +11549,127 @@ function bdPaintScale(){
   bdEl('bdKbd').hidden = bd.done;
   bdEl('bdSkipDay').textContent = bd.slots.slice(bd.i + 1).some(sl => sl.di !== slot.di) ? 'Skip day' : 'Skip to end';
 }
-function bdGo(i){
+// Changing slot: the slot's heading and cards come in from the side travelled to while the
+// old ones leave the other way; the dialog's own parts (title, slider, chips, buttons) stay
+// still. Web Animations on the body's children, transform and opacity only, with the old
+// content moved into a ghost laid over the body (a page view transition would draw over
+// the whole top layer, the dialog with it). As in the calendar's day slide, the old content
+// has all but faded (a sixth of its fade left, at a tenth of its strength) before the new
+// starts to show, so two headings never show over each other and the body is not left blank. A step is
+// 32px over the long duration with the emphasised ease (the ghost leaves on the standard
+// one); a jump of more than one slot (Skip day, a day label, a click on the track, Home,
+// End) 64px and a quarter longer. A change soon after the last (an arrow key held, fast
+// clicks) and every change while the slider's thumb is dragged only fade the new slot in
+// from half way, quickly and with no ghost, so nothing queues and the content keeps up
+// with the thumb; letting go settles it with a short nudge. Each change cancels the last
+// one's motion, the ghost leaving from where the content had got to. A change of streams
+// or of breaks shown fades in. Nothing moves with reduced motion.
+const BD_STEP = 32, BD_JUMP = 64;
+let bdMove = null;   // the change in motion: { anims, ghost, t, dir }
+function bdMoveEnd(){
+  const m = bdMove;
+  if (!m) return;
+  bdMove = null;
+  for (const a of m.anims) a.cancel();
+  m.ghost?.remove();
+}
+// Before the body is redrawn: the old content goes into a ghost (not yet placed), and the
+// returned function, called once the new content is in, starts the motion.
+function bdMovePrep(how, dir, far){
+  const body = bdEl('bdBody'), prev = bdMove, k = motionK(), now = performance.now();
+  if (!how || motionReduced() || !buildDialog.open || !body.animate || !body.firstElementChild){ bdMoveEnd(); return null; }
+  const quick = how === 'drag' || how === 'fade' || (!!prev && now - prev.t < MO_S * k);
+  // where the shown content had got to, for the ghost to leave from
+  let from = null;
+  if (prev && !quick){
+    const cs = getComputedStyle(body.firstElementChild);
+    from = { transform: cs.transform, opacity: +cs.opacity };
+  }
+  bdMoveEnd();
+  let ghost = null, top = 0;
+  if (!quick){
+    top = body.scrollTop;
+    ghost = document.createElement('div');
+    ghost.className = 'bd-body bd-ghost';
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.inert = true;
+    // placed exactly over the body's content (unrounded, against the dialog's padding box,
+    // allowing for the dialog being scaled while it opens) and as wide as the body less its
+    // scrollbar: the ghost has none, so the old content keeps its width and does not re-wrap
+    const par = body.offsetParent, br = body.getBoundingClientRect(), pr = par.getBoundingClientRect();
+    const s = pr.width / par.offsetWidth || 1;
+    Object.assign(ghost.style, {
+      top: (br.top - pr.top) / s - par.clientTop + par.scrollTop + 'px',
+      left: (br.left - pr.left) / s - par.clientLeft + par.scrollLeft + 'px',
+      width: br.width / s - (body.offsetWidth - body.clientWidth) + 'px',
+      height: br.height / s + 'px' });
+    ghost.append(...body.childNodes);
+    ghost.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  }
+  return () => {
+    const kids = [...body.children], anims = [];
+    if (!kids.length){ ghost = null; return; }
+    let end;
+    if (quick){
+      // a fade from half way (from a quarter for a change of streams); a held key or a
+      // fast click also nudges it 10px the way travelled
+      const nudge = how === 'drag' || how === 'fade' ? 0 : 10 * dir;
+      const kf = [{ opacity: how === 'fade' ? .25 : .5, transform: `translateX(${nudge}px)` }, { opacity: 1, transform: 'none' }];
+      const opt = { duration: MO_S * k * (how === 'drag' ? .75 : 1), easing: EASE };
+      for (const el of kids) anims.push(el.animate(kf, opt));
+      end = anims[0];
+    } else {
+      const d = (far ? BD_JUMP : BD_STEP) * dir, ms = MO_L * k * (far ? 1.25 : 1);
+      body.after(ghost);
+      ghost.scrollTop = top;
+      anims.push(ghost.animate([{ transform: from?.transform || 'none' }, { transform: `translateX(${-d}px)` }], { duration: ms, easing: EASE, fill: 'forwards' }),
+        ghost.animate([{ opacity: from ? from.opacity : 1 }, { opacity: 0 }], { duration: MO_S / 2 * k, easing: EASE, fill: 'forwards' }));
+      for (const el of kids){
+        const a = el.animate([{ transform: `translateX(${d}px)` }, { transform: 'none' }], { duration: ms, easing: EASE_EM });
+        anims.push(a, el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, delay: MO_S / 3 * k, easing: EASE, fill: 'backwards' }));
+        end = end || a;
+      }
+    }
+    const m = bdMove = { anims, ghost, t: now, dir };
+    end.finished.then(() => { if (bdMove === m) bdMoveEnd(); }, () => {});
+  };
+}
+// Letting go of the slider after a drag: the slot just reached settles with a short nudge
+// (only while the drag's last change is still fading in).
+function bdSettle(){
+  const m = bdMove, body = bdEl('bdBody'), k = motionK();
+  if (!m || m.ghost || performance.now() - m.t > MO_S * k || motionReduced()) return;
+  const kids = [...body.children];
+  if (!kids.length) return;
+  const op = +getComputedStyle(kids[0]).opacity;
+  bdMoveEnd();
+  const kf = [{ opacity: op, transform: `translateX(${8 * m.dir}px)` }, { opacity: 1, transform: 'none' }];
+  const anims = kids.map(el => el.animate(kf, { duration: MO_S * k, easing: EASE_EM }));
+  const s = bdMove = { anims, ghost: null, t: m.t, dir: m.dir };
+  anims[0].finished.then(() => { if (bdMove === s) bdMoveEnd(); }, () => {});
+}
+// how: undefined (at once), 'nav' (a step or a jump, by distance), 'drag' or 'fade'
+function bdGo(i, how){
+  const at = bd.done ? bd.slots.length : bd.i;
+  i = Math.max(0, Math.min(bd.slots.length - 1, i));
+  if (how === 'nav' && i === at) how = 'fade';
+  const start = bdMovePrep(how, i < at ? -1 : 1, Math.abs(i - at) > 1);
   bd.done = false;
-  bd.i = Math.max(0, Math.min(bd.slots.length - 1, i));
+  bd.i = i;
   bd.lastKey = bd.slots[bd.i].key;
   try { sessionStorage.setItem('aip2026-build-pos', bd.lastKey); } catch (e) {}
   bdPaintScale();
   bdRenderSlot();
   bdPaintChecks();
+  start?.();
 }
-function bdFinish(){
+function bdFinish(how){
+  const start = bdMovePrep(how, 1, bd.slots.length - bd.i > 1);
   bd.done = true;
   bdPaintScale();
   bdRenderSlot();
   bdPaintChecks();
+  start?.();
   bdEl('bdDoneTitle').focus({ preventScroll: true });
 }
 function openBuild(trigger, fromHistory){
@@ -11568,6 +11678,7 @@ function openBuild(trigger, fromHistory){
   bd.changed = false;
   bd.nav = false;
   bd.done = false;
+  bd.press = null;
   bdEl('bdAdmin').checked = bd.admin;
   bdEl('bdExpand').checked = bd.expand;
   bd.folds.clear();
@@ -11594,15 +11705,32 @@ function bdAnnounce(){
   bdEl('bdLive').textContent = bd.done || document.activeElement === range ? '' : range.getAttribute('aria-valuetext');
 }
 
-bdEl('bdRange').addEventListener('input', e => bdGo(+e.target.value));
-bdEl('bdBack').addEventListener('click', () => { bd.done ? bdGo(bd.i) : bdGo(bd.i - 1); bdKeepFocus(); bdAnnounce(); });
+// A press on the slider: on the thumb it drags (each slot passed fades in quickly); on the
+// track the thumb jumps there first, moving as a jump does. Letting go after a drag settles.
+bdEl('bdRange').addEventListener('pointerdown', e => {
+  const r = e.currentTarget, box = r.getBoundingClientRect(), th = parseFloat(getComputedStyle(r).getPropertyValue('--thumb')) || 14;
+  const x = box.left + th / 2 + (box.width - th) * bdFrac(bd.i);
+  bd.press = { jump: Math.abs(e.clientX - x) > th / 2 + (e.pointerType === 'mouse' ? 3 : 12), n: 0, dragged: false };
+});
+bdEl('bdRange').addEventListener('keydown', () => { bd.press = null; });   // (a press that never ended)
+for (const t of ['pointerup', 'pointercancel']) document.addEventListener(t, () => {
+  const p = bd.press;
+  bd.press = null;
+  if (p && p.dragged) bdSettle();
+}, true);
+bdEl('bdRange').addEventListener('input', e => {
+  const p = bd.press, how = !p || (p.jump && !p.n) ? 'nav' : 'drag';
+  if (p){ p.n++; p.dragged ||= how === 'drag'; }
+  bdGo(+e.target.value, how);
+});
+bdEl('bdBack').addEventListener('click', () => { bdGo(bd.done ? bd.i : bd.i - 1, 'nav'); bdKeepFocus(); bdAnnounce(); });
 bdEl('bdNext').addEventListener('click', () => {
-  if (bd.i >= bd.slots.length - 1) bdFinish(); else { bdGo(bd.i + 1); bdKeepFocus(); }
+  if (bd.i >= bd.slots.length - 1) bdFinish('nav'); else { bdGo(bd.i + 1, 'nav'); bdKeepFocus(); }
   bdAnnounce();
 });
 bdEl('bdSkipDay').addEventListener('click', () => {
   const next = bd.slots.findIndex((sl, k) => k > bd.i && sl.di !== bd.slots[bd.i].di);
-  if (next < 0) bdFinish(); else { bdGo(next); bdKeepFocus(); }
+  if (next < 0) bdFinish('nav'); else { bdGo(next, 'nav'); bdKeepFocus(); }
   bdAnnounce();
 });
 // Left and Right step back and on, as Back and Next do (at the first slot Left does
@@ -11624,7 +11752,7 @@ document.addEventListener('keydown', e => {
 });
 bdEl('bdDays').addEventListener('click', e => {
   const b = e.target.closest('[data-bd-go]');
-  if (b){ bdGo(+b.dataset.bdGo); bdEl('bdRange').focus(); }
+  if (b){ bdGo(+b.dataset.bdGo, 'nav'); bdEl('bdRange').focus(); }
 });
 // After the slots shown change (breaks, streams): stay at the same time of the week.
 function bdReslot(){
@@ -11632,7 +11760,7 @@ function bdReslot(){
   bd.slots = bdVisibleSlots();
   bdLayoutScale();
   if (bd.done){ bd.i = bdIndexFor(key); bdPaintScale(); bdPaintChecks(); }
-  else bdGo(bdIndexFor(key));
+  else bdGo(bdIndexFor(key), 'fade');
 }
 // Expand all talks: every session's talks unfold here and in each slot after; a session
 // folded by hand stays folded until the box changes again (or the dialog closes).
@@ -11680,7 +11808,7 @@ bdEl('bdBody').addEventListener('click', e => {
     bdFold(document.getElementById(tog.getAttribute('aria-controls')), open);
     return;
   }
-  if (e.target.closest('[data-bd-restart]')){ bdGo(0); bdEl('bdRange').focus(); return; }
+  if (e.target.closest('[data-bd-restart]')){ bdGo(0, 'nav'); bdEl('bdRange').focus(); return; }
   if (!e.target.closest('[data-bd-view]')) return;
   bd.nav = true;
   dlgNow(buildDialog);
@@ -11692,6 +11820,7 @@ bdEl('bdBody').addEventListener('click', e => {
 bdEl('bdClose').addEventListener('click', () => buildDialog.close());
 lightDismiss(buildDialog, () => buildDialog.close());
 buildDialog.addEventListener('close', () => {
+  bdMoveEnd();
   pnlHistoryClose();
   if (bd.nav){ bd.nav = false; return; }
   if (bd.changed) rerender();
@@ -11702,6 +11831,7 @@ buildDialog.addEventListener('close', () => {
 });
 window.addEventListener('resize', () => {
   if (!buildDialog.open) return;
+  bdMoveEnd();
   bdLayoutScale();
   bdPaintScale();
   bdPaintChecks();
