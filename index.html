@@ -724,6 +724,11 @@ html[data-view-tx-band="rect"]::view-transition-old(*.mx):only-child{animation-d
 ::view-transition-old(*.mx-own),::view-transition-new(*.mx-own){animation:none;mix-blend-mode:normal}
 ::view-transition-old(*.mx-plus),::view-transition-new(*.mx-plus){mix-blend-mode:plus-lighter}
 ::view-transition-new(*.mx-cover-same){animation:none;mix-blend-mode:normal}
+/* a list's plate (mx-plate: the box holding a time block's cards), as the streams shown change:
+   drawn by its group alone, under the cards, which a translate and a scale take from its old
+   box to its new one (mxBegin) */
+::view-transition-group(*.mx-plate){animation:none;z-index:1;box-sizing:border-box;transform-origin:0 0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-plate)}
+::view-transition-old(*.mx-plate),::view-transition-new(*.mx-plate){display:none}
 /* a vertical day scrolled sideways: its time column (the background the cards slide
    under) moves as a cover too (named by mxBegin), and the time labels stay over it, so
    neither the cards nor the bare labels show in the column while items move */
@@ -758,6 +763,10 @@ html[data-view-tx="lay"]::view-transition-new(root){animation:var(--dur-l) var(-
 html:is([data-view-tx="lay"],[data-view-tx="fade"])::view-transition-new(*.mx-head){animation:none}
 /* (a moving Horizontal bar leaves its stubs of the Now line behind: the line stays put) */
 html[data-view-tx="lay"] .hz-day .hz-bar.is-now.hz-now-in[style*="view-transition-name"]::before{display:none}
+/* A change of the streams shown ('filt', filterGo): the sessions move (mxBegin); the rest of
+   the page (a time block's time, a day's heading, the note of an empty program) comes in over
+   the old one, quickly, with no slide: the two are the same page but for those */
+html[data-view-tx="filt"]::view-transition-new(root){animation:var(--dur-s) var(--ease) both week-tx-fade}
 /* A change whose morph is off (recent ones were slow): a short plain cross-fade */
 html[data-view-tx="xf"]::view-transition-old(root){animation:var(--dur-s) var(--ease) both week-tx-out}
 html[data-view-tx="xf"]::view-transition-new(root){animation:var(--dur-s) var(--ease) both week-tx-fade}
@@ -6566,9 +6575,11 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // alone, looked up by their ids, and no grid marks or covers; with `any` as well, each
 // wherever it is, even scrolled out of its box or off the screen (and with `sel`, only
 // those matching it); with `cov`, the covers too. With `lay` (List <-> Calendar), the time
-// labels and day heads on the screen as well (layMarks).
-function mxScan(aux, keep, only, any, sel, cov, lay){
-  const vw = innerWidth, vh = innerHeight, mn = Math.max(240, vh * .5), mf = vh * 1.5;
+// labels and day heads on the screen as well (layMarks). With `x` (a change of the streams
+// shown): x.items, the items to look at (a list's session cards only, not their talks), and
+// x.wide, how far from the screen (a screen and a half, for the items that move into it).
+function mxScan(aux, keep, only, any, sel, cov, lay, x){
+  const vw = innerWidth, vh = innerHeight, mn = x && x.wide || Math.max(240, vh * .5), mf = Math.max(mn, vh * 1.5);
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
   const ghost = main.querySelector('.vt-ghost'), boxes = new Map();
@@ -6634,7 +6645,17 @@ function mxScan(aux, keep, only, any, sel, cov, lay){
   }
   if (aux) for (const el of main.querySelectorAll(MX_GRID)) add(el, 'g-' + el.classList[0] + '-' + el.dataset.m, 'grid');
   // (a phone's week folds what has no room into "+N" chips: each by the first it holds)
-  for (const el of main.querySelectorAll(MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : el.dataset.sid ? 's-' + el.dataset.sid : 'x-' + el.dataset.weekSid, 'item');
+  // (x.marks: a list's time blocks, each by its day and time: its time, a cover, and the plate
+  // that holds its cards; and a day's heading in the week)
+  if (x && x.marks) for (const el of main.querySelectorAll(x.marks)){
+    const b = el.closest('.block, .day-section');
+    // (and, as for its items, never one of a block far from the screen: measuring it would
+    // lay that block out)
+    if (!b || b.classList.contains('hidden') || off(el, mf)) continue;
+    if (b.matches('.day-section')){ add(el, 'c-dh-' + b.dataset.dayi, 'cover'); continue; }
+    add(el, (el.matches('.cards') ? 'p-' : 'c-bt-') + b.dataset.date + '-' + b.dataset.start, el.matches('.cards') ? 'plate' : 'cover');
+  }
+  for (const el of main.querySelectorAll(x && x.items || MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : el.dataset.sid ? 's-' + el.dataset.sid : 'x-' + el.dataset.weekSid, 'item');
   if (lay){
     // (each on the screen, below the toolbar and clear of a calendar's stuck heads (but
     // for one in them), in the part of its box that shows; the first of a key only)
@@ -6740,7 +6761,13 @@ function mxBegin(kind, from, opts){
   // (List <-> Calendar looks only into what shows: a list's time blocks in sight, and the
   // calendar's items; never too many to measure)
   const lay = kind === 'lay';
-  if (opts.plain || (!only && !lay && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
+  // (a change of the streams shown, opts.was and opts.sees: the sessions shown before and
+  // after it, by id. It looks at its own items only, opts.items (a list's session cards,
+  // whose talks go with them), never too many to measure: filt)
+  const filt = !!opts.was, fx = filt ? { items: opts.items, marks: opts.marks, wide: innerHeight * 1.5 } : null, far = new Map();
+  // (an item's session, by id)
+  const sessOf = it => it.el.dataset.tid ? talkById(it.el.dataset.tid)?.s.id || '' : it.el.dataset.sid || it.el.dataset.inSid || it.el.dataset.weekSid || '';
+  if (opts.plain || (!only && !lay && !filt && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
   let fromKey = '';
   if (from){
@@ -6750,7 +6777,19 @@ function mxBegin(kind, from, opts){
   if (!pop){
     // (opts.either: the items up to a screen and a half away, as in the new view, and the
     // covers, which they move under, as Horizontal <-> Vertical's do)
-    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either, lay).values()];
+    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either, lay, fx).values()];
+    // (filt: the items on screen are named; those up to a screen and a half off it are only
+    // measured, for the ones the change brings onto the screen to come from: far. A talk
+    // inside its session's block or card (a week's, a vertical day's) goes in the session's
+    // picture, not as an item of its own: the change moves whole sessions)
+    if (filt){
+      const ks = new Set(seen.map(it => it.key)), inner = it => it.kind === 'item' && !!it.p && ks.has(it.p);
+      // (opts.appear 'fade', a calendar: one of a session hidden now goes with the page,
+      // which fades over to the new one as it would itself; only what moves is named)
+      seen = seen.filter(it => !inner(it) && (opts.appear !== 'fade' || it.kind !== 'item' || opts.sees.has(sessOf(it))));
+      for (const it of seen) if (it.kind === 'item' && it.d > 0) far.set(it.key, it);
+      seen = seen.filter(it => it.d === 0);
+    }
     // A change that starts at one place (opts.near: a card opening or closing, the page
     // kept still around it): what is above it stays put and needs no name; the rest are
     // named nearest first, and fewer of them (the others go with the page).
@@ -6835,9 +6874,9 @@ function mxBegin(kind, from, opts){
   // (covers sit above the items; so do a sideways-scrolled vertical day's hour labels,
   // over its time column)
   // (and List <-> Calendar's marks above those, as some move into or out of a stuck head)
-  const base = it => it.kind === 'mark' ? 'mx-cover mx-label' : it.kind === 'cover' || (kind === 'mx' && it.kind === 'grid' && it.el.classList.contains('vt-t') && !!it.el.closest('.vt-wrap.scroll')) ? 'mx-cover' : 'mx';
+  const base = it => it.kind === 'plate' ? 'mx-plate' : it.kind === 'mark' ? 'mx-cover mx-label' : it.kind === 'cover' || (kind === 'mx' && it.kind === 'grid' && it.el.classList.contains('vt-t') && !!it.el.closest('.vt-wrap.scroll')) ? 'mx-cover' : 'mx';
   for (const [key, it] of old) mxName(it.el, key, base(it));
-  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [], rise: [] }, live = [], anims = [], rules = [];
+  const plan = { pairs: [], grow: [], fold: [], fade: [], added: [], emerge: [], sink: [], rise: [], slide: [], away: [], plates: [] }, live = [], anims = [], rules = [];
   const k = motionK(), MS = opts.band !== undefined || kind === 'lay' ? TX_DAY_MS : MX_MS;
   // ---- the moves, worked out in the update callback (names and their rules are set before
   // the browser builds the transition's parts) and started once it has (animate). Each
@@ -6983,7 +7022,7 @@ function mxBegin(kind, from, opts){
       // (opts.either: every key up to a screen and a half away, as in the old view, not only
       // the old view's: a saved talk on its own there moves into its session here, which
       // the old view did not show)
-      const now = pop || (!only && !lay && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either || lay, lay);
+      const now = pop || (!only && !lay && !filt && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, opts.either ? new Set([...old.keys(), ...only]) : new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either || lay || filt, lay, fx && { items: fx.items, marks: fx.marks });
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const names = [], heads = [];
@@ -7022,7 +7061,7 @@ function mxBegin(kind, from, opts){
       const named = new Set(), cand = [];
       let count = old.size;
       // (room for the talks that unfold; List <-> Calendar: its own budget, past what it named)
-      const lim = lay ? old.size + mxOrientCap() * (opts.lite ? .5 : 1) : (opts.either && opts.cap ? opts.cap : opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);
+      const lim = lay ? old.size + mxOrientCap() * (opts.lite ? .5 : 1) : ((opts.either || filt) && opts.cap ? opts.cap : opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);
       // (opts.either: a session the new view shows only as the one saved talk in it, or a
       // saved talk on its own that the new view shows only as its session, moves into that
       // talk or session, as one item: Full program at Sessions <-> My agenda)
@@ -7068,6 +7107,11 @@ function mxBegin(kind, from, opts){
       Object.assign(mxStat, { old: old.size, now: now.size, its: its.length, wild: its.filter(x => ratio(x.o.r, x.n.r) > 2.5).length + (wild ? ' WILD' : '') });
       for (const x of cand){
         if (wild && x.o.kind === 'item' && x.key !== fromKey){ named.delete(x.n.el); plan.fade.push({ key: x.key, o: x.o }); continue; }
+        // (filt: an item the change pushes off the screen goes as its old look alone, its
+        // group kept where it was: a group placed off the screen is not drawn, whatever its
+        // looks' moves bring into it)
+        if (filt && x.o.kind === 'item' && x.n.d > 0){ named.delete(x.n.el); plan.away.push({ key: x.key, o: x.o, n: x.n }); continue; }
+        if (x.o.kind === 'plate'){ if (x.n.d > 0) named.delete(x.n.el); plan.plates.push({ key: x.key, o: x.o, n: x.n, both: x.n.d === 0 }); continue; }
         plan.pairs.push(x);
       }
       if (wild){
@@ -7079,6 +7123,23 @@ function mxBegin(kind, from, opts){
       mxStat.pairs = plan.pairs.filter(x => x.o.kind === 'item').length;
       mxStat.vis1 = [...now.values()].filter(it => it.kind === 'item' && it.d === 0).length;
       mxStat.pv = plan.pairs.filter(x => x.o.kind === 'item' && (x.o.d === 0 || x.n.d === 0)).length;
+      // A change of the streams shown (filt): an item the new view has not near the screen
+      // whose session still shows was pushed further off by the sessions coming in: it goes
+      // there (away), its old look moving off the screen; one whose session is hidden now
+      // goes where it is (fade: folding up with opts.collapse). An item new to the screen
+      // comes from where it was measured off it (slide), or, measured nowhere near, rises
+      // into its place; one of a session shown now that was not before comes in where it
+      // is (added).
+      if (filt){
+        const miss = plan.fade.filter(({ o }) => o.kind === 'item' && opts.sees.has(sessOf(o)));
+        const at = miss.length ? mxScan(false, null, new Set(miss.map(x => x.key)), true, null, false, false, fx && { items: fx.items }) : new Map(), vh = innerHeight;
+        for (const x of miss){
+          const n = at.get(x.key);
+          if (!n || n.r.bottom < -vh * 3 || n.r.top > vh * 4) continue;
+          plan.away.push({ key: x.key, o: x.o, n });
+          plan.fade.splice(plan.fade.indexOf(x), 1);
+        }
+      }
       // A session that comes or goes around saved talks shown on their own (My agenda's
       // "Show full sessions", or saving or removing the session): it grows out of those
       // talks (emerge) or shrinks back into them (sink), while each talk moves between
@@ -7087,7 +7148,7 @@ function mxBegin(kind, from, opts){
       const union = rs => rs.reduce((u, r) => u ? { left: Math.min(u.left, r.left), top: Math.min(u.top, r.top), right: Math.max(u.right, r.right), bottom: Math.max(u.bottom, r.bottom) } : { left: r.left, top: r.top, right: r.right, bottom: r.bottom }, null);
       const box = u => u && { left: u.left, top: u.top, right: u.right, bottom: u.bottom, width: u.right - u.left, height: u.bottom - u.top };
       const band = opts.band !== undefined;
-      if (!wild && !pop && !band){
+      if (!wild && !pop && !band && !filt){
         plan.fade = plan.fade.filter(({ key, o }) => {
           if (o.kind !== 'item' || !key.startsWith('s-')) return true;
           const to = box(union([...now.values()].filter(n => n.p === key && alone(n)).map(n => n.r)));
@@ -7105,6 +7166,18 @@ function mxBegin(kind, from, opts){
       }
       for (const [key, n] of band ? [] : now){
         if (old.has(key) || named.has(n.el) || !near(n) || count >= lim) continue;
+        if (filt && n.kind === 'item'){
+          // (one inside its session's block or card goes with it, in its picture)
+          if (n.d !== 0 || (n.p && now.has(n.p))) continue;
+          named.add(n.el); count++;
+          const f = far.get(key);
+          if (f) plan.slide.push({ key, n, f });
+          else if (opts.was.has(sessOf(n))) plan.rise.push({ key, el: n.el, r: n.r, i: plan.rise.length });
+          // (and one of a session shown now that was not: with the page, as it fades in)
+          else if (opts.appear === 'fade'){ named.delete(n.el); count--; }
+          else plan.added.push({ key, n });
+          continue;
+        }
         const pr = n.kind === 'item' && n.p && now.has(n.p) && plan.pairs.find(x => x.n.key === n.p);
         const c = lay && n.kind === 'item' && n.d === 0 && chips.get(key);
         if (pr){
@@ -7210,6 +7283,7 @@ function mxBegin(kind, from, opts){
       // data-view-tx-quick or data-view-tx-band), clipped to their scroll boxes;
       // opts.collapse: an item folds up as it goes)
       for (const { key, o } of plan.fade){
+        if (o.kind === 'plate'){ plan.plates.push({ key, o, n: null }); continue; }
         if (opts.collapse && o.kind === 'item'){
           const f = rect ? [MS * .4, 'linear'] : [MO_S, EASE];
           own(key);
@@ -7219,6 +7293,26 @@ function mxBegin(kind, from, opts){
       for (const { key, n } of plan.added){
         names.push([n.el, key, 'mx mx-own']);
         look(key, 'new', move(R(n.r.left, n.r.top, n.r.width, 0), null, n.r, null, n.r), fade([0, 1], MO_S, EASE, MO_S / 3));
+      }
+      for (const { key, n, f } of plan.slide){
+        names.push([n.el, key, 'mx mx-own']);
+        look(key, 'new', move(f.r, f.c, n.r, n.c, n.r));
+      }
+      for (const { key, o, n } of plan.away){
+        own(key);
+        look(key, 'old', move(o.r, o.c, n.r, n.c, o.r));
+      }
+      // A list's plates (filt), the boxes that hold a time block's cards: each drawn by its
+      // group (mx-plate, in the style sheet: no looks), which goes from its old box to its
+      // new one by a translate and a scale (its 1px edge thins or thickens a little on the
+      // way), under the cards; kept where it was and taken there when the new one is off the
+      // screen (a group placed off it is not drawn); one whose block is gone fades
+      for (const { key, o, n, both } of plan.plates){
+        const tf = (r, sx, sy) => ({ transform: `translate(${px(r.left)},${px(r.top)}) scale(${sx.toFixed(4)},${sy.toFixed(4)})` });
+        const k = (a, b) => [a.width / (b.width || 1), a.height / (b.height || 1)];
+        if (!n) look(key, 'group', null, fade([1, 0], MO_S, EASE));
+        else if (both){ names.push([n.el, key, 'mx-plate']); look(key, 'group', { frames: [tf(o.r, ...k(o.r, n.r)), tf(n.r, 1, 1)] }); }
+        else look(key, 'group', { frames: [tf(o.r, 1, 1), tf(n.r, ...k(n.r, o.r))] });
       }
       for (const { key, el, r, i } of plan.rise){
         const delay = Math.min(i, 10) * 16;
@@ -7241,7 +7335,7 @@ function mxBegin(kind, from, opts){
       // (added, emerge, rise))
       if (TX_DEBUG){
         const ks = xs => xs.map(x => x.key);
-        mxPlan = { pair: ks(plan.pairs), fold: ks(plan.fold), grow: ks(plan.grow), fade: ks(plan.fade), sink: ks(plan.sink), added: ks(plan.added), emerge: ks(plan.emerge), rise: ks(plan.rise) };
+        mxPlan = { pair: ks(plan.pairs), fold: ks(plan.fold), grow: ks(plan.grow), fade: ks(plan.fade), sink: ks(plan.sink), added: ks(plan.added), emerge: ks(plan.emerge), rise: ks(plan.rise), slide: ks(plan.slide), away: ks(plan.away), plates: ks(plan.plates) };
       }
       // ---- and now the names, and this transition's rules (nothing is measured after this)
       for (const [el, key, cls] of names) mxName(el, key, cls);
@@ -7493,19 +7587,20 @@ function txWatch(vt, t, done){
 // TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
 // those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
 // takes no snapshot, as List <-> Calendar's.
-// Full program <-> My agenda in the calendar ('scope') and List <-> Calendar ('layout')
-// are held to the same rules: their items move on the compositor whatever the two views
-// cost to draw (TX_OWN), and a change of layout redraws the page either way, morph or not.
+// Full program <-> My agenda in the calendar ('scope'), List <-> Calendar ('layout') and a
+// change of the streams shown ('filter') are held to the same rules: their items move on the
+// compositor whatever the two views cost to draw (TX_OWN), and the page is redrawn either
+// way, morph or not.
 // (A level 0 without a snapshot steps back up to 1 after two redraws in a row within
 // TX_PLAIN_UP.)
 const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_PLAIN_UP = 120;
 // (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
-const TX_PAIR_NOSNAP = new Set(['layout', 'orient', 'scope']);
+const TX_PAIR_NOSNAP = new Set(['layout', 'orient', 'scope', 'filter']);
 // Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
 const TX_ORI_DOWN = [400, 250];
 // (the pairs held to that budget, each with its own record: Horizontal <-> Vertical, Full
-// program <-> My agenda in the calendar, and List <-> Calendar)
-const TX_OWN = new Set(['orient', 'scope', 'layout']);
+// program <-> My agenda in the calendar, List <-> Calendar, and the streams shown)
+const TX_OWN = new Set(['orient', 'scope', 'layout', 'filter']);
 // (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
 // with a screen of talks can still go without the morph; its items move on the
 // compositor, so what a slow device pays is the wait before they move, not the motion)
@@ -7515,10 +7610,11 @@ const txPairs = new Map();
 // so both ways share it)
 // (and Horizontal <-> Vertical the orientation itself: by the view and its level; Full
 // program <-> My agenda the view itself: by the calendar it shows, a day or the week, in
-// its orientation)
+// its orientation; the streams shown, by the view)
 const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks]
   : o.pair === 'orient' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', !!state.programTalks && state.day !== 'all']
   : o.pair === 'scope' ? [o.pair, state.day === 'all' ? 'all' : 'day', state.orient]
+  : o.pair === 'filter' ? [o.pair, state.scope, state.layout, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks && state.day !== 'all']
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
