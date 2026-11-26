@@ -314,11 +314,14 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hero-nn{display:flex;flex-direction:column;gap:6px;width:24rem;max-width:100%;min-width:0;container-type:inline-size}
 .hn-head{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px 12px;min-height:26px}
 .hero-nn.hn-on .hn-head{justify-content:space-between}
-/* (a caption beside it stands on the countdown's line) */
-.hn-head:has(>.hn-sw>.hn-cap){align-items:baseline}
-.hn-sw:has(>.hn-cap){display:flex}
 .hn-sw:empty,.hn-body:empty{display:none}
-.hn-cap{font-size:.75rem;font-weight:560;line-height:1.2;color:var(--muted);white-space:nowrap}
+/* My agenda and Everything, one over the other: the panel is as tall as the taller, so the
+   switch moves nothing; the one not picked keeps its place, unseen */
+.hn-body{display:grid;grid-template-columns:minmax(0,1fr)}
+.hn-pane{grid-area:1/1;min-width:0}
+.hn-pane:not(.is-on){visibility:hidden}
+.hn-empty{margin:0;padding:6px 0 0;font-size:.8125rem;line-height:1.4;color:var(--muted)}
+.hn-empty .linkish{font-weight:650}
 .hn-src{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
 .hn-src button{min-height:26px;padding:2px 9px;border:0;border-radius:var(--r-seg);background:transparent;color:var(--ink-2);font-size:.75rem;font-weight:650;line-height:1.2;white-space:nowrap;transition:background-color var(--dur-s) var(--ease),color var(--dur-s) var(--ease)}
 .hn-src button:hover{background:var(--surface-3);color:var(--ink)}
@@ -354,7 +357,7 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
   .hero-nn .up-next>div>.hn-more{padding:3px 8px 3px 0;margin:-3px 0}
 }
 /* a page printed during the congress keeps the heading only (My agenda's Up next is not printed either) */
-@media print{.hn-sw,.hn-note,.hn-tz{display:none!important}.hero-nn{width:auto!important;container-type:normal!important}}
+@media print{.hn-sw,.hn-note,.hn-tz,.hn-empty,.hn-pane:not(.is-on){display:none!important}.hero-nn{width:auto!important;container-type:normal!important}}
 /* (paper, at any width, has the sentence in full) */
 @media print{.hero p.sub{max-width:none!important;font-size:.875rem!important;color:var(--ink-2)!important}.hero .sub-full{display:inline!important}.hero .sub-short{display:none!important}}
 /* (a narrow panel gives a later start its time alone) */
@@ -400,7 +403,10 @@ header.hero{container:hero / inline-size}
 .hero-nn .up-next>div::after{content:"";grid-column:2;grid-row:1;align-self:baseline;height:0;border-bottom:1.5px dotted var(--hover-line);margin:0 -4px 0 0;transform:translateY(-.28em)}
 .hero-nn .up-next>div>.linkish:not(.hn-more){justify-self:start;max-width:calc(100% + 6px);margin-right:-6px;position:relative;z-index:1;background:var(--card);padding-right:6px}
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
-@container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}}
+@container (max-width:22rem){.hero-nn .un-mo{display:none}}
+@container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}
+  .hero-nn .up-next>div:has(>.un-when .un-d){grid-template-columns:2.25rem minmax(0,1fr) min-content}
+  .hero-nn .up-next>div>.un-when:has(.un-d){white-space:normal;text-align:end}.hero-nn .un-d{white-space:nowrap}}
 @media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
 /* The colour key (in Display options, under Colour): the spectral rule, 400 to 700 nm across
    the dialog, drawn like a spectrometer's scale: a baseline with the lines standing on it and
@@ -3990,9 +3996,10 @@ function loadStars(){
   }
 }
 loadStars();
-// the header's Now and next: from My agenda (the default) or the whole program ('all')
-state.heroSrc = 'agenda';
-try { if (localStorage.getItem('aip2026-hero-src') === 'all') state.heroSrc = 'all'; } catch (e) {}
+// the header's Now and next: from My agenda ('agenda') or the whole program ('all'), as
+// last chosen on this device; never chosen, My agenda when anything is saved (heroSrc())
+state.heroSrc = null;
+try { const v = localStorage.getItem('aip2026-hero-src'); if (v === 'all' || v === 'agenda') state.heroSrc = v; } catch (e) {}
 try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; } catch (e) {}
 // "Flag talks whose sessions overlap" (possible clashes): on unless turned off, kept as
 // Hide clash warnings is
@@ -12415,11 +12422,15 @@ function upNextHtml(items){
 }
 
 // ---------- Now and next (the header's right) ----------
-// During the congress: what is on now and what starts next, from My agenda (when it has
-// anything) or the whole program, picked with My agenda | Everything (kept on the device
-// as aip2026-hero-src). Before it: the countdown, then the first saved items (or the
-// opening sessions). After it: the finished note. Each row opens its details, as in My
-// agenda's Up next; the program's longer lists end in "+N", which opens the program there.
+// Before and during the congress the panel shows My agenda or the whole program, picked
+// with My agenda | Everything (kept on the device as aip2026-hero-src; never picked, My
+// agenda when anything is saved). During it: what is on now and what starts next. Before
+// it: the countdown, then the first saved items, or the congress's opening sessions, each
+// with its day and time. My agenda with nothing saved says so, with Build my agenda.
+// After it: the finished note alone. Each row opens its details, as in My agenda's Up
+// next; a longer list ends in "+N", which opens the program there.
+// Both sources are drawn, one over the other, and the one not picked is hidden: the panel
+// is as tall as the taller, so the switch never moves the page.
 // A shared agenda (#agenda=…) is only a banner until merged: the panel stays the viewer's own.
 const HN_MAX = 2;   // rows per group: a phone's panel stays within four rows
 const HN_FIRST = { plenary: 0, events: 1, social: 2 };   // what everyone is at comes first
@@ -12427,50 +12438,63 @@ function programItems(){
   return programItems.all || (programItems.all = DATA.days.flatMap((d, di) => d.slots.map(s => ({ kind: 'session', di, d, s, t: null, start: s.start, end: s.end }))));
 }
 const weekday = d => d.label.split(' ')[0];
-// the panel's source: My agenda when it is chosen and has anything (the viewer's own stars)
-function heroFromAgenda(){ return todayIdx() >= 0 && state.heroSrc !== 'all' && state.starred.size > 0; }
+// the panel's source: the one picked, else My agenda when anything is saved
+function heroSrc(){ return state.heroSrc || (state.starred.size > 0 ? 'agenda' : 'all'); }
+// the panel shows the viewer's own saved items now (My agenda's Up next then stands aside)
+function heroFromAgenda(){ return todayIdx() >= 0 && heroSrc() === 'agenda' && state.starred.size > 0; }
 function heroNowHtml(){
   const n = aedtNow(), ti = todayIdx(), whens = [];
   if (n.date > DATA.days[DATA.days.length - 1].date) return { name: '', html: '', whens };
   // (each time is written as a mark, filled in when painted: what the panel shows, less
   // its times, tells a new minute from a change)
   const w = s => (whens.push(s), '\u0001' + (whens.length - 1) + '\u0002');
-  // a group's rows: at most HN_MAX, the rest as "+N" in the label column, which opens the
-  // program at the first of them
-  const group = (label, list, when, sort) => {
+  // a group's rows: at most max, the rest as "+N" in the label column, which opens the
+  // program at the first of them (before the congress the rest spread over days: its
+  // label names where they start)
+  const group = (label, list, when, sort, max = HN_MAX) => {
     const all = sort ? [...list].sort((a, b) => (HN_FIRST[a.s.cat] ?? 9) - (HN_FIRST[b.s.cat] ?? 9)) : list;
-    const shown = all.length > HN_MAX ? all.slice(0, HN_MAX) : all, rest = all.slice(shown.length);
+    const shown = all.length > max ? all.slice(0, max) : all, rest = all.slice(shown.length);
     return shown.map((it, i) => {
-      const more = i === 1 && rest.length ? `<button type="button" class="linkish hn-more" data-hn-more="${rest[0].di}" data-jump="${rest[0].s.id}" aria-label="${rest.length} more ${label === 'Now' ? 'on now' : 'at ' + rest[0].start}: show them in the program" title="${rest.length} more: show them in the program">+${rest.length}</button>` : '';
-      return unRow(label, it, w(when(it)), n, i ? ' un-rep' : '', more);
+      const where = !rest.length ? '' : label === 'Now' ? 'on now' : ti < 0 ? `from ${rest[0].d.label}, ${rest[0].start}` : 'at ' + rest[0].start;
+      const more = i === 1 && rest.length ? `<button type="button" class="linkish hn-more" data-hn-more="${rest[0].di}" data-jump="${rest[0].s.id}" aria-label="${rest.length} more ${where}: show them in the program" title="${rest.length} more: show them in the program">+${rest.length}</button>` : '';
+      return unRow(label, it, w(when(it)), n, i ? ' un-rep' : '', more, ti >= 0);
     }).join('');
   };
   const plate = rows => rows ? `<div class="up-next hn-plate">${rows}</div>` : '';
+  const src = heroSrc(), mine = agendaItems();
+  // (the source not picked: drawn for its height only, out of reach and out of the reading)
+  const pane = (k, body) => `<div class="hn-pane${src === k ? ' is-on' : ''}" data-hn-pane="${k}"${src === k ? '' : ' inert aria-hidden="true"'}>${body}</div>`;
+  const empty = `<p class="hn-empty">Nothing saved yet. <button type="button" class="linkish" data-build>Build my agenda</button></p>`;
   if (ti < 0){
-    const mine = agendaItems();
-    const items = mine.length ? mine.slice(0, 3)
-      // the opening: registration, then the first sessions (not the breaks between them)
-      : programItems().filter((it, i, a) => it.s.cat !== 'social' || a.findIndex(x => x.s.cat === 'social') === i).slice(0, 3);
-    return { name: 'Coming up', cap: mine.length ? 'First in My agenda' : 'Opening sessions', whens,
-      // (a day's later rows: its label for screen readers only, as a group's)
-      html: plate(items.map((it, i) => unRow(dayShort(it.d), it, w(it.start), n, i && items[i - 1].d === it.d ? ' un-day un-rep' : ' un-day', '', false)).join('')) };
+    // its day and time ("Sun 6 Dec, 15:00"; a narrow panel leaves out the month)
+    // (the narrowest panel puts the time under the day, leaving the title the room)
+    const when = it => `<span class="un-d">${dayShort(it.d)}<span class="un-mo"> ${it.d.label.split(' ').pop()}</span>,</span> ${it.start}`;
+    // the opening: registration, then the first sessions (not the breaks between them)
+    const opening = programItems().filter((it, i, a) => it.s.cat !== 'social' || a.findIndex(x => x.s.cat === 'social') === i).slice(0, 3);
+    return { name: 'Coming up', sw: true, whens,
+      html: pane('agenda', mine.length ? plate(group('Next', mine, when, false, 3)) : empty)
+        + pane('all', plate(group('Next', opening, when, false, 3))) };
   }
-  const mineOn = heroFromAgenda(), mine = mineOn ? agendaItems() : [];
-  let src = mineOn ? mine : programItems(), note = '';
-  let { current, next } = nowNextOf(src, true);
-  if (mineOn && !current.length && !next.length){
-    note = 'Nothing more in My agenda. The whole program:';
-    src = programItems();
-    ({ current, next } = nowNextOf(src, true));
-  }
-  const everything = src !== mine;
-  if (!current.length && !next.length) note = 'Nothing more on the program.';
-  else if (!current.length && next[0].d.date !== n.date && !note)
-    note = !mineOn ? 'Nothing more today.' : mine.some(it => it.d.date === n.date) ? 'Nothing more in My agenda today.' : 'Nothing in My agenda today.';
-  const rows = group('Now', current, it => `until ${it.end}`, everything)
-    + group('Next', next, it => it.d.date === n.date ? unIn(it, n) : weekday(it.d) + ' ' + it.start, everything);
-  return { name: 'Now and next', whens, sw: state.starred.size > 0, cap: state.starred.size ? '' : 'Whole program',
-    html: (note ? `<p class="hn-note">${note}</p>` : '') + plate(rows) };
+  // what is on now and next, from My agenda (all of the program once it has nothing more)
+  // or the whole program
+  const nowNext = fromMine => {
+    let list = fromMine ? mine : programItems(), note = '';
+    let { current, next } = nowNextOf(list, true);
+    if (fromMine && !current.length && !next.length){
+      note = 'Nothing more in My agenda. The whole program:';
+      list = programItems();
+      ({ current, next } = nowNextOf(list, true));
+    }
+    const everything = list !== mine;
+    if (!current.length && !next.length) note = 'Nothing more on the program.';
+    else if (!current.length && next[0].d.date !== n.date && !note)
+      note = !fromMine ? 'Nothing more today.' : mine.some(it => it.d.date === n.date) ? 'Nothing more in My agenda today.' : 'Nothing in My agenda today.';
+    const rows = group('Now', current, it => `until ${it.end}`, everything)
+      + group('Next', next, it => it.d.date === n.date ? unIn(it, n) : weekday(it.d) + ' ' + it.start, everything);
+    return (note ? `<p class="hn-note">${note}</p>` : '') + plate(rows);
+  };
+  return { name: 'Now and next', sw: true, whens,
+    html: pane('agenda', mine.length ? nowNext(true) : empty) + pane('all', nowNext(false)) };
 }
 // Painted with the countdown (every 30 s, on a return to the tab, after each redraw) and
 // on every change to My agenda. The times alone change from one minute to the next: then
@@ -12481,8 +12505,8 @@ function paintHeroNow(keep){
   const box = document.getElementById('heroNow');
   if (!box || !paintHeroNow.ready) return;
   const r = heroNowHtml();
-  const sw = r.sw ? `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda" aria-pressed="${state.heroSrc !== 'all'}">My agenda</button><button type="button" data-hn-src="all" aria-pressed="${state.heroSrc === 'all'}">Everything</button></div>`
-    : r.cap ? `<span class="hn-cap">${r.cap}</span>` : '';
+  const src = heroSrc();
+  const sw = r.sw ? `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda" aria-pressed="${src === 'agenda'}">My agenda</button><button type="button" data-hn-src="all" aria-pressed="${src === 'all'}">Everything</button></div>` : '';
   const shape = sw + '|' + r.html;
   const hero = keep && box._shape !== shape ? box.closest('header') : null, b0 = hero && hero.getBoundingClientRect().bottom;
   document.getElementById('heroNowName').textContent = r.name ? r.name + ': ' : '';
@@ -12497,11 +12521,12 @@ function paintHeroNow(keep){
   const html = r.html.replace(/\u0001(\d+)\u0002/g, (_, i) => r.whens[i]);
   const f = document.activeElement, mine = f && box.contains(f);
   const key = el => el.dataset.hnSrc || el.dataset.hnMore && 'more' + el.closest('.hn-plate > div')?.querySelector('.un-k')?.textContent
-    || (el.dataset.sessionDetail || '') + '/' + (el.dataset.talkDetail || '');
+    || el.hasAttribute('data-build') && 'build' || (el.dataset.sessionDetail || '') + '/' + (el.dataset.talkDetail || '');
   const was = mine ? key(f) : null, trigger = dialogTrigger && box.contains(dialogTrigger) ? key(dialogTrigger) : null;
   document.getElementById('heroNowSw').innerHTML = sw;
   document.getElementById('heroNowBody').innerHTML = html;
-  const find = k => [...box.querySelectorAll('button')].find(b => key(b) === k);
+  // (only what can be reached: the switch and the source shown)
+  const find = k => [...box.querySelectorAll('.hn-sw button, .hn-pane.is-on button')].find(b => key(b) === k);
   if (was) (find(was) || box.querySelector('button') || document.getElementById('heroWhen')).focus({ preventScroll: true });
   if (trigger) dialogTrigger = find(trigger) || dialogTrigger;
   if (hero){
@@ -12512,12 +12537,17 @@ function paintHeroNow(keep){
 document.getElementById('heroNow').addEventListener('click', e => {
   const src = e.target.closest('[data-hn-src]');
   if (src){
+    if (src.getAttribute('aria-pressed') === 'true') return;
     state.heroSrc = src.dataset.hnSrc;
     try { localStorage.setItem('aip2026-hero-src', state.heroSrc); } catch (err) {}
-    // (My agenda's own Up next shows again when the panel no longer shows the same)
+    // (the page below stays where it was; My agenda's own Up next shows again when the
+    // panel no longer shows the same)
+    paintHeroNow(true);
     paintNow();
     return;
   }
+  const build = e.target.closest('[data-build]');
+  if (build){ openBuild(build); return; }
   const more = e.target.closest('[data-hn-more]');
   if (more) jumpTo(more.dataset.hnMore, more.dataset.jump, '', state.layout === 'calendar' ? 'calendar' : 'list');
 });
