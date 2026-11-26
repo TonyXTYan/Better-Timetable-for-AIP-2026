@@ -10040,7 +10040,8 @@ const layCap = to => to === 'calendar' ? mxOrientCap() : PHONE_MQ.matches ? 36 :
 // a sideways week: leftmost, in a week in the day row you are reading) or top-most
 // (Vertical), one whose start shows if any does.
 // Returns its key, where it is on the screen (y), its start (day, minute) and the keys of
-// the sessions starting with it (itself first); null when there is none. Straight back
+// the sessions starting with it (itself first); with none, the time you were at (layAt);
+// null when there is neither. Straight back
 // (the item it landed on not moved on the screen since): where it was before (layBack),
 // and the item you were at then if the other layout had shown one beside it in its
 // place. With the page at the program's top or above it (top), nothing is kept: the
@@ -10097,7 +10098,7 @@ function layAnchor(){
     cand.sort((p, q) => p.w - q.w || q.shown - p.shown || p.a - q.a || p.b - q.b);
     el = cand.length ? cand[0].x : null;
   }
-  if (!el) return null;
+  if (!el) return layAt(bar);
   const { tid, sid } = layIds(el);
   const s = sid && slotById(sid), t = tid && talkById(tid);
   if (!s && !t) return null;
@@ -10111,6 +10112,31 @@ function layAnchor(){
   const top = !back && window.scrollY <= programTop() + 8;
   const again = !!(back && back.key === key);
   return { key: lead, keys, y: again ? back.y : r.top, again, from: r.top, day, min: toMin(start), top };
+}
+// No item to keep (an empty stretch of a calendar, or a list scrolled past its items): the
+// time of day you were at, as Horizontal <-> Vertical and Full program <-> My agenda keep
+// it (in a day, orientPlace; All week, weekPlace; the list, its time block, or My agenda
+// row, at the top), and what that day shows at that time or next stands for it, landing
+// at the top of what you read.
+function layAt(bar){
+  if (window.scrollY <= programTop() + 8) return null;
+  let day = -1, min = null;
+  if (state.layout === 'list'){
+    for (const b of document.querySelectorAll(state.scope === 'agenda' ? '#builderList .ag-row[data-date]' : '#agenda .block:not(.hidden)')){
+      const r = b.getBoundingClientRect();
+      if (!r.height || r.bottom <= bar) continue;
+      if (r.top < innerHeight){ day = DATA.days.findIndex(d => d.date === b.dataset.date); min = toMin(b.dataset.start); }
+      break;
+    }
+  } else if (state.day === 'all'){ const w = weekPlace(); if (w){ day = +w.di; min = w.m; } }
+  else { const k = orientPlace(); if (k && k.m !== null){ day = state.day; min = k.m; } }
+  if (!(day >= 0) || min === null) return null;
+  const its = state.scope === 'agenda' ? agendaSaved().filter(it => it.di === day).map(it => ({ key: it.t ? 't-' + it.t.id : 's-' + it.s.id, a: toMin(it.t ? it.t.s : it.s.start), b: toMin(it.t ? it.t.e : it.s.end) }))
+    : DATA.days[day].slots.map(s => ({ key: 's-' + s.id, a: toMin(s.start), b: toMin(s.end) }));
+  const keys = its.filter(x => x.b > min).sort((p, q) => p.a - q.a).slice(0, 16).map(x => x.key);
+  if (!keys.length) return null;
+  const y = bar + 24;
+  return { key: keys[0], keys, y, again: false, from: y, day, min, top: false };
 }
 // The point the new layout comes in about, kept in a rule of its own for the new page's
 // picture alone: a custom property on the root would be inherited by every element, and
