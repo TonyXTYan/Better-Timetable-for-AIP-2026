@@ -6467,8 +6467,8 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // further): up to a screen and a half away. With `only` (a set of keys): those items
 // alone, looked up by their ids, and no grid marks or covers; with `any` as well, each
 // wherever it is, even scrolled out of its box or off the screen (and with `sel`, only
-// those matching it).
-function mxScan(aux, keep, only, any, sel){
+// those matching it); with `cov`, the covers too.
+function mxScan(aux, keep, only, any, sel, cov){
   const vw = innerWidth, vh = innerHeight, mn = Math.max(240, vh * .5), mf = vh * 1.5;
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
@@ -6509,7 +6509,9 @@ function mxScan(aux, keep, only, any, sel){
     if (r.width < 2 || r.height < 2) return;
     if (!any && (r.bottom < -m || r.top > vh + m || r.right < -m / 2 || r.left > vw + m / 2)) return;
     const c = box(el, kind);
-    if (c && !any && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;   // scrolled out of its box
+    // (scrolled out of its box; but with `cov` (opts.either), one of `keep` slides in or out
+    // across its box's edge, clipped by it)
+    if (c && !any && !(cov && keep && keep.has(key)) && (r.right <= c.left + 2 || r.left >= c.right - 2)) return;
     const was = items.get(key);
     if (was && was.r.width * was.r.height >= r.width * r.height) return;
     const ps = kind === 'item' && !el.dataset.inSid && el.parentElement.closest('[data-sid]');
@@ -6517,17 +6519,17 @@ function mxScan(aux, keep, only, any, sel){
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
-  if (only){
-    for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
-      if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
-    return items;
-  }
   const nth = new Map();
-  for (const el of main.querySelectorAll(MX_COVER)){
+  if (!only || cov) for (const el of main.querySelectorAll(MX_COVER)){
     const cls = el.classList[0], i = nth.get(cls) || 0;
     nth.set(cls, i + 1);
     const lane = cls === 'hz-label' && el.parentElement.getAttribute('aria-label');
     add(el, 'c-' + cls + '-' + (lane || i), 'cover');
+  }
+  if (only){
+    for (const k of only) for (const el of main.querySelectorAll(`[data-${k[0] === 't' ? 'tid' : 'sid'}="${CSS.escape(k.slice(2))}"]`))
+      if (el.matches(MX_ITEM) && (!sel || el.matches(sel)) && (k[0] === 't' || !el.dataset.tid)) add(el, k, 'item');
+    return items;
   }
   if (aux) for (const el of main.querySelectorAll(MX_GRID)) add(el, 'g-' + el.classList[0] + '-' + el.dataset.m, 'grid');
   for (const el of main.querySelectorAll(MX_ITEM)) add(el, el.dataset.tid ? 't-' + el.dataset.tid : 's-' + el.dataset.sid, 'item');
@@ -6544,8 +6546,11 @@ function mxMany(){
 function mxBegin(kind, from, opts){
   mxClear();
   // (opts.only, a list of keys: those items alone are named, the first before the rest,
-  // and with opts.lite the first only; looked up by id, so a long page costs no more)
-  const only = opts.only ? new Set((opts.lite ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && [...only][0];
+  // and with opts.lite the first only; looked up by id, so a long page costs no more.
+  // With opts.either, the keys of items either view may show (Full program <-> My
+  // agenda's saved items): none goes first, each is looked for in the new view too, not
+  // only those the old one showed, and opts.lite names the nearer half)
+  const only = opts.only ? new Set((opts.lite && !opts.either ? opts.only.slice(0, 1) : opts.only).map(mxSafe)) : null, first = only && !opts.either && [...only][0];
   mxStat = {};
   if (opts.plain || (!only && mxMany())){ mxStat = opts.plain ? {} : { many: 1 }; return MX_NOOP; }
   const pop = kind === 'dlg', old = new Map();
@@ -6555,7 +6560,9 @@ function mxBegin(kind, from, opts){
     old.set(fromKey, { key: fromKey, el: from, r: from.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
   }
   if (!pop){
-    let seen = [...mxScan(kind === 'mx' || opts.aux, null, only).values()];
+    // (opts.either: the items up to a screen and a half away, as in the new view, and the
+    // covers, which they move under, as Horizontal <-> Vertical's do)
+    let seen = [...mxScan(kind === 'mx' || opts.aux, opts.either ? only : null, only, false, null, opts.either).values()];
     // A change that starts at one place (opts.near: a card opening or closing, the page
     // kept still around it): what is above it stays put and needs no name; the rest are
     // named nearest first, and fewer of them (the others go with the page).
@@ -6584,7 +6591,7 @@ function mxBegin(kind, from, opts){
     // (opts.only: a named item is drawn above the whole page, so one partly under a
     // calendar's stuck heads would cover them while it moves; but for the first, those
     // are left to the page, at either end)
-    if (only){
+    if (only && !opts.either){
       const under = mxUnderHeads();
       seen = seen.filter(it => it.key === first || !under(it.r)).sort((a, b) => (b.key === first) - (a.key === first) || a.d - b.d);
     }
@@ -6607,7 +6614,8 @@ function mxBegin(kind, from, opts){
     // sessions in sight)
     // (opts.cap: a change's own budget, as Horizontal <-> Vertical's, mxOrientCap)
     let cap = opts.cap || (y0 !== null ? mxNearCap() : opts.nest || opts.band !== undefined ? mxCap() : mxCap() * .75);
-    if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
+    if (only && opts.either) cap = Math.min(opts.cap || mxCap(), seen.length - (opts.lite ? Math.floor(seen.filter(it => it.kind === 'item').length / 2) : 0));
+    else if (only) cap = Math.min(only.size, kind === 'lay' ? mxCap() : PHONE_MQ.matches ? 6 : 12);
     else if (opts.lite) cap = Math.min(cap, Math.max(must, Math.ceil(Math.min(cap, all < 0 ? seen.length : all) / 2)));
     mxStat = { seen: seen.length, cap: Math.round(cap), vis0: seen.filter(it => it.kind === 'item' && it.d === 0).length };
     for (const it of seen){
@@ -6748,11 +6756,11 @@ function mxBegin(kind, from, opts){
         }
         mxShow(sight);
       }
-      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && new Set(old.keys()));
+      const now = pop || (!only && mxMany()) ? new Map() : mxScan(kind === 'mx' || opts.aux, new Set(old.keys()), only && (opts.either ? only : new Set(old.keys())), false, null, opts.either);
       if (from && target && target.isConnected && target.getClientRects().length)
         now.set(fromKey, { key: fromKey, el: target, r: target.getBoundingClientRect(), c: null, p: '', kind: 'item', d: 0 });
       const names = [], heads = [];
-      if (only){
+      if (only && !opts.either){
         const under = mxUnderHeads();
         for (const [key, n] of now) if (key !== first && under(n.r)) now.delete(key);
       }
@@ -6786,9 +6794,19 @@ function mxBegin(kind, from, opts){
       const near = it => it.d <= Math.max(240, innerHeight * .5);
       const named = new Set(), cand = [];
       let count = old.size;
-      const lim = (opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);   // (room for the talks that unfold)
+      const lim = (opts.either && opts.cap ? opts.cap : opts.near ? mxNearCap() + 12 : mxCap()) * (opts.lite ? .5 : 1);   // (room for the talks that unfold)
+      // (opts.either: a session the new view shows only as the one saved talk in it, or a
+      // saved talk on its own that the new view shows only as its session, moves into that
+      // talk or session, as one item: Full program at Sessions <-> My agenda)
+      const lone = it => it.kind === 'item' && !!it.el.dataset.inSid;
+      const standIn = (key, o) => {
+        if (!opts.either || o.kind !== 'item') return null;
+        const ns = key.startsWith('s-') ? [...now.values()].filter(n => n.p === key && lone(n) && !old.has(n.key))
+          : lone(o) && !old.has(o.p) && now.has(o.p) && [...old.values()].filter(x => x.p === o.p && lone(x)).length === 1 ? [now.get(o.p)] : [];
+        return ns.length === 1 && !named.has(ns[0].el) ? ns[0] : null;
+      };
       for (const [key, o] of old){
-        const n = now.get(key);
+        const n = now.get(key) || standIn(key, o);
         if (n && !named.has(n.el)){ named.add(n.el); cand.push({ key, o, n }); }
         else if (o.p && old.has(o.p) && now.has(o.p)) plan.fold.push({ key, o, po: old.get(o.p), pn: now.get(o.p) });
         else plan.fade.push({ key, o });
@@ -7239,21 +7257,29 @@ function txWatch(vt, t, done){
 // TX_ORI_DOWN[1] (or one over twice either); it steps back up after two within half
 // those. Its level 0, on a phone only (elsewhere it keeps 1 at least: txPairFloor),
 // takes no snapshot, as List <-> Calendar's.
+// Full program <-> My agenda in the calendar ('scope') is held to the same rules: its
+// saved items move on the compositor whatever the two views cost to draw (TX_OWN).
 const TX_PAIR_LITE = 180, TX_PAIR_SLOW = 900, TX_PAIR_DOWN = [600, 125], TX_PAIR_FLOOR = { level: 1, full: 1 }, TX_LAY_COST = [120, 200];
 // (the pairs whose level 0 takes no snapshot at all: drawn at once, in place, faded in)
-const TX_PAIR_NOSNAP = new Set(['layout', 'orient']);
+const TX_PAIR_NOSNAP = new Set(['layout', 'orient', 'scope']);
 // Horizontal <-> Vertical: [first moving frame after the redraw, worst frame while it moves]
 const TX_ORI_DOWN = [400, 250];
+// (the pairs held to that budget, each with its own record: Horizontal <-> Vertical, and
+// Full program <-> My agenda in the calendar)
+const TX_OWN = new Set(['orient', 'scope']);
 // (a pair's lowest level: Horizontal <-> Vertical's is 1 but on a phone, where a slow one
 // with a screen of talks can still go without the morph; its items move on the
 // compositor, so what a slow device pays is the wait before they move, not the motion)
-const txPairFloor = p => p.pair === 'orient' ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
+const txPairFloor = p => TX_OWN.has(p.pair) ? (PHONE_MQ.matches ? 0 : 1) : TX_PAIR_FLOOR[p.pair] || 0;
 const txPairs = new Map();
 // (List <-> Calendar changes the layout itself: its record is the view's but for that,
 // so both ways share it)
-// (and Horizontal <-> Vertical the orientation itself: by the view and its level)
+// (and Horizontal <-> Vertical the orientation itself: by the view and its level; Full
+// program <-> My agenda the view itself: by the calendar it shows, a day or the week, in
+// its orientation)
 const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', state.orient, !!state.programTalks]
   : o.pair === 'orient' ? [o.pair, state.scope, state.day === 'all' ? 'all' : 'day', !!state.programTalks && state.day !== 'all']
+  : o.pair === 'scope' ? [o.pair, state.day === 'all' ? 'all' : 'day', state.orient]
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
@@ -7272,7 +7298,7 @@ function txPairLevel(o, p){
   if (p.level !== null) return p.level;
   // (Horizontal <-> Vertical redraws as much either way, morph or not: only what the
   // morph adds counts, as it is measured)
-  if (o.pair === 'orient'){ p.why = ''; return p.level = 2; }
+  if (TX_OWN.has(o.pair)){ p.why = ''; return p.level = 2; }
   const here = txCost.has(txKey()) ? txCost.get(txKey()) : txAvg, cost = Math.max(txGuess(o.to), here);
   p.why = 'redraw ' + Math.round(cost) + 'ms expected';
   return p.level = Math.max(TX_PAIR_FLOOR[p.pair] || 0, cost > TX_PAIR_SLOW ? 0 : cost > TX_PAIR_LITE ? 1 : 2);
@@ -7283,14 +7309,14 @@ function txPairNote(p, lv, freeze, jank){
   // (Horizontal <-> Vertical: its own budget, TX_ORI_DOWN, and a step down only when a
   // change was slow twice running (or once, at twice that), so one hiccup (a busy moment
   // of the device's, a slow frame of some other work) costs it nothing)
-  if (p.pair === 'orient'){
+  if (TX_OWN.has(p.pair)){
     const bad = freeze > TX_ORI_DOWN[0] || jank > TX_ORI_DOWN[1];
     p.bad = bad ? (p.bad || 0) + 1 : 0;
     down = p.bad >= 2 || freeze > 2 * TX_ORI_DOWN[0] || jank > 2 * TX_ORI_DOWN[1];
     if (down) p.bad = 0;
   }
   // (smooth: within TX_FREEZE and TX_JANK; Horizontal <-> Vertical, within half its own)
-  const smooth = p.pair === 'orient' ? freeze < TX_ORI_DOWN[0] / 2 && jank <= TX_ORI_DOWN[1] / 2 : freeze < TX_FREEZE && jank <= TX_JANK;
+  const smooth = TX_OWN.has(p.pair) ? freeze < TX_ORI_DOWN[0] / 2 && jank <= TX_ORI_DOWN[1] / 2 : freeze < TX_FREEZE && jank <= TX_JANK;
   p.ok = !down && smooth ? (p.ok || 0) + 1 : 0;
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
