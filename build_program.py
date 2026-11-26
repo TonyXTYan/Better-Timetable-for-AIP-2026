@@ -1151,6 +1151,18 @@ html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{b
    not every control in the bar) */
 @property --tb-edge{syntax:"<length>";inherits:false;initial-value:0px}
 .sticky-wrap.tb-anim::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--line);pointer-events:none;--tb-edge:inherit;transform:translateY(var(--tb-edge))}
+/* (a part the bar's new form leaves out, while it fades: where it showed, as it showed,
+   out of the row; tbCompact. Its place is the bar's own, so nothing between is a box for
+   it meanwhile: the closed Streams panel's, on a phone. Its own values, not passed down:
+   setting them restyles the part, not all that is in it.) */
+@property --tb-ox{syntax:"<length>";inherits:false;initial-value:0px}
+@property --tb-oy{syntax:"<length>";inherits:false;initial-value:0px}
+@property --tb-ow{syntax:"<length>";inherits:false;initial-value:0px}
+@property --tb-oh{syntax:"<length>";inherits:false;initial-value:0px}
+@property --tb-od{syntax:"*";inherits:false}
+@property --tb-og{syntax:"*";inherits:false}
+.sticky-wrap.sticky-wrap .toolbar .tb-out.tb-out{display:var(--tb-od)!important;position:absolute!important;left:var(--tb-ox);top:var(--tb-oy);width:var(--tb-ow);height:var(--tb-oh);margin:0!important;gap:var(--tb-og);pointer-events:none}
+.sticky-wrap.tb-anim .controls{position:static}
 .sticky-wrap.tb-compact .toolbar{display:flex;align-items:center;gap:8px;padding-top:6px;padding-bottom:6px}
 .sticky-wrap.tb-compact .toolbar>.schedule-nav,.sticky-wrap.tb-compact .result-row,.sticky-wrap.tb-compact .grpill,
 .sticky-wrap.tb-compact .searchbox,.sticky-wrap.tb-compact .filter-menu,.sticky-wrap.tb-compact #parentOption{display:none!important}
@@ -13758,7 +13770,7 @@ const tbEdge = () => TB.h;
 // (tbCompact: the fold and unfold move a clip, not the height, and the heads stuck under
 // the bar move with its edge)
 const TB = { on: false, full: 0, fullPx: 0, last: window.scrollY, acc: 0, raf: 0, input: -1e9, drag: false, anim: null,
-  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '', flipT: -1e9, later: 0 };
+  h: 0, rootH: -1, fullCss: -1, foldPx: -1, sync: false, lv: [], slim: 0, slimKey: '', fullKey: '', flipT: -1e9, later: 0, out: [] };
 for (const t of ['keydown', 'focusin', 'click']) window.addEventListener(t, tbRootSync, { capture: true, passive: true });
 // (a touch on the page starts a scroll as often as a tap: a tap's click brings it)
 window.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') tbRootSync(); }, { capture: true, passive: true });
@@ -13831,12 +13843,102 @@ function tbSlimH(){ return TB.slimKey === tbSlimKey() ? TB.slim : 40; }
 // A fold's animations stop, and the values they started from inline go (the heads keep
 // the edge they were given: tbRootSync)
 function tbAnimEnd(run){
-  for (const x of [run.a, run.e, run.t, ...run.f]) if (x) x.cancel();
+  for (const x of [run.a, run.e, ...run.f, ...run.m]) if (x) x.cancel();
   stickyWrap.style.clipPath = '';
   stickyWrap.style.removeProperty('--tb-edge');
-  stickyWrap.querySelector('.toolbar').style.opacity = '';
   for (const el of run.fe) el.style.translate = '';
+  for (const el of run.me){ el.style.translate = ''; el.style.opacity = ''; el.style.zIndex = ''; }
+  tbOutEnd();
   if (TB.anim === run) TB.anim = null;
+}
+// The bar's own parts, which move from where they showed to where they come to rest as
+// it folds and unfolds (tbCompact): the day tabs, the view switches, the search box or
+// its button, Streams, Now, Display, the group pill and the result line. (The search box
+// and its button stand in for each other.)
+const TB_PARTS = ['#daytabs', '.toolbar>.schedule-nav', '.searchbox', '#searchMini', '#filterMenu', '#nowBtn', '#displayBtn', '.toolbar>.grpill', '.toolbar>.result-row'].map(s => stickyWrap.querySelector(s));
+const TB_SEARCH = 2, TB_MINI = 3, TB_NAV = 1;
+// Those the folded bar leaves out (the view switches only where it shows the day tabs),
+// and the one the unfolded bar leaves out
+const tbLeaving = (on, notabs) => on ? [notabs ? -1 : TB_NAV, TB_SEARCH, 4, 7, 8] : [TB_MINI];
+// Where each part shows (with what it is moving by, mid-fold), in one pass of reads; null
+// for one not in sight (not shown, or the phone's one-pixel result line). Mid-fold, how
+// solid each is too; and for those the new row leaves out, how they are laid out.
+function tbPartsAt(mid, leaving){
+  return TB_PARTS.map((el, i) => {
+    const r = el.getBoundingClientRect();
+    if (r.width <= 1 || r.height <= 1) return null;
+    const out = leaving.includes(i), cs = mid || out ? getComputedStyle(el) : null;
+    return { r, o: mid ? +cs.opacity : 1, d: out ? cs.display : '', g: out ? cs.gap : '' };
+  });
+}
+// A part the bar's new form leaves out stays where it showed, out of the row (tb-out: the
+// row is laid out without it), while it fades on its way; it goes when the fold ends.
+function tbOut(el, at, w){
+  const s = el.style;
+  s.setProperty('--tb-ox', at.r.left - w.left + 'px');
+  s.setProperty('--tb-oy', at.r.top - w.top + 'px');
+  s.setProperty('--tb-ow', at.r.width + 'px');
+  s.setProperty('--tb-oh', at.r.height + 'px');
+  s.setProperty('--tb-od', at.d);
+  s.setProperty('--tb-og', at.g);
+  el.classList.add('tb-out');
+  TB.out.push(el);
+}
+function tbOutEnd(){
+  for (const el of TB.out){
+    el.classList.remove('tb-out');
+    for (const p of ['--tb-ox', '--tb-oy', '--tb-ow', '--tb-oh', '--tb-od', '--tb-og']) el.style.removeProperty(p);
+  }
+  TB.out = [];
+}
+// How the bar's parts move as it folds or unfolds, over the fold's own time and easing,
+// each by a translate (the compositor's: nothing is laid out per frame), from where it
+// showed to where it comes to rest. One in both rows keeps its top left corner on the way
+// (the day tabs and Display change size: the first tab, the tabs' names and Display's
+// icon stay where they were). One in only one of the rows fades as it goes with the part
+// nearest it in that row (the view switches with the day tabs, Streams and the result
+// line with Now); the search box and its button, which stand in for each other, go
+// together, their right ends level, the box fading out as the button fades in. What
+// fades out starts over the new row, so the first frame shows what was there; what
+// fades in (but the search button) passes under what stays. Mid-way through a fold, each
+// starts from where it had got to and as solid as it was, so a quick turn back goes back
+// from there.
+function tbMorph(P0, P1){
+  const out = [], cy = r => r.top + r.height / 2, xy = (x, y) => `${x}px ${y}px`;
+  const shared = [], dy = [];
+  P0.forEach((a, i) => { if (a && P1[i]){ shared.push(i); dy[i] = a.r.top - P1[i].top; } });
+  const near = (at, rect) => {
+    let j = -1, d = Infinity;
+    for (const k of shared){ const dd = Math.abs(cy(rect(k)) - cy(at)); if (dd < d){ d = dd; j = k; } }
+    return j;
+  };
+  const pair = i => i === TB_SEARCH ? TB_MINI : i === TB_MINI ? TB_SEARCH : -1;
+  // (one animation each, on the fold's own easing: what fades in waits for the first part
+  // of the way, what fades out has gone before the last)
+  const fadeIn = t0 => [{ translate: t0, opacity: 0 }, { opacity: 0, offset: 0.3 }, { translate: '0px 0px', opacity: 1 }];
+  TB_PARTS.forEach((el, i) => {
+    const a = P0[i], b = P1[i], k = pair(i);
+    if (a && b){
+      const x = a.r.left - b.left, y = a.r.top - b.top, t0 = xy(x, y);
+      if (a.o < 0.99) out.push({ el, kf: [{ translate: t0, opacity: a.o }, { translate: '0px 0px', opacity: 1 }] });
+      else if (Math.abs(x) > 0.5 || Math.abs(y) > 0.5) out.push({ el, kf: [{ translate: t0 }, { translate: '0px 0px' }] });
+      // (Display's word, which only the unfolded bar shows, comes in as the button widens)
+      if (el === displayBtn && b.width - a.r.width > 2) out.push({ el: displayBtn.querySelector('.db-l'), kf: [{ opacity: 0 }, { opacity: 0, offset: 0.3 }, { opacity: 1 }] });
+    } else if (b){
+      let x = 0, y = 0;
+      const c = k >= 0 ? P0[k] : null, j = c ? -1 : near(b, j => P1[j]);
+      if (c){ x = c.r.right - b.right; y = cy(c.r) - cy(b); }
+      else if (j >= 0) y = dy[j];
+      out.push({ el, under: !c, kf: fadeIn(xy(x, y)) });
+    } else if (a && el.classList.contains('tb-out')){
+      let x = 0, y = 0;
+      const c = k >= 0 ? P1[k] : null, j = c ? -1 : near(a.r, j => P0[j].r);
+      if (c){ x = c.right - a.r.right; y = cy(c) - cy(a.r); }
+      else if (j >= 0) y = -dy[j];
+      out.push({ el, kf: [{ translate: '0px 0px', opacity: a.o }, { opacity: 0, offset: 0.7 }, { translate: xy(x, y), opacity: 0 }] });
+    }
+  });
+  return out;
 }
 // the bar's height in its own pixels, fractions kept (so holding it moves nothing below)
 const tbBoxH = () => parseFloat(getComputedStyle(stickyWrap).height) || stickyWrap.offsetHeight;
@@ -13846,6 +13948,11 @@ function tbCompact(on){
   // and the heads where they had got to.
   const run = TB.anim, follow = tbFollowers(), tabs = document.getElementById('daytabs');
   const notabs = on && (tabs.hidden || getComputedStyle(tabs).display === 'none');
+  const motion = !motionReduced() && !!stickyWrap.animate;
+  // (the bar's parts where they show, in the same pass of reads: mid-fold, where they had
+  // got to)
+  const leaving = tbLeaving(on, notabs);
+  const parts0 = motion ? tbPartsAt(!!run, leaving) : null, w0 = motion ? stickyWrap.getBoundingClientRect() : null;
   let vis = null;
   if (run){
     // (no progress yet: it was made this frame and has not started, so the bar still shows
@@ -13854,8 +13961,7 @@ function tbCompact(on){
     vis = p === null ? run.from : run.from + (run.to - run.from) * p;
     tbAnimEnd(run);
   }
-  const motion = !motionReduced() && !!stickyWrap.animate;
-  let h0, h1, h1px;
+  let h0, h1, h1px, parts1 = null;
   if (motion){
     // The bar's box keeps the room it takes now (its height and the margin under it) while
     // the row in it changes, so nothing under it moves, not even for a moment: a page that
@@ -13876,9 +13982,17 @@ function tbCompact(on){
     stickyWrap.classList.add('tb-anim');
     TB.on = on;
     TB.flipT = performance.now();
+    // (what the new row leaves out stays where it showed, out of the row, as it fades)
+    for (const i of leaving) if (i >= 0 && parts0[i]) tbOut(TB_PARTS[i], parts0[i], w0);
     if (on){ stickyWrap.classList.toggle('tb-notabs', notabs); tbPaintMini(); }
     stickyWrap.classList.toggle('tb-compact', on);
     h1 = h1px = stickyWrap.querySelector('.toolbar').getBoundingClientRect().bottom - stickyWrap.getBoundingClientRect().top + below;
+    // where the parts come to rest (the same layout: nothing has been written since)
+    parts1 = TB_PARTS.map(el => {
+      if (el.classList.contains('tb-out')) return null;
+      const r = el.getBoundingClientRect();
+      return r.width > 1 && r.height > 1 ? r : null;
+    });
   } else {
     stickyWrap.classList.remove('tb-anim');
     stickyWrap.style.height = '';
@@ -13917,6 +14031,7 @@ function tbCompact(on){
   }
   const done = () => {
     if (TB.anim) tbAnimEnd(TB.anim);
+    tbOutEnd();
     stickyWrap.classList.remove('tb-anim');
     stickyWrap.style.height = '';
     stickyWrap.style.marginBottom = m1 ? m1 + 'px' : '';
@@ -13940,7 +14055,7 @@ function tbCompact(on){
     const land = follow.map(f => f.el.getBoundingClientRect());
     // (each animated value is also set inline where it starts, held at its end until done:
     // the frame the animations are made in may be drawn before they apply)
-    const opt = { duration: ms, easing: EASE, fill: 'forwards' }, bar = stickyWrap.querySelector('.toolbar');
+    const opt = { duration: ms, easing: EASE, fill: 'forwards' };
     stickyWrap.style.clipPath = `inset(0 0 ${full - h0}px 0)`;
     const a = stickyWrap.animate([{ clipPath: `inset(0 0 ${full - h0}px 0)` }, { clipPath: `inset(0 0 ${full - h1}px 0)` }], opt);
     // the edge: the bar's own border sits at the bottom of its full box, under the clip
@@ -13948,10 +14063,8 @@ function tbCompact(on){
     let e = null;
     try { e = stickyWrap.animate([{ transform: `translateY(${h0 - 1}px)` }, { transform: `translateY(${h1 - 1}px)` }],
       { ...opt, pseudoElement: '::after' }); } catch (_) {}
-    // the row it changes to comes in softly, rather than replacing the old one in a frame
-    bar.style.opacity = '0.2';
-    const t = bar.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: ms * 0.7, easing: 'ease-out', fill: 'forwards' });
-    TB.anim = { a, e, t, f: [], fe: [], from: h0, to: h1, px: h1px };
+    TB.anim = { a, e, f: [], fe: [], m: [], me: [], from: h0, to: h1, px: h1px };
+    const morph = tbMorph(parts0, parts1);
     // the heads in sight: from where they showed to where they come to rest, by a translate
     // (the compositor's). One whose height follows the edge too (the A–Z rail, the
     // screen's height less the bar's, its letters centred in it) is laid out at its end and
@@ -13964,9 +14077,18 @@ function tbCompact(on){
       if (Math.abs(dy) > 0.5) moves.push([f.el, `0 ${dy}px`]);
     });
     for (const [el, tr] of moves) el.style.translate = tr;
+    for (const { el, kf, under } of morph){
+      if (kf[0].translate) el.style.translate = kf[0].translate;
+      if (kf[0].opacity != null) el.style.opacity = kf[0].opacity;
+      if (under) el.style.zIndex = '-1';
+    }
     for (const [el, tr] of moves){
       TB.anim.fe.push(el);
       TB.anim.f.push(el.animate([{ translate: tr }, { translate: '0 0' }], opt));
+    }
+    for (const { el, kf } of morph){
+      TB.anim.me.push(el);
+      TB.anim.m.push(el.animate(kf, opt));
     }
     a.onfinish = () => { if (TB.anim && TB.anim.a === a) done(); };
   } else done();
