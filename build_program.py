@@ -21,8 +21,8 @@ RETRIEVED = "24 November 2026"
 # sessions used, set by hand. (The latest session's own records gave about 2.0 billion
 # tokens processed, nearly all of it cached context read again at each step, and about 8.6
 # million written; it made about two thirds of the commits, so the whole is scaled up.)
-TOKENS_PROCESSED = "about 3 billion"
-TOKENS_WRITTEN = "about 13 million"
+TOKENS_PROCESSED = "about 3.5 billion"
+TOKENS_WRITTEN = "about 15 million"
 TOKENS_ASOF = "26 November 2026"
 
 # Talks Indico re-created under a new id (same contribution, new timetable entry). The page
