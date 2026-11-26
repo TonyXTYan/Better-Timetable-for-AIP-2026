@@ -13641,7 +13641,7 @@ function issueDisplay(){
     'text ' + at('text', 'default'), 'font ' + at('font', 'system'), 'colour ' + at('colour', 'quiet'),
     'contrast ' + at('contrast', mq('(prefers-contrast: more)') ? 'system (more)' : 'standard'),
     'motion ' + at('motion', mq('(prefers-reduced-motion: reduce)') ? 'system (reduced)' : 'system'),
-    'speed ' + at('speed', 'default'), 'pop-up width ' + at('popw', 'wide (default)'),
+    'speed ' + at('speed', 'default'), 'pop-up width ' + ({ narrow: 'narrower', full: 'full width' }[at('popw', '')] || 'wide (default)'),
   ].join(', ') + (mq('(forced-colors: active)') ? ', forced colours' : '');
 }
 function issueContext(kind){
