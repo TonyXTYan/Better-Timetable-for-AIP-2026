@@ -1,0 +1,3 @@
+{
+  "install": "python3 -m py_compile build_program.py normalize.py && if [ ! -d node_modules/playwright ]; then if node -e \"require('dns').lookup('registry.npmjs.org', e => process.exit(e ? 1 : 0))\" 2>/dev/null; then npm ci --no-audit --no-fund && ([ -n \"${PLAYWRIGHT_BROWSERS_PATH:-}\" ] && [ -d \"${PLAYWRIGHT_BROWSERS_PATH}\" ] || npx --yes playwright install chromium); else echo 'Skipping npm ci: registry.npmjs.org unreachable'; fi; fi"
+}
