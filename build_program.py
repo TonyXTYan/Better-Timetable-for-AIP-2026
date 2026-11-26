@@ -18,9 +18,9 @@ from normalize import affiliation_table, normalize_payload  # noqa: E402
 RETRIEVED = "24 November 2026"
 
 # The footer's acknowledgement of the tool that built the page: an estimate of the tokens its
-# sessions used, set by hand. (The latest session's own records gave about 2.0 billion
-# tokens processed, nearly all of it cached context read again at each step, and about 8.6
-# million written; it made about two thirds of the commits, so the whole is scaled up.)
+# sessions used, set by hand. (The latest session's own records gave about 2.5 billion
+# tokens processed, nearly all of it cached context read again at each step, and about 10.6
+# million written; it made about seven in ten of the commits, so the whole is scaled up.)
 TOKENS_PROCESSED = "about 3.5 billion"
 TOKENS_WRITTEN = "about 15 million"
 TOKENS_ASOF = "26 November 2026"
