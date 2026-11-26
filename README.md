@@ -159,7 +159,7 @@ user site's `404.html` that keeps `?query` and `#hash`).
 neutral grey, and colour appears only where it is data. Each stream takes its hue from a real
 spectral line (ANZCOP the 632.8 nm helium–neon laser, COMMAD a 455 nm blue LED, the AIP groups
 hydrogen Hβ, and so on); the colour key in Display options draws them on a spectral rule,
-400 to 700 nm, and the footer's Colour key tells the story. Display options also offer a Vivid
+400 to 700 nm, each line named beside its stream. Display options also offer a Vivid
 colour mode, where the stream colours fill the sessions instead of only marking them. Amber is kept for the sodium doublet that marks now. Each
 time slot is a white plate on the grey page, divided by hairlines, with no drop shadows. The
 type is one family at a time, with tabular figures for times: by default the device's own UI

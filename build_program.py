@@ -1641,17 +1641,15 @@ footer{margin:0 20px;padding:26px 0 50px;color:var(--muted);font-size:.8125rem;b
 footer h2{color:var(--ink);margin:0 0 6px;font-size:.875rem;line-height:1.55;letter-spacing:0}
 footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 footer p{margin:4px 0}
-footer .colophon .na-glyph{margin-left:2px}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
-/* four columns on the content width (About, with the congress's facts, as wide as Tips; the
-   colour key the fourth), two by two on tablets, one on phones */
+/* three columns on the content width (About, with the congress's facts, as wide as Tips;
+   Links between them), two on tablets, one on phones (the colour key is in Display options) */
 footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr)}}
+@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr)}}
 footer p{line-height:1.6;max-width:62ch}
 footer a{color:var(--ink)}
-footer .colophon p{font-size:.8125rem}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
@@ -3522,8 +3520,8 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   /* paper type: about 9.5pt, whatever the screen's text size (the list is long: abstracts open) */
   html,html[data-text]{font-size:12.5px!important}
   header.hero{background:none}
-  /* the colour key points to Display options, and the tips describe the screen: neither belongs on paper */
-  footer .colophon,footer .cols>div:nth-child(3){display:none}
+  /* the tips describe the screen: they don't belong on paper */
+  footer .cols>div:nth-child(3){display:none}
   footer{padding:10px 0 0;margin-top:0}
   .cards{display:block!important;overflow:visible!important;border:0!important}
   .card{break-inside:auto!important;border-left:3px solid var(--c,var(--ink-2));box-shadow:none!important}
@@ -3917,10 +3915,6 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.75 9.25a3 3 0 0 0 4.25 0l2-2a3 3 0 0 0-4.25-4.25l-.75.75M9.25 6.75a3 3 0 0 0-4.25 0l-2 2a3 3 0 0 0 4.25 4.25l.75-.75"/></svg><span><b>Shareable links</b>: the page address keeps your day, search and filters, so you can bookmark or share a view.</span></li>
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1.75 6a9 9 0 0 1 12.5 0M4.5 8.9a5 5 0 0 1 7 0M8 12h.01M2.5 2.5l11 11"/></svg><span><b>Offline</b>: once loaded, the page also works without a connection.</span></li>
       </ul>
-    </div>
-    <div class="colophon">
-      <h2>Colour key</h2>
-      <p>Each stream takes its colour from a spectral line. The key, with every line drawn at its wavelength, is in <span class="nw"><button type="button" class="linkish" data-colour-key>Display options</button>,</span> beside the Colour setting: Quiet keeps colour to thin lines, Vivid lets it fill each stream. ANZCOP is the 632.8&nbsp;nm helium&#8211;neon laser; COMMAD a 455&nbsp;nm InGaN blue LED; AIP groups hydrogen H&#946; at 486.1&nbsp;nm; Focus sessions the mercury e-line at 546.1&nbsp;nm, the wavelength lenses are focused at; Education &amp; PEG takes mercury&#8217;s yellow pair at 577 and 579&nbsp;nm, drawn as one line; Posters hydrogen H&#948; at 410.2&nbsp;nm; forums and special events the 467&nbsp;nm ytterbium-ion clock line; Congress events are a hydrogen lamp: its H&#945; line is at 656.3&nbsp;nm, and the discharge glows magenta because H&#945; mixes with the blue Balmer lines. Plenaries are white light, every stream at once, so they are printed in ink; meals and meetings are neutral greys. Now is marked by the sodium D doublet at 589.0 and 589.6&nbsp;nm <span class="na-glyph" aria-hidden="true"></span>.</p>
     </div>
   </div>
 </footer>
@@ -13305,8 +13299,8 @@ document.getElementById('sharedBanner').addEventListener('click', e => {
 const DISPLAY_KEY = 'aip2026-display';
 const displayDialog = document.getElementById('displayDialog');
 const displayBtn = document.getElementById('displayBtn');
-// (the button that opened the dialog has the focus back when it closes: the toolbar's, the
-// footer's, or the Colour key's; opened from history, the toolbar's)
+// (the button that opened the dialog has the focus back when it closes: the toolbar's or the
+// footer's; opened from history, the toolbar's)
 let displayOpener = null;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
@@ -13421,18 +13415,11 @@ function openDisplay(fromHistory, opener){
   syncDisplayForm();
   hideToast();
   displayDialog.showModal();
-  // (from the top each time, as the details; the Colour key scrolls on to the key)
+  // (from the top each time, as the details)
   displayDialog.scrollTop = 0;
   if (!fromHistory) pnlHistoryOpen('display');
 }
 for (const b of [displayBtn, document.getElementById('displayBtnFoot')]) b.addEventListener('click', () => openDisplay(false, b));
-// (the footer's Colour key opens Display options at the key)
-document.addEventListener('click', e => {
-  const k = e.target.closest('[data-colour-key]');
-  if (!k) return;
-  openDisplay(false, k);
-  document.getElementById('colourKey').scrollIntoView({ block: 'nearest' });
-});
 displayDialog.addEventListener('change', e => {
   if (e.target.name === 'dsText') setDisplay('text', e.target.value);
   else if (e.target.name === 'dsFont') setDisplay('font', e.target.value);
