@@ -1717,7 +1717,7 @@ footer h2{font-weight:700;color:var(--ink)}
    Links between them), two on tablets, one on phones (the colour key is in Display options) */
 footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr)}}
+@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1.4fr) minmax(0,1fr)}}
 footer p{line-height:1.6;max-width:62ch}
 /* under the columns, across the width: who and what the page owes */
 footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
@@ -3636,7 +3636,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
   html,html[data-text]{font-size:12.5px!important}
   header.hero{background:none}
   /* the tips describe the screen: they don't belong on paper */
-  footer .cols>div:nth-child(3){display:none}
+  footer .foot-tipcol{display:none}
   footer{padding:10px 0 0;margin-top:0}
   .cards{display:block!important;overflow:visible!important;border:0!important}
   .card{break-inside:auto!important;border-left:3px solid var(--c,var(--ink-2));box-shadow:none!important}
@@ -4001,21 +4001,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <p class="foot-issue-btns"><a class="display-btn" data-issue="data" href="@@ISSUE_DATA_HREF@@" target="_blank" rel="noopener">Request a data update<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a><a class="display-btn" data-issue="bug" href="@@ISSUE_BUG_HREF@@" target="_blank" rel="noopener">Report a problem<span class="visually-hidden"> (opens a new GitHub issue in a new tab)</span></a></p>
       </div>
     </div>
-    <div>
-      <h2>Links</h2>
-      <ul class="foot-links">
-        <li><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a></li>
-        <li><a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official program page</a></li>
-        <li><a href="https://www.aip.org.au/congress/register" target="_blank" rel="noopener">Register</a></li>
-        <li><a href="https://www.aip.org.au/congress/activities" target="_blank" rel="noopener">Activities &amp; social events</a></li>
-        <li><a href="https://www.aip.org.au/congress/speakers" target="_blank" rel="noopener">Speakers</a></li>
-        <li><a href="https://www.aip.org.au/congress/workshops" target="_blank" rel="noopener">Workshops</a></li>
-        <li><a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Source timetable (Indico)</a></li>
-        <li><a href="https://github.com/TonyXTYan/Better-Timetable-for-AIP-2026" target="_blank" rel="noopener">This page on GitHub (code, issues)</a></li>
-      </ul>
-      <p>Public lectures, the Welcome Reception, the Congress Dinner, Teachers Day and the Career Fair: <a href="#streams=events" data-show-stream="events">show the Congress events stream</a>.</p>
-    </div>
-    <div>
+    <div class="foot-tipcol">
       <h2>Tips</h2>
       <p class="foot-display"><button type="button" class="display-btn" id="displayBtnFoot" aria-haspopup="dialog" aria-controls="displayDialog">Display options</button><span>Text size, font, light or dark theme, colour, contrast, motion and pop-up width. Also in the toolbar, as its sliders button.</span></p>
       <ul class="foot-tips" role="list">
@@ -4031,11 +4017,25 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
         <li><svg class="ic" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M1.75 6a9 9 0 0 1 12.5 0M4.5 8.9a5 5 0 0 1 7 0M8 12h.01M2.5 2.5l11 11"/></svg><span><b>Offline</b>: once loaded, the page also works without a connection.</span></li>
       </ul>
     </div>
+    <div>
+      <h2>Links</h2>
+      <ul class="foot-links">
+        <li><a href="https://www.aip.org.au/congress" target="_blank" rel="noopener">Congress home</a></li>
+        <li><a href="https://www.aip.org.au/congress/program" target="_blank" rel="noopener">Official program page</a></li>
+        <li><a href="https://www.aip.org.au/congress/register" target="_blank" rel="noopener">Register</a></li>
+        <li><a href="https://www.aip.org.au/congress/activities" target="_blank" rel="noopener">Activities &amp; social events</a></li>
+        <li><a href="https://www.aip.org.au/congress/speakers" target="_blank" rel="noopener">Speakers</a></li>
+        <li><a href="https://www.aip.org.au/congress/workshops" target="_blank" rel="noopener">Workshops</a></li>
+        <li><a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Source timetable (Indico)</a></li>
+        <li><a href="https://github.com/TonyXTYan/Better-Timetable-for-AIP-2026" target="_blank" rel="noopener">This page on GitHub (code, issues)</a></li>
+      </ul>
+      <p>Public lectures, the Welcome Reception, the Congress Dinner, Teachers Day and the Career Fair: <a href="#streams=events" data-show-stream="events">show the Congress events stream</a>.</p>
+    </div>
   </div>
   <section class="foot-ack" aria-labelledby="ackTitle">
     <h2 id="ackTitle">Acknowledgements</h2>
     <p>The program is the work of the 26th Australian Institute of Physics Congress organisers, held with ANZCOP and COMMAD, and is published on their <a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Indico timetable</a>. Every title and abstract here belongs to its speakers and conveners. The Archivo typeface, by Omnibus-Type, is used under the SIL Open Font License.</p>
-    <p>This page was built and refined with <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>, Anthropic&#8217;s coding agent. By an estimate on @@TOKENS_ASOF@@, its sessions processed @@TOKENS_PROCESSED@@ tokens, nearly all of that context read again at each step, and wrote @@TOKENS_WRITTEN@@.</p>
+    <p>This page was built and refined with Claude Code, Anthropic&#8217;s coding agent. By an estimate on @@TOKENS_ASOF@@, its sessions processed @@TOKENS_PROCESSED@@ tokens, nearly all of that context read again at each step, and wrote @@TOKENS_WRITTEN@@.</p>
   </section>
 </footer>
 <section id="printDoc" class="print-doc" aria-hidden="true"></section>
