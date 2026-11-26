@@ -14536,6 +14536,9 @@ function tbMayFold(){
 }
 const tbUserScroll = () => TB.drag || performance.now() - TB.input < 1200;
 for (const type of ['wheel', 'touchmove', 'touchstart']) window.addEventListener(type, () => { TB.input = performance.now(); }, { passive:true });
+// (a tap's click: its touch was no scroll, and what the page scrolls as it answers it (a new
+// view, which may also scroll a little before it settles) leaves the toolbar as it is)
+window.addEventListener('click', () => { if (!TB.drag) TB.input = -1e9; }, { capture: true, passive: true });
 window.addEventListener('keydown', e => {
   if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(e.key) && !e.target.closest('input, textarea, select, [contenteditable]'))
     TB.input = performance.now();
