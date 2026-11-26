@@ -1454,11 +1454,12 @@ footer p{margin:4px 0}
 footer{padding:28px 0 56px}
 footer h2{font-weight:700;color:var(--ink)}
 /* three columns on the content width (About, with the congress's facts; Tips, the widest;
-   then Links, one to a line, the narrowest, so the three end at about the same height), two on
+   then Links, one to a line, the narrowest, so the three end at about the same height; About
+   and Tips stop at their lines' reading length, 62ch, and Links follows straight on), two on
    tablets, one on phones (the colour key is in Display options) */
 footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.25fr) minmax(0,1.75fr) minmax(14rem,.75fr)}.foot-links{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:0}}
+@media (min-width:1000px){footer .cols{--fr:calc(100% - 14rem - 64px);grid-template-columns:minmax(0,min(calc(var(--fr) * .4167),62ch)) minmax(0,min(calc(var(--fr) * .5833),62ch)) minmax(14rem,1fr)}.foot-links{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:0}}
 footer p{line-height:1.6;max-width:62ch}
 /* under the columns, across the width: who and what the page owes */
 footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
