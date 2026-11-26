@@ -2485,9 +2485,17 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-chip{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:3px 10px;border:1px solid var(--line);border-radius:var(--r-seg);background:var(--card);color:var(--ink-2);font-size:.8125rem;font-weight:620;white-space:nowrap}
 .bd-chip i{flex:none;width:3px;height:12px;border-radius:1px;background:var(--c)}
 .bd-chip:hover{border-color:var(--hover-line);color:var(--ink)}
-.bd-chip[aria-pressed="true"]{background:var(--cf,var(--accent));border-color:var(--cf,var(--accent));color:var(--fill-ink)}
-.bd-chip.bd-all[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+/* a picked chip's fill is a layer of its own over the chip's border, so switching a stream on
+   or off fades the fill (opacity) while the text colour eases across, as in the toolbar's
+   segmented controls (the timing is with the other pressable controls' below) */
+.bd-chip{position:relative;isolation:isolate}
+.bd-chip::before{content:"";position:absolute;inset:-1px;z-index:-1;border-radius:inherit;background:var(--cf,var(--accent));opacity:0;pointer-events:none}
+.bd-chip.bd-all::before{background:var(--accent)}
+.bd-chip[aria-pressed="true"]::before{opacity:1}
+.bd-chip[aria-pressed="true"]{color:var(--fill-ink)}
+.bd-chip.bd-all[aria-pressed="true"]{color:var(--accent-ink)}
 .bd-chip[aria-pressed="true"] i{background:currentColor}
+@media (forced-colors:active){.bd-chip::before{display:none}}
 .bd-done{max-width:52ch;margin:0 auto;padding:36px 10px;text-align:center}
 .bd-done .ag-empty-icon{font-size:2.125rem;color:var(--star)}
 .bd-done h3{margin:6px 0;font-size:1.25rem;font-weight:720}
@@ -2498,6 +2506,18 @@ button.bd-cxkey:hover{border-color:var(--ink);background:var(--cx-plate-hover,va
 .bd-kbd{flex:0 1 auto;min-width:0;margin:0 0 0 auto;padding-left:8px;font-size:.75rem;line-height:1.3;color:var(--muted);text-align:center}
 .bd-kbd[hidden]{display:none}
 @media (max-width:720px),(max-height:520px),(hover:none),(pointer:coarse),print{.bd-kbd{display:none}}
+/* streams or breaks shown changing (bdRestream): the body holds the effects layer (the old
+   heading line fading, the plate's moving bottom edge); the plate holds the sessions leaving */
+.bd-body.bd-fxon,.bd-cards.bd-fxon{position:relative}
+.bd-cards.bd-hold{align-content:start}
+/* (where the slot ends up fitting the body, its scrollbar stays away meanwhile: what is held
+   or leaving would bring a classic one back, and the cards would reflow narrower under their
+   motion, then wider again once it ends) */
+.bd-body.bd-fit{overflow-y:hidden}
+.bd-fx{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.bd-fx>*,.bd-cards>.bd-leave{position:absolute;margin:0;pointer-events:none}
+/* (the edge drawn over the plate's own bottom and sides: the dialog's ground round and below it) */
+.bd-cap{box-sizing:border-box;border:1px solid var(--line);border-top:0;background:none}
 /* a session's talks folding out or away (bdFold): its height runs in script */
 .bd-tlist.bd-run{overflow:clip}
 @supports not (overflow:clip){.bd-tlist.bd-run{overflow:hidden}}
@@ -2679,6 +2699,10 @@ html{-webkit-tap-highlight-color:transparent}
 /* (the two ids have rules of their own: an id inside :is() would lend the whole list its
    weight, and this rule would then override the segmented controls' colour cross-fade) */
 :is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,.dd-switch,button.badge,.dh-focus,.seg label,.vt-open,.vt-tk,button.hz-bar,.hz-head,.hz-talk,.week-blk,.week-tk,.t-open,.linkish),#clr,#grpclr{transition:scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
+/* (the stream chips' fill and text ease across when a stream is switched on or off) */
+button.bd-chip{transition:color calc(200ms * var(--mo,1)) var(--ease),scale calc(var(--mo,1) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo,1) * 160ms) ease-out,opacity calc(var(--mo,1) * 160ms) ease-out}
+.bd-chip::before{transition:opacity calc(200ms * var(--mo,1)) var(--ease)}
+.bd-chip i{transition:background-color calc(200ms * var(--mo,1)) var(--ease)}
 :is(.toggle,.daytab,.agenda-views button,.chip,.bd-chip,.fp-all,.star,.talk-star,.ag-btn,.ag-iun,button.badge,.dh-focus,.seg label):not(:disabled):active,#clr:not(:disabled):active,#grpclr:not(:disabled):active{scale:.95;filter:var(--press);transition-duration:0s}
 .agenda-views button:not([aria-pressed="true"]):active,.star:active,.talk-star:not(.on):active{background:var(--surface-3)}
 .dd-switch:active{scale:.985;filter:var(--press);transition-duration:0s}
@@ -11118,13 +11142,34 @@ function bdCard(s, parallel){
       <ul class="bd-tlist" id="bdt-${esc(s.id)}"${open ? '' : ' hidden'}>${talks.map(t => bdTalk(s, t)).join('')}</ul>` : ''}
   </article>`;
 }
-// The stream chips: All, then each stream with sessions in the slots shown.
+// The stream chips: All, then each stream with sessions in the slots shown. They are kept
+// from one paint to the next (only their state changes, so its colour eases across, and the
+// focus stays); a chip new to the row (breaks and meetings included) fades in.
 function bdPaintChips(){
   const present = new Set(congressSlots().flatMap(sl => sl.sessions.filter(s => bd.admin || !isAdminSession(s)).map(s => s.cat)));
   for (const k of [...bd.cats]) if (!present.has(k)) bd.cats.delete(k);
-  bdEl('bdChips').innerHTML = `<button type="button" class="bd-chip bd-all" data-bd-cat="" aria-pressed="${!bd.cats.size}">All streams</button>` +
-    Object.keys(DATA.cats).filter(k => present.has(k)).map(k =>
-      `<button type="button" class="bd-chip" data-bd-cat="${k}" aria-pressed="${bd.cats.has(k)}" title="${esc(DATA.cats[k])}" style="--c:${CAT_COLORS[k][0]};--cf:var(--${k}-fill)"><i aria-hidden="true"></i>${esc(BD_AB[k] || DATA.cats[k])}</button>`).join('');
+  const box = bdEl('bdChips'), keys = ['', ...Object.keys(DATA.cats).filter(k => present.has(k))];
+  const have = new Map([...box.children].map(b => [b.dataset.bdCat, b]));
+  const fresh = [];
+  keys.forEach((k, i) => {
+    let b = have.get(k);
+    if (!b){
+      b = bdFrag(k ? `<button type="button" class="bd-chip" data-bd-cat="${k}" title="${esc(DATA.cats[k])}" style="--c:${CAT_COLORS[k][0]};--cf:var(--${k}-fill)"><i aria-hidden="true"></i>${esc(BD_AB[k] || DATA.cats[k])}</button>`
+        : '<button type="button" class="bd-chip bd-all" data-bd-cat="">All streams</button>');
+      fresh.push(b);
+    }
+    have.delete(k);
+    if (box.children[i] !== b) box.insertBefore(b, box.children[i] || null);
+    b.setAttribute('aria-pressed', k ? bd.cats.has(k) : !bd.cats.size);
+  });
+  for (const b of have.values()) b.remove();
+  if (buildDialog.open && !motionReduced() && box.animate && fresh.length < keys.length)
+    for (const b of fresh) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * motionK(), delay: MO_S / 3 * motionK(), easing: EASE, fill: 'backwards' });
+}
+function bdFrag(html){
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
 }
 
 function bdRenderSlot(){
@@ -11149,12 +11194,16 @@ function bdRenderSlot(){
   }
   const slot = bd.slots[bd.i];
   const sessions = bdSessions(slot);
-  const [a, b] = bdSpan(slot);
-  body.innerHTML = `<div class="bd-slot-head"><h3>${esc(slot.d.label)}<span class="visually-hidden">, </span><span class="bd-slot-t">${a}–${b}</span></h3>
-    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''}, <span id="bdSlotSaved"></span></p>
-    <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p><p class="bd-cxnote soft" id="bdSlotCxs" hidden></p></div>
-    <div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
+  body.innerHTML = bdHead(slot, sessions) + `<div class="bd-cards">${sessions.map(s => bdCard(s, sessions.length)).join('')}</div>`;
   body.scrollTop = 0;
+}
+// The slot's heading: its day and time, how many sessions show, what is saved, its clashes
+// (bdPaintChecks fills in the last two).
+function bdHead(slot, sessions){
+  const [a, b] = bdSpan(slot);
+  return `<div class="bd-slot-head"><h3>${esc(slot.d.label)}<span class="visually-hidden">, </span><span class="bd-slot-t">${a}–${b}</span></h3>
+    <p class="bd-slot-sub">${sessions.length === 1 ? 'One session' : sessions.length + ' parallel sessions'}${bd.cats.size ? ` in the streams picked (of ${slot.sessions.filter(s => bd.admin || !isAdminSession(s)).length})` : ''}, <span id="bdSlotSaved"></span></p>
+    <button type="button" class="bd-cxkey" id="bdCxKey" hidden></button><p class="bd-cxnote" id="bdSlotCx" hidden></p><p class="bd-cxnote soft" id="bdSlotCxs" hidden></p></div>`;
 }
 
 // Ticks follow the saved stars, so a change made anywhere (the details dialog too) shows here.
@@ -11324,7 +11373,8 @@ function bdPaintScale(){
 // from half way, quickly and with no ghost, so nothing queues and the content keeps up
 // with the thumb; letting go settles it with a short nudge. Each change cancels the last
 // one's motion, the ghost leaving from where the content had got to. A change of streams
-// or of breaks shown fades in. Nothing moves with reduced motion.
+// or of breaks shown that keeps the slot moves its sessions (bdRestream); one that leaves
+// the slot with none to show fades the next slot in. Nothing moves with reduced motion.
 const BD_STEP = 32, BD_JUMP = 64;
 let bdMove = null;   // the change in motion: { anims, ghost, t, dir }
 function bdMoveEnd(){
@@ -11338,8 +11388,9 @@ function bdMoveEnd(){
 // returned function, called once the new content is in, starts the motion.
 function bdMovePrep(how, dir, far){
   const body = bdEl('bdBody'), prev = bdMove, k = motionK(), now = performance.now();
-  if (!how || motionReduced() || !buildDialog.open || !body.animate || !body.firstElementChild){ bdMoveEnd(); return null; }
+  if (!how || motionReduced() || !buildDialog.open || !body.animate || !body.firstElementChild){ bdMoveEnd(); bdFlipEnd(); return null; }
   const quick = how === 'drag' || how === 'fade' || (!!prev && now - prev.t < MO_S * k);
+  if (quick) bdFlipEnd();
   // where the shown content had got to, for the ghost to leave from
   let from = null;
   if (prev && !quick){
@@ -11366,6 +11417,7 @@ function bdMovePrep(how, dir, far){
       height: br.height / s + 'px' });
     ghost.append(...body.childNodes);
     ghost.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    bdFlipDrop();
   }
   return () => {
     const kids = [...body.children], anims = [];
@@ -11408,6 +11460,177 @@ function bdSettle(){
   const anims = kids.map(el => el.animate(kf, { duration: MO_S * k, easing: EASE_EM }));
   const s = bdMove = { anims, ghost: null, t: m.t, dir: m.dir };
   anims[0].finished.then(() => { if (bdMove === s) bdMoveEnd(); }, () => {});
+}
+// Streams or breaks shown changing while the slot stays (a stream chip, Include breaks):
+// the slot is updated in place. The cards that stay are the same elements, so their talks
+// stay open or folded and the body keeps its scroll; new cards are added and the others
+// taken out. With motion (FLIP): each card that stays glides from where it showed to its new
+// place, a card taken out leaves as a copy fading and shrinking where it was, a new one
+// fades and grows in where it belongs, a line of the heading that changes ("5 parallel
+// sessions") fades over to the new one, and the plate's bottom edge moves with its height
+// (an edge drawn over the plate, which is held at the taller height until it settles).
+// Transform and opacity only, as Web Animations; the long duration with the emphasised ease
+// for what moves, the short one for fades, both times Speed. A change while the last one
+// still runs starts from wherever everything showed (a card on its way out comes back from
+// there), as does one while a change of slot runs; a change of slot during one takes over
+// (the old slot leaves as it is). Nothing moves with reduced motion.
+let bdFlip = null;   // the change in motion: { anims, gone, fin }
+function bdFlipEnd(){
+  const f = bdFlip;
+  if (!f) return;
+  bdFlip = null;
+  for (const a of f.anims) a.cancel();
+  f.fin();
+}
+// (a change of slot takes the content as it shows into its ghost, effects included)
+function bdFlipDrop(){
+  const f = bdFlip;
+  if (!f) return;
+  bdFlip = null;
+  bdEl('bdBody').classList.remove('bd-fxon', 'bd-fit');
+}
+// (prep: the slider's new slots and scale, painted once what shows now is measured: its
+// text can change the header's height and so move the body)
+function bdRestream(prep){
+  const body = bdEl('bdBody'), k = motionK();
+  const head = body.querySelector(':scope > .bd-slot-head'), box = body.querySelector(':scope > .bd-cards');
+  const move = !motionReduced() && buildDialog.open && !!body.animate && !!head && !!box;
+  // First: where everything shows now, against the body's box (the dialog may be scaled)
+  let bR = body.getBoundingClientRect();
+  const sc = bR.width / body.offsetWidth || 1;
+  const at = el => { const r = el.getBoundingClientRect(); return { x: (r.left - bR.left) / sc, y: (r.top - bR.top) / sc, w: r.width / sc, h: r.height / sc }; };
+  const seen = el => { let o = 1; for (let e = el; e && e !== body; e = e.parentElement) o *= +getComputedStyle(e).opacity; return o; };
+  const was = new Map();
+  let plate = null, edge = 0, lines = null;
+  if (move){
+    for (const c of box.children){
+      const id = c.dataset.bdCard || c.dataset.bdLeave;
+      if (id) was.set(id, { ...at(c), op: seen(c), ow: c.offsetWidth, oh: c.offsetHeight });
+    }
+    plate = { ...at(box), op: seen(box) };
+    const cap = bdFlip?.cap;
+    edge = cap ? at(cap).y + at(cap).h : plate.y + plate.h;
+    lines = [...head.children].map(el => ({ t: el.textContent, hid: el.hidden, op: seen(el) }));
+    lines.r = at(head);
+  }
+  const top = body.scrollTop, gone = bdFlip?.gone || new Map();
+  bdMoveEnd();
+  bdFlipEnd();
+  prep();
+  if (!head || !box){ bdGo(bd.i, 'fade'); return; }
+  const slot = bd.slots[bd.i], sessions = bdSessions(slot), ids = new Set(sessions.map(s => s.id));
+  // the update itself
+  const have = new Map([...box.querySelectorAll(':scope > [data-bd-card]')].map(c => [c.dataset.bdCard, c]));
+  for (const [id, c] of have) if (!ids.has(id)){ c.remove(); gone.set(id, c); }
+  sessions.forEach((s, i) => {
+    let c = have.get(s.id) || gone.get(s.id);
+    gone.delete(s.id);
+    if (!c) c = bdFrag(bdCard(s, sessions.length));
+    if (box.children[i] !== c) box.insertBefore(c, box.children[i] || null);
+  });
+  const nh = bdFrag(bdHead(slot, sessions));
+  head.replaceWith(nh);
+  bdPaintChecks();
+  body.scrollTop = top;
+  if (!move) return;
+  // (all against the body's box as it is now: where the body moved, its content shows still)
+  const b2 = body.getBoundingClientRect(), sx0 = (b2.left - bR.left) / sc, sy0 = (b2.top - bR.top) / sc;
+  bR = b2;
+  for (const f of [...was.values(), plate, lines.r]){ f.x -= sx0; f.y -= sy0; }
+  edge -= sy0;
+  // Last, and the motion from the one to the other
+  const ms = MO_L * k, fade = MO_S * k, anims = [], vh = body.clientHeight;
+  const now = at(box), off = (r, h) => r.y + h < -8 || r.y > vh + 8;
+  if (body.scrollHeight <= vh) body.classList.add('bd-fit');
+  const rs = new Map([...box.children].map(c => [c, at(c)]));   // (all read before any motion starts)
+  const dx = plate.x - now.x, dy = plate.y - now.y;
+  const glide = { duration: ms, easing: EASE_EM };
+  if (Math.abs(dx) > .5 || Math.abs(dy) > .5) anims.push(box.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], glide));
+  if (plate.op < .99) anims.push(box.animate([{ opacity: plate.op }, { opacity: 1 }], { duration: fade, easing: EASE }));
+  for (const c of box.children){
+    const f = was.get(c.dataset.bdCard), r = rs.get(c);
+    if (!f){
+      if (!off(r, r.h)) anims.push(c.animate([{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], { duration: fade, delay: fade / 3, easing: EASE_EM, fill: 'backwards' }));
+      continue;
+    }
+    if (off(f, f.h) && off(r, r.h)) continue;
+    // (from its top left as it showed, at the size it showed: a card on its way in or out is smaller)
+    const s = f.w / r.w, tx = f.x - r.x - dx - r.w * (1 - s) / 2, ty = f.y - r.y - dy - r.h * (1 - s) / 2;
+    if (Math.abs(tx) > .5 || Math.abs(ty) > .5 || Math.abs(s - 1) > .002)
+      anims.push(c.animate([{ transform: `translate(${tx}px,${ty}px)${Math.abs(s - 1) > .002 ? ` scale(${s})` : ''}` }, { transform: 'none' }], glide));
+    if (f.op < .99) anims.push(c.animate([{ opacity: f.op }, { opacity: 1 }], { duration: fade, easing: EASE }));
+  }
+  // the cards taken out: a copy of each, where it showed, fading and shrinking
+  const fx = document.createElement('div');
+  fx.className = 'bd-fx';
+  fx.setAttribute('aria-hidden', 'true');
+  fx.inert = true;
+  const strip = el => {
+    el.removeAttribute('id');
+    el.querySelectorAll('[id],[data-bd-id],[data-session-detail],[aria-controls]').forEach(x => ['id', 'data-bd-id', 'data-session-detail', 'data-talk-detail', 'aria-controls'].forEach(a => x.removeAttribute(a)));
+    el.setAttribute('aria-hidden', 'true');
+    el.inert = true;
+    return el;
+  };
+  const leave = [];
+  for (const [id, src] of gone){
+    const f = was.get(id);
+    if (!f || f.op < .03 || off(f, f.h)){ continue; }
+    const c = strip(src.cloneNode(true));
+    c.removeAttribute('data-bd-card');
+    c.removeAttribute('data-sid');
+    c.dataset.bdLeave = id;
+    c.classList.add('bd-leave');
+    const s = Math.abs(f.w / f.ow - 1) < .01 ? 1 : f.w / f.ow;
+    Object.assign(c.style, { left: f.x + f.w / 2 - f.ow / 2 - now.x - dx - box.clientLeft + 'px', top: f.y + f.h / 2 - f.oh / 2 - now.y - dy - box.clientTop + 'px', width: f.ow + 'px', height: f.oh + 'px' });
+    leave.push([c, f, s]);
+  }
+  if (leave.length) box.classList.add('bd-fxon');
+  for (const [c, f, s] of leave){
+    box.prepend(c);   // (under the cards that stay, which may glide over it)
+    anims.push(c.animate([{ opacity: f.op, transform: s === 1 ? 'none' : `scale(${s})` }, { opacity: 0, transform: `scale(${s * .9})` }], { duration: fade * Math.max(.4, f.op), easing: EASE, fill: 'forwards' }));
+  }
+  // the plate's bottom edge: from where it showed to where it ends, the plate held at the
+  // taller height meanwhile (its rows at the top, as they will be)
+  const end = now.y + now.h, sy = body.scrollTop, cs = getComputedStyle(box);
+  let cap = null, held = 0;
+  if (Math.abs(edge - end) > .5){
+    if (edge - dy > end){ held = edge - dy - now.y; box.style.minHeight = held + 'px'; box.classList.add('bd-hold'); }
+    const R = parseFloat(cs.borderBottomLeftRadius) || 0, ch = Math.max(R, 2) + 1, sx = Math.abs(dx) + 2;
+    const t0 = Math.min(edge, end) - ch, t1 = Math.max(edge, end, now.y + held);
+    const wrap = document.createElement('div');
+    Object.assign(wrap.style, { left: now.x - sx + 'px', top: t0 + sy + 'px', width: now.w + 2 * sx + 'px', height: t1 - t0 + 'px', overflow: 'hidden' });
+    cap = document.createElement('div');
+    cap.className = 'bd-cap';
+    const sp = Math.ceil((t1 - t0) / 2) + sx + 2;
+    Object.assign(cap.style, { position: 'absolute', left: sx + 'px', top: end - ch - t0 + 'px', width: now.w + 'px', height: ch + 'px', borderRadius: `0 0 ${cs.borderBottomRightRadius} ${cs.borderBottomLeftRadius}`, boxShadow: `0 ${sp}px 0 ${sp}px var(--card)` });
+    wrap.append(cap);
+    fx.append(wrap);
+    anims.push(cap.animate([{ transform: `translate(${dx}px,${edge - end}px)` }, { transform: 'none' }], glide));
+  }
+  // the heading: a line that changed fades out (a copy, where it showed) as the new one fades in
+  const kids = [...nh.children];
+  const diff = kids.map((el, i) => !lines[i] || lines[i].t !== el.textContent || lines[i].hid !== el.hidden);
+  if (diff.some(Boolean)){
+    strip(head);
+    head.classList.add('bd-hghost');
+    [...head.children].forEach((el, i) => { if (!diff[i] || lines[i].hid) el.style.visibility = 'hidden'; else if (lines[i].op < .99) el.style.opacity = lines[i].op; });
+    Object.assign(head.style, { position: 'absolute', zIndex: 2, boxSizing: 'border-box', left: lines.r.x + 'px', top: lines.r.y + sy + 'px', width: lines.r.w + 'px', height: lines.r.h + 'px', margin: 0, background: 'none', border: 0 });
+    fx.append(head);
+    anims.push(head.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fade / 2, easing: EASE, fill: 'forwards' }));
+    kids.forEach((el, i) => { if (diff[i] && !el.hidden) anims.push(el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fade, delay: fade / 3, easing: EASE, fill: 'backwards' })); });
+  }
+  if (fx.childElementCount){ body.classList.add('bd-fxon'); body.append(fx); }
+  if (!anims.length){ fx.remove(); box.classList.remove('bd-fxon'); body.classList.remove('bd-fit'); return; }
+  const f = bdFlip = { anims, gone, cap, fin(){
+    fx.remove();
+    for (const [c] of leave) c.remove();
+    box.classList.remove('bd-fxon', 'bd-hold');
+    box.style.minHeight = '';
+    body.classList.remove('bd-fxon', 'bd-fit');
+  } };
+  const last = anims.reduce((a, b) => b.effect.getComputedTiming().endTime > a.effect.getComputedTiming().endTime ? b : a);
+  last.finished.then(() => { if (bdFlip === f) bdFlipEnd(); }, () => {});
 }
 // how: undefined (at once), 'nav' (a step or a jump, by distance), 'drag' or 'fade'
 function bdGo(i, how){
@@ -11517,11 +11740,12 @@ bdEl('bdDays').addEventListener('click', e => {
 });
 // After the slots shown change (breaks, streams): stay at the same time of the week.
 function bdReslot(){
-  const key = bd.slots[bd.i].key;
-  bd.slots = bdVisibleSlots();
-  bdLayoutScale();
-  if (bd.done){ bd.i = bdIndexFor(key); bdPaintScale(); bdPaintChecks(); }
-  else bdGo(bdIndexFor(key), 'fade');
+  const key = bd.slots[bd.i].key, slots = bdVisibleSlots();
+  const at = () => { bd.slots = slots; bdLayoutScale(); return bdIndexFor(key); };
+  if (!bd.done && slots.some(sl => sl.key === key)){ bdRestream(() => { bd.i = at(); bdPaintScale(); }); return; }
+  const i = at();
+  if (bd.done){ bd.i = i; bdPaintScale(); bdPaintChecks(); }
+  else bdGo(i, 'fade');   // (the slot has none of the streams picked: on to the next that has)
 }
 // Expand all talks: every session's talks unfold here and in each slot after; a session
 // folded by hand stays folded until the box changes again (or the dialog closes).
@@ -11531,7 +11755,7 @@ bdEl('bdExpand').addEventListener('change', e => {
   bd.folds.clear();
   if (bd.done) return;
   const n = bdSessions(bd.slots[bd.i]).length;
-  bdEl('bdBody').querySelectorAll('.bd-tlist').forEach(ul => bdFold(ul, bdTalksOpen(slotById(ul.closest('[data-bd-card]').dataset.bdCard), n)));
+  bdEl('bdBody').querySelectorAll('[data-bd-card] .bd-tlist').forEach(ul => bdFold(ul, bdTalksOpen(slotById(ul.closest('[data-bd-card]').dataset.bdCard), n)));
 });
 bdEl('bdAdmin').addEventListener('change', e => {
   bd.admin = e.target.checked;
@@ -11582,6 +11806,7 @@ bdEl('bdClose').addEventListener('click', () => buildDialog.close());
 lightDismiss(buildDialog, () => buildDialog.close());
 buildDialog.addEventListener('close', () => {
   bdMoveEnd();
+  bdFlipEnd();
   pnlHistoryClose();
   if (bd.nav){ bd.nav = false; return; }
   if (bd.changed) rerender();
