@@ -368,28 +368,37 @@ header.hero{container:hero / inline-size}
     .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
   }
 }
-/* On a screen at least 721px wide (paper keeps the layout above): the sentence keeps a
-   reading measure, three balanced lines in a left column of at most 30rem, and Now and next
-   takes the rest, up to 44rem (wide enough for nearly every session's title in full, narrow
-   enough that a short title stays near its time), at the right. The wordmark keeps its one
-   line: the left column is never narrower than it (--hero-h1, a little wider in Archivo),
-   and where that would leave the panel under 17rem, the panel moves under the sentence. */
+/* On a screen at least 721px wide (paper keeps the layout above), with rows to show: Now and
+   next takes the width first, up to 44rem (wide enough for nearly every session's title in
+   full), at the right, and the sentence keeps the rest, in a left column of 25rem (three
+   balanced lines) up to 46rem (two). Where that is too little, the wordmark gives way first,
+   in size, down to 20rem wide (never so far that the panel is narrower than 24rem would
+   allow), then the sentence to the wordmark's width, then the panel, to 17rem; under that the
+   panel moves under the sentence, as above. --hero-h1 is the wordmark's width (wider in
+   Archivo), --hero-k its size for that width. With nothing to list, the countdown sits
+   alone at the right of a sentence up to 46rem wide. */
 @media screen and (min-width:721px) and (min-height:501px),screen and (min-width:721px) and (orientation:portrait){
-  :root{--hero-h1:23.5rem}
-  :root[data-font="archivo"]{--hero-h1:28rem}
+  .hero-inner{--hero-full:23.5rem;--hero-k:calc(2.5 / 23.5)}
+  :root[data-font="archivo"] .hero-inner{--hero-full:28rem;--hero-k:calc(2.5 / 28)}
+  .hero-inner{--hero-h1:clamp(20rem,100cqi - 24rem - 72px,var(--hero-full))}
   .hero h1{white-space:nowrap}
-  .hero-inner{grid-template-columns:minmax(auto,30rem) minmax(max-content,1fr)}
-  .hero-inner:has(.hn-on){grid-template-columns:minmax(min(var(--hero-h1),100% - 17rem - 32px),30rem) minmax(min(24rem,100% - var(--hero-h1) - 32px),1fr)}
+  .hero-inner:has(.hn-on) h1{font-size:calc(var(--hero-h1) * var(--hero-k))}
+  .hero-inner{grid-template-columns:minmax(auto,46rem) minmax(max-content,1fr)}
+  .hero-inner:has(.hn-on){grid-template-columns:max(clamp(var(--hero-h1),100% - 44rem - 32px,46rem),min(25rem,100% - 24rem - 32px)) minmax(0,1fr)}
   .hero-nn.hn-on{width:44rem}
-  @container hero (width < calc(40.5rem + 72px)){
-    :root:not([data-font="archivo"]) .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
-    :root:not([data-font="archivo"]) .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
-  }
-  @container hero (width < calc(45rem + 72px)){
-    :root[data-font="archivo"] .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
-    :root[data-font="archivo"] .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
+  @container hero (width < calc(37rem + 72px)){
+    .hero-inner{--hero-h1:var(--hero-full)}
+    .hero-inner:has(.hn-on){grid-template-columns:minmax(0,1fr);row-gap:14px}
+    .hero-inner:has(.hn-on) .hero-side{align-items:flex-start}
   }
 }
+/* (with nothing more to list, the panel is its note alone, beside the heading) */
+.hero-nn.hn-on:not(:has(.hn-plate)){width:24rem}
+.hero-nn.hn-on .hn-note{text-align:left}
+/* a dotted leader from each title to its time, so a short title in a wide panel still reads
+   with its time (the title covers it, on the plate's colour) */
+.hero-nn .up-next>div::after{content:"";grid-column:2;grid-row:1;align-self:baseline;height:0;border-bottom:1.5px dotted var(--hover-line);margin:0 -4px 0 0;transform:translateY(-.28em)}
+.hero-nn .up-next>div>.linkish:not(.hn-more){justify-self:start;max-width:calc(100% + 6px);margin-right:-6px;position:relative;z-index:1;background:var(--card);padding-right:6px}
 @container (max-width:20rem){.hero-nn .un-soon{display:none}}
 @container (max-width:16.5rem){.hero-nn .up-next>div>.linkish:not(.hn-more){white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}}
 @media (forced-colors:active){.hn-src button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText}}
