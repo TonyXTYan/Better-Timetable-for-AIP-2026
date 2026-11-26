@@ -320,6 +320,12 @@ header.hero{background:var(--bg);color:var(--ink);padding:24px 0 0}
 .hn-body{display:grid;grid-template-columns:minmax(0,1fr)}
 .hn-pane{grid-area:1/1;min-width:0}
 .hn-pane:not(.is-on){visibility:hidden}
+/* (a switch in motion, heroSwap: both are shown, the one leaving over the one picked, so
+   that its rows are seen going; its plate's frame is gone, the picked one's frame growing or shrinking
+   from the leaving one's size) */
+.hn-body.hn-anim .hn-pane{visibility:visible}
+.hn-body.hn-anim .hn-pane:not(.is-on){position:relative;z-index:1}
+.hn-body.hn-anim .hn-pane:not(.is-on) .hn-plate.hn-ghost{border-color:transparent;background:transparent}
 .hn-empty{margin:0;padding:6px 0 0;font-size:.8125rem;line-height:1.4;color:var(--muted)}
 .hn-empty .linkish{font-weight:650}
 .hn-src{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:var(--r-ctl);background:var(--card)}
@@ -2959,8 +2965,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
    lie exactly over each other. Before the script has placed it, and in forced colours, the
    chosen option just keeps its own fill. Reduced motion: it moves at once. */
 @media (forced-colors:none){
-  .agenda-views.seg-ind,.seg.seg-ind,.hz-zoom.seg-ind{position:relative;isolation:isolate}
-  .agenda-views.seg-ind::before,.seg.seg-ind::before,.hz-zoom.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-bw,var(--seg-w));height:var(--seg-bh,var(--seg-h));transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none}
+  .agenda-views.seg-ind,.seg.seg-ind,.hz-zoom.seg-ind,.hn-src.seg-ind{position:relative;isolation:isolate}
+  .agenda-views.seg-ind::before,.seg.seg-ind::before,.hz-zoom.seg-ind::before,.hn-src.seg-ind::before{content:"";position:absolute;left:0;top:0;z-index:0;width:var(--seg-bw,var(--seg-w));height:var(--seg-bh,var(--seg-h));transform:translate(var(--seg-x),var(--seg-y));border-radius:var(--r-seg);background:var(--accent);pointer-events:none}
   /* (sliding, segSlide: the indicator is as big as the larger of the two options, and a
      clip, rounded as it is, cuts it down to the size between them; the clip and the
      transform both run on the compositor, so the slide keeps going while the page redraws) */
@@ -2971,15 +2977,15 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
-  .hz-zoom.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
-  .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
+  .hz-zoom.seg-ind>button,.hn-src.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
+  .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover,.hn-src.seg-moving>button[aria-pressed="true"],.hn-src.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .seg.seg-ind label{z-index:1}
   .seg.seg-ind label>span,.seg.seg-ind small{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
   /* (the moving, snap and hold rules name the group, seg-ind and their own class, so they
      win over the rules above whatever their order; snap, last, over moving) */
-  .hz-zoom.seg-ind.seg-moving>button,.seg.seg-ind.seg-moving label>span{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s)}
+  .hz-zoom.seg-ind.seg-moving>button,.hn-src.seg-ind.seg-moving>button,.seg.seg-ind.seg-moving label>span{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s)}
   .seg.seg-moving input:checked+span,.seg.seg-moving label:hover input:checked+span{background:transparent}
-  .agenda-views.seg-ind.seg-snap>button,.hz-zoom.seg-ind.seg-snap>button,.seg.seg-ind.seg-snap label>span,.seg.seg-ind.seg-snap small{transition:none}
+  .agenda-views.seg-ind.seg-snap>button,.hz-zoom.seg-ind.seg-snap>button,.hn-src.seg-ind.seg-snap>button,.seg.seg-ind.seg-snap label>span,.seg.seg-ind.seg-snap small{transition:none}
   /* (a Display option held until its new look applies, segDisp: as a toolbar switch is,
      the new choice lit as under a pointer, the one the indicator is under in its colours) */
   .seg.seg-ind.seg-hold label>span,.seg.seg-ind.seg-hold small{transition:none}
@@ -7428,7 +7434,7 @@ function txBandAnim(kind, r){
   if (kind === 'dayin'){
     if (band) go('new', [{ clipPath: band }, { clipPath: all }]);
     go('new', [{ opacity: 0 }, { opacity: 1 }], { duration: MO_S * k, easing: EASE });
-    go('old', [{ opacity: 1 }, { opacity: 0 }], { easing: 'cubic-bezier(.4,0,1,1)' });
+    go('old', [{ opacity: 1 }, { opacity: 0 }], { easing: 'cubic-bezier(.2,0,.5,1)' });
   } else {
     if (band) go('old', [{ clipPath: all }, { clipPath: band }]);
     // (gone by the time it is down to its row or column, where the week's own shows)
@@ -12461,9 +12467,10 @@ function heroNowHtml(){
     }).join('');
   };
   const plate = rows => rows ? `<div class="up-next hn-plate">${rows}</div>` : '';
-  const src = heroSrc(), mine = agendaItems();
-  // (the source not picked: drawn for its height only, out of reach and out of the reading)
-  const pane = (k, body) => `<div class="hn-pane${src === k ? ' is-on' : ''}" data-hn-pane="${k}"${src === k ? '' : ' inert aria-hidden="true"'}>${body}</div>`;
+  const mine = agendaItems();
+  // (which one is picked is set as it is drawn, heroPanes: the other is drawn for its height
+  // only, out of reach and out of the reading)
+  const pane = (k, body) => `<div class="hn-pane" data-hn-pane="${k}">${body}</div>`;
   const empty = `<p class="hn-empty">Nothing saved yet. <button type="button" class="linkish" data-build>Build my agenda</button></p>`;
   if (ti < 0){
     // its day and time ("Sun 6 Dec, 15:00"; a narrow panel leaves out the month)
@@ -12501,38 +12508,176 @@ function heroNowHtml(){
 // only they are written, so a focused row (or the details it opened) keeps its place.
 // keep (a change to My agenda): what is below the header stays where it was, as the
 // browser's own scroll anchoring does, which does not act at the very top of the page.
-function paintHeroNow(keep){
+function paintHeroNow(keep, swap){
   const box = document.getElementById('heroNow');
   if (!box || !paintHeroNow.ready) return;
   const r = heroNowHtml();
   const src = heroSrc();
-  const sw = r.sw ? `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda" aria-pressed="${src === 'agenda'}">My agenda</button><button type="button" data-hn-src="all" aria-pressed="${src === 'all'}">Everything</button></div>` : '';
-  const shape = sw + '|' + r.html;
+  const shape = (r.sw ? 's' : '') + '|' + r.html;
   const hero = keep && box._shape !== shape ? box.closest('header') : null, b0 = hero && hero.getBoundingClientRect().bottom;
   document.getElementById('heroNowName').textContent = r.name ? r.name + ': ' : '';
   box.classList.toggle('hn-on', !!r.html);
+  const done = () => {
+    heroSwitch(r.sw, src);
+    if (box._src === src) return;
+    // (the other source picked, nothing else changed: the rows go over to it and the
+    // indicator slides; any other change is plain)
+    if (swap && box._src && box._shape === shape) heroSwap(box, box._src, src);
+    else heroPanes(box, src);
+  };
   if (box._shape === shape){
     // (the times: in the order they were written)
     const whens = box.querySelectorAll('.hn-plate > div > .un-when');
     if (whens.length === r.whens.length) whens.forEach((el, i) => { if (el.innerHTML !== r.whens[i]) el.innerHTML = r.whens[i]; });
+    done();
     return;
   }
+  const moved = box._src !== src && swap && box._src && r.html && box._shape !== undefined;
+  heroSwapEnd(box);
+  const from = box._src;
   box._shape = shape;
   const html = r.html.replace(/\u0001(\d+)\u0002/g, (_, i) => r.whens[i]);
   const f = document.activeElement, mine = f && box.contains(f);
   const key = el => el.dataset.hnSrc || el.dataset.hnMore && 'more' + el.closest('.hn-plate > div')?.querySelector('.un-k')?.textContent
     || el.hasAttribute('data-build') && 'build' || (el.dataset.sessionDetail || '') + '/' + (el.dataset.talkDetail || '');
   const was = mine ? key(f) : null, trigger = dialogTrigger && box.contains(dialogTrigger) ? key(dialogTrigger) : null;
-  document.getElementById('heroNowSw').innerHTML = sw;
   document.getElementById('heroNowBody').innerHTML = html;
+  // (the pane that was shown stays the one shown until the rows go over to the new one)
+  heroPanes(box, moved ? from : src);
+  heroSwitch(r.sw, src);
   // (only what can be reached: the switch and the source shown)
   const find = k => [...box.querySelectorAll('.hn-sw button, .hn-pane.is-on button')].find(b => key(b) === k);
   if (was) (find(was) || box.querySelector('button') || document.getElementById('heroWhen')).focus({ preventScroll: true });
   if (trigger) dialogTrigger = find(trigger) || dialogTrigger;
+  if (moved && box._src !== src) heroSwap(box, from, src);
   if (hero){
     const d = hero.getBoundingClientRect().bottom - b0;
     if (Math.abs(d) >= 0.5) window.scrollBy({ top: d, behavior: 'instant' });
   }
+}
+// The switch is drawn once and kept (so its indicator can slide, the segmented switches'
+// own mechanism, and focus stays on it); a change of source only sets which is pressed.
+function heroSwitch(on, src){
+  const sw = document.getElementById('heroNowSw');
+  let g = sw.firstElementChild;
+  if (!on){ if (g) sw.textContent = ''; return; }
+  if (!g){
+    sw.innerHTML = `<div class="hn-src" role="group" aria-label="Now and next from"><button type="button" data-hn-src="agenda">My agenda</button><button type="button" data-hn-src="all">Everything</button></div>`;
+    g = sw.firstElementChild;
+    for (const b of g.children) b.setAttribute('aria-pressed', String(b.dataset.hnSrc === src));
+    if (paintHeroNow.segs) segAdopt(g);
+    return;
+  }
+  for (const b of g.children){
+    const v = String(b.dataset.hnSrc === src);
+    if (b.getAttribute('aria-pressed') !== v) b.setAttribute('aria-pressed', v);
+  }
+}
+// The pane picked is the one shown and reachable; the other is drawn for its height only.
+function heroPanes(box, src){
+  box._src = src;
+  for (const p of box.querySelectorAll('.hn-pane')){
+    const on = p.dataset.hnPane === src;
+    p.classList.toggle('is-on', on);
+    p.toggleAttribute('inert', !on);
+    if (on) p.removeAttribute('aria-hidden'); else p.setAttribute('aria-hidden', 'true');
+  }
+}
+// The switch between My agenda and Everything, animated. The two lists lie one over the
+// other; what is in both (the same session or talk) stays, and glides to its new row if
+// that is lower or higher; the rest of the leaving list fades out and slides away from
+// the button pressed, the rest of the other fades in sliding from it (Everything is the
+// right button: the leaving rows go left, the others come from the right; back, the
+// reverse). The plate's frame, the one of the list picked, grows or shrinks from the
+// leaving one's size. Nothing here changes the panel's size (the body keeps its height
+// while the frames move). A switch made while one is on its way goes on from where
+// everything shows: the sources are read from the page, not from where they were going.
+// Reduced motion: at once. Speed: as the rest of the page.
+const HN_OUT = 120, HN_IN = 170, HN_IN_DELAY = 60, HN_SLIDE = 14;
+const hnUnits = p => [...p.querySelectorAll(':scope > .hn-note, :scope > .hn-empty, :scope > .hn-plate > div')];
+const hnId = u => u.dataset.sid ? 's' + u.dataset.sid : u.dataset.tid ? 't' + u.dataset.tid : '';
+function heroSwapEnd(box){
+  box._hnGen = (box._hnGen || 0) + 1;
+  const body = box.querySelector('.hn-body');
+  if (!body || !body.classList.contains('hn-anim')) return;
+  for (const el of body.querySelectorAll('.hn-pane, .hn-pane *')){
+    if (el.getAnimations().length) for (const a of el.getAnimations()) a.cancel();
+  }
+  for (const el of body.querySelectorAll('[data-hn-hide]')){ el.style.removeProperty('opacity'); el.removeAttribute('data-hn-hide'); }
+  for (const el of body.querySelectorAll('.hn-ghost')) el.classList.remove('hn-ghost');
+  body.style.removeProperty('min-height');
+  body.classList.remove('hn-anim');
+}
+function heroSwap(box, from, to){
+  const body = box.querySelector('.hn-body');
+  const O = body.querySelector(`.hn-pane[data-hn-pane="${from}"]`), I = body.querySelector(`.hn-pane[data-hn-pane="${to}"]`);
+  if (!O || !I || motionReduced() || !body.animate){ heroSwapEnd(box); heroPanes(box, to); return; }
+  const k = motionK(), dir = to === 'all' ? 1 : -1;
+  const uO = hnUnits(O), uI = hnUnits(I), pO = O.querySelector(':scope > .hn-plate'), pI = I.querySelector(':scope > .hn-plate');
+  // 1. what shows now (a unit being animated shows its own opacity and place; one at rest
+  // in the pane shown shows as it is; one in the other pane does not show)
+  const cur = new Map(), rect = new Map();
+  for (const u of [...uO, ...uI, pO, pI]){
+    if (!u) continue;
+    const cs = getComputedStyle(u);
+    cur.set(u, { op: parseFloat(cs.opacity), tf: cs.transform, anim: u.getAnimations().length > 0 });
+    rect.set(u, u.getBoundingClientRect());
+  }
+  // 2. everything as it lies, no animation on it
+  heroSwapEnd(box);
+  const gen = box._hnGen;
+  body.style.minHeight = body.getBoundingClientRect().height + 'px';
+  body.classList.add('hn-anim');
+  heroPanes(box, to);
+  const lay = new Map();
+  for (const u of [...uO, ...uI, pO, pI]) if (u) lay.set(u, u.getBoundingClientRect());
+  const anims = [], D = 'both';
+  const go = (el, kf, o) => { const a = el.animate(kf, { fill: D, ...o }); anims.push(a); return a; };
+  const outO = { duration: HN_OUT * k, easing: 'cubic-bezier(.2,0,.5,1)' }, inO = d => ({ duration: HN_IN * k, delay: d, easing: EASE });
+  const tx = x => `translateX(${x}px)`;
+  // 3. the rows in both lists: the one in the pane picked glides from where the other shows
+  const idsO = new Map(), shared = new Map();
+  for (const u of uO){ const id = hnId(u); if (id && !idsO.has(id)) idsO.set(id, u); }
+  for (const u of uI){ const id = hnId(u), a = id && idsO.get(id); if (a && !shared.has(a)){ shared.set(a, u); idsO.delete(id); } }
+  // the plate's own move first: the one picked starts at the size and place of the one that
+  // was shown (as it shows now), the leaving one's frame goes at once
+  let plateDy = 0;
+  if (pO && pI){
+    const a = rect.get(pO), b = lay.get(pI);
+    plateDy = a.top - b.top;
+    pO.classList.add('hn-ghost');
+    if (Math.abs(a.height - b.height) > .5 || Math.abs(plateDy) > .5)
+      go(pI, [{ height: a.height + 'px', transform: `translateY(${plateDy}px)` }, { height: b.height + 'px', transform: 'translateY(0px)' }], { duration: MO_L * k, easing: EASE });
+  } else {
+    const fade = (el, show) => {
+      const cs = getComputedStyle(el), on = { borderColor: cs.borderTopColor, backgroundColor: cs.backgroundColor }, off = { borderColor: 'transparent', backgroundColor: 'transparent' };
+      go(el, show ? [off, on] : [on, off], show ? inO(HN_IN_DELAY * k) : outO);
+    };
+    if (pO) fade(pO, false);
+    if (pI) fade(pI, true);
+  }
+  for (const u of uO){
+    const mate = shared.get(u);
+    if (mate){ u.setAttribute('data-hn-hide', ''); u.style.opacity = '0'; continue; }
+    const c = cur.get(u), tf = c.anim && c.tf !== 'none' ? c.tf : 'translateX(0px)';
+    go(u, [{ opacity: c.anim ? c.op : 1, transform: tf }, { opacity: 0, transform: tx(-dir * HN_SLIDE) }], outO);
+  }
+  for (const u of uI){
+    const a = [...shared].find(([, b]) => b === u)?.[0];
+    if (a){
+      // (it stays; from where the other copy shows, its plate's own move counted)
+      const dy = rect.get(a).top - lay.get(u).top - plateDy;
+      if (Math.abs(dy) > .5) go(u, [{ transform: `translateY(${dy}px)` }, { transform: 'translateY(0px)' }], { duration: MO_L * k, easing: EASE });
+      continue;
+    }
+    const c = cur.get(u), live = c.anim && c.op > .02;
+    go(u, [{ opacity: live ? c.op : 0, transform: live && c.tf !== 'none' ? c.tf : tx(dir * HN_SLIDE) }, { opacity: 1, transform: tx(0) }], inO(live ? 0 : HN_IN_DELAY * k));
+  }
+  // (a shared row whose copy in the pane picked was showing at its own place before: no
+  // change; it comes from the other list's copy, which is at this moment at rest in it)
+  box._hnAnims = anims;
+  const fin = () => { if (box._hnGen === gen) heroSwapEnd(box); };
+  Promise.allSettled(anims.map(a => a.finished)).then(fin);
 }
 document.getElementById('heroNow').addEventListener('click', e => {
   const src = e.target.closest('[data-hn-src]');
@@ -12542,7 +12687,7 @@ document.getElementById('heroNow').addEventListener('click', e => {
     try { localStorage.setItem('aip2026-hero-src', state.heroSrc); } catch (err) {}
     // (the page below stays where it was; My agenda's own Up next shows again when the
     // panel no longer shows the same)
-    paintHeroNow(true);
+    paintHeroNow(true, true);
     paintNow();
     return;
   }
@@ -14042,7 +14187,7 @@ syncToolbarHeight();
 // places it at once (snap). The zoom is drawn with each day: segAdopt takes it on. The
 // day tabs are one such group too: their buttons are redrawn in place (dayTabsDraw), and
 // made anew only over the placeholders (segRedrawn).
-const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .daytabs';
+const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .hn-src, .daytabs';
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
 // Calendar, the scope) slides only once the new view shows: until then the page is busy
 // redrawing (or frozen under a view transition's snapshot), and a slide started at the
@@ -14357,6 +14502,8 @@ function segRedrawn(g){
   segPlace(g, true);
 }
 for (const g of document.querySelectorAll(SEG_GROUPS)) segAdopt(g, false);
+// (the header's Now and next switch, made from here on, is adopted as it is drawn)
+paintHeroNow.segs = true;
 // A Display option (the dialog's own handler, on the dialog, has already run): a choice
 // whose new look fades in (displayFade: theme, colour, text size, font) is held, as a
 // toolbar switch is (segWait), until that fade's first frame, after the look has been
