@@ -123,15 +123,18 @@ user site's `404.html` that keeps `?query` and `#hash`).
   between the bars, with two short notches on the edges of a bar or card that is on; the left
   edge of a session or talk on now in a list; the glyph on today's tab and the Now button.
 - **Now and next**, at the header's top right (under the title on a phone), with "Times AEDT"
-  under its heading: during the congress,
-  what is on now and what starts next (today, or with its day and time when that is tomorrow),
-  from My agenda when it has anything saved, otherwise from the whole program, switched with
-  **My agenda | Everything** (remembered on the device as `aip2026-hero-src`). A saved session
-  names the saved talk in it that is on now or next. The whole program shows two of each with
-  **+N** for the rest, which opens the program at them. When My agenda has nothing more it says
-  so and shows the next saved item, or the program once nothing saved is left; while the panel
-  shows My agenda, My agenda's own Up next block stands aside. Before the congress it is the
-  countdown with the first saved items (or the opening sessions); after it, "finished". Each
+  under its heading and **My agenda | Everything** beside it, before and during the congress
+  (the choice is remembered on the device as `aip2026-hero-src`; never chosen, it is My agenda
+  when anything is saved, else Everything). During the congress: what is on now and what starts
+  next (today, or with its day and time when that is tomorrow). A saved session names the saved
+  talk in it that is on now or next. The whole program shows two of each with **+N** for the
+  rest, which opens the program at them. When My agenda has nothing more it says so and shows
+  the next saved item, or the program once nothing saved is left; while the panel shows My
+  agenda, My agenda's own Up next block stands aside. Before the congress: the countdown, then
+  the first saved items, or (Everything) the opening sessions, registration first, each with
+  its day and time. My agenda with nothing saved says "Nothing saved yet" with **Build my
+  agenda**. Both sources are laid out one over the other, so switching never changes the
+  header's height. After the congress: "finished", with no switch. Each
   row opens its session's or talk's details. It follows the clock, each change to My agenda,
   and a shared agenda link only once it is added (until then it shows your own).
 - The address keeps the view (`#day=2026-12-08&q=silicon&layout=calendar`), and any talk or
