@@ -17,6 +17,14 @@ from normalize import affiliation_table, normalize_payload  # noqa: E402
 
 RETRIEVED = "24 November 2026"
 
+# The footer's acknowledgement of the tool that built the page: an estimate of the tokens its
+# sessions used, set by hand. (The latest session's own records gave about 2.0 billion
+# tokens processed, nearly all of it cached context read again at each step, and about 8.6
+# million written; it made about two thirds of the commits, so the whole is scaled up.)
+TOKENS_PROCESSED = "about 3 billion"
+TOKENS_WRITTEN = "about 13 million"
+TOKENS_ASOF = "26 November 2026"
+
 # Talks Indico re-created under a new id (same contribution, new timetable entry). The page
 # maps the old id to the new one wherever saved ids come back in (stars on the device,
 # shared agenda links and codes, agenda files, #t= links), so nothing saved is lost.
@@ -1649,6 +1657,9 @@ footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr)}}
 footer p{line-height:1.6;max-width:62ch}
+/* under the columns, across the width: who and what the page owes */
+footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
@@ -3917,6 +3928,11 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </ul>
     </div>
   </div>
+  <section class="foot-ack" aria-labelledby="ackTitle">
+    <h2 id="ackTitle">Acknowledgements</h2>
+    <p>The program is the work of the 26th Australian Institute of Physics Congress organisers, held with ANZCOP and COMMAD, and is published on their <a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Indico timetable</a>. Every title and abstract here belongs to its speakers and conveners. The Archivo typeface, by Omnibus-Type, is used under the SIL Open Font License.</p>
+    <p>This page was built and refined with <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>, Anthropic&#8217;s coding agent. By an estimate on @@TOKENS_ASOF@@, its sessions processed @@TOKENS_PROCESSED@@ tokens, nearly all of that context read again at each step, and wrote @@TOKENS_WRITTEN@@.</p>
+  </section>
 </footer>
 <section id="printDoc" class="print-doc" aria-hidden="true"></section>
 
@@ -14641,7 +14657,9 @@ def main():
     page = (HTML.replace('@@ISSUE_DATA_HREF@@', issue_href(f'Program data update (page data: {retrieved})', ISSUE_DATA_BODY.format(retrieved=retrieved)))
             .replace('@@ISSUE_BUG_HREF@@', issue_href('Problem: ', ISSUE_BUG_BODY.format(retrieved=retrieved)))
             .replace('@@RETRIEVED_ISO@@', retrieved_iso).replace('@@RETRIEVED_SHORT@@', retrieved_short)
-            .replace('@@RETRIEVED@@', retrieved))
+            .replace('@@RETRIEVED@@', retrieved)
+            .replace('@@TOKENS_PROCESSED@@', TOKENS_PROCESSED).replace('@@TOKENS_WRITTEN@@', TOKENS_WRITTEN)
+            .replace('@@TOKENS_ASOF@@', TOKENS_ASOF))
     html = page.replace('@@FONTS@@', font_faces(root)).replace('@@DARK_TOKENS@@', DARK_TOKENS).replace('@@DARK_HC_TOKENS@@', DARK_HC_TOKENS).replace('@@VIVID_DARK_TOKENS@@', VIVID_DARK_TOKENS).replace('@@DATA@@', embedded)
     for name in ('index.html', 'aip-2026-program.html'):
         (root / name).write_text(html, encoding='utf-8')

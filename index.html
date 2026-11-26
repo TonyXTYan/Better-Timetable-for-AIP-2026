@@ -1397,6 +1397,9 @@ footer .cols{gap:24px 32px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:720px){footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1000px){footer .cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr)}}
 footer p{line-height:1.6;max-width:62ch}
+/* under the columns, across the width: who and what the page owes */
+footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
 ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
@@ -3665,6 +3668,11 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
       </ul>
     </div>
   </div>
+  <section class="foot-ack" aria-labelledby="ackTitle">
+    <h2 id="ackTitle">Acknowledgements</h2>
+    <p>The program is the work of the 26th Australian Institute of Physics Congress organisers, held with ANZCOP and COMMAD, and is published on their <a href="https://indico.global/event/16926/timetable/" target="_blank" rel="noopener">Indico timetable</a>. Every title and abstract here belongs to its speakers and conveners. The Archivo typeface, by Omnibus-Type, is used under the SIL Open Font License.</p>
+    <p>This page was built and refined with <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>, Anthropic&#8217;s coding agent. By an estimate on 26 November 2026, its sessions processed about 3 billion tokens, nearly all of that context read again at each step, and wrote about 13 million.</p>
+  </section>
 </footer>
 <section id="printDoc" class="print-doc" aria-hidden="true"></section>
 

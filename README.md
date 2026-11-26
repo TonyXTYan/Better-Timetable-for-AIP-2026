@@ -182,6 +182,10 @@ refresh from an export stores it in `aip2026-data.json` (as `retrieved`), and th
 date in the header, in About and in the data-update issue's title (the build also writes it as an
 ISO date for `<time datetime>` and as "24 Nov 2026" for phones), so set it before refreshing.
 
+`TOKENS_PROCESSED`, `TOKENS_WRITTEN` and `TOKENS_ASOF` beside it fill the footer's
+Acknowledgements line about the Claude Code sessions that built the page: an estimate, set by
+hand.
+
 The build normalises the data (stray HTML and markdown, simple inline LaTeX such as `$_2$` → ₂,
 hard line wraps, all-caps names) and rewrites `aip2026-data.json` if anything changed.
 Pushing to `main` runs `.github/workflows/pages.yml`, which rebuilds and deploys to GitHub Pages.
