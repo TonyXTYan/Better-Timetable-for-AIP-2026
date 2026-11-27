@@ -7716,6 +7716,10 @@ function mxBegin(kind, from, opts){
 // change itself (redraw, snapshot, measuring) starts once that frame is painted.
 function withTransition(kind, fn, from, opts = {}){
   const tw = TXP ? performance.now() : 0;
+  // (the reader's place, opts.pre, is read once the pressed frame is painted; but with an
+  // earlier change still to settle, here, from the page as it shows at the press: settled
+  // first, it would be read from a view not yet shown)
+  if (opts.pre && (viewTx || vtSlideEnd || dxRunning.size)) txPre(opts);
   settleTransition();
   dxSettleAll();   // (an abstract still unfolding is snapshotted where it ends)
   if (vtSlideEnd) vtSlideEnd();   // (a day sliding in Vertical lands first, its ghost gone)
@@ -7773,8 +7777,14 @@ const TX_SNAP_GUESS = 120;
 // while it redraws: a switch's slide then waits for the new view (segWait); a change
 // without them (none: drawn in place, at most faded in) slides at the press, on the
 // compositor, while the page redraws.
+// (one without them keeps that answer, o.still, for txStart: its slide is under way from
+// the press, and a snapshot begun under it, the guards having changed their mind by then
+// (quick succession or slow redraws wearing off), would stop it part way, then jump)
 function txFreezes(kind, o){
-  return !!document.startViewTransition && !motionReduced() && !txGuards(kind, o, performance.now()).none;
+  if (!document.startViewTransition || motionReduced()) return false;
+  const g = txGuards(kind, o, performance.now());
+  if (g.none) o.still = g;
+  return !g.none;
 }
 // fn, timed: its cost is the script and the layout it causes
 const txTimed = (fn, opts, after) => () => {
@@ -7795,7 +7805,7 @@ function txStart(kind, fn, from, opts){
   const R = TXP && txpLive(txpCur) ? txpCur : null;
   if (R) txpAt('go', R);
   if (motionReduced()){ if (R) R.kind = 'reduced'; txTimed(fn, opts)(); if (R) txpFrame(R, 'raf1', true); return; }
-  const t = performance.now(), g = txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
+  const t = performance.now(), g = opts.still || txGuards(kind, opts, t), log = txDbg(kind, g, opts, t);
   if (R){ txpAt('guard', R); R.kind = g.none ? 'none' : g.kind; R.level = g.none ? (g.enter ? 'fade only' : 'instant') : g.opts.plain ? 'plain' : g.opts.lite ? 'lite' : 'full'; R.why = g.why.join(', '); }
   txLast = t;
   // (a change of view that may change the toolbar: its parts where they show now, tbShift)
