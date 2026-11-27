@@ -18,9 +18,18 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
   if (!button || button.dataset.layout === state.layout) return;
   const to = button.dataset.layout, t = performance.now();
   const u = layUndo && layUndo.from === to && layUndo.to === state.layout && t - layUndo.t < 1000 * motionK() && TB.input < layUndo.t ? layUndo : null;
-  const a = u ? u.a && { ...u.a, again: true } : layAnchor();
-  if (TXP) txpIn.anchor = { t, ms: performance.now() - t };   // (?txprof=1: the old view's place, measured)
-  layUndo = u ? null : { from: state.layout, to, a, t };
+  const rec = u ? null : { from: state.layout, to, a: null, t };
+  layUndo = rec;
+  // (the place is read once the pressed button's frame is painted, opts.pre; an undo's
+  // change, pressed earlier, has read its own by then: settleTransition)
+  let a = null;
+  const pre = o => {
+    const t1 = TXP ? performance.now() : 0;
+    a = u ? u.a && { ...u.a, again: true } : layAnchor();
+    if (TXP && txpLive(txpCur)) txpCur.d.anchor = performance.now() - t1;   // (?txprof=1: the old view's place, measured)
+    if (rec) rec.a = a;
+    o.at = a && { date: DATA.days[a.day].date, min: a.min };
+  };
   withTransition('lay', () => {
     layPrep(a, to);
     showView(to, state.scope);
@@ -29,7 +38,7 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
     // once the browser reports its new size)
     syncToolbarHeight();
     return layLand(a);
-  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, sight: true, nest: true, cap: layCap(to), at: a && { date: DATA.days[a.day].date, min: a.min }, press: button });
+  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, sight: true, nest: true, cap: layCap(to), pre, press: button });
 });
 // The items to name on the old screen: into the calendar, all the list shows; into the
 // list, which shows a few sessions about the item you were at, the calendar's nearest it
@@ -293,9 +302,13 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   // fades (opts.collapse, opts.grow); the item you were at stays where it was on the screen,
   // or the nearest the other view shows to it in time (scopeListAnchor, layLand)
   const list = state.layout === 'list' && to !== 'participants' && state.scope !== 'participants';
-  const ta = TXP ? performance.now() : 0;
-  const a = list ? scopeListAnchor(to) : null;
-  if (TXP) txpIn.anchor = { t: ta, ms: performance.now() - ta };   // (?txprof=1: the old view's place, measured)
+  // (read once the pressed button's frame is painted: opts.pre)
+  let a = null;
+  const pre = () => {
+    const ta = TXP ? performance.now() : 0;
+    a = list ? scopeListAnchor(to) : null;
+    if (TXP && txpLive(txpCur)) txpCur.d.anchor = performance.now() - ta;   // (?txprof=1: the old view's place, measured)
+  };
   // (and the toolbar, which each view has its own way, goes from one to the other as the
   // view changes: opts.tb)
   withTransition(cal || list ? 'fade' : kind, () => {
@@ -305,8 +318,8 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   if (list){ syncToolbarHeight(); return layLand(a, 'scope'); }
   // scrolled deep into the other view: start this one at its top, under the toolbar
   if (window.scrollY > programTop()) scrollToProgramTop();
-  }, null, cal || list ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button, tb: true, ...(list ? { marks: true, collapse: true } : {}) }
-    : { to: { scope: to }, press: button, tb: true });
+  }, null, cal || list ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), pre, press: button, tb: true, ...(list ? { marks: true, collapse: true } : {}) }
+    : { to: { scope: to }, pre, press: button, tb: true });
 });
 // The list's place, Full program <-> My agenda: the item at the top of what you read
 // (layAnchor), and after it, should the other view not show it (a session not saved, or a

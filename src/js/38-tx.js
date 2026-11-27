@@ -9,22 +9,36 @@ function withTransition(kind, fn, from, opts = {}){
   if (R){ R.d.settle = performance.now() - tw; performance.mark(`tx${R.n} wt`, { startTime: tw }); }
   // No snapshot while a modal dialog is up, but for the details dialog's own opening and
   // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
-  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ if (R) R.kind = 'dialog'; fn(); if (R) txpFrame(R, 'raf1', true); return; }
+  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ if (R) R.kind = 'dialog'; txPre(opts); fn(); if (R) txpFrame(R, 'raf1', true); return; }
   if (opts.press){
-    const o = { ...opts, press: null };
-    const go = () => txStart(kind, fn, from, o), now = txTimed(fn, o), slide = txSlideFirst(o, opts.press), freeze = txFreezes(kind, o);
+    // (a change with no snapshot never waits for the slide: the slide runs at the press, on
+    // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
+    // frames on, lead, once the compositor has the slide going: else the slide can stall a
+    // while as the page redraws)
+    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze ? first : 0;
+    const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
     if (R){ R.slideWait = slide; R.freezes = freeze; }
-    txPending(opts.press, go, now, slide, freeze);
+    txPending(opts.press, go, now, slide, freeze, !freeze && first > 0);
     return;
   }
+  txPre(opts);
   txStart(kind, fn, from, opts);
 }
-// A toolbar switch (a sliding segmented control) whose change will take a while to show
-// (its redraw and the wait for its first moving frame, as last time or guessed, over
-// TX_SLIDE_FIRST): its selection slides at the press, and the change starts once it has
-// (the ms to wait; 0: the slide waits for the change instead and runs alongside it,
-// segWait). On a slow device the switch then answers at once, rather than after the
-// redraw (which freezes the page, and with it any slide).
+// (opts.pre: what the change reads of the page as it is before it (the reader's place),
+// read once the pressed button's frame is painted, not in the press's own task: it may
+// fill in opts, as mxBegin reads them)
+function txPre(o){
+  const f = o.pre;
+  if (!f) return;
+  o.pre = null;
+  f(o);
+}
+// A toolbar switch (a sliding segmented control) whose change takes snapshots (txFreezes)
+// and will take a while to show (its redraw and the wait for its first moving frame, as
+// last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press, and the
+// change starts once it has (the ms to wait; 0: the slide waits for the change instead
+// and runs alongside it, segWait). On a slow device the switch then answers at once,
+// rather than after the redraw (which freezes the page, and with it any slide).
 const TX_SLIDE_FIRST = 250;
 // (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
 // take about as long as its redraw, as they do)
@@ -467,7 +481,7 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slide = 0, freeze = true){
+function txPending(press, go, now, slide = 0, freeze = true, lead = false){
   // (a record of its own, but for withTransition's, just made)
   const R = !TXP ? null : txpLive(txpCur) && txpCur.press === undefined && performance.now() - txpCur.at < 100 ? txpCur : txpBegin('pending', { own: true });
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
@@ -484,7 +498,9 @@ function txPending(press, go, now, slide = 0, freeze = true){
     drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(press.parentElement, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
-    setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    // (lead: two frames on, withTransition)
+    if (lead) requestAnimationFrame(() => requestAnimationFrame(run)); else run();
   });
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];

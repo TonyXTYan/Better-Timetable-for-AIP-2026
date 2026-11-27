@@ -6609,7 +6609,7 @@ const motionK = () => ({ fast: 1, xslow: 4 })[document.documentElement.dataset.s
 //   The toolbar's fold is a record of its own (sw 'fold': input, wt, built, raf1).
 // Off, each place that records is a check of TXP, a const (set with `state`).
 let txpCur = null, txpN = 0, txpDepth = 0, txpNodes = -1;
-const txpIn = { pd: -1e9, click: -1e9, key: -1e9, anchor: null };
+const txpIn = { pd: -1e9, click: -1e9, key: -1e9 };
 if (TXP){
   window.__txprof = [];
   document.addEventListener('pointerdown', e => { txpIn.pd = e.timeStamp; txpIn.pdRun = performance.now(); }, true);
@@ -6624,8 +6624,6 @@ function txpBegin(sw, extra, cur = true){
     R.click = txpIn.click; R.clickRun = txpIn.clickRun;
     if (txpIn.pd <= txpIn.click && txpIn.click - txpIn.pd < 1500){ R.pd = txpIn.pd; R.pdRun = txpIn.pdRun; }
   } else if (t - txpIn.key < 1000){ R.key = txpIn.key; R.keyRun = txpIn.keyRun; }
-  if (txpIn.anchor && txpIn.anchor.t >= (R.click ?? R.key ?? t - 1000)) R.d.anchor = txpIn.anchor.ms;
-  txpIn.anchor = null;
   if (cur && txpNodes < 0) txpNodes = txpCount();
   if (cur) R.nodes0 = txpNodes;
   Object.assign(R, extra);
@@ -7725,22 +7723,36 @@ function withTransition(kind, fn, from, opts = {}){
   if (R){ R.d.settle = performance.now() - tw; performance.mark(`tx${R.n} wt`, { startTime: tw }); }
   // No snapshot while a modal dialog is up, but for the details dialog's own opening and
   // closing (a guard: rare renderer crashes in testing came with dialogs and transitions).
-  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ if (R) R.kind = 'dialog'; fn(); if (R) txpFrame(R, 'raf1', true); return; }
+  if ([...document.querySelectorAll('dialog[open]')].some(d => kind !== 'dlg' || d !== eventDialog)){ if (R) R.kind = 'dialog'; txPre(opts); fn(); if (R) txpFrame(R, 'raf1', true); return; }
   if (opts.press){
-    const o = { ...opts, press: null };
-    const go = () => txStart(kind, fn, from, o), now = txTimed(fn, o), slide = txSlideFirst(o, opts.press), freeze = txFreezes(kind, o);
+    // (a change with no snapshot never waits for the slide: the slide runs at the press, on
+    // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
+    // frames on, lead, once the compositor has the slide going: else the slide can stall a
+    // while as the page redraws)
+    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze ? first : 0;
+    const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
     if (R){ R.slideWait = slide; R.freezes = freeze; }
-    txPending(opts.press, go, now, slide, freeze);
+    txPending(opts.press, go, now, slide, freeze, !freeze && first > 0);
     return;
   }
+  txPre(opts);
   txStart(kind, fn, from, opts);
 }
-// A toolbar switch (a sliding segmented control) whose change will take a while to show
-// (its redraw and the wait for its first moving frame, as last time or guessed, over
-// TX_SLIDE_FIRST): its selection slides at the press, and the change starts once it has
-// (the ms to wait; 0: the slide waits for the change instead and runs alongside it,
-// segWait). On a slow device the switch then answers at once, rather than after the
-// redraw (which freezes the page, and with it any slide).
+// (opts.pre: what the change reads of the page as it is before it (the reader's place),
+// read once the pressed button's frame is painted, not in the press's own task: it may
+// fill in opts, as mxBegin reads them)
+function txPre(o){
+  const f = o.pre;
+  if (!f) return;
+  o.pre = null;
+  f(o);
+}
+// A toolbar switch (a sliding segmented control) whose change takes snapshots (txFreezes)
+// and will take a while to show (its redraw and the wait for its first moving frame, as
+// last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press, and the
+// change starts once it has (the ms to wait; 0: the slide waits for the change instead
+// and runs alongside it, segWait). On a slow device the switch then answers at once,
+// rather than after the redraw (which freezes the page, and with it any slide).
 const TX_SLIDE_FIRST = 250;
 // (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
 // take about as long as its redraw, as they do)
@@ -8183,7 +8195,7 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slide = 0, freeze = true){
+function txPending(press, go, now, slide = 0, freeze = true, lead = false){
   // (a record of its own, but for withTransition's, just made)
   const R = !TXP ? null : txpLive(txpCur) && txpCur.press === undefined && performance.now() - txpCur.at < 100 ? txpCur : txpBegin('pending', { own: true });
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
@@ -8200,7 +8212,9 @@ function txPending(press, go, now, slide = 0, freeze = true){
     drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(press.parentElement, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
-    setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    // (lead: two frames on, withTransition)
+    if (lead) requestAnimationFrame(() => requestAnimationFrame(run)); else run();
   });
 }
 const SCOPE_ORDER = ['program', 'agenda', 'participants'];
@@ -10550,9 +10564,18 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
   if (!button || button.dataset.layout === state.layout) return;
   const to = button.dataset.layout, t = performance.now();
   const u = layUndo && layUndo.from === to && layUndo.to === state.layout && t - layUndo.t < 1000 * motionK() && TB.input < layUndo.t ? layUndo : null;
-  const a = u ? u.a && { ...u.a, again: true } : layAnchor();
-  if (TXP) txpIn.anchor = { t, ms: performance.now() - t };   // (?txprof=1: the old view's place, measured)
-  layUndo = u ? null : { from: state.layout, to, a, t };
+  const rec = u ? null : { from: state.layout, to, a: null, t };
+  layUndo = rec;
+  // (the place is read once the pressed button's frame is painted, opts.pre; an undo's
+  // change, pressed earlier, has read its own by then: settleTransition)
+  let a = null;
+  const pre = o => {
+    const t1 = TXP ? performance.now() : 0;
+    a = u ? u.a && { ...u.a, again: true } : layAnchor();
+    if (TXP && txpLive(txpCur)) txpCur.d.anchor = performance.now() - t1;   // (?txprof=1: the old view's place, measured)
+    if (rec) rec.a = a;
+    o.at = a && { date: DATA.days[a.day].date, min: a.min };
+  };
   withTransition('lay', () => {
     layPrep(a, to);
     showView(to, state.scope);
@@ -10561,7 +10584,7 @@ document.getElementById('scheduleLayout').addEventListener('click', e => {
     // once the browser reports its new size)
     syncToolbarHeight();
     return layLand(a);
-  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, sight: true, nest: true, cap: layCap(to), at: a && { date: DATA.days[a.day].date, min: a.min }, press: button });
+  }, null, { to: { layout: to }, pair: 'layout', dir: to === 'calendar' ? 'in' : 'out', reshape: true, sight: true, nest: true, cap: layCap(to), pre, press: button });
 });
 // The items to name on the old screen: into the calendar, all the list shows; into the
 // list, which shows a few sessions about the item you were at, the calendar's nearest it
@@ -10825,9 +10848,13 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   // fades (opts.collapse, opts.grow); the item you were at stays where it was on the screen,
   // or the nearest the other view shows to it in time (scopeListAnchor, layLand)
   const list = state.layout === 'list' && to !== 'participants' && state.scope !== 'participants';
-  const ta = TXP ? performance.now() : 0;
-  const a = list ? scopeListAnchor(to) : null;
-  if (TXP) txpIn.anchor = { t: ta, ms: performance.now() - ta };   // (?txprof=1: the old view's place, measured)
+  // (read once the pressed button's frame is painted: opts.pre)
+  let a = null;
+  const pre = () => {
+    const ta = TXP ? performance.now() : 0;
+    a = list ? scopeListAnchor(to) : null;
+    if (TXP && txpLive(txpCur)) txpCur.d.anchor = performance.now() - ta;   // (?txprof=1: the old view's place, measured)
+  };
   // (and the toolbar, which each view has its own way, goes from one to the other as the
   // view changes: opts.tb)
   withTransition(cal || list ? 'fade' : kind, () => {
@@ -10837,8 +10864,8 @@ document.getElementById('scheduleScope').addEventListener('click', e => {
   if (list){ syncToolbarHeight(); return layLand(a, 'scope'); }
   // scrolled deep into the other view: start this one at its top, under the toolbar
   if (window.scrollY > programTop()) scrollToProgramTop();
-  }, null, cal || list ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), press: button, tb: true, ...(list ? { marks: true, collapse: true } : {}) }
-    : { to: { scope: to }, press: button, tb: true });
+  }, null, cal || list ? { to: { scope: to }, pair: 'scope', dir: to === 'agenda' ? 'in' : 'out', reshape: true, only: scopeKeys(), either: true, grow: true, cap: mxOrientCap(), pre, press: button, tb: true, ...(list ? { marks: true, collapse: true } : {}) }
+    : { to: { scope: to }, pre, press: button, tb: true });
 });
 // The list's place, Full program <-> My agenda: the item at the top of what you read
 // (layAnchor), and after it, should the other view not show it (a session not saved, or a
@@ -15979,8 +16006,9 @@ function segDisp(g, face){
   if (face && !(viewTx && viewTx.vt)) archivoReady().then(tick); else tick();
 }
 // How fast this device runs script now, against a typical desktop's (1: as fast or
-// faster): a fixed piece of work, timed once, at the first press of a toolbar switch (or
-// the first change that asks), for txSlideFirst's first guess.
+// faster): a fixed piece of work, timed once, when the page is first idle after it loads
+// (or by the first change that asks before then), for txSlideFirst's first guess. (Not
+// at a press: the work would delay the pressed button's frame.)
 const SEG_CPU_MS = 4.5;
 function segCpu(){
   if (segCpu.k !== undefined) return segCpu.k;
@@ -15996,7 +16024,7 @@ function segCpu(){
   segCpu.sink = a;
   return segCpu.k = Math.max(1, (performance.now() - t0) / SEG_CPU_MS);
 }
-document.addEventListener('pointerdown', e => { if (segCpu.k === undefined && e.target.closest && e.target.closest('.agenda-views')) segCpu(); }, true);
+(window.requestIdleCallback || (f => setTimeout(f, 400)))(() => segCpu(), { timeout: 3000 });
 
 // "Skip to program" moves the focus past the header and toolbar to the main area (the
 // address keeps its view: a #main hash would be read as a view).

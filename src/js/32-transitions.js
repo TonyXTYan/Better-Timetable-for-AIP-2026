@@ -44,7 +44,7 @@ const motionK = () => ({ fast: 1, xslow: 4 })[document.documentElement.dataset.s
 //   The toolbar's fold is a record of its own (sw 'fold': input, wt, built, raf1).
 // Off, each place that records is a check of TXP, a const (set with `state`).
 let txpCur = null, txpN = 0, txpDepth = 0, txpNodes = -1;
-const txpIn = { pd: -1e9, click: -1e9, key: -1e9, anchor: null };
+const txpIn = { pd: -1e9, click: -1e9, key: -1e9 };
 if (TXP){
   window.__txprof = [];
   document.addEventListener('pointerdown', e => { txpIn.pd = e.timeStamp; txpIn.pdRun = performance.now(); }, true);
@@ -59,8 +59,6 @@ function txpBegin(sw, extra, cur = true){
     R.click = txpIn.click; R.clickRun = txpIn.clickRun;
     if (txpIn.pd <= txpIn.click && txpIn.click - txpIn.pd < 1500){ R.pd = txpIn.pd; R.pdRun = txpIn.pdRun; }
   } else if (t - txpIn.key < 1000){ R.key = txpIn.key; R.keyRun = txpIn.keyRun; }
-  if (txpIn.anchor && txpIn.anchor.t >= (R.click ?? R.key ?? t - 1000)) R.d.anchor = txpIn.anchor.ms;
-  txpIn.anchor = null;
   if (cur && txpNodes < 0) txpNodes = txpCount();
   if (cur) R.nodes0 = txpNodes;
   Object.assign(R, extra);

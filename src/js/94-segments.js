@@ -394,8 +394,9 @@ function segDisp(g, face){
   if (face && !(viewTx && viewTx.vt)) archivoReady().then(tick); else tick();
 }
 // How fast this device runs script now, against a typical desktop's (1: as fast or
-// faster): a fixed piece of work, timed once, at the first press of a toolbar switch (or
-// the first change that asks), for txSlideFirst's first guess.
+// faster): a fixed piece of work, timed once, when the page is first idle after it loads
+// (or by the first change that asks before then), for txSlideFirst's first guess. (Not
+// at a press: the work would delay the pressed button's frame.)
 const SEG_CPU_MS = 4.5;
 function segCpu(){
   if (segCpu.k !== undefined) return segCpu.k;
@@ -411,5 +412,5 @@ function segCpu(){
   segCpu.sink = a;
   return segCpu.k = Math.max(1, (performance.now() - t0) / SEG_CPU_MS);
 }
-document.addEventListener('pointerdown', e => { if (segCpu.k === undefined && e.target.closest && e.target.closest('.agenda-views')) segCpu(); }, true);
+(window.requestIdleCallback || (f => setTimeout(f, 400)))(() => segCpu(), { timeout: 3000 });
 
