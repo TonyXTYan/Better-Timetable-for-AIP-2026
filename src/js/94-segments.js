@@ -17,6 +17,11 @@ const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .hn-src, .daytabs';
 // frame. Not in forced colours, which have no sliding indicator. (Declared, not assigned:
 // the calendar may be drawn before this point of the script has run.)
 function segInkOn(g){ return !(segInkOn.fc ??= matchMedia('(forced-colors: active)')).matches && g.matches('.agenda-views'); }
+// (and only while the page is still: a slide under a view that is redrawn at once, with no
+// snapshot (Participants), keeps the colour changes. Measured there at 4x, the copy's moving
+// layers left the indicator 3 frames behind in 8-9 of 40 presses, where colour changes did
+// in 2-3: a busy page paints the colour changes anyway, and the copy saves it nothing.)
+function segInkUse(g){ return segInkOn(g) && !(viewTx && viewTx.freeze === false); }
 // (the options of a group, without its labels' copy)
 function segOpts(g){ return [...g.children].filter(c => c !== g._segInkEl); }
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
@@ -154,7 +159,7 @@ function segAt(g, on, snap, keep, box){
   const from = !snap && had ? segNow(g) : null, prev = from && g._segSlide;
   // (the labels' copy is laid out as the options are: measured now, while the page is
   // still, or with the box at the press, segPlace)
-  if (from && !box && !motionReduced() && segInkOn(g)) g._segInkM = segInkM(g);
+  if (from && !box && !motionReduced() && segInkUse(g)) g._segInkM = segInkM(g);
   segStop(g);
   if (snap && keep){ /* (under the option it was under: the colours are left to go on) */ }
   else if (snap){
@@ -245,33 +250,53 @@ function segSlide(g, from, to, was, wasBox, live, prev){
   g.style.setProperty('--seg-bw', W + 'px');
   g.style.setProperty('--seg-bh', H + 'px');
   g.classList.add('seg-slide');
-  const o = { duration: dur, easing: n === 1 ? EASE : 'linear', pseudoElement: '::before', fill: n === 1 ? 'forwards' : 'both' };
-  const ov = segInkOn(g) && segInkCopy(g, live);
-  if (ov){
-    // (the copy moves as the indicator does (.seg-ink-mv), and its labels back by as much
-    // (.seg-ink-in): moves, which the compositor draws in the same frame as the indicator's
-    // own, where a clip alone would be drawn a frame behind it; its clip, at the copy's
-    // corner, only sizes it, as the indicator's does. Its box (.seg-ink) clips what moves in
-    // it, so a copy moved past the group's edge never widens the page. Set at the slide's
-    // start too, for a frame drawn before either has begun.)
-    const M = g._segInkM, OW = M.w + M.pad[1] + M.pad[3], OH = M.h + M.pad[0] + M.pad[2];
-    const cut = b => `inset(0px ${OW - b.w}px ${OH - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`;
-    const mv = b => `translate(${b.x}px,${b.y}px)`, back = b => `translate(${-b.x}px,${-b.y}px)`;
-    const ko = { duration: dur, easing: o.easing, fill: o.fill }, m = ov._mv;
-    m.style.transform = mv(pts[0]); m.style.clipPath = cut(pts[0]); ov._in.style.transform = back(pts[0]);
-    sl.k = [m.animate(pts.map(b => ({ transform: mv(b) })), ko), m.animate(pts.map(b => ({ clipPath: cut(b) })), ko), ov._in.animate(pts.map(b => ({ transform: back(b) })), ko)];
+  const ov = segInkUse(g) && segInkCopy(g, live, dur);
+  if (ov) g.classList.add('seg-inked');
+  // (the copy moves as the indicator does (.seg-ink-mv), and its labels back by as much
+  // (.seg-ink-in): moves, which the compositor draws in the same frame as the indicator's
+  // own, where a clip alone would be drawn a frame behind it. Its box (.seg-ink) clips what
+  // moves in it, so a copy moved past the group's edge never widens the page. Each is set
+  // at the slide's start too, for a frame drawn before any has begun.)
+  const M = ov && g._segInkM, OW = ov && M.w + M.pad[1] + M.pad[3], OH = ov && M.h + M.pad[0] + M.pad[2];
+  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: n === 1 ? 'forwards' : 'both' };
+  const run = (el, f) => { el.style.transform = f(pts[0]); return el.animate(pts.map(b => ({ transform: f(b) })), ko); };
+  // (along one row, its height and corners the same all the way: the copy draws the
+  // indicator too, and nothing in the slide but moves. Its left edge is the copy's own
+  // (.seg-ink-mv, moved to the indicator's left), its right edge a box in it moved to the
+  // indicator's right (.seg-ink-r, which is filled), each cut, still, to its rounded
+  // corners; the indicator itself is unseen meanwhile, seg-fill. A clip that runs, as the
+  // indicator's own would, has the page paint it again in every frame it draws while it
+  // runs, and the page draws frames when it is busy.)
+  const flat = ov && pts.every(b => b.y === pts[0].y && b.h === pts[0].h && b.r.every((v, i) => v === pts[0].r[i]));
+  if (flat){
+    const { y, h, r } = pts[0], B = OH - h, m = ov._mv, e = ov._r;
+    m.style.clipPath = `inset(0px 0px ${B}px 0px round ${r[0]}px 0px 0px ${r[3]}px)`;
+    e.style.clipPath = `inset(0px 0px ${B}px 0px round 0px ${r[1]}px ${r[2]}px 0px)`;
+    g.classList.add('seg-fill');
+    sl.a = run(m, b => `translate(${b.x}px,${y}px)`);
+    sl.c = run(e, b => `translate(${b.w - OW}px,0px)`);
+    sl.k = [run(ov._in, b => `translate(${OW - b.x - b.w}px,${-y}px)`)];
   } else {
-    // (the labels' timing first: animate() works out the page's style, and with it begins
-    // their colour changes)
-    if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
-    segInk(sl, g._segOn, to, from, to, false, live);
+    if (ov){
+      // (else its clip, at the copy's corner, sizes it, as the indicator's does)
+      const cut = b => `inset(0px ${OW - b.w}px ${OH - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`, m = ov._mv;
+      ov._r.style.transform = ov._r.style.clipPath = 'none';
+      m.style.clipPath = cut(pts[0]);
+      sl.k = [run(m, b => `translate(${b.x}px,${b.y}px)`), m.animate(pts.map(b => ({ clipPath: cut(b) })), ko), run(ov._in, b => `translate(${-b.x}px,${-b.y}px)`)];
+    } else {
+      // (the labels' timing first: animate() works out the page's style, and with it begins
+      // their colour changes)
+      if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
+      segInk(sl, g._segOn, to, from, to, false, live);
+    }
+    const o = { ...ko, pseudoElement: '::before' };
+    sl.a = g.animate(pts.map(b => ({ transform: `translate(${b.x}px,${b.y}px)` })), o);
+    sl.c = g.animate(pts.map(b => ({ clipPath: clip(b) })), o);
   }
-  sl.a = g.animate(pts.map(b => ({ transform: `translate(${b.x}px,${b.y}px)` })), o);
-  sl.c = g.animate(pts.map(b => ({ clipPath: clip(b) })), o);
   // (its time runs from when it was made, however late it is first drawn)
   if (sl.prev){ sl.a.startTime = sl.c.startTime = t0; for (const k of sl.k || []) k.startTime = t0; }
   g._segSlide = sl;
-  sl.a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
+  sl.a.onfinish = () => { if (g._segSlide === sl){ segInkDone(g); segStop(g); } };
   // (the chosen option's fill stays aside for as long as this slide, however late it began)
   if (g.classList.contains('seg-moving')) segMoving(g);
 }
@@ -320,7 +345,13 @@ function segStop(g){
   for (const el of sl.ink){ el.style.removeProperty('--seg-cf'); el.style.removeProperty('--seg-cd'); }
   g.style.removeProperty('--seg-bw');
   g.style.removeProperty('--seg-bh');
-  g.classList.remove('seg-slide');
+  g.classList.remove('seg-slide', 'seg-fill');
+  // (the labels take back their own colours at once, as the copy goes: not by their colour
+  // changes, which would fade the chosen one in after the indicator has come to rest)
+  if (g.classList.contains('seg-inked')){
+    g.classList.remove('seg-inked');
+    for (const b of segOpts(g)) for (const t of b.getAnimations({ subtree: true })) if (t.transitionProperty === 'color') t.finish();
+  }
 }
 // The group's own layout, for its labels' copy (segInkCopy) to be laid out exactly as its
 // options are: its padding and the flex settings that place the options (and its content
@@ -339,13 +370,14 @@ function segInkM(g){
   const run = [];
   segOpts(g).forEach((b, i) => {
     for (const t of b.getAnimations()) if (t.transitionProperty === 'scale' || t.transitionProperty === 'filter')
-      run.push({ i, kf: t.effect.getKeyframes().map(({ offset, easing, [t.transitionProperty]: v }) => ({ offset, easing, [t.transitionProperty]: v })), tm: t.effect.getTiming(), st: t.startTime });
+      run.push({ i, t, kf: t.effect.getKeyframes().map(({ offset, easing, [t.transitionProperty]: v }) => ({ offset, easing, [t.transitionProperty]: v })), tm: t.effect.getTiming(), st: t.startTime });
   });
   return { w, h, pad, lay, run };
 }
-// The labels' copy (one per group, made with it and kept in it, shown only while it slides:
-// putting an element in the toolbar, or taking one out, has the page work out the style of
-// some 1,500 elements again, 40ms on a slow phone, where showing it changes one class): the
+// The labels' copy (one per group, made with it and kept in it, laid out but unseen, and
+// shown only while it slides: putting an element in the toolbar, or taking one out, has the
+// page work out the style of some 1,500 elements again, 40ms on a slow phone, and laying it
+// out at a press costs that press a few ms, where showing it changes one class): the
 // options' own markup, with no ids, states or attributes a script or style would find (an
 // id is kept as data-ink-id, for its style), so that every rule that lays an option out
 // lays its copy out the same way; over the group's padding box, with the group's own
@@ -360,7 +392,9 @@ function segInkMake(g){
     ov.inert = true;
     ov._mv = ov.appendChild(document.createElement('div'));
     ov._mv.className = 'seg-ink-mv';
-    ov._in = ov._mv.appendChild(document.createElement('div'));
+    ov._r = ov._mv.appendChild(document.createElement('div'));
+    ov._r.className = 'seg-ink-r';
+    ov._in = ov._r.appendChild(document.createElement('div'));
     ov._in.className = 'seg-ink-in';
     ov._run = [];
   }
@@ -368,8 +402,8 @@ function segInkMake(g){
   segInkSync(g);
   return ov;
 }
-// live: measured just now (segInkM); else at the press.
-function segInkCopy(g, live){
+// live: measured just now (segInkM); else at the press. dur: the slide's length.
+function segInkCopy(g, live, dur){
   // (never measured: a slide begun from a box given before any press, so measured now)
   const M = g._segInkM ??= segInkM(g);
   const ov = segInkMake(g);
@@ -382,8 +416,15 @@ function segInkCopy(g, live){
   ov._run = [];
   // (the press's own changes are run alike only when measured in this same task: a change
   // held for its view (segWait) has stopped them, its options' transitions off while held)
-  const kids = ov._in.children;
+  // (and they end with the slide, not before it: a change that ends has the page draw and
+  // paint a frame in the middle of the slide, and with a clip running, every frame after it
+  // until the slide ends. So a press growing back is made to last past the slide, a little
+  // slower than it would alone, and the slide's end ends it, segInkDone.)
+  const kids = ov._in.children, end = performance.now() + dur + 100;
+  ov._ext = [];
   if (live) for (const r of M.run){
+    const d = end - (r.st ?? performance.now()) - (r.tm.delay || 0);
+    if (d > r.tm.duration && r.t.playState === 'running'){ r.t.effect.updateTiming({ duration: d }); r.tm = { ...r.tm, duration: d }; ov._ext.push(r.t); }
     const c = kids[r.i];
     if (!c) continue;
     const a = c.animate(r.kf, r.tm);
@@ -419,7 +460,14 @@ function segInkSync(g){
   ov._run = [];
   ov._in.replaceChildren(t.content);
 }
-// (the slide is over: the copy, hidden again with seg-slide, stops running the press)
+// (the slide has ended: the press it outlasted ends with it, in the same frame)
+function segInkDone(g){
+  const ov = g._segInkEl;
+  if (!ov || !ov._ext) return;
+  for (const t of ov._ext) if (t.playState === 'running') t.finish();
+  ov._ext = null;
+}
+// (the slide is over: the copy, unseen again without seg-slide, stops running the press)
 function segInkOff(g){
   const ov = g._segInkEl;
   if (!ov) return;

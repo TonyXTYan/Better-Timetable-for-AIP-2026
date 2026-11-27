@@ -2929,8 +2929,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   /* (as a slide starts, the option it leaves drops its own fill at once: the indicator is
      still under it, so nothing changes; a fill fading out instead would show, greyed,
      as the indicator moves away from under it) */
-  .agenda-views.seg-ind:is(.seg-moving,.seg-slide)>button,.agenda-views.seg-ind>button[aria-pressed="true"]{transition:scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
-  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .hz-zoom.seg-ind>button,.hn-src.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
   .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover,.hn-src.seg-moving>button[aria-pressed="true"],.hn-src.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
@@ -2979,25 +2979,34 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .daytabs.seg-hold>.daytab.on :is(.dt-wd,.dt-count,.dt-tk){color:var(--muted)}
   .daytabs.seg-hold>.daytab.seg-was{color:var(--accent-ink)}
   .daytabs.seg-hold>.daytab.seg-was :is(.dt-wd,.dt-count,.dt-tk){color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
-  /* The labels' ink while the indicator slides (seg-slide; the toolbar's switches, segInkCopy):
-     every option, its label in its plain colours, lies under the
+  /* The labels' ink while the indicator slides with the page still (seg-inked; the toolbar's
+     switches, segInkCopy): every option, its label in its plain colours, lies under the
      indicator, and over it lies a copy of the labels in the chosen colours (.seg-ink), cut
-     to the indicator's shape by a clip that runs with its slide. Neither changes colour, so
-     the slide asks the page to paint nothing. (A button that is pressed, so scaled, stays
-     under the indicator too: its z-index is its own.) */
-  .agenda-views.seg-ind.seg-slide>button{z-index:-1}
-  .agenda-views.seg-ind.seg-slide>button[aria-pressed="true"]{background:transparent;color:var(--ink-2)}
-  .agenda-views.seg-ind.seg-slide>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
+     to the indicator's shape and moved with it (along one row it draws the indicator too, by
+     moves alone). Nothing changes colour and no clip runs, so the slide asks the page to
+     paint nothing, even in frames it draws while busy. (A button that is pressed, so
+     scaled, stays under the indicator too: its z-index is its own.) A slide under a view
+     that redraws at once (no snapshot) keeps the colour changes instead, segSlide. */
+  .agenda-views.seg-ind.seg-inked>button{z-index:-1;transition:scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind.seg-inked>button[aria-pressed="true"]{background:transparent;color:var(--ink-2)}
+  .agenda-views.seg-ind.seg-inked>button[aria-pressed="true"]:hover{background:transparent;color:var(--ink)}
   /* (the copy: over the group's content box, laid out by the options' own rules, its flex
      settings and padding the group's, segInkM, so its content box is the group's own to the
      last fraction of a pixel; no fills or borders, only the ink) */
-  .seg-ind.seg-slide>.seg-ink{display:block}
+  /* (kept laid out, unseen, between slides: shown by visibility, which has the page only
+     restyle it at a press, where display would have it lay it out and restyle more) */
+  .seg-ind>.seg-ink{display:block;visibility:hidden}
+  .seg-ind.seg-inked>.seg-ink{visibility:visible}
   .seg-ink{position:absolute;inset:0;z-index:1;overflow:clip;margin:0;border:0;padding:0;pointer-events:none}
-  .seg-ink-mv{position:absolute;inset:0}
+  .seg-ink-mv,.seg-ink-r{position:absolute;inset:0}
+  /* (along one row the copy draws the indicator too, segSlide: its inner box, cut to the
+     indicator's shape, is filled, and the indicator itself is unseen until the slide ends) */
+  .agenda-views.seg-ind.seg-fill::before{visibility:hidden}
+  .agenda-views.seg-fill>.seg-ink .seg-ink-r{background:var(--accent)}
   .seg-ink-in{display:flex;position:absolute;inset:0;box-sizing:content-box;width:auto;height:auto;margin:0;border:0}
   .agenda-views>.seg-ink .seg-ink-in>button{background:transparent;color:var(--accent-ink)}
 }
-/* (shown only while the indicator slides; none in forced colours, where none slides) */
+/* (none in forced colours, where no indicator slides) */
 .seg-ink{display:none}
 /* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
    tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
