@@ -282,6 +282,8 @@ function paintStarCount(){
   const items = agendaItems(), n = items.length, el = document.getElementById('starCount');
   el.textContent = n;
   el.title = (n === 1 ? '1 item in My agenda' : n + ' items in My agenda') + innerNote(items, ' (', ')');
+  // (the switch's copy of its labels, for its sliding selection, counts the same: segInkSync)
+  segInkSync(el.closest('.agenda-views'));
   // (a change to My agenda keeps the page below the panel where it was)
   const key = state.starred.size + '/' + n, keep = paintStarCount.key !== undefined && paintStarCount.key !== key;
   paintStarCount.key = key;

@@ -343,6 +343,11 @@ async function scenario(b, dec, sc){
     }
     if (want && !(await p.evaluate(w => !!document.querySelector(w), want))) late = 'not chosen after 5s';
     await p.waitForTimeout(150);
+    // (and a still of the screen at rest: the screencast sends a frame only when the screen
+    // changes, so a pill that lands while the bar still moves (Participants unfolds it) can
+    // have no frame of its own once the bar is still, the last one read being mid-slide)
+    const still = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 92 });
+    frames.push({ wall: await p.evaluate(() => performance.timeOrigin + performance.now()), data: still.data });
     const rec = await p.evaluate(() => window.__recStop());
     await cdp.send('Page.stopScreencast');
     cdp.off('Page.screencastFrame', onFrame);

@@ -7,6 +7,18 @@
 // day tabs are one such group too: their buttons are redrawn in place (dayTabsDraw), and
 // made anew only over the placeholders (segRedrawn).
 const SEG_GROUPS = '.agenda-views, .seg, .hz-zoom, .hn-src, .daytabs';
+// The toolbar's switches (.agenda-views) change their labels' colours on the compositor:
+// while the indicator slides, every label lies under it in its plain colours, and a copy of
+// the labels in the chosen colours (segInkCopy, aria-hidden and inert) lies over it, cut to
+// the indicator's own shape, moving with it. So the page paints nothing in the frames of a
+// slide, however long it is busy meanwhile. The other groups' labels change colour by CSS
+// transitions, timed to the slide (segInk): the day tabs too, whose copy (some 60 elements
+// laid out by the strip's container queries) cost a slow computer 15-20ms in the pressed
+// frame. Not in forced colours, which have no sliding indicator. (Declared, not assigned:
+// the calendar may be drawn before this point of the script has run.)
+function segInkOn(g){ return !(segInkOn.fc ??= matchMedia('(forced-colors: active)')).matches && g.matches('.agenda-views'); }
+// (the options of a group, without its labels' copy)
+function segOpts(g){ return [...g.children].filter(c => c !== g._segInkEl); }
 // A toolbar switch that changes the view (Sessions/Talks, Horizontal/Vertical, List/
 // Calendar, the scope) slides only once the new view shows: until then the page is busy
 // redrawing (or frozen under a view transition's snapshot), and a slide started at the
@@ -93,6 +105,7 @@ function segPlace(g, snap, now){
   // choice instead; the new choice's box is read now, while the page is still)
   else if (g._segOn !== on && !now && !motionReduced() && viewTx && !viewTx.slide && viewTx.freeze !== false && !g.classList.contains('seg') && g._segOn.isConnected && !g._segSlide){
     g._segPre = { on, box: segBox(g, on), compact: stickyWrap.classList.contains('tb-compact') };
+    if (segInkOn(g)) g._segInkM = segInkM(g);
     segWait(g);
     return;
   }
@@ -139,6 +152,9 @@ function segAt(g, on, snap, keep, box){
   // (the same option moved by a new layout, with no slide on its way: it goes with it at once)
   if (!snap && had && g._segOn === on && !g._segSlide) snap = true;
   const from = !snap && had ? segNow(g) : null, prev = from && g._segSlide;
+  // (the labels' copy is laid out as the options are: measured now, while the page is
+  // still, or with the box at the press, segPlace)
+  if (from && !box && !motionReduced() && segInkOn(g)) g._segInkM = segInkM(g);
   segStop(g);
   if (snap && keep){ /* (under the option it was under: the colours are left to go on) */ }
   else if (snap){
@@ -230,14 +246,30 @@ function segSlide(g, from, to, was, wasBox, live, prev){
   g.style.setProperty('--seg-bh', H + 'px');
   g.classList.add('seg-slide');
   const o = { duration: dur, easing: n === 1 ? EASE : 'linear', pseudoElement: '::before', fill: n === 1 ? 'forwards' : 'both' };
-  // (the labels' timing first: animate() works out the page's style, and with it begins
-  // their colour changes)
-  if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
-  segInk(sl, g._segOn, to, from, to, false, live);
+  const ov = segInkOn(g) && segInkCopy(g, live);
+  if (ov){
+    // (the copy moves as the indicator does (.seg-ink-mv), and its labels back by as much
+    // (.seg-ink-in): moves, which the compositor draws in the same frame as the indicator's
+    // own, where a clip alone would be drawn a frame behind it; its clip, at the copy's
+    // corner, only sizes it, as the indicator's does. Its box (.seg-ink) clips what moves in
+    // it, so a copy moved past the group's edge never widens the page. Set at the slide's
+    // start too, for a frame drawn before either has begun.)
+    const M = g._segInkM, OW = M.w + M.pad[1] + M.pad[3], OH = M.h + M.pad[0] + M.pad[2];
+    const cut = b => `inset(0px ${OW - b.w}px ${OH - b.h}px 0px round ${b.r.map(v => v + 'px').join(' ')})`;
+    const mv = b => `translate(${b.x}px,${b.y}px)`, back = b => `translate(${-b.x}px,${-b.y}px)`;
+    const ko = { duration: dur, easing: o.easing, fill: o.fill }, m = ov._mv;
+    m.style.transform = mv(pts[0]); m.style.clipPath = cut(pts[0]); ov._in.style.transform = back(pts[0]);
+    sl.k = [m.animate(pts.map(b => ({ transform: mv(b) })), ko), m.animate(pts.map(b => ({ clipPath: cut(b) })), ko), ov._in.animate(pts.map(b => ({ transform: back(b) })), ko)];
+  } else {
+    // (the labels' timing first: animate() works out the page's style, and with it begins
+    // their colour changes)
+    if (was && wasBox) segInk(sl, was, wasBox, from, to, true, live);
+    segInk(sl, g._segOn, to, from, to, false, live);
+  }
   sl.a = g.animate(pts.map(b => ({ transform: `translate(${b.x}px,${b.y}px)` })), o);
   sl.c = g.animate(pts.map(b => ({ clipPath: clip(b) })), o);
   // (its time runs from when it was made, however late it is first drawn)
-  if (sl.prev) sl.a.startTime = sl.c.startTime = t0;
+  if (sl.prev){ sl.a.startTime = sl.c.startTime = t0; for (const k of sl.k || []) k.startTime = t0; }
   g._segSlide = sl;
   sl.a.onfinish = () => { if (g._segSlide === sl) segStop(g); };
   // (the chosen option's fill stays aside for as long as this slide, however late it began)
@@ -284,10 +316,115 @@ function segStop(g){
   // (its start kept: a slide that takes over from it goes on along its way)
   sl.s = segT0(sl);
   sl.a.cancel(); sl.c.cancel();
+  if (sl.k){ for (const k of sl.k) k.cancel(); segInkOff(g); }
   for (const el of sl.ink){ el.style.removeProperty('--seg-cf'); el.style.removeProperty('--seg-cd'); }
   g.style.removeProperty('--seg-bw');
   g.style.removeProperty('--seg-bh');
   g.classList.remove('seg-slide');
+}
+// The group's own layout, for its labels' copy (segInkCopy) to be laid out exactly as its
+// options are: its padding and the flex settings that place the options (and its content
+// box's size, for the copy's clip). Read while the page is still (at the press,
+// with the options' boxes), never in a view transition's first frame. Also the press's
+// own changes running on the options (a pressed option growing back from its press scale,
+// its press filter fading), for the copy to run them too.
+function segInkM(g){
+  const cs = getComputedStyle(g), px = k => parseFloat(cs[k]) || 0;
+  const pad = [px('paddingTop'), px('paddingRight'), px('paddingBottom'), px('paddingLeft')];
+  const bb = cs.boxSizing === 'border-box';
+  const w = px('width') - (bb ? pad[1] + pad[3] + px('borderLeftWidth') + px('borderRightWidth') : 0);
+  const h = px('height') - (bb ? pad[0] + pad[2] + px('borderTopWidth') + px('borderBottomWidth') : 0);
+  const lay = {};
+  for (const k of ['flexDirection', 'flexWrap', 'justifyContent', 'alignItems', 'alignContent', 'rowGap', 'columnGap']) lay[k] = cs[k];
+  const run = [];
+  segOpts(g).forEach((b, i) => {
+    for (const t of b.getAnimations()) if (t.transitionProperty === 'scale' || t.transitionProperty === 'filter')
+      run.push({ i, kf: t.effect.getKeyframes().map(({ offset, easing, [t.transitionProperty]: v }) => ({ offset, easing, [t.transitionProperty]: v })), tm: t.effect.getTiming(), st: t.startTime });
+  });
+  return { w, h, pad, lay, run };
+}
+// The labels' copy (one per group, made with it and kept in it, shown only while it slides:
+// putting an element in the toolbar, or taking one out, has the page work out the style of
+// some 1,500 elements again, 40ms on a slow phone, where showing it changes one class): the
+// options' own markup, with no ids, states or attributes a script or style would find (an
+// id is kept as data-ink-id, for its style), so that every rule that lays an option out
+// lays its copy out the same way; over the group's padding box, with the group's own
+// padding and flex settings.
+function segInkMake(g){
+  if (!segInkOn(g)) return null;
+  let ov = g._segInkEl;
+  if (!ov){
+    ov = g._segInkEl = document.createElement('div');
+    ov.className = 'seg-ink';
+    ov.setAttribute('aria-hidden', 'true');
+    ov.inert = true;
+    ov._mv = ov.appendChild(document.createElement('div'));
+    ov._mv.className = 'seg-ink-mv';
+    ov._in = ov._mv.appendChild(document.createElement('div'));
+    ov._in.className = 'seg-ink-in';
+    ov._run = [];
+  }
+  if (ov.parentNode !== g){ g.append(ov); ov._src = null; }
+  segInkSync(g);
+  return ov;
+}
+// live: measured just now (segInkM); else at the press.
+function segInkCopy(g, live){
+  // (never measured: a slide begun from a box given before any press, so measured now)
+  const M = g._segInkM ??= segInkM(g);
+  const ov = segInkMake(g);
+  // (its size is the group's padding box, inset 0: a size given as a style reads, cut to
+  // six figures, could lay the options out a 64th of a pixel apart)
+  const s = ov._in.style;
+  s.padding = M.pad.map(v => v + 'px').join(' ');
+  for (const k in M.lay) s[k] = M.lay[k];
+  for (const a of ov._run) a.cancel();
+  ov._run = [];
+  // (the press's own changes are run alike only when measured in this same task: a change
+  // held for its view (segWait) has stopped them, its options' transitions off while held)
+  const kids = ov._in.children;
+  if (live) for (const r of M.run){
+    const c = kids[r.i];
+    if (!c) continue;
+    const a = c.animate(r.kf, r.tm);
+    // (begun with the press's style: in step with it, from the same frame)
+    if (r.st !== null) a.startTime = r.st;
+    ov._run.push(a);
+  }
+  return ov;
+}
+// (the copy's markup made anew only when the options' own has changed (a new count of saved
+// items, a different option shown), not for a new choice: their states are not copied)
+// (as a list: a class set by the script is written back with no spaces to spare)
+function segInkSync(g){
+  const ov = g._segInkEl;
+  if (!ov || ov.parentNode !== g) return;
+  const opts = segOpts(g);
+  let key = '';
+  for (const c of opts) key += (c.hidden ? 'h' : '') + [...c.classList].filter(k => k !== 'on' && k !== 'seg-was').join(' ') + '\u0001' + c.innerHTML + '\u0002';
+  if (key === ov._src) return;
+  ov._src = key;
+  // (made apart, then put in at once: the group's own watcher sees no change of state)
+  const t = document.createElement('template');
+  t.innerHTML = opts.map(c => c.outerHTML).join('');
+  for (const e of t.content.querySelectorAll('*')){
+    for (const a of [...e.attributes]){
+      if (a.name === 'class' || a.name === 'hidden' || a.name === 'type') continue;
+      if (a.name === 'id') e.dataset.inkId = a.value;
+      if (a.name !== 'data-ink-id') e.removeAttribute(a.name);
+    }
+    e.classList.remove('on', 'seg-was', 'na-resolve');
+  }
+  for (const a of ov._run) a.cancel();
+  ov._run = [];
+  ov._in.replaceChildren(t.content);
+}
+// (the slide is over: the copy, hidden again with seg-slide, stops running the press)
+function segInkOff(g){
+  const ov = g._segInkEl;
+  if (!ov) return;
+  for (const a of ov._run) a.cancel();
+  ov._run = [];
 }
 // (the watchers are made on first use: the calendar may draw its zoom before this point
 // of the script has run; an aria-pressed set again to what it was changes nothing)
@@ -301,6 +438,7 @@ function segObs(){
       const seen = new Map();
       for (const m of ms){
         if (m.attributeName === 'aria-pressed' && m.oldValue === m.target.getAttribute('aria-pressed')) continue;
+        if (m.target.closest('.seg-ink')) continue;
         const g = m.target.closest(SEG_GROUPS);
         if (g) seen.set(g, seen.get(g) || (m.target === g && m.attributeName === 'hidden'));
       }
@@ -334,12 +472,13 @@ function segAdopt(g, drawn = true){
   g._segOn = null;
   const o = segObs();
   if (drawn){
-    o.drawn = o.drawn.filter(d => d.isConnected || (o.ro && [d, ...d.children].forEach(c => o.ro.unobserve(c))));
+    o.drawn = o.drawn.filter(d => d.isConnected || (o.ro && [d, ...segOpts(d)].forEach(c => o.ro.unobserve(c))));
     o.drawn.push(g);
   }
   segPlace(g, true);
-  if (o.ro){ o.ro.observe(g); for (const c of g.children) o.ro.observe(c); }
-  g._segKids = [...g.children];
+  if (o.ro){ o.ro.observe(g); for (const c of segOpts(g)) o.ro.observe(c); }
+  g._segKids = segOpts(g);
+  segInkMake(g);
   o.mo.observe(g, { attributes: true, subtree: true, attributeOldValue: true, attributeFilter: ['aria-pressed', 'hidden'] });
 }
 // (a group whose options were made anew: the size watcher follows the new ones)
@@ -348,9 +487,10 @@ function segRedrawn(g){
   const o = segObs();
   if (o.ro){
     for (const c of g._segKids || []) if (!c.isConnected) o.ro.unobserve(c);
-    for (const c of g.children) o.ro.observe(c);
+    for (const c of segOpts(g)) o.ro.observe(c);
   }
-  g._segKids = [...g.children];
+  g._segKids = segOpts(g);
+  segInkMake(g);
   segPlace(g, true);
 }
 for (const g of document.querySelectorAll(SEG_GROUPS)) segAdopt(g, false);

@@ -2913,7 +2913,9 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
    (the view switches in the toolbar, the participants' sort, the Display dialog's choices,
    the Horizontal calendar's zoom)
    One ink indicator per group, its ::before, sits under the chosen option at --seg-x/-y/-w/-h
-   (set by segPlace) and slides to a new choice while the labels' colours cross over; while
+   (set by segPlace) and slides to a new choice while the labels' colours cross over (the
+   toolbar's switches: under a copy of the labels in the chosen colours, cut to the
+   indicator's shape, seg-slide below; the others by colour transitions); while
    it moves (seg-moving) the chosen option's own fill steps aside for it, and at rest the two
    lie exactly over each other. Before the script has placed it, and in forced colours, the
    chosen option just keeps its own fill. Reduced motion: it moves at once. */
@@ -2927,8 +2929,8 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   /* (as a slide starts, the option it leaves drops its own fill at once: the indicator is
      still under it, so nothing changes; a fill fading out instead would show, greyed,
      as the indicator moves away from under it) */
-  .agenda-views.seg-ind.seg-moving>button{transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
-  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind:is(.seg-moving,.seg-slide)>button,.agenda-views.seg-ind>button[aria-pressed="true"]{transition:scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
+  .agenda-views.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo)) var(--ease),background-color var(--dur-s) var(--ease),scale calc(var(--mo) * 160ms) cubic-bezier(.2,.7,.3,1),filter calc(var(--mo) * 160ms) ease-out,opacity calc(var(--mo) * 160ms) ease-out}
   .agenda-views.seg-moving>button[aria-pressed="true"],.agenda-views.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
   .hz-zoom.seg-ind>button,.hn-src.seg-ind>button{position:relative;z-index:1;transition:color calc(200ms * var(--mo) * var(--seg-cf, 1)) var(--ease) var(--seg-cd, 0s),background-color var(--dur-s) var(--ease)}
   .hz-zoom.seg-moving>button[aria-pressed="true"],.hz-zoom.seg-moving>button[aria-pressed="true"]:hover,.hn-src.seg-moving>button[aria-pressed="true"],.hn-src.seg-moving>button[aria-pressed="true"]:hover{background:transparent}
@@ -2977,7 +2979,26 @@ html[data-motion="reduce"] *,html[data-motion="reduce"] *::before,html[data-moti
   .daytabs.seg-hold>.daytab.on :is(.dt-wd,.dt-count,.dt-tk){color:var(--muted)}
   .daytabs.seg-hold>.daytab.seg-was{color:var(--accent-ink)}
   .daytabs.seg-hold>.daytab.seg-was :is(.dt-wd,.dt-count,.dt-tk){color:color-mix(in srgb,var(--accent-ink) 72%,transparent)}
+  /* The labels' ink while the indicator slides (seg-slide; the toolbar's switches, segInkCopy):
+     every option, its label in its plain colours, lies under the
+     indicator, and over it lies a copy of the labels in the chosen colours (.seg-ink), cut
+     to the indicator's shape by a clip that runs with its slide. Neither changes colour, so
+     the slide asks the page to paint nothing. (A button that is pressed, so scaled, stays
+     under the indicator too: its z-index is its own.) */
+  .agenda-views.seg-ind.seg-slide>button{z-index:-1}
+  .agenda-views.seg-ind.seg-slide>button[aria-pressed="true"]{background:transparent;color:var(--ink-2)}
+  .agenda-views.seg-ind.seg-slide>button[aria-pressed="true"]:hover{background:var(--surface-3);color:var(--ink)}
+  /* (the copy: over the group's content box, laid out by the options' own rules, its flex
+     settings and padding the group's, segInkM, so its content box is the group's own to the
+     last fraction of a pixel; no fills or borders, only the ink) */
+  .seg-ind.seg-slide>.seg-ink{display:block}
+  .seg-ink{position:absolute;inset:0;z-index:1;overflow:clip;margin:0;border:0;padding:0;pointer-events:none}
+  .seg-ink-mv{position:absolute;inset:0}
+  .seg-ink-in{display:flex;position:absolute;inset:0;box-sizing:content-box;width:auto;height:auto;margin:0;border:0}
+  .agenda-views>.seg-ink .seg-ink-in>button{background:transparent;color:var(--accent-ink)}
 }
+/* (shown only while the indicator slides; none in forced colours, where none slides) */
+.seg-ink{display:none}
 /* An option that cannot be chosen just now (aria-disabled, set by the view: it stays in the
    tab order and says why when pressed): grey text (3:1 or more), no hover fill, no press. */
 .agenda-views>button[aria-disabled="true"],.agenda-views>button[aria-disabled="true"]:hover{background:transparent;color:var(--faint);cursor:not-allowed}
@@ -3247,7 +3268,7 @@ dialog:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
 }
 .pp-letters button{font-size:.75rem}
 /* The count in the My agenda switch: an absolute size, so it never shrinks below 11px. */
-#starCount{font-size:.6875rem;font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
+#starCount,.seg-ink [data-ink-id="starCount"]{font-size:.6875rem;font-weight:650;font-variant-numeric:tabular-nums;font-stretch:var(--stretch-cond)}
 /* The Streams panel stays on screen: it scrolls inside itself, and on phones the chips are a
    grid with the Select all / Deselect all / Reset row held at the bottom. */
 .filter-panel{max-height:calc(100vh - var(--toolbar-h,190px) - 12px);max-height:calc(100dvh - var(--toolbar-h,190px) - 12px);overflow-y:auto;overscroll-behavior:contain}
