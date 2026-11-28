@@ -152,15 +152,16 @@ function txpRender(f, self, args){
 function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
+  // (a second click or pointerdown on the same button that started this transition — a
+  // double-click — is ignored whether the change is still pending or already running)
+  if (tx.press && e && e.target instanceof Element && tx.press.contains(e.target) && (e.type === 'click' || e.type === 'pointerdown')){
+    if (e.type === 'click') e.stopImmediatePropagation();
+    return;
+  }
   // (another press in the same row of buttons, while a change still waits for its frame:
-  // that change gives way to the new one, rather than being drawn first; a second click
-  // on the same pending button (double-click) is ignored so it does not drop/skip it)
+  // that change gives way to the new one, rather than being drawn first)
   if (tx.group && e && e.target instanceof Element && tx.group.contains(e.target) && e.target.closest('[aria-pressed]')
     && (e.type === 'click' || e.type === 'pointerdown' || (e.type === 'keydown' && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)))){
-    if (tx.press && tx.press.contains(e.target) && (e.type === 'click' || e.type === 'pointerdown')){
-      if (e.type === 'click') e.stopImmediatePropagation();
-      return;
-    }
     if (e.type !== 'pointerdown') tx.drop(e);
     return;
   }

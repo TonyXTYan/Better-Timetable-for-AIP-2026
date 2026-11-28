@@ -65,6 +65,16 @@ jobs:
       - name: Run shard (${{ matrix.shard.name }})
         run: node tests/run.js --only ${{ matrix.shard.only }}
 
+      - name: Print failure logs
+        if: failure()
+        run: |
+          for f in tests/out/run/*.log; do
+            if grep -qE '^FAIL |FAILS [1-9]|CRASHED|FAILED' "$f"; then
+              echo "=== $f ==="
+              tail -n 120 "$f"
+            fi
+          done
+
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
@@ -106,6 +116,14 @@ jobs:
 
       - name: Run shard (pill)
         run: node tests/run.js --only pill
+
+      - name: Print failure logs
+        if: failure()
+        run: |
+          for f in tests/out/run/*.log; do
+            echo "=== $f ==="
+            tail -n 120 "$f"
+          done
 
       - name: Upload failure logs
         if: failure()

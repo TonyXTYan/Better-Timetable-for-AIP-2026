@@ -19,7 +19,7 @@ function withTransition(kind, fn, from, opts = {}){
     // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
     // frames on, lead, once the compositor has the slide going: else the slide can stall a
     // while as the page redraws)
-    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
+    const o = { ...opts, press: null, pressEl: opts.press }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
     const pg = opts.press.parentElement, spec = pg && pg._segSpec && pg._segSpec.on === opts.press;
     const slide = freeze && (first > 0 || (spec && !txFastSnap(o)));
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
@@ -178,7 +178,7 @@ function txStart(kind, fn, from, opts){
   if (R){ txpAt('svt', R); R.vt = true; }
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
-  const tx = viewTx = mxOwner = { vt, run };
+  const tx = viewTx = mxOwner = { vt, run, press: opts.pressEl };
   let bandAnims = [];
   // (the wait is counted without the redraw itself: that is judged on its own, by txNote,
   // the same with or without a transition, and a costly redraw (Talks) would otherwise
