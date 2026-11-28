@@ -29,7 +29,6 @@ function dxSettleAll(){ for (const d of [...dxRunning]) dxSet(d, d.__dx.open); }
 // between them, not a few each; `also` makes the changes that go with them at once (after
 // their heights now are read from the layout on screen, before the one that measures them).
 function dxFold(ds, open, also){
-  viewGen++;
   if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   ds = ds.filter(d => d.isConnected && dxGoal(d) !== open);
   if (!ds.length || motionReduced() || !ds[0].animate){ ds.forEach(d => dxSet(d, open)); if (also) also(); return; }

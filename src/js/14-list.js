@@ -54,10 +54,10 @@ function plateFit(cards, m = listCols()){
 // (the page's width or its font changed: every plate drawn, again)
 let plateM = 0;
 function platesRefit(){
-  viewGen++;
   plateW = 0;
   const m = listCols();
   if (m === plateM) return;
+  viewGen++;
   plateM = m;
   for (const c of document.querySelectorAll('#agenda .cards')) plateFit(c, m);
 }

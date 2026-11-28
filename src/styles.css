@@ -1358,9 +1358,10 @@ footer p{line-height:1.6;max-width:62ch}
 footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
-/* (on body, not bare ::selection: matching html makes Chromium's highlight inheritance
-   recalculate the whole DOM whenever a view transition toggles :active-view-transition) */
-body::selection{background:var(--mark-bg);color:var(--ink)}
+/* (under body, not bare ::selection: matching html makes Chromium's highlight inheritance
+   recalculate the whole DOM whenever a view transition toggles :active-view-transition;
+   a descendant selector keeps Safari/WebKit styling text inside child elements too) */
+body ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
 /* About: the congress's facts as a short list (the term in ink, as the headings), then the

@@ -162,6 +162,22 @@ async function waitTxDone(p, n0) {
   const layDbl = await p.evaluate(() => state.layout);
   check(recsDbl.length === 1 && !recsDbl[0].skipped && layDbl === 'calendar',
     'double-click does not skip animation', `n=${recsDbl.length} skipped=${recsDbl[0]?.skipped} layout=${layDbl}`);
+  await p.waitForTimeout(400);
+
+  // 7. Long press past 800ms keeps speculative pill steady without wobbling back
+  n0 = await p.evaluate(() => window.__txprof.length);
+  await p.mouse.move(lx, ly);
+  await p.mouse.down();
+  await p.waitForTimeout(950);
+  const stillHeld = await p.evaluate(sel => {
+    const btn = document.querySelector(sel), g = btn.parentElement;
+    return { spec: !!(g._segSpec && g._segSpec.on === btn), segOn: g._segOn === btn, layout: state.layout };
+  }, listSel);
+  await p.mouse.up();
+  const recsLong = await waitTxDone(p, n0);
+  const layLong = await p.evaluate(() => state.layout);
+  check(stillHeld.spec && stillHeld.segOn && stillHeld.layout === 'calendar' && recsLong.length === 1 && layLong === 'list',
+    'long press (>900ms) stays steady until release and commits cleanly', JSON.stringify({ stillHeld, n: recsLong.length, layLong }));
 
   await ctx.close();
 
