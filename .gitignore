@@ -8,3 +8,5 @@ node_modules/
 
 # test output (node tests/run.js)
 tests/out/
+tools/perf/out/
+tools/perf/base/
