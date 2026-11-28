@@ -10,7 +10,7 @@ Sessions/Talks) to the view moving. It also covers how smooth the highlight is w
 - `notes.md`: what each step did and measured, including the independent verifier results.
 - `after-step1-table.md`: before/after for step 1 across the whole matrix.
 
-## Status (after steps 3-7 on `perf/press-to-motion-step3-plus`)
+## Status (after steps 3-10 on `perf/press-to-motion-step3-plus`)
 
 Done:
 1. Step 1. Switches that take no snapshot (Participants, heavy pages) no longer wait for the
@@ -30,13 +30,24 @@ Done:
 5. Step 6 (`999673f`). Mouse/pen `pointerdown` starts the pill slide immediately without changing
    `aria-pressed`, `state`, or the view; `click` still commits and counts hold time toward the
    lead. Added `tests/press.js` (19/19 pass). With `--hold 100`: `pill` is 2-6ms (1x) / 11-29ms
-   (4x); 4x MOT drops ~125-226ms vs step 5; 1x view MOT adds ~110-160ms to avoid mid-slide freeze.
+   (4x); 4x MOT drops ~125-226ms vs step 5; 1x view MOT adds ~110-160ms to avoid mid-slide freeze
+   (kept per owner preference for UI smoothness).
 6. Step 7 (dropped). Element-scoped `#main.startViewTransition` (`?txscope=1`) tripped its stop
    rule: 2-5x worse capture times, slower MOT at both 1x and 4x, and 117-217ms pill gaps at 1x.
+7. Step 8 (`7242566`). 4-entry detached calendar LRU cache + `viewGen` + hit/cold `txGuess` split.
+   Added `tests/viewcache.js`. Desktop 4x revisits: `level sess->talks` `rend+lay` 576->308ms
+   (-47%, MOT 1467->1200ms); `week-cal day->week` `rend+lay` 399->210ms (-47%, MOT 924->683ms).
+8. Step 9 (`7924fa6`). Idle-time list block index (`mxBlockIdx`) for full-list `mxScan`. Desktop
+   4x `layout-week list->cal` `old` 147-178->71ms, `week-list` `old` 40/97->0/1ms; phone 4x
+   `layout-week list->cal` `old` 176->91ms. Zero key mismatches under `?txdebug=1`.
+9. Step 10 (`6ddd073`). 2-day LRU + All-week detached list cache, skipping `syncListStars` /
+   `applyFilters` / stale pass on unchanged put-back and restoring `mxBlockIdx`. Desktop 4x
+   `week-list week->day` `rend` 330->158ms (-52%, MOT 986->848ms) and `layout-week cal->list`
+   `nScan` 354->211ms (-40%); phone 4x `week-list week->day` `rend` 341->142ms (-58%, MOT
+   1074->910ms).
 
-Next: owner decision on the 1x view-motion trade-off in step 6 (keep speculative pointerdown at
-1x, or restrict it to `txSlideFirst > 0` / All-week day tabs), then steps 8-12 (detached calendar
-and list view caches, idle block index) from `plan.md`.
+Next (optional / low-priority): step 11 (detached cache for `#people`), step 12 (offscreen first-
+visit pre-build inside lead slack), and full 8-config matrix (`matrix.sh`) + `tests/run.js --full`.
 
 Owner preference, which replaces "highlight first" in the plan: the most responsive UI wins.
 Order of priority:
