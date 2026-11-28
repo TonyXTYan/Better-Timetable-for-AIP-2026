@@ -19,10 +19,10 @@ function withTransition(kind, fn, from, opts = {}){
     // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
     // frames on, lead, once the compositor has the slide going: else the slide can stall a
     // while as the page redraws)
-    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze ? first : 0;
+    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze && first > 0;
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
-    if (R){ R.slideWait = slide; R.freezes = freeze; }
-    txPending(opts.press, go, now, slide, freeze, !freeze && first > 0);
+    if (R){ R.slideWait = slide ? first : 0; R.freezes = freeze; }
+    txPending(opts.press, go, now, slide ? txLead(o) : null, freeze, !freeze && first > 0);
     return;
   }
   txPre(opts);
@@ -37,17 +37,17 @@ function txPre(o){
   o.pre = null;
   f(o);
 }
-// A toolbar switch (a sliding segmented control) whose change takes snapshots (txFreezes)
-// and will take a while to show (its redraw and the wait for its first moving frame, as
-// last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press, and the
-// change starts once it has (the ms to wait; 0: the slide waits for the change instead
-// and runs alongside it, segWait). On a slow device the switch then answers at once,
-// rather than after the redraw (which freezes the page, and with it any slide).
-const TX_SLIDE_FIRST = 250;
+// A toolbar switch (or a day tab crossing All week) whose change takes snapshots
+// (txFreezes) and will take a while to show (its redraw and the wait for its first moving
+// frame, as last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press,
+// and the change starts early enough (txLead) that its old-snapshot freeze lands once the
+// pill has reached TX_PILL_P of its travel (0: the slide waits for the change instead and
+// runs alongside it, segWait).
+const TX_SLIDE_FIRST = 250, TX_PILL_P = 0.95;
 // (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
 // take about as long as its redraw, as they do)
 function txSlideFirst(o, press){
-  if (motionReduced() || !press.parentElement || !press.parentElement.matches('.agenda-views')) return 0;
+  if (motionReduced() || !press.parentElement || !(press.parentElement.matches('.agenda-views') || (o.pair === 'day' && press.parentElement.matches('.daytabs')))) return 0;
   const t = performance.now(), p = o.pair ? txPairRec(o) : null, redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
   // (List <-> Calendar at its level 0 takes no snapshot: its wait is the redraw alone)
   if (p && o.pair === 'layout' && txPairLevel(o, p) === 0) return redraw > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
@@ -57,6 +57,16 @@ function txSlideFirst(o, press){
   const snap = p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0);
   const wait = Math.max(redraw + snap, p && p.last ? 0 : TX_SNAP_GUESS * segCpu());
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
+}
+// How long before the freeze (old scan + old snapshot, go -> cb) this switch's direction
+// takes, used by txPending to schedule `go` so the freeze lands at TX_PILL_P of the slide.
+// Uses a 0.85 safety factor on the EMA (or a conservative cold guess) so normal jitter
+// keeps the pill >= 0.90 at the freeze.
+function txLead(o){
+  const p = o.pair ? txPairRec(o) : null, dk = o.dir || 'x';
+  if (p && p.lead && p.lead[dk] !== undefined) return p.lead[dk] * 0.85;
+  const redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
+  return Math.max(txAged(txFreeze, performance.now()) * 0.3, redraw * 0.4);
 }
 const TX_SNAP_GUESS = 120;
 // Whether the change will take snapshots (a view transition), which hold the page still
@@ -129,6 +139,7 @@ function txStart(kind, fn, from, opts){
     ran = true;
     const pv = txpCur;
     if (R){ txpCur = R; txpAt('cb', R); }
+    if (pr){ const dk = opts.dir || 'x', lm = performance.now() - t, prev = pr.lead[dk]; pr.lead[dk] = prev !== undefined ? prev * 0.6 + lm * 0.4 : lm; }
     mxClear();
     // (the toolbar's own change is set out once the new view's items are measured: the page
     // under the bar is not moved by it, and its parts start from where they showed)
@@ -319,7 +330,7 @@ const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day ==
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
-  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null, any0: o.pair === 'scope' && state.layout === 'list' });
+  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null, lead: {}, any0: o.pair === 'scope' && state.layout === 'list' });
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
@@ -349,7 +360,7 @@ function txPairNote(p, lv, freeze, jank){
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
   p.level = down ? Math.max(txPairFloor(p), lv - 1) : up ? Math.min(2, lv + 1) : lv;
-  if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
+  if (p.level !== lv){ p.lead = {}; p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`; }
 }
 // (a pair's change made with no snapshot (at level 0, on a phone: TX_PAIR_NOSNAP): two
 // quick redraws in a row lift its own level back to 1)
@@ -491,12 +502,12 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slide = 0, freeze = true, lead = false){
+function txPending(press, go, now, slideLead = null, freeze = true, lead = false){
   // (a record of its own, but for withTransition's, just made)
   const R = !TXP ? null : txpLive(txpCur) && txpCur.press === undefined && performance.now() - txpCur.at < 100 ? txpCur : txpBegin('pending', { own: true });
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
   if (!press.parentElement){ go(); if (R && R.own) txpFrame(R, 'raf1', true); return; }   // (a button a redraw has since replaced)
-  const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const g = press.parentElement, btns = [...g.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
   let ran = false;
@@ -504,11 +515,20 @@ function txPending(press, go, now, slide = 0, freeze = true, lead = false){
     ran = true;
     if (viewTx === tx) viewTx = null;
   };
-  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide, freeze, group: press.parentElement,
-    drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(press.parentElement, e); paint(false); } } };
+  const slideFirst = slideLead !== null;
+  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g,
+    drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(g, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
-    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    let delay = 0;
+    if (slideFirst){
+      const sl = g._segSlide, dur = sl ? sl.dur : 200 * motionK();
+      const pillT0 = sl ? segT0(sl) : performance.now();
+      const tP = segEaseAt(TX_PILL_P) * dur;
+      delay = Math.max(0, pillT0 + tP - performance.now() - slideLead);
+      if (R) R.slideWait = Math.round(delay);
+    }
+    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, delay);
     // (lead: two frames on, withTransition)
     if (lead) requestAnimationFrame(() => requestAnimationFrame(run)); else run();
   });
