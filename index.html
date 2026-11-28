@@ -6752,9 +6752,14 @@ function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
   // (another press in the same row of buttons, while a change still waits for its frame:
-  // that change gives way to the new one, rather than being drawn first)
+  // that change gives way to the new one, rather than being drawn first; a second click
+  // on the same pending button (double-click) is ignored so it does not drop/skip it)
   if (tx.group && e && e.target instanceof Element && tx.group.contains(e.target) && e.target.closest('[aria-pressed]')
     && (e.type === 'click' || e.type === 'pointerdown' || (e.type === 'keydown' && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)))){
+    if (tx.press && tx.press.contains(e.target) && (e.type === 'click' || e.type === 'pointerdown')){
+      if (e.type === 'click') e.stopImmediatePropagation();
+      return;
+    }
     if (e.type !== 'pointerdown') tx.drop(e);
     return;
   }
@@ -7767,9 +7772,11 @@ function withTransition(kind, fn, from, opts = {}){
     // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
     // frames on, lead, once the compositor has the slide going: else the slide can stall a
     // while as the page redraws)
-    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze && first > 0;
+    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
+    const pg = opts.press.parentElement, spec = pg && pg._segSpec && pg._segSpec.on === opts.press;
+    const slide = freeze && (first > 0 || spec);
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
-    if (R){ R.slideWait = slide ? first : 0; R.freezes = freeze; }
+    if (R){ R.slideWait = slide ? (first || 1) : 0; R.freezes = freeze; }
     txPending(opts.press, go, now, slide ? txLead(o) : null, freeze, !freeze && first > 0);
     return;
   }
@@ -8256,6 +8263,9 @@ function txPending(press, go, now, slideLead = null, freeze = true, lead = false
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
   if (!press.parentElement){ go(); if (R && R.own) txpFrame(R, 'raf1', true); return; }   // (a button a redraw has since replaced)
   const g = press.parentElement, btns = [...g.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const spec = g._segSpec && g._segSpec.on === press ? g._segSpec : null;
+  if (g._segSpec) segSpecClear(g, false);
+  if (R && spec && R.pill === undefined){ R.pill = spec.t0; if (spec.pillRaf !== undefined) R.pillRaf = spec.pillRaf; }
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
   let ran = false;
@@ -8264,14 +8274,14 @@ function txPending(press, go, now, slideLead = null, freeze = true, lead = false
     if (viewTx === tx) viewTx = null;
   };
   const slideFirst = slideLead !== null;
-  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g,
+  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g, press,
     drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(g, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
     let delay = 0;
     if (slideFirst){
       const sl = g._segSlide, dur = sl ? sl.dur : 200 * motionK();
-      const pillT0 = sl ? segT0(sl) : performance.now();
+      const pillT0 = spec ? spec.t0 : sl ? segT0(sl) : performance.now();
       const tP = segEaseAt(TX_PILL_P) * dur;
       delay = Math.max(0, pillT0 + tP - performance.now() - slideLead);
       if (R) R.slideWait = Math.round(delay);
@@ -15766,6 +15776,7 @@ function segPlace(g, snap, now){
   if (snap && inVT && viewTx && viewTx.vt){ segLate(g, viewTx.vt); return; }
   g._segLate = false;
   const on = segOnOf(g);
+  if (g._segSpec && (on === g._segSpec.on || snap)) segSpecClear(g, false);
   if (g._segHold){
     // (a Display option held until its new look applies, segDisp: placed then, as the look
     // has laid it out)
@@ -15794,6 +15805,49 @@ function segPlace(g, snap, now){
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
 }
+// Highlight on pointerdown (mouse and pen only): the pill starts sliding at pointerdown
+// without changing aria-pressed, state or the view. The view still commits on click, and
+// txPending measures the lead from t0 so the hold time counts toward it. Dragging off,
+// cancelling, Escape or no click within 800ms slides the pill back to the active option.
+function segSpecClear(g, revert){
+  const sp = g && g._segSpec;
+  if (!sp) return;
+  g._segSpec = null;
+  clearTimeout(sp.tm);
+  window.removeEventListener('pointerup', sp.up, true);
+  window.removeEventListener('pointercancel', sp.rev, true);
+  window.removeEventListener('keydown', sp.key, true);
+  sp.on.removeEventListener('lostpointercapture', sp.rev);
+  if (revert && g.isConnected){
+    const real = segOnOf(g);
+    if (real && real !== g._segOn){ segMoving(g); segAt(g, real, false); }
+  }
+}
+function segSpecStart(g, b){
+  segSpecClear(g, false);
+  segMoving(g);
+  segAt(g, b, false);
+  const t0 = g._segSlide ? segT0(g._segSlide) : performance.now();
+  const rev = () => segSpecClear(g, true);
+  const up = e => { if (!b.contains(e.target)) rev(); };
+  const key = e => { if (e.key === 'Escape') rev(); };
+  const sp = g._segSpec = { on: b, t0, rev, up, key, tm: setTimeout(rev, 800) };
+  requestAnimationFrame(() => { if (g._segSpec === sp) sp.pillRaf = performance.now(); });
+  window.addEventListener('pointerup', up, true);
+  window.addEventListener('pointercancel', rev, true);
+  window.addEventListener('keydown', key, true);
+  b.addEventListener('lostpointercapture', rev);
+}
+document.addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+  if (motionReduced() || document.querySelector('dialog[open]')) return;
+  const b = e.target && e.target.closest && e.target.closest('.agenda-views > button, #daytabs > .daytab');
+  if (!b || b.hidden || b.disabled || b.getAttribute('aria-pressed') === 'true') return;
+  const g = b.parentElement;
+  if (!g || g._segOn === undefined || g._segOn === b || g._segHold || !g.classList.contains('seg-ind')) return;
+  segSpecStart(g, b);
+}, true);
 // (placed in the first frame after the transition's ready, unless placed before then)
 function segLate(g, vt){
   if (g._segLate) return;

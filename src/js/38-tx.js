@@ -19,9 +19,11 @@ function withTransition(kind, fn, from, opts = {}){
     // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
     // frames on, lead, once the compositor has the slide going: else the slide can stall a
     // while as the page redraws)
-    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze && first > 0;
+    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
+    const pg = opts.press.parentElement, spec = pg && pg._segSpec && pg._segSpec.on === opts.press;
+    const slide = freeze && (first > 0 || spec);
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
-    if (R){ R.slideWait = slide ? first : 0; R.freezes = freeze; }
+    if (R){ R.slideWait = slide ? (first || 1) : 0; R.freezes = freeze; }
     txPending(opts.press, go, now, slide ? txLead(o) : null, freeze, !freeze && first > 0);
     return;
   }
@@ -508,6 +510,9 @@ function txPending(press, go, now, slideLead = null, freeze = true, lead = false
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
   if (!press.parentElement){ go(); if (R && R.own) txpFrame(R, 'raf1', true); return; }   // (a button a redraw has since replaced)
   const g = press.parentElement, btns = [...g.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const spec = g._segSpec && g._segSpec.on === press ? g._segSpec : null;
+  if (g._segSpec) segSpecClear(g, false);
+  if (R && spec && R.pill === undefined){ R.pill = spec.t0; if (spec.pillRaf !== undefined) R.pillRaf = spec.pillRaf; }
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
   let ran = false;
@@ -516,14 +521,14 @@ function txPending(press, go, now, slideLead = null, freeze = true, lead = false
     if (viewTx === tx) viewTx = null;
   };
   const slideFirst = slideLead !== null;
-  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g,
+  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g, press,
     drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(g, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
     let delay = 0;
     if (slideFirst){
       const sl = g._segSlide, dur = sl ? sl.dur : 200 * motionK();
-      const pillT0 = sl ? segT0(sl) : performance.now();
+      const pillT0 = spec ? spec.t0 : sl ? segT0(sl) : performance.now();
       const tP = segEaseAt(TX_PILL_P) * dur;
       delay = Math.max(0, pillT0 + tP - performance.now() - slideLead);
       if (R) R.slideWait = Math.round(delay);

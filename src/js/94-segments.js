@@ -90,6 +90,7 @@ function segPlace(g, snap, now){
   if (snap && inVT && viewTx && viewTx.vt){ segLate(g, viewTx.vt); return; }
   g._segLate = false;
   const on = segOnOf(g);
+  if (g._segSpec && (on === g._segSpec.on || snap)) segSpecClear(g, false);
   if (g._segHold){
     // (a Display option held until its new look applies, segDisp: placed then, as the look
     // has laid it out)
@@ -118,6 +119,49 @@ function segPlace(g, snap, now){
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
 }
+// Highlight on pointerdown (mouse and pen only): the pill starts sliding at pointerdown
+// without changing aria-pressed, state or the view. The view still commits on click, and
+// txPending measures the lead from t0 so the hold time counts toward it. Dragging off,
+// cancelling, Escape or no click within 800ms slides the pill back to the active option.
+function segSpecClear(g, revert){
+  const sp = g && g._segSpec;
+  if (!sp) return;
+  g._segSpec = null;
+  clearTimeout(sp.tm);
+  window.removeEventListener('pointerup', sp.up, true);
+  window.removeEventListener('pointercancel', sp.rev, true);
+  window.removeEventListener('keydown', sp.key, true);
+  sp.on.removeEventListener('lostpointercapture', sp.rev);
+  if (revert && g.isConnected){
+    const real = segOnOf(g);
+    if (real && real !== g._segOn){ segMoving(g); segAt(g, real, false); }
+  }
+}
+function segSpecStart(g, b){
+  segSpecClear(g, false);
+  segMoving(g);
+  segAt(g, b, false);
+  const t0 = g._segSlide ? segT0(g._segSlide) : performance.now();
+  const rev = () => segSpecClear(g, true);
+  const up = e => { if (!b.contains(e.target)) rev(); };
+  const key = e => { if (e.key === 'Escape') rev(); };
+  const sp = g._segSpec = { on: b, t0, rev, up, key, tm: setTimeout(rev, 800) };
+  requestAnimationFrame(() => { if (g._segSpec === sp) sp.pillRaf = performance.now(); });
+  window.addEventListener('pointerup', up, true);
+  window.addEventListener('pointercancel', rev, true);
+  window.addEventListener('keydown', key, true);
+  b.addEventListener('lostpointercapture', rev);
+}
+document.addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+  if (motionReduced() || document.querySelector('dialog[open]')) return;
+  const b = e.target && e.target.closest && e.target.closest('.agenda-views > button, #daytabs > .daytab');
+  if (!b || b.hidden || b.disabled || b.getAttribute('aria-pressed') === 'true') return;
+  const g = b.parentElement;
+  if (!g || g._segOn === undefined || g._segOn === b || g._segHold || !g.classList.contains('seg-ind')) return;
+  segSpecStart(g, b);
+}, true);
 // (placed in the first frame after the transition's ready, unless placed before then)
 function segLate(g, vt){
   if (g._segLate) return;
