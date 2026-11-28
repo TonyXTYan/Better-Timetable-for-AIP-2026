@@ -302,7 +302,7 @@ function segSlide(g, from, to, was, wasBox, live, prev){
   // moves in it, so a copy moved past the group's edge never widens the page. Each is set
   // at the slide's start too, for a frame drawn before any has begun.)
   const M = ov && g._segInkM, OW = ov && M.w + M.pad[1] + M.pad[3], OH = ov && M.h + M.pad[0] + M.pad[2];
-  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: n === 1 ? 'forwards' : 'both' };
+  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: 'both' };
   const run = (el, f) => { el.style.transform = f(pts[0]); return el.animate(pts.map(b => ({ transform: f(b) })), ko); };
   // (along one row, its height and corners the same all the way: the copy draws the
   // indicator too, and nothing in the slide but moves. Its left edge is the copy's own
