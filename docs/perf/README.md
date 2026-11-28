@@ -10,19 +10,33 @@ Sessions/Talks) to the view moving. It also covers how smooth the highlight is w
 - `notes.md`: what each step did and measured, including the independent verifier results.
 - `after-step1-table.md`: before/after for step 1 across the whole matrix.
 
-## Status (paused after step 2)
+## Status (after steps 3-7 on `perf/press-to-motion-step3-plus`)
 
-Done, each checked by an independent verifier:
+Done:
 1. Step 1. Switches that take no snapshot (Participants, heavy pages) no longer wait for the
    slide. Desktop 4x Participants goes from about 670-720ms to about 200-300ms to view motion.
 2. Step 2. The highlight labels change colour on the compositor: an aria-hidden copy of the
    labels is clipped with the pill. Main-thread paint during a slide drops from about 100-200ms
    to 10-20ms at 4x.
+3. Step 3 & Step 4 (`73e19f4`). Diagnosed the capture-frame style recalc to bare `::selection`
+   (Chromium highlight inheritance recalculating 1,300-1,600 elements on `:active-view-transition`)
+   and descendant `html:has(dialog[open])` rules. Scoped `::selection` to `body::selection` and
+   tightened `html:has(...)` to direct children (`> body > ...`), cutting `svt->cb` (`oSnap`) by
+   34-54% at desktop 4x.
+4. Step 5 (`42b826f`). Replaced the fixed 420ms slide-first wait with a per-direction `go->cb`
+   EMA scheduled lead (`P = 0.95`), and included day tabs crossing All week. Desktop 4x toolbar
+   `go` drops from ~450-500ms to 49-227ms; All-week day-tab `pill` drops from ~540-676ms to
+   33-55ms; 50/50 toolbar samples land `cb` at >= 0.90 pill progress.
+5. Step 6 (`999673f`). Mouse/pen `pointerdown` starts the pill slide immediately without changing
+   `aria-pressed`, `state`, or the view; `click` still commits and counts hold time toward the
+   lead. Added `tests/press.js` (19/19 pass). With `--hold 100`: `pill` is 2-6ms (1x) / 11-29ms
+   (4x); 4x MOT drops ~125-226ms vs step 5; 1x view MOT adds ~110-160ms to avoid mid-slide freeze.
+6. Step 7 (dropped). Element-scoped `#main.startViewTransition` (`?txscope=1`) tripped its stop
+   rule: 2-5x worse capture times, slower MOT at both 1x and 4x, and 117-217ms pill gaps at 1x.
 
-Next: steps 3-7 from `plan.md`. Step 3 diagnoses the style recalc in the capture frames, step 4
-fixes it, step 5 replaces the fixed slide-first wait, step 6 starts the highlight on pointerdown,
-and step 7 tries an element-scoped view transition on #main. Steps 8-12, the view caches, come
-after.
+Next: owner decision on the 1x view-motion trade-off in step 6 (keep speculative pointerdown at
+1x, or restrict it to `txSlideFirst > 0` / All-week day tabs), then steps 8-12 (detached calendar
+and list view caches, idle block index) from `plan.md`.
 
 Owner preference, which replaces "highlight first" in the plan: the most responsive UI wins.
 Order of priority:

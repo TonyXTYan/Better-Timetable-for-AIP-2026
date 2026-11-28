@@ -499,4 +499,94 @@ Skipped because of the wrap-up:
 
 ## Paused here
 
-Run stopped by the owner after step 2. Steps 3-7 were not started.
+Run stopped by the owner after step 2. Steps 3-7 continued on branch `perf/press-to-motion-step3-plus`.
+
+## Step 3: capture-frame style recalc diagnosis (scratch, no commit)
+
+Traced `layout-week cal->list` and `level sess->talks` at desktop 4x (50 saved) with
+`disabled-by-default-devtools.timeline.invalidationTracking` and isolated triggers via
+controlled Playwright probes on Chromium.
+
+Ranked findings:
+1. **Bare `::selection{background:var(--mark-bg);color:var(--ink)}` (`src/styles.css:1361`) — #1 cause.**
+   Because bare `::selection` matches `<html>`, Chromium's CSS Highlight Inheritance propagates a
+   full-DOM style recalc (~1,329-1,622 elements, ~200-420ms at 4x) whenever
+   `document.startViewTransition()` toggles `:active-view-transition` on `<html>`. Moving the
+   rule to `body::selection` drops a bare `startViewTransition` recalc from 1,329 elements
+   (422ms) to 6 elements (8.7ms) while keeping identical selection colours.
+2. **Descendant `html:has(dialog[open])` and `html:has(#buildDialog[open])` (`src/styles.css` lines 671, 1519, 2293) — #2 cause.**
+   On the 21,821-node All-week list, removing these rules cut the three initial `els=115`
+   capture recalcs from 44/62/47ms (153.5ms) to 17/15/19ms (51.4ms, -102ms), and stopped DOM
+   insertions inside `#agenda` (e.g. `hzFitText`) from marking `<html>` as `Affected by :has()`.
+   All four `<dialog>` elements are direct children of `<body>`, so direct-child `> body > ...`
+   selectors avoid scanning descendants.
+3. **Not the cause during captures:** `--toolbar-h` had 0 invalidations in `svt->cb` and
+   `after1->ready`; `root.dataset.viewTx` was 2.2ms (54 els); `mxRules` adopted sheet
+   `replaceSync` was 3.8-5.5ms (0 els); 14x `mxName` was 7.4ms (14 els). The remaining recalc
+   in `svt->cb` and `after1->ready` is Chromium's own `::view-transition-*` pseudo-element tree.
+
+## Step 4: fix capture-frame style invalidations (commit 73e19f4)
+
+- Scoped `::selection` to `body::selection` (`src/styles.css:1361`).
+- Tightened the three `html:has(...)` dialog rules to direct-child selectors (`> body > ...`).
+- Measured at desktop 4x, 50 saved (same session, base `07bd439` vs new):
+  - `layout-week list->cal`: `oSnap` 347 -> 206ms (-41%), `nSnap` 133 -> 117ms, `motion` 2688 -> 2541ms.
+  - `layout-week cal->list`: `oSnap` 854 -> 565ms (-34%), `nSnap` 530 -> 484ms, `motion` 4258 -> 3853ms (`svt->cb` style self-time 623 -> 397ms).
+  - `level sess->talks`: `oSnap` 368 -> 208ms (-43%), `nSnap` 179 -> 167ms, `motion` 2444 -> 2139ms.
+  - `level talks->sess`: `oSnap` 613 -> 284ms (-54%), `nSnap` 93 -> 93ms, `motion` 1802 -> 1717ms.
+  - `fold`/`unfold`: 212 / 197ms (unchanged).
+- Tests: `build`, `func` (76/0), `chips` (63/0), `errors` (0), `crash-scope` (5x8, 0 errors) all PASS.
+
+## Step 5: scheduled lead instead of fixed slide-first wait (commit 42b826f)
+
+- Replaced the fixed `200 * motionK() + 20` ms wait in `txPending` with
+  `max(0, pillT0 + tP - now - lead)`, where `tP = segEaseAt(0.95) * dur` and `lead` is `0.85x`
+  the per-direction EMA of `go->cb` stored on `txPairRec.lead` (reset when `txPairNote` changes
+  a pair's level). Extended `txSlideFirst` to day tabs crossing All week (`o.pair === 'day'`).
+- Measured at desktop 4x, 0 saved (`d1280 4x 0`):
+  - Toolbar switches: `go` dropped from ~450-500ms to 49-227ms (-230 to -400ms), `cb` landed at
+    293-454ms, and 50/50 toolbar samples reached >= 0.902 pill progress at `cb` (`minP` 0.902-0.976).
+  - Day tabs crossing All week: `pill` dropped from ~540-676ms to 33-55ms (`week-cal` 55/49ms,
+    `week-list` 33/45ms).
+- Measured at desktop 1x, 0 saved (`d1280 1x 0`):
+  - All rows under `TX_SLIDE_FIRST` unchanged (`go` 13-15ms); `layout-week list->cal` (the one 1x
+    row over threshold) dropped `go` from ~420ms to 230ms with `cb` at 277ms (~96% pill progress).
+- Tests: `build`, `func` (76/0), `chips` (63/0), `errors` (0), `crash-scope` (5x8, 0 errors),
+  `daytab-slide` (19/19 clean, 0 backwards) all PASS.
+
+## Step 6: highlight on pointerdown (commit 999673f)
+
+- Added capture `pointerdown` listener in `src/js/94-segments.js` (mouse and pen, primary left
+  button, no modifiers, reduced motion off, no open dialog) on `.agenda-views > button` and
+  `#daytabs > .daytab` to slide the pill immediately without changing `aria-pressed`, `state`,
+  or the view. Reverts on drag-off `pointerup`, `pointercancel`, `lostpointercapture`, Escape,
+  or 800ms timeout.
+- In `txPending`, consumes `g._segSpec`, measures the scheduled lead from `spec.t0` (so hold
+  time counts toward the lead), and guards against a double-click dropping/skipping the pending
+  switch in `settleTransition`.
+- Added `tests/press.js` (19/19 pass) and registered it in `tests/run.js`.
+- Measured with `--hold 100` at desktop 1x and 4x (0 saved):
+  - **1x (`--hold 100`):** `pill = 2-6ms` after `pointerdown` (target <= 35ms), `cb = 266-288ms`
+    (>=95% pill progress before freeze). View `motion` is ~110-160ms later than Step 5 at the
+    same hold because 1x freezing switches now wait for the pill to reach 95% instead of holding
+    the pill until `ready`. (**Owner decision point**, since Step 7 was dropped.)
+  - **4x (`--hold 100`):** `pill = 11-29ms` after `pointerdown` (target <= 60ms), `go = 164-211ms`
+    (hold absorbed into slide), cutting 4x `motion` by ~125-226ms vs Step 5 at the same hold.
+- Tests: `build`, `func` (76/0), `press` (19/0), `chips` (63/0), `errors` (0), `crash-scope`
+  (5x8, 0 errors) all PASS.
+
+## Step 7: spike, element-scoped view transition on `#main` (dropped — stop rule tripped)
+
+- Tested `#main.startViewTransition` behind `?txscope=1` (moving `data-view-tx*` to `#main`,
+  `:is(html,#main)` CSS equivalents, no lead / no `segWait`) with frame-by-frame screencast
+  pill continuity (`--hold 100`, desktop 1x and 4x).
+- **Stop rule tripped on capture time, MOT, and 1x pill continuity:**
+  - At 1x (`--hold 100`): `motion` was 7-274ms **slower** than Step 6 on every row (`layout-week`
+    848/857 vs 574/809, `layout-day` 605/670 vs 471/421, `orient` 539/479 vs 414/472, `week-cal`
+    572/588 vs 439/498); `nSnap` was 2-3x worse; and pill gaps were 117-217ms (`minFrz%` 68-90%,
+    failing <= 2 frames).
+  - At 4x (`--hold 100`): `oSnap` and `nSnap` were 2-5x worse (`layout-week cal->list` `oSnap`
+    583 vs 273, `nSnap` 469 vs 250, `motion` 3540 vs 2466; `layout-day list->cal` `nSnap` 403
+    vs 71, `motion` 2756 vs 1030).
+- Reverted all Step 7 spike changes cleanly; keeping Steps 1-6 document-transition path.
+
