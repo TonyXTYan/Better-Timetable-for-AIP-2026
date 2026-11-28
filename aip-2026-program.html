@@ -794,7 +794,7 @@ html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(
    (through the page's own background, dimmed under an open dialog), never both at once */
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
-html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
+html[data-view-tx="disp"][data-view-tx-seq]:has(> body > dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -1484,7 +1484,10 @@ footer p{line-height:1.6;max-width:62ch}
 footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
-::selection{background:var(--mark-bg);color:var(--ink)}
+/* (under body, not bare ::selection: matching html makes Chromium's highlight inheritance
+   recalculate the whole DOM whenever a view transition toggles :active-view-transition;
+   a descendant selector keeps Safari/WebKit styling text inside child elements too) */
+body ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
 /* About: the congress's facts as a short list (the term in ink, as the headings), then the
@@ -1640,7 +1643,7 @@ footer .foot-issue-btns a.display-btn{flex:1 1 auto;justify-content:center;paddi
 .undo-bar[hidden]{display:none}
 /* An open dialog (details, Build, Display, Move) would sit under the bar: the Undo offer
    steps aside while it is open and comes back, its time paused, when it closes. */
-html:has(dialog[open]) .undo-bar{display:none}
+body:has(> dialog[open]) .undo-bar{display:none}
 .undo-bar #undoMsg{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .undo-actions{display:flex;gap:6px;flex:none}
 .undo-bar .toggle{min-height:36px;padding:5px 14px;background:transparent;border-color:var(--toast-ink);color:var(--toast-ink)}
@@ -2414,7 +2417,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* ---------- build my agenda: a guided walk through the time slots ---------- */
 #buildDialog{--thumb:14px;--thumb-h:26px;--trk:4px;padding:0;width:min(1120px,96vw);height:min(900px,92vh);max-width:none;max-height:none;font-size:0.8438rem;line-height:1.45;overflow:hidden}
 #buildDialog[open]{display:flex;flex-direction:column}
-html:has(#buildDialog[open]){overflow:hidden}
+html:has(> body > #buildDialog[open]){overflow:hidden}
 #buildDialog::backdrop{background:var(--backdrop)}
 .bd-top{position:relative;flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
 /* the close button stands in the top right corner at every width; the title bar keeps clear of it */
@@ -4124,7 +4127,9 @@ try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; 
 state.softClashes = true;
 try { state.softClashes = localStorage.getItem('aip2026-soft-clashes') !== '0'; } catch (e) {}
 
+let viewGen = 0;
 function persistStars(){
+  viewGen++;
   try { localStorage.setItem('aip2026-stars', JSON.stringify([...state.starred])); } catch(e){}
 }
 // The My agenda badge counts what My agenda lists: a saved session with starred talks
@@ -4577,6 +4582,7 @@ function platesRefit(){
   plateW = 0;
   const m = listCols();
   if (m === plateM) return;
+  viewGen++;
   plateM = m;
   for (const c of document.querySelectorAll('#agenda .cards')) plateFit(c, m);
 }
@@ -4640,10 +4646,12 @@ function fillPh(p, L){
   if (cards) plateFit(cards);
   if (L.expanded) b.querySelectorAll('details').forEach(d => { d.open = true; });
   p.replaceWith(b);
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
 }
 function listLazyDone(L){
   paintNow();
   blockHeightsSoon();
+  if (typeof mxBlockIdxSoon === 'function') mxBlockIdxSoon();
 }
 // Fills the block of one session, or (no id) every block showing, now.
 function listFill(sid){
@@ -4670,7 +4678,7 @@ function listFillView(){
 // waiting while a view change animates, up to 700 ms).
 function listLazyRun(L, sync){
   const main = document.getElementById('agenda');
-  if (main._list !== L || L.job || !L.phs.size || main._stash) return;
+  if (main._list !== L || L.job || !L.phs.size || L.frag) return;
   const vh = innerHeight;
   if (sync){
     // (the top of the list counts too: a day tab takes the page to the program's top)
@@ -4684,7 +4692,7 @@ function listLazyRun(L, sync){
   L.t0 = performance.now();
   const step = () => {
     L.job = 0;
-    if (main._list !== L || main._stash) return;
+    if (main._list !== L || L.frag) return;
     if (viewTx && performance.now() - L.t0 < 700){ L.job = setTimeout(step, 40); return; }
     const t0 = performance.now(), todo = listPending(L);
     let n = 0;
@@ -4698,20 +4706,97 @@ function listLazyRun(L, sync){
   if (listPending(L).length) L.job = setTimeout(step, 0); else listLazyDone(L);
 }
 
+// Detached list cache: keeps the All-week list plus an LRU of 2 day lists. Each entry
+// carries its lazy-fill state, expanded flag, viewGen stamp, and idle block index so an
+// unchanged put-back skips syncListStars, applyFilters, and the stale pass.
+const LIST_DAY_MAX = 2, listDayCache = new Map();
+let listAllCache = null;
+function listNowPart(){
+  if (typeof aedtNow !== 'function') return '0';
+  const n = aedtNow();
+  return DATA.days.some(d => d.date === n.date) ? n.date + ':' + n.min : '0';
+}
+function listStamp(L){
+  if (!L) return;
+  L.gen = viewGen;
+  L.q = state.q;
+  L.cats = [...state.cats].sort().join(',');
+  L.grp = state.group || '';
+  L.w = innerWidth;
+  L.rem = remPx();
+  L.nowPart = listNowPart();
+  const rl = document.getElementById('resultLine');
+  L.rlHtml = rl.innerHTML;
+  L.rlQuiet = rl.parentElement.classList.contains('rl-quiet');
+  L.emptyShow = document.getElementById('emptyNote').classList.contains('show');
+  L.xaHtml = document.getElementById('expandAll').innerHTML;
+}
+function listUnchanged(L){
+  return L && L.gen === viewGen && L.q === state.q && L.cats === [...state.cats].sort().join(',')
+    && L.grp === (state.group || '') && L.w === innerWidth && L.rem === remPx() && L.nowPart === listNowPart();
+}
+function listStash(main){
+  const L = main && main._list;
+  if (!L || main.firstElementChild !== L.first) return;
+  main._list = null;
+  if (L.job){ clearTimeout(L.job); L.job = 0; }
+  if (main.querySelector('[style*="view-transition-name"]')){
+    if (TX_DEBUG) console.warn('[listCache] skipped stash: view-transition-name present on day', L.day);
+    return;
+  }
+  if (typeof mxBlockIdx !== 'undefined' && mxBlockIdx && mxBlockIdx.root === main && mxBlockIdx.gen === listIdxGen) L.idx = mxBlockIdx;
+  else L.idx = null;
+  L.frag = document.createDocumentFragment();
+  L.frag.append(...main.childNodes);
+  if (L.day === 'all') listAllCache = L;
+  else {
+    listDayCache.delete(L.day);
+    listDayCache.set(L.day, L);
+    while (listDayCache.size > LIST_DAY_MAX) listDayCache.delete(listDayCache.keys().next().value);
+  }
+}
+
 function renderAgenda(){
+  renderAgenda.lastFast = false;
   if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
-  // The list already on the page for this day (kept behind My agenda, or aside while a
-  // calendar showed) is shown as it is, its stars brought up to date, rather than built
-  // again.
-  if (main._stash){
-    if (main._list.day === state.day) main.replaceChildren(main._stash);
-    main._stash = null;
+  if (typeof calCacheStash === 'function') calCacheStash(main);
+  if (main._list && main._list.day !== state.day) listStash(main);
+  // Put back a stashed list for this day (All week or one of the 2 cached day lists).
+  const cached = (!main._list || main._list.day !== state.day)
+    ? (state.day === 'all' ? listAllCache : listDayCache.get(state.day))
+    : null;
+  if (cached && cached.frag){
+    if (state.day === 'all') listAllCache = null; else listDayCache.delete(state.day);
+    main.replaceChildren(cached.frag);
+    cached.frag = null;
+    main._list = cached;
   }
   if (main._list && main._list.day === state.day && main.firstElementChild === main._list.first){
+    const L = main._list;
     main.classList.remove('wide');
+    if (listUnchanged(L)){
+      const rl = document.getElementById('resultLine');
+      rl.innerHTML = L.rlHtml;
+      rl.parentElement.classList.toggle('rl-quiet', L.rlQuiet);
+      document.getElementById('emptyNote').classList.toggle('show', L.emptyShow);
+      document.getElementById('expandAll').innerHTML = L.xaHtml;
+      if (L.phs.size && !L.job) listLazyRun(L);
+      if (L.idx && !L.phs.size && typeof mxBlockIdx !== 'undefined'){ mxBlockIdx = L.idx; mxBlockIdx.gen = listIdxGen; }
+      else if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
+      renderAgenda.lastFast = true;
+      if (TX_DEBUG){
+        const before = [...main.querySelectorAll('.card[data-sid]')].map(c => c.dataset.sid + ':' + (c.classList.contains('hidden') ? 1 : 0)).join(',');
+        syncListStars(main);
+        applyFilters();
+        const after = [...main.querySelectorAll('.card[data-sid]')].map(c => c.dataset.sid + ':' + (c.classList.contains('hidden') ? 1 : 0)).join(',');
+        if (before !== after) console.error('[listCache] fast put-back mismatch!');
+      }
+      return;
+    }
     syncListStars(main);
-    if (searchQuick()) return;
+    if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
+    if (searchQuick()){ listStamp(L); return; }
   }
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
@@ -4729,14 +4814,16 @@ function renderAgenda(){
     } else html += inner;
   }
   main.innerHTML = html;
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
   main.classList.remove('wide');
-  const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0 };
+  const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0, frag: null, idx: null };
   if (all) main.querySelectorAll('.blk-ph').forEach((p, i) => { p._g = groups[i]; L.phs.add(p); });
   remarkStop();
   document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
   applyFilters();
   if (L.phs.size) listLazyRun(L, true);
+  else if (typeof mxBlockIdxSoon === 'function') mxBlockIdxSoon();
 }
 
 // In idle time after a list is drawn (or its cards change), each time block (My
@@ -4828,6 +4915,7 @@ function syncListStars(main){
 }
 // Cards drawn again for the current search (marks), keeping what applyFilters set.
 function remarkCards(cards, q){
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   const tpl = document.createElement('template');
   for (const card of cards){
     if (!card.isConnected) continue;
@@ -5037,6 +5125,7 @@ function applyFilters(){
   if (state.scope === 'program') renderTabs();
   blockHeightsSoon();
   const L = main._list;
+  if (L && main.firstElementChild === L.first) listStamp(L);
   if (L && L.phs && L.phs.size && !L.job && L.t0 !== undefined) listLazyRun(L);
 }
 
@@ -5189,6 +5278,7 @@ function filterGo(set, redraw = refresh){
   settleTransition();
   const was = filterSees();
   set();
+  viewGen++;
   renderChips();
   const sees = filterSees();
   if (state.scope === 'participants'){ redraw(); return; }
@@ -6593,6 +6683,7 @@ function renderBuilder(){
     html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${of}, ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program${CHEV}</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
   body.innerHTML = agendaUpNext(items) + html;
+  if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
 }
 
 // View changes animate: withTransition(kind, fn, from, opts) runs fn (which changes
@@ -6746,9 +6837,24 @@ function txpRender(f, self, args){
     }
   }
 }
+function txHitPress(tx, e){
+  if (!tx || !tx.press || !e) return false;
+  if (e.target instanceof Element && tx.press.contains(e.target)) return true;
+  if (e.target === document.documentElement && typeof e.clientX === 'number'){
+    const r = tx.press.getBoundingClientRect();
+    return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  }
+  return false;
+}
 function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
+  // (a second click or pointerdown on the same button that started this transition — a
+  // double-click — is ignored whether the change is still pending or already running)
+  if (txHitPress(tx, e) && (e.type === 'click' || e.type === 'pointerdown')){
+    if (e.type === 'click') e.stopImmediatePropagation();
+    return;
+  }
   // (another press in the same row of buttons, while a change still waits for its frame:
   // that change gives way to the new one, rather than being drawn first)
   if (tx.group && e && e.target instanceof Element && tx.group.contains(e.target) && e.target.closest('[aria-pressed]')
@@ -6766,7 +6872,9 @@ function settleTransition(e){
 // root is forwarded, and only by the click that ends it.
 let redirectArmed = -1e9;
 document.addEventListener('pointerdown', e => {
-  redirectArmed = viewTx && e.isTrusted && e.target === document.documentElement ? performance.now() : -1e9;
+  redirectArmed = viewTx && e.isTrusted && !txHitPress(viewTx, e)
+    && (e.target === document.documentElement || (viewTx.group && e.target instanceof Element && viewTx.group.contains(e.target)))
+    ? performance.now() : -1e9;
 }, true);
 // (and the focus stays where it is until that click, rather than going to the page for the
 // frames between: the press on the root would otherwise blur it)
@@ -6795,6 +6903,7 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 // as a stream chip's "only")
 document.addEventListener('dblclick', e => {
   if (!e.isTrusted || e.target !== document.documentElement) return;
+  if (viewTx && txHitPress(viewTx, e)){ e.stopImmediatePropagation(); return; }
   settleTransition();
   const el = document.elementFromPoint(e.clientX, e.clientY);
   if (!el || el === document.documentElement || el === document.body) return;
@@ -6939,7 +7048,61 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // labels and day heads on the screen as well (layMarks). With `x` (a change of the streams
 // shown): x.items, the items to look at (a list's session cards only, not their talks), and
 // x.wide, how far from the screen (a screen and a half, for the items that move into it).
-function mxScan(aux, keep, only, any, sel, cov, lay, x){
+// Idle-time block index for list views (#agenda / #builderList): maps each .block / .ag-row
+// to its MX_ITEM elements (keys already mxSafe) and records list LAY_MARKS in document order.
+// Built in requestIdleCallback after listLazyDone / renderAgenda / renderBuilder; invalidated
+// by listIdxGen whenever list DOM changes. Avoids scanning 21,000+ DOM nodes at switch time.
+let listIdxGen = 0, mxBlockIdx = null, mxBlockIdxJob = 0;
+function mxBlockIdxBump(){
+  listIdxGen++;
+  mxBlockIdx = null;
+}
+function mxBlockIdxSoon(){
+  if (mxBlockIdxJob) return;
+  const run = () => {
+    mxBlockIdxJob = 0;
+    if (state.layout !== 'list' || state.scope === 'participants') return;
+    if (viewTx){ mxBlockIdxJob = setTimeout(run, 150); return; }
+    mxBlockIdxBuild(listIdxGen);
+  };
+  const idle = window.requestIdleCallback || (f => setTimeout(f, 80));
+  mxBlockIdxJob = idle(run, { timeout: 400 });
+}
+function mxBlockIdxBuild(gen){
+  const root = state.scope === 'agenda' ? document.getElementById('builderList') : document.getElementById('agenda');
+  if (!root || root.hidden || !root.isConnected) return;
+  const blocks = [], dayOf = i => DATA.days[+i] && DATA.days[+i].date;
+  const blockSel = state.scope === 'agenda' ? '.ag-row' : '.block';
+  for (const b of root.querySelectorAll(blockSel)){
+    const items = [];
+    if (b.matches('.ag-row')){
+      const k = b.dataset.tid ? mxSafe('t-' + b.dataset.tid) : b.dataset.sid ? mxSafe('s-' + b.dataset.sid) : null;
+      if (k) items.push([b, k]);
+      for (const li of b.querySelectorAll('li[data-tid]')) items.push([li, mxSafe('t-' + li.dataset.tid)]);
+    } else {
+      for (const el of b.querySelectorAll('.card[data-sid], .talk[data-tid]')){
+        items.push([el, el.dataset.tid ? mxSafe('t-' + el.dataset.tid) : mxSafe('s-' + el.dataset.sid)]);
+      }
+    }
+    blocks.push({ b, items });
+  }
+  const marks = [];
+  for (const el of root.querySelectorAll('.block-time, .ag-row .ag-t0, .day-head')){
+    if (!el.textContent.trim()) continue;
+    if (el.matches('.block-time')){
+      const b = el.closest('.block');
+      if (b && b.dataset.start){ const m = toMin(b.dataset.start); marks.push({ b, el, u: 'm-' + m, d: 'm-' + b.dataset.date + '-' + m }); }
+    } else if (el.matches('.ag-t0')){
+      const row = el.closest('.ag-row');
+      if (row && row.dataset.start){ const m = toMin(row.dataset.start); marks.push({ b: row, el, u: 'm-' + m, d: 'm-' + row.dataset.date + '-' + m }); }
+    } else if (el.matches('.day-head')){
+      const btn = el.querySelector('[data-goprogram], [data-focusday]'), dt = btn && dayOf(btn.dataset.goprogram ?? btn.dataset.focusday);
+      if (dt) marks.push({ b: null, el, u: 'd-' + dt, d: 'd-' + dt });
+    }
+  }
+  if (gen === listIdxGen) mxBlockIdx = { gen, root, blocks, marks };
+}
+function mxScan(aux, keep, only, any, sel, cov, lay, x, _noIdx){
   const vw = innerWidth, vh = innerHeight, mn = x && x.wide || Math.max(240, vh * .5), mf = Math.max(mn, vh * 1.5);
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
@@ -6990,6 +7153,43 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
+  // Fast path for list views using the idle block index (avoids 21k-node querySelectorAll)
+  if (!_noIdx && !only && !aux && !(x && x.items) && !(x && x.marks) && mxBlockIdx && mxBlockIdx.gen === listIdxGen
+    && mxBlockIdx.root && !mxBlockIdx.root.hidden && mxBlockIdx.root.isConnected
+    && (!mxBlockIdx.blocks.length || mxBlockIdx.blocks[0].b.isConnected)){
+    const maxM = keep && keep.size ? mf : mn;
+    for (const entry of mxBlockIdx.blocks){
+      const b = entry.b;
+      if (b.classList.contains('hidden')) continue;
+      const r = b.getBoundingClientRect();
+      blocks.set(b, r);
+      if (!any && (r.bottom < -maxM || r.top > vh + maxM)) continue;
+      for (const [el, key] of entry.items) add(el, key, 'item');
+    }
+    if (lay){
+      const bar = stickyWrap.getBoundingClientRect().bottom, under = mxUnderHeads(), dated = lay === 'dated';
+      for (const mk of mxBlockIdx.marks){
+        const key = dated ? mk.d : mk.u;
+        if (items.has(key)) continue;
+        if (mk.b){
+          if (mk.b.classList.contains('hidden')) continue;
+          let br = blocks.get(mk.b);
+          if (!br) blocks.set(mk.b, br = mk.b.getBoundingClientRect());
+          if (br.bottom < 0 || br.top > vh) continue;
+        }
+        const r = mk.el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2 || r.bottom <= bar + 2 || r.top >= vh - 2 || r.right <= 8 || r.left >= vw - 8) continue;
+        if (under(r)) continue;
+        items.set(key, { key, el: mk.el, r, c: null, p: '', kind: 'mark', d: 0 });
+      }
+    }
+    if (TX_DEBUG){
+      const ref = mxScan(aux, keep, only, any, sel, cov, lay, x, true);
+      const a = [...items.keys()].join(','), b = [...ref.keys()].join(',');
+      if (a !== b) console.error('[mxBlockIdx] MISMATCH', { idx: a, ref: b });
+    }
+    return items;
+  }
   // (with `lay`, the time labels and day heads on the screen (layMarks): each on the screen,
   // below the toolbar and clear of a calendar's stuck heads (but for one in them), in the
   // part of its box that shows; the first of a key only. `lay` 'dated': a list's, keyed by
@@ -7765,10 +7965,12 @@ function withTransition(kind, fn, from, opts = {}){
     // the compositor, while the page redraws, segPlace; were it slow to show, it starts two
     // frames on, lead, once the compositor has the slide going: else the slide can stall a
     // while as the page redraws)
-    const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press), slide = freeze ? first : 0;
+    const o = { ...opts, press: null, pressEl: opts.press }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
+    const pg = opts.press.parentElement, spec = pg && pg._segSpec && pg._segSpec.on === opts.press;
+    const slide = freeze && (first > 0 || (spec && !txFastSnap(o)));
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
-    if (R){ R.slideWait = slide; R.freezes = freeze; }
-    txPending(opts.press, go, now, slide, freeze, !freeze && first > 0);
+    if (R){ R.slideWait = slide ? (first || 1) : 0; R.freezes = freeze; }
+    txPending(opts.press, go, now, slide ? txLead(o) : null, freeze, !freeze && first > 0);
     return;
   }
   txPre(opts);
@@ -7783,17 +7985,24 @@ function txPre(o){
   o.pre = null;
   f(o);
 }
-// A toolbar switch (a sliding segmented control) whose change takes snapshots (txFreezes)
-// and will take a while to show (its redraw and the wait for its first moving frame, as
-// last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press, and the
-// change starts once it has (the ms to wait; 0: the slide waits for the change instead
-// and runs alongside it, segWait). On a slow device the switch then answers at once,
-// rather than after the redraw (which freezes the page, and with it any slide).
-const TX_SLIDE_FIRST = 250;
+// A toolbar switch (or a day tab crossing All week) whose change takes snapshots
+// (txFreezes) and will take a while to show (its redraw and the wait for its first moving
+// frame, as last time or guessed, over TX_SLIDE_FIRST): its selection slides at the press,
+// and the change starts early enough (txLead) that its old-snapshot freeze lands once the
+// pill has reached TX_PILL_P of its travel (0: the slide waits for the change instead and
+// runs alongside it, segWait).
+const TX_SLIDE_FIRST = 250, TX_PILL_P = 0.95, TX_FAST_SNAP = 100;
+// At normal speed, a switch whose last measured snapshot pause was short (< TX_FAST_SNAP)
+// can start on release without waiting for a speculative pointerdown slide to reach 95%.
+function txFastSnap(o){
+  if (motionK() > 2) return false;
+  const p = o.pair ? txPairRec(o) : null;
+  return !!(p && p.last && p.last.freeze < TX_FAST_SNAP);
+}
 // (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
 // take about as long as its redraw, as they do)
 function txSlideFirst(o, press){
-  if (motionReduced() || !press.parentElement || !press.parentElement.matches('.agenda-views')) return 0;
+  if (motionReduced() || !press.parentElement || !(press.parentElement.matches('.agenda-views') || (o.pair === 'day' && press.parentElement.matches('.daytabs')))) return 0;
   const t = performance.now(), p = o.pair ? txPairRec(o) : null, redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
   // (List <-> Calendar at its level 0 takes no snapshot: its wait is the redraw alone)
   if (p && o.pair === 'layout' && txPairLevel(o, p) === 0) return redraw > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
@@ -7803,6 +8012,16 @@ function txSlideFirst(o, press){
   const snap = p && p.last ? p.last.freeze : Math.max(txAged(txFreeze, t), p ? redraw : 0);
   const wait = Math.max(redraw + snap, p && p.last ? 0 : TX_SNAP_GUESS * segCpu());
   return wait > TX_SLIDE_FIRST ? 200 * motionK() + 20 : 0;
+}
+// How long before the freeze (old scan + old snapshot, go -> cb) this switch's direction
+// takes, used by txPending to schedule `go` so the freeze lands at TX_PILL_P of the slide.
+// Uses a 0.85 safety factor on the EMA (or a conservative cold guess) so normal jitter
+// keeps the pill >= 0.90 at the freeze.
+function txLead(o){
+  const p = o.pair ? txPairRec(o) : null, dk = o.dir || 'x';
+  if (p && p.lead && p.lead[dk] !== undefined) return p.lead[dk] * 0.85;
+  const redraw = o.to !== undefined ? txGuess(o.to) : txAvg;
+  return Math.max(txAged(txFreeze, performance.now()) * 0.3, redraw * 0.4);
 }
 const TX_SNAP_GUESS = 120;
 // Whether the change will take snapshots (a view transition), which hold the page still
@@ -7875,6 +8094,7 @@ function txStart(kind, fn, from, opts){
     ran = true;
     const pv = txpCur;
     if (R){ txpCur = R; txpAt('cb', R); }
+    if (pr){ const dk = opts.dir || 'x', lm = performance.now() - t, prev = pr.lead[dk]; pr.lead[dk] = prev !== undefined ? prev * 0.6 + lm * 0.4 : lm; }
     mxClear();
     // (the toolbar's own change is set out once the new view's items are measured: the page
     // under the bar is not moved by it, and its parts start from where they showed)
@@ -7904,7 +8124,7 @@ function txStart(kind, fn, from, opts){
   if (R){ txpAt('svt', R); R.vt = true; }
   try { vt = document.startViewTransition(run); }
   catch (e){ try { run(); } finally { mxClear(); clear(); } return; }
-  const tx = viewTx = mxOwner = { vt, run };
+  const tx = viewTx = mxOwner = { vt, run, press: opts.pressEl };
   let bandAnims = [];
   // (the wait is counted without the redraw itself: that is judged on its own, by txNote,
   // the same with or without a transition, and a costly redraw (Talks) would otherwise
@@ -8065,7 +8285,7 @@ const txPairKey = o => (o.pair === 'layout' ? [o.pair, state.scope, state.day ==
   : [o.pair, state.scope, state.layout, state.orient]).join('|');
 function txPairRec(o){
   const k = txPairKey(o);
-  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null, any0: o.pair === 'scope' && state.layout === 'list' });
+  if (!txPairs.has(k)) txPairs.set(k, { pair: o.pair, level: null, why: '', last: null, lead: {}, any0: o.pair === 'scope' && state.layout === 'list' });
   return txPairs.get(k);
 }
 function txPairLevel(o, p){
@@ -8095,7 +8315,7 @@ function txPairNote(p, lv, freeze, jank){
   const up = p.ok >= 2;   // (twice in a row, so it does not flip back and forth)
   if (up) p.ok = 0;
   p.level = down ? Math.max(txPairFloor(p), lv - 1) : up ? Math.min(2, lv + 1) : lv;
-  if (p.level !== lv) p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`;
+  if (p.level !== lv){ p.lead = {}; p.why = p.step = (down ? `slow at level ${lv}: ` : `smooth at level ${lv}: `) + `first frame +${Math.round(freeze)}ms, worst frame ${Math.round(jank)}ms`; }
 }
 // (a pair's change made with no snapshot (at level 0, on a phone: TX_PAIR_NOSNAP): two
 // quick redraws in a row lift its own level back to 1)
@@ -8189,18 +8409,20 @@ function txBandAnim(kind, r){
 // (by txKey), so going to a view known (or guessed) to take over TX_HEAVY to draw is not
 // animated.
 const TX_HEAVY = 90;
-const txCost = new Map();
+const txCost = new Map(), txCostHit = new Map();
 let txAvg = 0, txSlowAt = -1e9;
 // (All week shows sessions either way: Talks is kept for the days)
 const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks && v.day !== 'all'].join('|'); };
 const txSlowNow = t => t - txSlowAt > 2000 ? 0 : txSlow;
 function txNote(ms, to){
   const t = performance.now();
+  const hit = !!(typeof renderCalendar === 'function' && renderCalendar.lastHit);
+  if (typeof renderCalendar === 'function') renderCalendar.lastHit = false;
   txSlow = txSlowNow(t);
   txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow;
   if (ms > 250) txSlowAt = t;
   txAvg = txAvg ? txAvg * .6 + ms * .4 : ms;
-  if (to !== undefined) txCost.set(txKey(), ms);
+  if (to !== undefined) (hit ? txCostHit : txCost).set(txKey(), ms);
 }
 // A view's redraw time: as last time, or for one not drawn yet, guessed from this one's
 // (on this device), half as long again when a calendar day turns its sessions into
@@ -8208,14 +8430,16 @@ function txNote(ms, to){
 // twice: the first All week is drawn from cold, and its first change is the one the
 // guess sets the level of).
 function txGuess(to){
-  if (txCost.has(txKey(to))) return txCost.get(txKey(to));
+  const k = txKey(to);
+  if (typeof calCacheHas === 'function' && calCacheHas(to) && txCostHit.has(k)) return txCostHit.get(k);
+  if (txCost.has(k)) return txCost.get(k);
   const v = { ...state, ...to };
-  let k = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
+  let m = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
   if (v.day === 'all' && state.day !== 'all' && v.scope === 'program'){
     const n = programCounts();
-    k = Math.min(2, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
+    m = Math.min(2, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
   }
-  return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * k;
+  return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * m;
 }
 // Slow to draw: a guessed redraw over TX_HEAVY, the people list, or a list of more than
 // ~150 sessions or saved items (the Full program's whole week).
@@ -8237,12 +8461,15 @@ function pageHeavy(){
 // (no busy cursor: a class on the root restyles the whole page, which on a slow phone
 // costs as much as the frame itself). A click or key meanwhile applies the change at
 // once (`now`, unanimated); Back, Forward or a new address drops it.
-function txPending(press, go, now, slide = 0, freeze = true, lead = false){
+function txPending(press, go, now, slideLead = null, freeze = true, lead = false){
   // (a record of its own, but for withTransition's, just made)
   const R = !TXP ? null : txpLive(txpCur) && txpCur.press === undefined && performance.now() - txpCur.at < 100 ? txpCur : txpBegin('pending', { own: true });
   if (R){ txpAt('press', R); Object.defineProperty(R, 'g', { value: press.parentElement, configurable: true }); }
   if (!press.parentElement){ go(); if (R && R.own) txpFrame(R, 'raf1', true); return; }   // (a button a redraw has since replaced)
-  const btns = [...press.parentElement.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const g = press.parentElement, btns = [...g.querySelectorAll('[aria-pressed]')], was = btns.map(b => b.getAttribute('aria-pressed'));
+  const spec = g._segSpec && g._segSpec.on === press ? g._segSpec : null;
+  if (g._segSpec) segSpecClear(g, false);
+  if (R && spec && R.pill === undefined){ R.pill = spec.t0; if (spec.pillRaf !== undefined) R.pillRaf = spec.pillRaf; }
   const paint = on => btns.forEach((b, i) => { const p = on ? b === press : was[i] === 'true'; b.setAttribute('aria-pressed', p); if (b.classList.contains('daytab')) b.classList.toggle('on', p); });
   paint(true);
   let ran = false;
@@ -8250,11 +8477,20 @@ function txPending(press, go, now, slide = 0, freeze = true, lead = false){
     ran = true;
     if (viewTx === tx) viewTx = null;
   };
-  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide, freeze, group: press.parentElement,
-    drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(press.parentElement, e); paint(false); } } };
+  const slideFirst = slideLead !== null;
+  const tx = viewTx = { run: () => { if (!ran){ end(); if (R){ R.settled = true; txpCur = R; } now(); if (R) txpFrame(R, 'raf1', true); } }, vt: null, slide: slideFirst, freeze, group: g, press,
+    drop: e => { if (!ran){ end(); if (R){ R.dropped = true; txpEnd(R); } segDefer(g, e); paint(false); } } };
   requestAnimationFrame(ts => {
     if (R){ txpAt('pressRaf', R); R.pressRafTs = ts; }
-    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, slide);
+    let delay = 0;
+    if (slideFirst){
+      const sl = g._segSlide, dur = sl ? sl.dur : 200 * motionK();
+      const pillT0 = spec ? spec.t0 : sl ? segT0(sl) : performance.now();
+      const tP = segEaseAt(TX_PILL_P) * dur;
+      delay = Math.max(0, pillT0 + tP - performance.now() - slideLead);
+      if (R) R.slideWait = Math.round(delay);
+    }
+    const run = () => setTimeout(() => { if (!ran){ end(); if (R) txpCur = R; go(); if (R && R.own) txpFrame(R, 'raf1', true); } }, delay);
     // (lead: two frames on, withTransition)
     if (lead) requestAnimationFrame(() => requestAnimationFrame(run)); else run();
   });
@@ -8773,6 +9009,7 @@ function hzDayView(day){
 function hzDraw(root, left){
   const h = root.querySelector('.hz-day');
   if (!h) return;
+  if (typeof calCacheSync === 'function') calCacheSync(root);
   hzPopHide();
   hzMorphStop(h);   // (a zoom still moving lands: this draw is the last word)
   const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);
@@ -10527,7 +10764,70 @@ function agendaNoMatchDay(items){
   const msg = agendaNoMatchHtml(items);
   return state.day === 'all' ? msg : agendaEmptyDay(DATA.days[state.day], msg);
 }
+// Detached calendar view cache (LRU of 4): stashes the outgoing calendar's already-fitted
+// DOM fragment when leaving it, and puts it back on an exact key match (scope, day, orient,
+// talks, agendaParents, HZ zoom/collapsed, viewGen, width/rem, font/text, now-minute bucket,
+// search/filters). Avoids re-running hzInit/weekFit on revisits.
+const CAL_CACHE_MAX = 4, calCache = new Map();
+function calCacheKey(to = {}){
+  const v = { ...state, ...to };
+  if (v.layout !== 'calendar' || v.scope === 'participants') return null;
+  const ag = v.scope === 'agenda', day = v.day;
+  const hzK = v.orient === 'h' && day !== 'all' && DATA.days[day] ? (ag ? 'a:' : '') + DATA.days[day].date : '';
+  const hzPart = hzK ? (HZ.zoom[hzZoomKey(hzK)] ?? '') + ';' + [...HZ.collapsed].sort().join(',') : '';
+  const n = aedtNow();
+  const nowPart = DATA.days.some(d => d.date === n.date) ? n.date + ':' + n.min : '0';
+  const q = ag ? v.aq : v.q;
+  const cats = [...(ag ? v.acats : v.cats)].sort().join(',');
+  const grp = ag ? '' : (v.group || '');
+  const de = document.documentElement.dataset;
+  const incP = ag && (to.includeParents !== undefined ? to.includeParents : document.getElementById('includeParents')?.checked) ? 1 : 0;
+  const agOpts = ag ? `${incP}${v.hideClashes ? 1 : 0}${v.softClashes ? 1 : 0}` : '';
+  return [v.scope, day, v.orient, !ag && v.programTalks && day !== 'all' ? 1 : 0, agOpts,
+    hzPart, viewGen, innerWidth, remPx(), de.font || '', de.text || '', nowPart, q, cats, grp].join('|');
+}
+function calCacheHas(to = {}){
+  const k = calCacheKey(to);
+  return !!(k && calCache.has(k));
+}
+function calCacheSync(root){
+  if (!root || !root._calKey) return;
+  calCache.delete(root._calKey);
+  root._calKey = calCacheKey();
+}
+function calCacheStash(main){
+  const key = main && main._calKey;
+  if (!key) return;
+  const meta = main._calMeta;
+  main._calKey = null;
+  main._calMeta = null;
+  // (never stash a list that replaced the calendar)
+  if (main._list && main.firstElementChild === main._list.first) return;
+  hzPopHide();
+  vtPopHide();
+  // (assert no view-transition-name remains on any outgoing calendar node)
+  if (main.querySelector('[style*="view-transition-name"]')){
+    if (TX_DEBUG) console.warn('[calCache] skipped stash: view-transition-name present on', key);
+    calCache.delete(key);
+    return;
+  }
+  const wsc = main.querySelector('.week-sc'), vtw = main.querySelector('.vt-wrap.scroll');
+  const result = document.getElementById('resultLine');
+  const frag = document.createDocumentFragment();
+  frag.append(...main.childNodes);
+  calCache.delete(key);
+  calCache.set(key, {
+    frag,
+    w: main.clientWidth,
+    resultHtml: meta ? meta.resultHtml : result.innerHTML,
+    rlQuiet: meta ? meta.rlQuiet : result.parentElement.classList.contains('rl-quiet'),
+    weekScroll: wsc ? wsc.scrollLeft : 0,
+    vtScroll: vtw ? [vtw.scrollLeft, vtw.scrollTop] : null,
+  });
+  while (calCache.size > CAL_CACHE_MAX) calCache.delete(calCache.keys().next().value);
+}
 function renderCalendar(){
+  renderCalendar.lastHit = false;
   paintLevel();   // (All week greys out Talks)
   const favourites = state.scope === 'agenda';
   // My agenda draws its saved items with the program's own day views and week overview
@@ -10543,8 +10843,46 @@ function renderCalendar(){
   const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
   // the list is kept aside, not thrown away, for a return to it (renderAgenda)
-  if (main._list && main.firstElementChild === main._list.first && !main._stash){ main._stash = document.createDocumentFragment(); main._stash.append(...main.childNodes); }
+  if (main._list && main.firstElementChild === main._list.first){ listStash(main); main._calKey = null; main._calMeta = null; }
+  else calCacheStash(main);
   main.classList.add('wide');
+  const key = !fallback && selected.length ? calCacheKey() : null;
+  const hit = key && calCache.get(key);
+  if (hit){
+    calCache.delete(key);
+    main.replaceChildren(hit.frag);
+    const h = main.querySelector('.hz-day');
+    const hvp = h && h.querySelector('.hz-vp'), lw = h && h.querySelector('.hz-corner')?.offsetWidth;
+    const widthMismatch = (hit.w && Math.abs(main.clientWidth - hit.w) > 2)
+      || (h && hvp && +h.dataset.tw && Math.abs(Math.max(120, hvp.clientWidth - (lw || 0)) - +h.dataset.tw) > 2);
+    if (!widthMismatch){
+      if (h){
+        const hk = hzKey(h);
+        if (HZ.left[hk] !== undefined) hzScrollTo(h, HZ.left[hk], 0, 'instant');
+        hzSync(h);
+        for (const z of main.querySelectorAll('.hz-zoom')) if (typeof segPlace === 'function' && z._segOn !== undefined) segPlace(z, true);
+      }
+      const nw = main.querySelector('.vt-wrap.scroll');
+      if (nw){
+        const sc = vtKeep || hit.vtScroll;
+        if (sc){ nw.scrollLeft = sc[0]; nw.scrollTop = sc[1]; }
+      }
+      const wsc = main.querySelector('.week-sc');
+      if (wsc && hit.weekScroll) wsc.scrollLeft = hit.weekScroll;
+      vtPopHide();
+      result.innerHTML = hit.resultHtml;
+      result.parentElement.classList.toggle('rl-quiet', hit.rlQuiet);
+      document.getElementById('emptyNote').classList.remove('show');
+      if (!h) hlUnclip(main);
+      for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
+      paintNow();
+      writeHash();
+      main._calKey = key;
+      main._calMeta = { resultHtml: hit.resultHtml, rlQuiet: hit.rlQuiet };
+      renderCalendar.lastHit = true;
+      return;
+    }
+  }
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekOverview();
@@ -10582,6 +10920,8 @@ function renderCalendar(){
   for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
   paintNow();
   writeHash();
+  main._calKey = key;
+  main._calMeta = key ? { resultHtml: result.innerHTML, rlQuiet: result.parentElement.classList.contains('rl-quiet') } : null;
 }
 // (?txprof=1: its time, txpRender)
 if (TXP){ const f = renderCalendar; renderCalendar = function(){ return txpRender(f, this, arguments); }; }
@@ -12906,6 +13246,7 @@ function dxSettleAll(){ for (const d of [...dxRunning]) dxSet(d, d.__dx.open); }
 // between them, not a few each; `also` makes the changes that go with them at once (after
 // their heights now are read from the layout on screen, before the one that measures them).
 function dxFold(ds, open, also){
+  if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
   ds = ds.filter(d => d.isConnected && dxGoal(d) !== open);
   if (!ds.length || motionReduced() || !ds[0].animate){ ds.forEach(d => dxSet(d, open)); if (also) also(); return; }
   // where each is now (part of the way, when it moves), and how far its text has faded
@@ -12974,6 +13315,8 @@ document.addEventListener('click', e => {
   if (!e.detail) setTimeout(() => { if (document.activeElement === row) row.scrollIntoView({ block: 'nearest', behavior: 'instant' }); }, d.__dx ? MO_L * motionK() + 40 : 0);
 });
 document.getElementById('expandAll').addEventListener('click', e => {
+  viewGen++;
+  if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
   const ds = [...document.querySelectorAll('.card:not(.hidden) details')];
   // (blocks of All week not drawn yet follow the choice as they are drawn)
   const L = document.getElementById('agenda')._list, later = L && L.phs && [...L.phs].some(p => !p.classList.contains('hidden'));
@@ -13232,7 +13575,58 @@ function paintPeopleControls(matching, cat){
   sel.classList.toggle('pp-on', Boolean(cat));
 }
 
+// Detached cache for #people (LRU of 2 + live-in-DOM fast path): when returning to
+// Participants with unchanged pq, pcat, psort, width/rem, font/text and viewGen, reuse
+// the already-rendered DOM instead of rebuilding #peopleList and #peopleRail.
+const PP_CACHE_MAX = 2, ppCache = new Map();
+let ppLive = null;
+function ppCacheKey(){
+  const cat = Object.hasOwn(DATA.cats, state.pcat) ? state.pcat : '';
+  const de = document.documentElement.dataset;
+  return [state.pq, cat, state.psort, innerWidth, remPx(), de.font || '', de.text || '', viewGen].join('|');
+}
+
 function renderPeople(){
+  renderPeople.lastHit = false;
+  const el = document.getElementById('peopleList'), key = ppCacheKey();
+  const rl = document.getElementById('resultLine'), sel = document.getElementById('peopleCat');
+  if (ppLive && ppLive.key === key && el.firstElementChild === ppLive.first){
+    rl.innerHTML = ppLive.rlHtml;
+    rl.parentElement.classList.remove('rl-quiet');
+    if (PP.rest.length) ppMore(60);
+    renderPeople.lastHit = true;
+    return;
+  }
+  if (ppLive && el.firstElementChild === ppLive.first && el.childNodes.length){
+    PP.gen++;
+    const frag = document.createDocumentFragment();
+    frag.append(...el.childNodes);
+    ppCache.delete(ppLive.key);
+    ppCache.set(ppLive.key, {
+      frag, rest: PP.rest, rlHtml: ppLive.rlHtml, rail: ppLive.rail, railLabels: ppLive.railLabels,
+      catHtml: ppLive.catHtml, catVal: ppLive.catVal, catOn: ppLive.catOn,
+    });
+    while (ppCache.size > PP_CACHE_MAX) ppCache.delete(ppCache.keys().next().value);
+    ppLive = null;
+  }
+  const hit = ppCache.get(key);
+  if (hit){
+    ppCache.delete(key);
+    el.replaceChildren(hit.frag);
+    PP.rest = hit.rest; PP.gen++;
+    for (const b of document.querySelectorAll('[data-psort]')) b.setAttribute('aria-pressed', b.dataset.psort === state.psort);
+    sel.innerHTML = hit.catHtml; sel.value = hit.catVal; sel.classList.toggle('pp-on', hit.catOn);
+    renderRail(hit.rail, hit.railLabels);
+    rl.innerHTML = hit.rlHtml;
+    rl.parentElement.classList.remove('rl-quiet');
+    if (PP.rest.length) ppMore(60);
+    ppLive = {
+      key, first: el.firstElementChild, rlHtml: hit.rlHtml, rail: hit.rail, railLabels: hit.railLabels,
+      catHtml: hit.catHtml, catVal: hit.catVal, catOn: hit.catOn,
+    };
+    renderPeople.lastHit = true;
+    return;
+  }
   const { people, groups } = peopleIndex();
   const q = state.pq;
   const alias = aliasGroupFor(q);
@@ -13257,7 +13651,7 @@ function renderPeople(){
   // role, 18px more with its affiliation; a row of several a little more, as the longest
   // titles there wrap). Close guesses keep a jump down the list (the A–Z rail) on target
   // as the sections it passes are drawn.
-  const pw = document.getElementById('peopleList').clientWidth || document.getElementById('main').clientWidth - 70;
+  const pw = el.clientWidth || document.getElementById('main').clientWidth - 70;
   const cols = Math.max(1, Math.floor(pw / 290));
   const card = (p, named) => 52 + (named ? 18 : 0) + 63 * p.roles.length;
   const guess = (list, named) => {
@@ -13304,7 +13698,6 @@ function renderPeople(){
     }
     flush();
   }
-  const el = document.getElementById('peopleList');
   const catName = cat ? DATA.cats[cat] : '';
   PP.rest = parts;
   if (parts.length){
@@ -13315,15 +13708,21 @@ function renderPeople(){
   } else el.innerHTML = `<div class="ag-empty"><h3>${q ? `No one${cat ? ' in ' + esc(catName) : ''} matches &ldquo;${esc(q)}&rdquo;` : `No one in ${esc(catName)}`}</h3>` +
     (q ? `<p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button> ` : '') +
     (cat ? `<button type="button" class="toggle" data-people-allcats>Show all categories</button>` : '') + `</div>`;
-  renderRail(rail, state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people']);
+  const railLabels = state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people'];
+  renderRail(rail, railLabels);
   // Affiliations count institutions only; people with none listed are counted apart.
   const total = people.length, totalGroups = groups.filter(g => g.g).length;
   const filtered = nPeople !== total;
   const none = nNone ? `, <b>${nNone}</b> with no institution listed` : '';
   const where = (cat ? `, in <b>${esc(catName)}</b>` : '') + (alias ? `, at <b>${esc(groupLabel(alias))}</b>` : '');
-  document.getElementById('resultLine').innerHTML = filtered
+  rl.innerHTML = filtered
     ? `<b>${nPeople}</b> of ${total} people, <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
     : `<b>${total}</b> speakers and conveners, <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none;
+  rl.parentElement.classList.remove('rl-quiet');
+  ppLive = {
+    key, first: el.firstElementChild, rlHtml: rl.innerHTML, rail, railLabels,
+    catHtml: sel.innerHTML, catVal: cat, catOn: !!cat,
+  };
 }
 
 // The people list's sections go in a few at a time (renderPeople puts in the first
@@ -14638,6 +15037,7 @@ function archivoReady(){
 function setDisplay(key, value){
   if (value) display[key] = value; else delete display[key];
   const go = () => {
+    viewGen++;
     window.applyDisplay(display);
     saveDisplay();
     syncDisplayForm();
@@ -15744,6 +16144,7 @@ function segPlace(g, snap, now){
   if (snap && inVT && viewTx && viewTx.vt){ segLate(g, viewTx.vt); return; }
   g._segLate = false;
   const on = segOnOf(g);
+  if (g._segSpec && (on === g._segSpec.on || snap)) segSpecClear(g, false);
   if (g._segHold){
     // (a Display option held until its new look applies, segDisp: placed then, as the look
     // has laid it out)
@@ -15772,6 +16173,54 @@ function segPlace(g, snap, now){
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
 }
+// Highlight on pointerdown (mouse and pen only): the pill starts sliding at pointerdown
+// without changing aria-pressed, state or the view. The view still commits on click, and
+// txPending measures the lead from t0 so the hold time counts toward it. Dragging off,
+// cancelling, blur, Escape, or pointerup without a click slides the pill back.
+function segSpecClear(g, revert){
+  const sp = g && g._segSpec;
+  if (!sp) return;
+  g._segSpec = null;
+  clearTimeout(sp.tm);
+  window.removeEventListener('pointerup', sp.up, true);
+  window.removeEventListener('pointercancel', sp.rev, true);
+  window.removeEventListener('blur', sp.rev);
+  window.removeEventListener('keydown', sp.key, true);
+  sp.on.removeEventListener('lostpointercapture', sp.rev);
+  if (revert && g.isConnected){
+    const real = segOnOf(g);
+    if (real && real !== g._segOn){ segMoving(g); segAt(g, real, false); }
+  }
+}
+function segSpecStart(g, b){
+  segSpecClear(g, false);
+  segMoving(g);
+  segAt(g, b, false);
+  const t0 = g._segSlide ? segT0(g._segSlide) : performance.now();
+  const rev = () => segSpecClear(g, true);
+  const sp = g._segSpec = { on: b, t0, rev, tm: 0 };
+  sp.up = e => {
+    if (!b.contains(e.target)) rev();
+    else { clearTimeout(sp.tm); sp.tm = setTimeout(rev, 250); }
+  };
+  sp.key = e => { if (e.key === 'Escape') rev(); };
+  requestAnimationFrame(() => { if (g._segSpec === sp) sp.pillRaf = performance.now(); });
+  window.addEventListener('pointerup', sp.up, true);
+  window.addEventListener('pointercancel', rev, true);
+  window.addEventListener('blur', rev);
+  window.addEventListener('keydown', sp.key, true);
+  b.addEventListener('lostpointercapture', rev);
+}
+document.addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+  if (motionReduced() || document.querySelector('dialog[open]')) return;
+  const b = e.target && e.target.closest && e.target.closest('.agenda-views > button, .daytabs > .daytab');
+  if (!b || b.hidden || b.disabled || b.getAttribute('aria-pressed') === 'true') return;
+  const g = b.parentElement;
+  if (!g || g._segOn === undefined || g._segOn === b || g._segHold || !g.classList.contains('seg-ind')) return;
+  segSpecStart(g, b);
+}, true);
 // (placed in the first frame after the transition's ready, unless placed before then)
 function segLate(g, vt){
   if (g._segLate) return;
@@ -15912,7 +16361,7 @@ function segSlide(g, from, to, was, wasBox, live, prev){
   // moves in it, so a copy moved past the group's edge never widens the page. Each is set
   // at the slide's start too, for a frame drawn before any has begun.)
   const M = ov && g._segInkM, OW = ov && M.w + M.pad[1] + M.pad[3], OH = ov && M.h + M.pad[0] + M.pad[2];
-  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: n === 1 ? 'forwards' : 'both' };
+  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: 'both' };
   const run = (el, f) => { el.style.transform = f(pts[0]); return el.animate(pts.map(b => ({ transform: f(b) })), ko); };
   // (along one row, its height and corners the same all the way: the copy draws the
   // indicator too, and nothing in the slide but moves. Its left edge is the copy's own

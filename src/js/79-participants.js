@@ -146,7 +146,58 @@ function paintPeopleControls(matching, cat){
   sel.classList.toggle('pp-on', Boolean(cat));
 }
 
+// Detached cache for #people (LRU of 2 + live-in-DOM fast path): when returning to
+// Participants with unchanged pq, pcat, psort, width/rem, font/text and viewGen, reuse
+// the already-rendered DOM instead of rebuilding #peopleList and #peopleRail.
+const PP_CACHE_MAX = 2, ppCache = new Map();
+let ppLive = null;
+function ppCacheKey(){
+  const cat = Object.hasOwn(DATA.cats, state.pcat) ? state.pcat : '';
+  const de = document.documentElement.dataset;
+  return [state.pq, cat, state.psort, innerWidth, remPx(), de.font || '', de.text || '', viewGen].join('|');
+}
+
 function renderPeople(){
+  renderPeople.lastHit = false;
+  const el = document.getElementById('peopleList'), key = ppCacheKey();
+  const rl = document.getElementById('resultLine'), sel = document.getElementById('peopleCat');
+  if (ppLive && ppLive.key === key && el.firstElementChild === ppLive.first){
+    rl.innerHTML = ppLive.rlHtml;
+    rl.parentElement.classList.remove('rl-quiet');
+    if (PP.rest.length) ppMore(60);
+    renderPeople.lastHit = true;
+    return;
+  }
+  if (ppLive && el.firstElementChild === ppLive.first && el.childNodes.length){
+    PP.gen++;
+    const frag = document.createDocumentFragment();
+    frag.append(...el.childNodes);
+    ppCache.delete(ppLive.key);
+    ppCache.set(ppLive.key, {
+      frag, rest: PP.rest, rlHtml: ppLive.rlHtml, rail: ppLive.rail, railLabels: ppLive.railLabels,
+      catHtml: ppLive.catHtml, catVal: ppLive.catVal, catOn: ppLive.catOn,
+    });
+    while (ppCache.size > PP_CACHE_MAX) ppCache.delete(ppCache.keys().next().value);
+    ppLive = null;
+  }
+  const hit = ppCache.get(key);
+  if (hit){
+    ppCache.delete(key);
+    el.replaceChildren(hit.frag);
+    PP.rest = hit.rest; PP.gen++;
+    for (const b of document.querySelectorAll('[data-psort]')) b.setAttribute('aria-pressed', b.dataset.psort === state.psort);
+    sel.innerHTML = hit.catHtml; sel.value = hit.catVal; sel.classList.toggle('pp-on', hit.catOn);
+    renderRail(hit.rail, hit.railLabels);
+    rl.innerHTML = hit.rlHtml;
+    rl.parentElement.classList.remove('rl-quiet');
+    if (PP.rest.length) ppMore(60);
+    ppLive = {
+      key, first: el.firstElementChild, rlHtml: hit.rlHtml, rail: hit.rail, railLabels: hit.railLabels,
+      catHtml: hit.catHtml, catVal: hit.catVal, catOn: hit.catOn,
+    };
+    renderPeople.lastHit = true;
+    return;
+  }
   const { people, groups } = peopleIndex();
   const q = state.pq;
   const alias = aliasGroupFor(q);
@@ -171,7 +222,7 @@ function renderPeople(){
   // role, 18px more with its affiliation; a row of several a little more, as the longest
   // titles there wrap). Close guesses keep a jump down the list (the A–Z rail) on target
   // as the sections it passes are drawn.
-  const pw = document.getElementById('peopleList').clientWidth || document.getElementById('main').clientWidth - 70;
+  const pw = el.clientWidth || document.getElementById('main').clientWidth - 70;
   const cols = Math.max(1, Math.floor(pw / 290));
   const card = (p, named) => 52 + (named ? 18 : 0) + 63 * p.roles.length;
   const guess = (list, named) => {
@@ -218,7 +269,6 @@ function renderPeople(){
     }
     flush();
   }
-  const el = document.getElementById('peopleList');
   const catName = cat ? DATA.cats[cat] : '';
   PP.rest = parts;
   if (parts.length){
@@ -229,15 +279,21 @@ function renderPeople(){
   } else el.innerHTML = `<div class="ag-empty"><h3>${q ? `No one${cat ? ' in ' + esc(catName) : ''} matches &ldquo;${esc(q)}&rdquo;` : `No one in ${esc(catName)}`}</h3>` +
     (q ? `<p>Search a name, an institution or a short form such as <i>unsw</i>, <i>anu</i> or <i>csiro</i>.</p><button type="button" class="toggle" data-people-clear>Clear search</button> ` : '') +
     (cat ? `<button type="button" class="toggle" data-people-allcats>Show all categories</button>` : '') + `</div>`;
-  renderRail(rail, state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people']);
+  const railLabels = state.psort === 'aff' ? ['affiliation', 'affiliations'] : ['person', 'people'];
+  renderRail(rail, railLabels);
   // Affiliations count institutions only; people with none listed are counted apart.
   const total = people.length, totalGroups = groups.filter(g => g.g).length;
   const filtered = nPeople !== total;
   const none = nNone ? `, <b>${nNone}</b> with no institution listed` : '';
   const where = (cat ? `, in <b>${esc(catName)}</b>` : '') + (alias ? `, at <b>${esc(groupLabel(alias))}</b>` : '');
-  document.getElementById('resultLine').innerHTML = filtered
+  rl.innerHTML = filtered
     ? `<b>${nPeople}</b> of ${total} people, <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
     : `<b>${total}</b> speakers and conveners, <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none;
+  rl.parentElement.classList.remove('rl-quiet');
+  ppLive = {
+    key, first: el.firstElementChild, rlHtml: rl.innerHTML, rail, railLabels,
+    catHtml: sel.innerHTML, catVal: cat, catOn: !!cat,
+  };
 }
 
 // The people list's sections go in a few at a time (renderPeople puts in the first

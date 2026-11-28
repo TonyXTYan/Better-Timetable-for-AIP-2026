@@ -68,6 +68,7 @@ function archivoReady(){
 function setDisplay(key, value){
   if (value) display[key] = value; else delete display[key];
   const go = () => {
+    viewGen++;
     window.applyDisplay(display);
     saveDisplay();
     syncDisplayForm();

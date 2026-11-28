@@ -668,7 +668,7 @@ html[data-view-tx="disp"]::view-transition-new(root){animation:var(--dur-l) var(
    (through the page's own background, dimmed under an open dialog), never both at once */
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-old(root){animation:calc(90ms * var(--mo)) ease-in both week-tx-out}
 html[data-view-tx="disp"][data-view-tx-seq]::view-transition-new(root){animation:calc(150ms * var(--mo)) ease-out calc(70ms * var(--mo)) both week-tx-fade}
-html[data-view-tx="disp"][data-view-tx-seq]:has(dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
+html[data-view-tx="disp"][data-view-tx-seq]:has(> body > dialog[open])::view-transition{background:linear-gradient(var(--backdrop),var(--backdrop)),var(--bg)}
 @keyframes week-tx-out{to{opacity:0}}
 @keyframes week-tx-in{from{opacity:0;transform:translateY(6px)}}
 @keyframes week-tx-in-r{from{opacity:0;transform:translateX(18px)}}
@@ -1358,7 +1358,10 @@ footer p{line-height:1.6;max-width:62ch}
 footer .foot-ack{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 footer .foot-ack p{max-width:100ch}
 footer a{color:var(--ink)}
-::selection{background:var(--mark-bg);color:var(--ink)}
+/* (under body, not bare ::selection: matching html makes Chromium's highlight inheritance
+   recalculate the whole DOM whenever a view transition toggles :active-view-transition;
+   a descendant selector keeps Safari/WebKit styling text inside child elements too) */
+body ::selection{background:var(--mark-bg);color:var(--ink)}
 :root{scrollbar-color:var(--hover-line) transparent}
 .foot-links{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:2px 14px}
 /* About: the congress's facts as a short list (the term in ink, as the headings), then the
@@ -1514,7 +1517,7 @@ footer .foot-issue-btns a.display-btn{flex:1 1 auto;justify-content:center;paddi
 .undo-bar[hidden]{display:none}
 /* An open dialog (details, Build, Display, Move) would sit under the bar: the Undo offer
    steps aside while it is open and comes back, its time paused, when it closes. */
-html:has(dialog[open]) .undo-bar{display:none}
+body:has(> dialog[open]) .undo-bar{display:none}
 .undo-bar #undoMsg{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .undo-actions{display:flex;gap:6px;flex:none}
 .undo-bar .toggle{min-height:36px;padding:5px 14px;background:transparent;border-color:var(--toast-ink);color:var(--toast-ink)}
@@ -2288,7 +2291,7 @@ button.hz-gl{padding:0 2px 0 3px;gap:3px;font-size:.75rem}
 /* ---------- build my agenda: a guided walk through the time slots ---------- */
 #buildDialog{--thumb:14px;--thumb-h:26px;--trk:4px;padding:0;width:min(1120px,96vw);height:min(900px,92vh);max-width:none;max-height:none;font-size:0.8438rem;line-height:1.45;overflow:hidden}
 #buildDialog[open]{display:flex;flex-direction:column}
-html:has(#buildDialog[open]){overflow:hidden}
+html:has(> body > #buildDialog[open]){overflow:hidden}
 #buildDialog::backdrop{background:var(--backdrop)}
 .bd-top{position:relative;flex:none;padding:16px 20px 8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
 /* the close button stands in the top right corner at every width; the title bar keeps clear of it */

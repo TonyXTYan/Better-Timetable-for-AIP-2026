@@ -90,6 +90,7 @@ function segPlace(g, snap, now){
   if (snap && inVT && viewTx && viewTx.vt){ segLate(g, viewTx.vt); return; }
   g._segLate = false;
   const on = segOnOf(g);
+  if (g._segSpec && (on === g._segSpec.on || snap)) segSpecClear(g, false);
   if (g._segHold){
     // (a Display option held until its new look applies, segDisp: placed then, as the look
     // has laid it out)
@@ -118,6 +119,54 @@ function segPlace(g, snap, now){
   else if (g._segOn !== on && !motionReduced()) segMoving(g);
   segAt(g, on, snap && !retarget);
 }
+// Highlight on pointerdown (mouse and pen only): the pill starts sliding at pointerdown
+// without changing aria-pressed, state or the view. The view still commits on click, and
+// txPending measures the lead from t0 so the hold time counts toward it. Dragging off,
+// cancelling, blur, Escape, or pointerup without a click slides the pill back.
+function segSpecClear(g, revert){
+  const sp = g && g._segSpec;
+  if (!sp) return;
+  g._segSpec = null;
+  clearTimeout(sp.tm);
+  window.removeEventListener('pointerup', sp.up, true);
+  window.removeEventListener('pointercancel', sp.rev, true);
+  window.removeEventListener('blur', sp.rev);
+  window.removeEventListener('keydown', sp.key, true);
+  sp.on.removeEventListener('lostpointercapture', sp.rev);
+  if (revert && g.isConnected){
+    const real = segOnOf(g);
+    if (real && real !== g._segOn){ segMoving(g); segAt(g, real, false); }
+  }
+}
+function segSpecStart(g, b){
+  segSpecClear(g, false);
+  segMoving(g);
+  segAt(g, b, false);
+  const t0 = g._segSlide ? segT0(g._segSlide) : performance.now();
+  const rev = () => segSpecClear(g, true);
+  const sp = g._segSpec = { on: b, t0, rev, tm: 0 };
+  sp.up = e => {
+    if (!b.contains(e.target)) rev();
+    else { clearTimeout(sp.tm); sp.tm = setTimeout(rev, 250); }
+  };
+  sp.key = e => { if (e.key === 'Escape') rev(); };
+  requestAnimationFrame(() => { if (g._segSpec === sp) sp.pillRaf = performance.now(); });
+  window.addEventListener('pointerup', sp.up, true);
+  window.addEventListener('pointercancel', rev, true);
+  window.addEventListener('blur', rev);
+  window.addEventListener('keydown', sp.key, true);
+  b.addEventListener('lostpointercapture', rev);
+}
+document.addEventListener('pointerdown', e => {
+  if (!e.isPrimary || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+  if (motionReduced() || document.querySelector('dialog[open]')) return;
+  const b = e.target && e.target.closest && e.target.closest('.agenda-views > button, .daytabs > .daytab');
+  if (!b || b.hidden || b.disabled || b.getAttribute('aria-pressed') === 'true') return;
+  const g = b.parentElement;
+  if (!g || g._segOn === undefined || g._segOn === b || g._segHold || !g.classList.contains('seg-ind')) return;
+  segSpecStart(g, b);
+}, true);
 // (placed in the first frame after the transition's ready, unless placed before then)
 function segLate(g, vt){
   if (g._segLate) return;
@@ -258,7 +307,7 @@ function segSlide(g, from, to, was, wasBox, live, prev){
   // moves in it, so a copy moved past the group's edge never widens the page. Each is set
   // at the slide's start too, for a frame drawn before any has begun.)
   const M = ov && g._segInkM, OW = ov && M.w + M.pad[1] + M.pad[3], OH = ov && M.h + M.pad[0] + M.pad[2];
-  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: n === 1 ? 'forwards' : 'both' };
+  const ko = { duration: dur, easing: n === 1 ? EASE : 'linear', fill: 'both' };
   const run = (el, f) => { el.style.transform = f(pts[0]); return el.animate(pts.map(b => ({ transform: f(b) })), ko); };
   // (along one row, its height and corners the same all the way: the copy draws the
   // indicator too, and nothing in the slide but moves. Its left edge is the copy's own

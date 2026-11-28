@@ -149,9 +149,24 @@ function txpRender(f, self, args){
     }
   }
 }
+function txHitPress(tx, e){
+  if (!tx || !tx.press || !e) return false;
+  if (e.target instanceof Element && tx.press.contains(e.target)) return true;
+  if (e.target === document.documentElement && typeof e.clientX === 'number'){
+    const r = tx.press.getBoundingClientRect();
+    return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  }
+  return false;
+}
 function settleTransition(e){
   const tx = viewTx;
   if (!tx) return;
+  // (a second click or pointerdown on the same button that started this transition — a
+  // double-click — is ignored whether the change is still pending or already running)
+  if (txHitPress(tx, e) && (e.type === 'click' || e.type === 'pointerdown')){
+    if (e.type === 'click') e.stopImmediatePropagation();
+    return;
+  }
   // (another press in the same row of buttons, while a change still waits for its frame:
   // that change gives way to the new one, rather than being drawn first)
   if (tx.group && e && e.target instanceof Element && tx.group.contains(e.target) && e.target.closest('[aria-pressed]')
@@ -169,7 +184,9 @@ function settleTransition(e){
 // root is forwarded, and only by the click that ends it.
 let redirectArmed = -1e9;
 document.addEventListener('pointerdown', e => {
-  redirectArmed = viewTx && e.isTrusted && e.target === document.documentElement ? performance.now() : -1e9;
+  redirectArmed = viewTx && e.isTrusted && !txHitPress(viewTx, e)
+    && (e.target === document.documentElement || (viewTx.group && e.target instanceof Element && viewTx.group.contains(e.target)))
+    ? performance.now() : -1e9;
 }, true);
 // (and the focus stays where it is until that click, rather than going to the page for the
 // frames between: the press on the root would otherwise blur it)
@@ -198,6 +215,7 @@ document.addEventListener('keydown', () => { redirectArmed = -1e9; }, true);
 // as a stream chip's "only")
 document.addEventListener('dblclick', e => {
   if (!e.isTrusted || e.target !== document.documentElement) return;
+  if (viewTx && txHitPress(viewTx, e)){ e.stopImmediatePropagation(); return; }
   settleTransition();
   const el = document.elementFromPoint(e.clientX, e.clientY);
   if (!el || el === document.documentElement || el === document.body) return;

@@ -53,6 +53,8 @@ const TESTS = [
       info: r.map(x => `${x.nm}: errors=${x.errors} named=${x.named} anims=${x.anims}`).join(', ') || 'no results' };
   } },
   { name: 'func', run: [[T('func.js'), REPO]], judge: fails },
+  { name: 'press', run: [[T('press.js'), REPO]], judge: fails },
+  { name: 'viewcache', run: [[T('viewcache.js'), REPO]], judge: fails },
   { name: 'chips', run: [[T('chips.js'), REPO]], judge: fails },
   { name: 'func29', run: [[T('func29.js'), REPO]], judge: fails },
   { name: 'sw', run: [[T('sw.js'), REPO]], judge: fails },

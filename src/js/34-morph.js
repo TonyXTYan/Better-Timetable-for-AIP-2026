@@ -135,7 +135,61 @@ const mxPart = (part, key) => '::view-transition-' + part + '(mx-' + mxSafe(key)
 // labels and day heads on the screen as well (layMarks). With `x` (a change of the streams
 // shown): x.items, the items to look at (a list's session cards only, not their talks), and
 // x.wide, how far from the screen (a screen and a half, for the items that move into it).
-function mxScan(aux, keep, only, any, sel, cov, lay, x){
+// Idle-time block index for list views (#agenda / #builderList): maps each .block / .ag-row
+// to its MX_ITEM elements (keys already mxSafe) and records list LAY_MARKS in document order.
+// Built in requestIdleCallback after listLazyDone / renderAgenda / renderBuilder; invalidated
+// by listIdxGen whenever list DOM changes. Avoids scanning 21,000+ DOM nodes at switch time.
+let listIdxGen = 0, mxBlockIdx = null, mxBlockIdxJob = 0;
+function mxBlockIdxBump(){
+  listIdxGen++;
+  mxBlockIdx = null;
+}
+function mxBlockIdxSoon(){
+  if (mxBlockIdxJob) return;
+  const run = () => {
+    mxBlockIdxJob = 0;
+    if (state.layout !== 'list' || state.scope === 'participants') return;
+    if (viewTx){ mxBlockIdxJob = setTimeout(run, 150); return; }
+    mxBlockIdxBuild(listIdxGen);
+  };
+  const idle = window.requestIdleCallback || (f => setTimeout(f, 80));
+  mxBlockIdxJob = idle(run, { timeout: 400 });
+}
+function mxBlockIdxBuild(gen){
+  const root = state.scope === 'agenda' ? document.getElementById('builderList') : document.getElementById('agenda');
+  if (!root || root.hidden || !root.isConnected) return;
+  const blocks = [], dayOf = i => DATA.days[+i] && DATA.days[+i].date;
+  const blockSel = state.scope === 'agenda' ? '.ag-row' : '.block';
+  for (const b of root.querySelectorAll(blockSel)){
+    const items = [];
+    if (b.matches('.ag-row')){
+      const k = b.dataset.tid ? mxSafe('t-' + b.dataset.tid) : b.dataset.sid ? mxSafe('s-' + b.dataset.sid) : null;
+      if (k) items.push([b, k]);
+      for (const li of b.querySelectorAll('li[data-tid]')) items.push([li, mxSafe('t-' + li.dataset.tid)]);
+    } else {
+      for (const el of b.querySelectorAll('.card[data-sid], .talk[data-tid]')){
+        items.push([el, el.dataset.tid ? mxSafe('t-' + el.dataset.tid) : mxSafe('s-' + el.dataset.sid)]);
+      }
+    }
+    blocks.push({ b, items });
+  }
+  const marks = [];
+  for (const el of root.querySelectorAll('.block-time, .ag-row .ag-t0, .day-head')){
+    if (!el.textContent.trim()) continue;
+    if (el.matches('.block-time')){
+      const b = el.closest('.block');
+      if (b && b.dataset.start){ const m = toMin(b.dataset.start); marks.push({ b, el, u: 'm-' + m, d: 'm-' + b.dataset.date + '-' + m }); }
+    } else if (el.matches('.ag-t0')){
+      const row = el.closest('.ag-row');
+      if (row && row.dataset.start){ const m = toMin(row.dataset.start); marks.push({ b: row, el, u: 'm-' + m, d: 'm-' + row.dataset.date + '-' + m }); }
+    } else if (el.matches('.day-head')){
+      const btn = el.querySelector('[data-goprogram], [data-focusday]'), dt = btn && dayOf(btn.dataset.goprogram ?? btn.dataset.focusday);
+      if (dt) marks.push({ b: null, el, u: 'd-' + dt, d: 'd-' + dt });
+    }
+  }
+  if (gen === listIdxGen) mxBlockIdx = { gen, root, blocks, marks };
+}
+function mxScan(aux, keep, only, any, sel, cov, lay, x, _noIdx){
   const vw = innerWidth, vh = innerHeight, mn = x && x.wide || Math.max(240, vh * .5), mf = Math.max(mn, vh * 1.5);
   const main = document.getElementById('main'), items = new Map();
   // (a day sliding away in Vertical is not on the page any more)
@@ -186,6 +240,43 @@ function mxScan(aux, keep, only, any, sel, cov, lay, x){
     const d = Math.max(0, -r.bottom, r.top - vh);   // distance from the viewport
     items.set(key, { key, el, r, c, p, kind, d });
   };
+  // Fast path for list views using the idle block index (avoids 21k-node querySelectorAll)
+  if (!_noIdx && !only && !aux && !(x && x.items) && !(x && x.marks) && mxBlockIdx && mxBlockIdx.gen === listIdxGen
+    && mxBlockIdx.root && !mxBlockIdx.root.hidden && mxBlockIdx.root.isConnected
+    && (!mxBlockIdx.blocks.length || mxBlockIdx.blocks[0].b.isConnected)){
+    const maxM = keep && keep.size ? mf : mn;
+    for (const entry of mxBlockIdx.blocks){
+      const b = entry.b;
+      if (b.classList.contains('hidden')) continue;
+      const r = b.getBoundingClientRect();
+      blocks.set(b, r);
+      if (!any && (r.bottom < -maxM || r.top > vh + maxM)) continue;
+      for (const [el, key] of entry.items) add(el, key, 'item');
+    }
+    if (lay){
+      const bar = stickyWrap.getBoundingClientRect().bottom, under = mxUnderHeads(), dated = lay === 'dated';
+      for (const mk of mxBlockIdx.marks){
+        const key = dated ? mk.d : mk.u;
+        if (items.has(key)) continue;
+        if (mk.b){
+          if (mk.b.classList.contains('hidden')) continue;
+          let br = blocks.get(mk.b);
+          if (!br) blocks.set(mk.b, br = mk.b.getBoundingClientRect());
+          if (br.bottom < 0 || br.top > vh) continue;
+        }
+        const r = mk.el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2 || r.bottom <= bar + 2 || r.top >= vh - 2 || r.right <= 8 || r.left >= vw - 8) continue;
+        if (under(r)) continue;
+        items.set(key, { key, el: mk.el, r, c: null, p: '', kind: 'mark', d: 0 });
+      }
+    }
+    if (TX_DEBUG){
+      const ref = mxScan(aux, keep, only, any, sel, cov, lay, x, true);
+      const a = [...items.keys()].join(','), b = [...ref.keys()].join(',');
+      if (a !== b) console.error('[mxBlockIdx] MISMATCH', { idx: a, ref: b });
+    }
+    return items;
+  }
   // (with `lay`, the time labels and day heads on the screen (layMarks): each on the screen,
   // below the toolbar and clear of a calendar's stuck heads (but for one in them), in the
   // part of its box that shows; the first of a key only. `lay` 'dated': a list's, keyed by
