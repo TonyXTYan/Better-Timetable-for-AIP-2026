@@ -7954,7 +7954,7 @@ function withTransition(kind, fn, from, opts = {}){
     // while as the page redraws)
     const o = { ...opts, press: null }, freeze = txFreezes(kind, o), first = txSlideFirst(o, opts.press);
     const pg = opts.press.parentElement, spec = pg && pg._segSpec && pg._segSpec.on === opts.press;
-    const slide = freeze && (first > 0 || spec);
+    const slide = freeze && (first > 0 || (spec && !txFastSnap(o)));
     const go = () => { txPre(o); txStart(kind, fn, from, o); }, run = txTimed(fn, o), now = () => { txPre(o); run(); };
     if (R){ R.slideWait = slide ? (first || 1) : 0; R.freezes = freeze; }
     txPending(opts.press, go, now, slide ? txLead(o) : null, freeze, !freeze && first > 0);
@@ -7978,7 +7978,14 @@ function txPre(o){
 // and the change starts early enough (txLead) that its old-snapshot freeze lands once the
 // pill has reached TX_PILL_P of its travel (0: the slide waits for the change instead and
 // runs alongside it, segWait).
-const TX_SLIDE_FIRST = 250, TX_PILL_P = 0.95;
+const TX_SLIDE_FIRST = 250, TX_PILL_P = 0.95, TX_FAST_SNAP = 100;
+// At normal speed, a switch whose last measured snapshot pause was short (< TX_FAST_SNAP)
+// can start on release without waiting for a speculative pointerdown slide to reach 95%.
+function txFastSnap(o){
+  if (motionK() > 2) return false;
+  const p = o.pair ? txPairRec(o) : null;
+  return !!(p && p.last && p.last.freeze < TX_FAST_SNAP);
+}
 // (a pair's first change, with no wait of its own seen yet: its snapshots are guessed to
 // take about as long as its redraw, as they do)
 function txSlideFirst(o, press){
