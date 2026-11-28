@@ -175,7 +175,7 @@ function renderPeople(){
     ppCache.delete(ppLive.key);
     ppCache.set(ppLive.key, {
       frag, rest: PP.rest, rlHtml: ppLive.rlHtml, rail: ppLive.rail, railLabels: ppLive.railLabels,
-      catHtml: sel.innerHTML, catVal: sel.value, catOn: sel.classList.contains('pp-on'),
+      catHtml: ppLive.catHtml, catVal: ppLive.catVal, catOn: ppLive.catOn,
     });
     while (ppCache.size > PP_CACHE_MAX) ppCache.delete(ppCache.keys().next().value);
     ppLive = null;
@@ -191,7 +191,10 @@ function renderPeople(){
     rl.innerHTML = hit.rlHtml;
     rl.parentElement.classList.remove('rl-quiet');
     if (PP.rest.length) ppMore(60);
-    ppLive = { key, first: el.firstElementChild, rlHtml: hit.rlHtml, rail: hit.rail, railLabels: hit.railLabels };
+    ppLive = {
+      key, first: el.firstElementChild, rlHtml: hit.rlHtml, rail: hit.rail, railLabels: hit.railLabels,
+      catHtml: hit.catHtml, catVal: hit.catVal, catOn: hit.catOn,
+    };
     renderPeople.lastHit = true;
     return;
   }
@@ -287,7 +290,10 @@ function renderPeople(){
     ? `<b>${nPeople}</b> of ${total} people, <b>${nGroups}</b> of ${totalGroups} affiliations` + none + where
     : `<b>${total}</b> speakers and conveners, <b>${totalGroups}</b> ${plural(totalGroups, 'affiliation', 'affiliations')}` + none;
   rl.parentElement.classList.remove('rl-quiet');
-  ppLive = { key, first: el.firstElementChild, rlHtml: rl.innerHTML, rail, railLabels };
+  ppLive = {
+    key, first: el.firstElementChild, rlHtml: rl.innerHTML, rail, railLabels,
+    catHtml: sel.innerHTML, catVal: cat, catOn: !!cat,
+  };
 }
 
 // The people list's sections go in a few at a time (renderPeople puts in the first

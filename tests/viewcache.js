@@ -169,6 +169,49 @@ function check(ok, name, detail = '') {
     return { hit: renderCalendar.lastHit, key: document.getElementById('agenda')._calKey };
   });
 
+  // Regression checks for Codex PR #2 review findings:
+  // 1) My agenda display options (#includeParents, hideClashes, softClashes) must affect calCacheKey
+  // 2) Calendar -> Participants -> Calendar round-trip must preserve calendar #resultLine
+  // 3) Participants category dropdown All -> aip -> All must restore sel.value === ''
+  const reg = await p.evaluate(() => {
+    // 1) Agenda display option keys
+    state.scope = 'agenda'; state.layout = 'calendar'; state.day = 2; state.orient = 'h';
+    const inc = document.getElementById('includeParents');
+    inc.checked = false; state.hideClashes = false; state.softClashes = true;
+    const kBase = calCacheKey();
+    inc.checked = true;
+    const kFull = calCacheKey();
+    inc.checked = false; state.hideClashes = true;
+    const kHide = calCacheKey();
+    state.hideClashes = false; state.softClashes = false;
+    const kSoft = calCacheKey();
+    state.softClashes = true;
+
+    // 2) Calendar -> Participants -> Calendar resultLine preservation
+    showView('calendar', 'program');
+    const calRlBefore = document.getElementById('resultLine').textContent;
+    showView('calendar', 'participants');
+    const ppRl = document.getElementById('resultLine').textContent;
+    showView('calendar', 'program');
+    const calRlAfter = document.getElementById('resultLine').textContent;
+
+    // 3) Participants category dropdown All -> aip -> All
+    showView('calendar', 'participants');
+    const sel = document.getElementById('peopleCat');
+    sel.value = 'aip';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    const valAfterAip = sel.value;
+    sel.value = '';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    const valAfterAll = sel.value;
+    const onAfterAll = sel.classList.contains('pp-on');
+    return {
+      keysDistinct: new Set([kBase, kFull, kHide, kSoft]).size === 4,
+      calRlBefore, ppRl, calRlAfter,
+      valAfterAip, valAfterAll, onAfterAll,
+    };
+  });
+
   check(res.hits >= 10, 'exercised calendar cache hits in 200-step walk', `hits=${res.hits} cacheSize=${res.cacheSize}`);
   check(res.mismatches.length === 0, 'every calendar cache hit fingerprint matches fresh render', JSON.stringify(res.mismatches));
   check(res.listHits >= 5, 'exercised list cache fast put-backs in 200-step walk', `listHits=${res.listHits} listDaySize=${res.listDaySize}`);
@@ -176,6 +219,9 @@ function check(ok, name, detail = '') {
   check(res.staleRefs === 0, 'no disconnected popover/source refs', `staleRefs=${res.staleRefs}`);
   check(res.nowChanged, 'congress now-minute bucket included in cache key', `nowInKey=${res.nowChanged}`);
   check(!afterResize.hit, 'resize invalidates width-mismatched cache entry', JSON.stringify(afterResize));
+  check(reg.keysDistinct, 'agenda display options (#includeParents, hideClashes, softClashes) produce distinct calCacheKeys', JSON.stringify(reg));
+  check(reg.calRlBefore === reg.calRlAfter && reg.calRlAfter !== reg.ppRl, 'calendar -> participants -> calendar preserves calendar resultLine', JSON.stringify({ before: reg.calRlBefore, pp: reg.ppRl, after: reg.calRlAfter }));
+  check(reg.valAfterAip === 'aip' && reg.valAfterAll === '' && !reg.onAfterAll, 'participants category All -> aip -> All restores dropdown value and pp-on class', JSON.stringify({ valAfterAip: reg.valAfterAip, valAfterAll: reg.valAfterAll, onAfterAll: reg.onAfterAll }));
   check(errs.length === 0, 'zero page errors', errs.join(' | '));
 
   await ctx.close();

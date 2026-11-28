@@ -491,7 +491,9 @@ function calCacheKey(to = {}){
   const cats = [...(ag ? v.acats : v.cats)].sort().join(',');
   const grp = ag ? '' : (v.group || '');
   const de = document.documentElement.dataset;
-  return [v.scope, day, v.orient, !ag && v.programTalks && day !== 'all' ? 1 : 0, ag && v.agendaParents ? 1 : 0,
+  const incP = ag && (to.includeParents !== undefined ? to.includeParents : document.getElementById('includeParents')?.checked) ? 1 : 0;
+  const agOpts = ag ? `${incP}${v.hideClashes ? 1 : 0}${v.softClashes ? 1 : 0}` : '';
+  return [v.scope, day, v.orient, !ag && v.programTalks && day !== 'all' ? 1 : 0, agOpts,
     hzPart, viewGen, innerWidth, remPx(), de.font || '', de.text || '', nowPart, q, cats, grp].join('|');
 }
 function calCacheHas(to = {}){
@@ -506,7 +508,9 @@ function calCacheSync(root){
 function calCacheStash(main){
   const key = main && main._calKey;
   if (!key) return;
+  const meta = main._calMeta;
   main._calKey = null;
+  main._calMeta = null;
   // (never stash a list that replaced the calendar)
   if (main._list && main.firstElementChild === main._list.first) return;
   hzPopHide();
@@ -525,8 +529,8 @@ function calCacheStash(main){
   calCache.set(key, {
     frag,
     w: main.clientWidth,
-    resultHtml: result.innerHTML,
-    rlQuiet: result.parentElement.classList.contains('rl-quiet'),
+    resultHtml: meta ? meta.resultHtml : result.innerHTML,
+    rlQuiet: meta ? meta.rlQuiet : result.parentElement.classList.contains('rl-quiet'),
     weekScroll: wsc ? wsc.scrollLeft : 0,
     vtScroll: vtw ? [vtw.scrollLeft, vtw.scrollTop] : null,
   });
@@ -549,7 +553,7 @@ function renderCalendar(){
   const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
   // the list is kept aside, not thrown away, for a return to it (renderAgenda)
-  if (main._list && main.firstElementChild === main._list.first){ listStash(main); main._calKey = null; }
+  if (main._list && main.firstElementChild === main._list.first){ listStash(main); main._calKey = null; main._calMeta = null; }
   else calCacheStash(main);
   main.classList.add('wide');
   const key = !fallback && selected.length ? calCacheKey() : null;
@@ -584,6 +588,7 @@ function renderCalendar(){
       paintNow();
       writeHash();
       main._calKey = key;
+      main._calMeta = { resultHtml: hit.resultHtml, rlQuiet: hit.rlQuiet };
       renderCalendar.lastHit = true;
       return;
     }
@@ -626,6 +631,7 @@ function renderCalendar(){
   paintNow();
   writeHash();
   main._calKey = key;
+  main._calMeta = key ? { resultHtml: result.innerHTML, rlQuiet: result.parentElement.classList.contains('rl-quiet') } : null;
 }
 // (?txprof=1: its time, txpRender)
 if (TXP){ const f = renderCalendar; renderCalendar = function(){ return txpRender(f, this, arguments); }; }
