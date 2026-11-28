@@ -640,4 +640,34 @@ Ranked findings:
 - Tests: `build`, `func` (76/0), `press` (19/0), `viewcache` (8/0), `chips` (63/0), `errors` (0),
   `crash-scope` (5x8, 0 errors) all PASS.
 
+## Step 11: detached cache of the people list (commit 2eba66c)
 
+- Added a live-in-DOM fast path (`ppLive`) plus a 2-entry detached LRU cache (`ppCache`) for
+  `#people` in `src/js/79-participants.js`, keyed by `pq`, `pcat`, `psort`, `innerWidth`,
+  `remPx()`, `font`/`text`, and `viewGen`.
+- When returning to Participants with an unchanged key, `#people` stays in the DOM untouched
+  (fast path), or restores a stashed detached fragment when switching between cached filter/sort
+  views; `resultLine` and `rl-quiet` are restored from the cached snapshot.
+- Measured at desktop 4x (0 saved):
+  - `prog->people` cold: `rend` 293.7ms, `motion` 803.0ms.
+  - `prog->people` cached revisits: `rend` 45.8-53.8ms (-82%, -240ms), `motion` 313.7-334.2ms
+    (-59%, -470ms), clearing the 30ms Stop rule by a wide margin.
+
+## Step 12: offscreen first-visit calendar pre-build inside lead slack (dropped — stop rule tripped)
+
+- Tested building a cold target calendar into a hidden `contain: strict` offscreen host
+  (`#calPreHost`, at `#agenda`'s width, with `state` and `HZ.left` restored in `finally` and
+  `hzInit` scroll listeners guarded) during `txPending`'s lead slack when `delay >= 50ms`, then
+  stashing the fitted DOM into `calCache` so `renderCalendar()` hits the cache inside `cb`.
+- Verified zero state leaks (`viewcache` 8/0 PASS, `errors` 0).
+- Measured cold first-visit A/B at desktop 4x (3 fresh-page reps per mode, `hold=0ms` where lead
+  slack is largest at ~110-150ms):
+  - `level sess->talks`: `S11-OFF` `go=187.8ms`, `mot=1619.7ms` vs `S12-ON` `go=784.7ms`,
+    `mot=1812.5ms` (+193ms slower).
+  - `week-cal day->week`: `S11-OFF` `go=138.4ms`, `mot=1156.1ms` vs `S12-ON` `go=596.9ms`,
+    `mot=1355.5ms` (+199ms slower).
+- Why: re-attaching, restyling, and laying out a detached 900-1,770 node calendar in `#agenda`
+  (`put-back`) costs ~210-308ms at 4x, which exceeds the ~110-150ms lead slack (and with Step 6
+  `--hold 100` pointerdown speculation, lead slack is even smaller). Net change is
+  `put-back - slack > 0`, making cold first visits slower rather than faster.
+- Reverted cleanly per the Step 12 Stop rule (`saving < 40ms`).

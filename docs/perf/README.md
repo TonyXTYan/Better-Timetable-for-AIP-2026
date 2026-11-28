@@ -10,7 +10,7 @@ Sessions/Talks) to the view moving. It also covers how smooth the highlight is w
 - `notes.md`: what each step did and measured, including the independent verifier results.
 - `after-step1-table.md`: before/after for step 1 across the whole matrix.
 
-## Status (after steps 3-10 on `perf/press-to-motion-step3-plus`)
+## Status (after steps 3-12 on `perf/press-to-motion-step3-plus`)
 
 Done:
 1. Step 1. Switches that take no snapshot (Participants, heavy pages) no longer wait for the
@@ -45,9 +45,14 @@ Done:
    `week-list week->day` `rend` 330->158ms (-52%, MOT 986->848ms) and `layout-week cal->list`
    `nScan` 354->211ms (-40%); phone 4x `week-list week->day` `rend` 341->142ms (-58%, MOT
    1074->910ms).
+10. Step 11 (`2eba66c`). Live-in-DOM fast path + 2-entry detached LRU cache for `#people`
+    (`ppCache`). Desktop 4x `prog->people` revisits drop `rend` 294->46-54ms (-82%) and `motion`
+    803->314-334ms (-59%).
+11. Step 12 (dropped). Offscreen first-visit calendar pre-build inside lead slack tripped its
+    stop rule: desktop 4x cold first-visit MOT regressed +193ms (`level`) and +199ms (`week-cal`)
+    because detached DOM put-back (~210-308ms) exceeds lead slack (~110-150ms). Reverted cleanly.
 
-Next (optional / low-priority): step 11 (detached cache for `#people`), step 12 (offscreen first-
-visit pre-build inside lead slack), and full 8-config matrix (`matrix.sh`) + `tests/run.js --full`.
+Next: full 8-config matrix (`matrix.sh`) if desired before merging to `main`.
 
 Owner preference, which replaces "highlight first" in the plan: the most responsive UI wins.
 Order of priority:
