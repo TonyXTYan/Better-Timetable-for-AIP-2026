@@ -30,6 +30,7 @@ function dxSettleAll(){ for (const d of [...dxRunning]) dxSet(d, d.__dx.open); }
 // their heights now are read from the layout on screen, before the one that measures them).
 function dxFold(ds, open, also){
   viewGen++;
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   ds = ds.filter(d => d.isConnected && dxGoal(d) !== open);
   if (!ds.length || motionReduced() || !ds[0].animate){ ds.forEach(d => dxSet(d, open)); if (also) also(); return; }
   // where each is now (part of the way, when it moves), and how far its text has faded
@@ -99,6 +100,7 @@ document.addEventListener('click', e => {
 });
 document.getElementById('expandAll').addEventListener('click', e => {
   viewGen++;
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   const ds = [...document.querySelectorAll('.card:not(.hidden) details')];
   // (blocks of All week not drawn yet follow the choice as they are drawn)
   const L = document.getElementById('agenda')._list, later = L && L.phs && [...L.phs].some(p => !p.classList.contains('hidden'));

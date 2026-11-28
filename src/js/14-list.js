@@ -121,10 +121,12 @@ function fillPh(p, L){
   if (cards) plateFit(cards);
   if (L.expanded) b.querySelectorAll('details').forEach(d => { d.open = true; });
   p.replaceWith(b);
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
 }
 function listLazyDone(L){
   paintNow();
   blockHeightsSoon();
+  if (typeof mxBlockIdxSoon === 'function') mxBlockIdxSoon();
 }
 // Fills the block of one session, or (no id) every block showing, now.
 function listFill(sid){
@@ -193,6 +195,7 @@ function renderAgenda(){
   if (main._list && main._list.day === state.day && main.firstElementChild === main._list.first){
     main.classList.remove('wide');
     syncListStars(main);
+    if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
     if (searchQuick()) return;
   }
   const all = state.day === 'all';
@@ -211,6 +214,7 @@ function renderAgenda(){
     } else html += inner;
   }
   main.innerHTML = html;
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
   main.classList.remove('wide');
   const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0 };
@@ -219,6 +223,7 @@ function renderAgenda(){
   document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
   applyFilters();
   if (L.phs.size) listLazyRun(L, true);
+  else if (typeof mxBlockIdxSoon === 'function') mxBlockIdxSoon();
 }
 
 // In idle time after a list is drawn (or its cards change), each time block (My
@@ -310,6 +315,7 @@ function syncListStars(main){
 }
 // Cards drawn again for the current search (marks), keeping what applyFilters set.
 function remarkCards(cards, q){
+  if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   const tpl = document.createElement('template');
   for (const card of cards){
     if (!card.isConnected) continue;

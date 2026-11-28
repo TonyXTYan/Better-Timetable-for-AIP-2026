@@ -145,5 +145,6 @@ function renderBuilder(){
     html += `<div class="ag-day"><div class="day-head"><div><h3 class="dh-label">${esc(d.label)} 2026</h3><span class="dh-sub">${of}, ${plannedHours(dayItems).toFixed(1)} h</span></div><button class="dh-focus" data-goprogram="${di}">Open in program${CHEV}</button></div><ul class="ag-list">${dayItems.map(agRow).join('')}</ul></div>`;
   });
   body.innerHTML = agendaUpNext(items) + html;
+  if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
 }
 
