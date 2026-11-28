@@ -153,7 +153,7 @@ function listFillView(){
 // waiting while a view change animates, up to 700 ms).
 function listLazyRun(L, sync){
   const main = document.getElementById('agenda');
-  if (main._list !== L || L.job || !L.phs.size || main._stash) return;
+  if (main._list !== L || L.job || !L.phs.size || L.frag) return;
   const vh = innerHeight;
   if (sync){
     // (the top of the list counts too: a day tab takes the page to the program's top)
@@ -167,7 +167,7 @@ function listLazyRun(L, sync){
   L.t0 = performance.now();
   const step = () => {
     L.job = 0;
-    if (main._list !== L || main._stash) return;
+    if (main._list !== L || L.frag) return;
     if (viewTx && performance.now() - L.t0 < 700){ L.job = setTimeout(step, 40); return; }
     const t0 = performance.now(), todo = listPending(L);
     let n = 0;
@@ -181,22 +181,97 @@ function listLazyRun(L, sync){
   if (listPending(L).length) L.job = setTimeout(step, 0); else listLazyDone(L);
 }
 
+// Detached list cache: keeps the All-week list plus an LRU of 2 day lists. Each entry
+// carries its lazy-fill state, expanded flag, viewGen stamp, and idle block index so an
+// unchanged put-back skips syncListStars, applyFilters, and the stale pass.
+const LIST_DAY_MAX = 2, listDayCache = new Map();
+let listAllCache = null;
+function listNowPart(){
+  if (typeof aedtNow !== 'function') return '0';
+  const n = aedtNow();
+  return DATA.days.some(d => d.date === n.date) ? n.date + ':' + n.min : '0';
+}
+function listStamp(L){
+  if (!L) return;
+  L.gen = viewGen;
+  L.q = state.q;
+  L.cats = [...state.cats].sort().join(',');
+  L.grp = state.group || '';
+  L.w = innerWidth;
+  L.rem = remPx();
+  L.nowPart = listNowPart();
+  const rl = document.getElementById('resultLine');
+  L.rlHtml = rl.innerHTML;
+  L.rlQuiet = rl.parentElement.classList.contains('rl-quiet');
+  L.emptyShow = document.getElementById('emptyNote').classList.contains('show');
+  L.xaHtml = document.getElementById('expandAll').innerHTML;
+}
+function listUnchanged(L){
+  return L && L.gen === viewGen && L.q === state.q && L.cats === [...state.cats].sort().join(',')
+    && L.grp === (state.group || '') && L.w === innerWidth && L.rem === remPx() && L.nowPart === listNowPart();
+}
+function listStash(main){
+  const L = main && main._list;
+  if (!L || main.firstElementChild !== L.first) return;
+  main._list = null;
+  if (L.job){ clearTimeout(L.job); L.job = 0; }
+  if (main.querySelector('[style*="view-transition-name"]')){
+    if (TX_DEBUG) console.warn('[listCache] skipped stash: view-transition-name present on day', L.day);
+    return;
+  }
+  if (typeof mxBlockIdx !== 'undefined' && mxBlockIdx && mxBlockIdx.root === main && mxBlockIdx.gen === listIdxGen) L.idx = mxBlockIdx;
+  else L.idx = null;
+  L.frag = document.createDocumentFragment();
+  L.frag.append(...main.childNodes);
+  if (L.day === 'all') listAllCache = L;
+  else {
+    listDayCache.delete(L.day);
+    listDayCache.set(L.day, L);
+    while (listDayCache.size > LIST_DAY_MAX) listDayCache.delete(listDayCache.keys().next().value);
+  }
+}
+
 function renderAgenda(){
+  renderAgenda.lastFast = false;
   if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
   if (typeof calCacheStash === 'function') calCacheStash(main);
-  // The list already on the page for this day (kept behind My agenda, or aside while a
-  // calendar showed) is shown as it is, its stars brought up to date, rather than built
-  // again.
-  if (main._stash){
-    if (main._list.day === state.day) main.replaceChildren(main._stash);
-    main._stash = null;
+  if (main._list && main._list.day !== state.day) listStash(main);
+  // Put back a stashed list for this day (All week or one of the 2 cached day lists).
+  const cached = (!main._list || main._list.day !== state.day)
+    ? (state.day === 'all' ? listAllCache : listDayCache.get(state.day))
+    : null;
+  if (cached && cached.frag){
+    if (state.day === 'all') listAllCache = null; else listDayCache.delete(state.day);
+    main.replaceChildren(cached.frag);
+    cached.frag = null;
+    main._list = cached;
   }
   if (main._list && main._list.day === state.day && main.firstElementChild === main._list.first){
+    const L = main._list;
     main.classList.remove('wide');
+    if (listUnchanged(L)){
+      const rl = document.getElementById('resultLine');
+      rl.innerHTML = L.rlHtml;
+      rl.parentElement.classList.toggle('rl-quiet', L.rlQuiet);
+      document.getElementById('emptyNote').classList.toggle('show', L.emptyShow);
+      document.getElementById('expandAll').innerHTML = L.xaHtml;
+      if (L.phs.size && !L.job) listLazyRun(L);
+      if (L.idx && !L.phs.size && typeof mxBlockIdx !== 'undefined'){ mxBlockIdx = L.idx; mxBlockIdx.gen = listIdxGen; }
+      else if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
+      renderAgenda.lastFast = true;
+      if (TX_DEBUG){
+        const before = [...main.querySelectorAll('.card[data-sid]')].map(c => c.dataset.sid + ':' + (c.classList.contains('hidden') ? 1 : 0)).join(',');
+        syncListStars(main);
+        applyFilters();
+        const after = [...main.querySelectorAll('.card[data-sid]')].map(c => c.dataset.sid + ':' + (c.classList.contains('hidden') ? 1 : 0)).join(',');
+        if (before !== after) console.error('[listCache] fast put-back mismatch!');
+      }
+      return;
+    }
     syncListStars(main);
     if (typeof mxBlockIdxBump === 'function'){ mxBlockIdxBump(); mxBlockIdxSoon(); }
-    if (searchQuick()) return;
+    if (searchQuick()){ listStamp(L); return; }
   }
   const all = state.day === 'all';
   const days = all ? DATA.days.map((d,i)=>[d,i]) : [[DATA.days[state.day], state.day]];
@@ -217,7 +292,7 @@ function renderAgenda(){
   if (typeof mxBlockIdxBump === 'function') mxBlockIdxBump();
   if (xaJob){ clearTimeout(xaJob.t); xaJob = null; }
   main.classList.remove('wide');
-  const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0 };
+  const L = main._list = { day: state.day, first: main.firstElementChild, phs: new Set(), job: 0, frag: null, idx: null };
   if (all) main.querySelectorAll('.blk-ph').forEach((p, i) => { p._g = groups[i]; L.phs.add(p); });
   remarkStop();
   document.getElementById('expandAll').innerHTML = 'Expand all<span class="xa-word"> abstracts</span>';
@@ -525,6 +600,7 @@ function applyFilters(){
   if (state.scope === 'program') renderTabs();
   blockHeightsSoon();
   const L = main._list;
+  if (L && main.firstElementChild === L.first) listStamp(L);
   if (L && L.phs && L.phs.size && !L.job && L.t0 !== undefined) listLazyRun(L);
 }
 

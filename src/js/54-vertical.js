@@ -549,7 +549,7 @@ function renderCalendar(){
   const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
   // the list is kept aside, not thrown away, for a return to it (renderAgenda)
-  if (main._list && main.firstElementChild === main._list.first && !main._stash){ main._stash = document.createDocumentFragment(); main._stash.append(...main.childNodes); main._calKey = null; }
+  if (main._list && main.firstElementChild === main._list.first){ listStash(main); main._calKey = null; }
   else calCacheStash(main);
   main.classList.add('wide');
   const key = !fallback && selected.length ? calCacheKey() : null;

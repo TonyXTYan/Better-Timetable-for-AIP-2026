@@ -57,7 +57,7 @@ function check(ok, name, detail = '') {
       if (s.talks[0]) sampleIds.push(s.talks[0].id);
     }
 
-    let hits = 0, mismatches = [], staleRefs = 0;
+    let hits = 0, mismatches = [], listHits = 0, listMismatches = [], staleRefs = 0;
     const steps = 200;
     for (let i = 0; i < steps; i++) {
       const act = rnd(40);
@@ -135,19 +135,29 @@ function check(ok, name, detail = '') {
         for (const [k, v] of savedCache) calCache.set(k, v);
         if (!document.getElementById('agenda')._calKey) document.getElementById('agenda')._calKey = savedKey;
       }
+      // Check list fast put-back fingerprint parity
+      if (renderAgenda.lastFast && state.layout === 'list' && state.scope === 'program') {
+        listHits++;
+        const cachedFp = fp();
+        syncListStars(document.getElementById('agenda'));
+        applyFilters();
+        paintNow();
+        const refFp = fp();
+        if (cachedFp !== refFp && listMismatches.length < 5) {
+          listMismatches.push({ step: i, day: state.day, cachedLen: cachedFp.length, refLen: refFp.length });
+        }
+      }
     }
 
     // Minute-passing check: advance NOW_OVERRIDE via aedtNow monkey-patch simulation
     // (ensure calCacheKey changes when minute changes during congress)
     const k1 = calCacheKey({ scope: 'program', layout: 'calendar', day: 2, orient: 'h' });
-    const origAedt = window.aedtNow;
     let nowChanged = false;
     if (typeof aedtNow === 'function') {
-      // test via a 1-min shift on aedtNow if writable, else verify nowPart is in key
       nowChanged = k1 && k1.includes('2026-12-08:700');
     }
 
-    return { steps, hits, mismatches, staleRefs, nowChanged, cacheSize: calCache.size };
+    return { steps, hits, mismatches, listHits, listMismatches, staleRefs, nowChanged, cacheSize: calCache.size, listDaySize: listDayCache.size };
   });
 
   // Also test resize invalidation
@@ -160,7 +170,9 @@ function check(ok, name, detail = '') {
   });
 
   check(res.hits >= 10, 'exercised calendar cache hits in 200-step walk', `hits=${res.hits} cacheSize=${res.cacheSize}`);
-  check(res.mismatches.length === 0, 'every cache hit fingerprint matches fresh render', JSON.stringify(res.mismatches));
+  check(res.mismatches.length === 0, 'every calendar cache hit fingerprint matches fresh render', JSON.stringify(res.mismatches));
+  check(res.listHits >= 5, 'exercised list cache fast put-backs in 200-step walk', `listHits=${res.listHits} listDaySize=${res.listDaySize}`);
+  check(res.listMismatches.length === 0, 'every list fast put-back matches full sync+filter pass', JSON.stringify(res.listMismatches));
   check(res.staleRefs === 0, 'no disconnected popover/source refs', `staleRefs=${res.staleRefs}`);
   check(res.nowChanged, 'congress now-minute bucket included in cache key', `nowInKey=${res.nowChanged}`);
   check(!afterResize.hit, 'resize invalidates width-mismatched cache entry', JSON.stringify(afterResize));
