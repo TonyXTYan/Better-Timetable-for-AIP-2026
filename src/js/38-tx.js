@@ -456,18 +456,20 @@ function txBandAnim(kind, r){
 // (by txKey), so going to a view known (or guessed) to take over TX_HEAVY to draw is not
 // animated.
 const TX_HEAVY = 90;
-const txCost = new Map();
+const txCost = new Map(), txCostHit = new Map();
 let txAvg = 0, txSlowAt = -1e9;
 // (All week shows sessions either way: Talks is kept for the days)
 const txKey = (to = {}) => { const v = { ...state, ...to }; return [v.scope, v.layout, v.day === 'all' ? 'all' : 'day', v.orient, v.programTalks && v.day !== 'all'].join('|'); };
 const txSlowNow = t => t - txSlowAt > 2000 ? 0 : txSlow;
 function txNote(ms, to){
   const t = performance.now();
+  const hit = !!(typeof renderCalendar === 'function' && renderCalendar.lastHit);
+  if (typeof renderCalendar === 'function') renderCalendar.lastHit = false;
   txSlow = txSlowNow(t);
   txSlow = ms > 250 ? txSlow + 1 : ms < 120 ? Math.max(0, txSlow - 1) : txSlow;
   if (ms > 250) txSlowAt = t;
   txAvg = txAvg ? txAvg * .6 + ms * .4 : ms;
-  if (to !== undefined) txCost.set(txKey(), ms);
+  if (to !== undefined) (hit ? txCostHit : txCost).set(txKey(), ms);
 }
 // A view's redraw time: as last time, or for one not drawn yet, guessed from this one's
 // (on this device), half as long again when a calendar day turns its sessions into
@@ -475,14 +477,16 @@ function txNote(ms, to){
 // twice: the first All week is drawn from cold, and its first change is the one the
 // guess sets the level of).
 function txGuess(to){
-  if (txCost.has(txKey(to))) return txCost.get(txKey(to));
+  const k = txKey(to);
+  if (typeof calCacheHas === 'function' && calCacheHas(to) && txCostHit.has(k)) return txCostHit.get(k);
+  if (txCost.has(k)) return txCost.get(k);
   const v = { ...state, ...to };
-  let k = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
+  let m = v.programTalks && !state.programTalks && v.layout === 'calendar' && v.day !== 'all' ? 1.5 : 1;
   if (v.day === 'all' && state.day !== 'all' && v.scope === 'program'){
     const n = programCounts();
-    k = Math.min(2, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
+    m = Math.min(2, Math.max(1, n.reduce((a, b) => a + b, 0) / Math.max(1, n[state.day] || 0)));
   }
-  return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * k;
+  return (txCost.has(txKey()) ? txCost.get(txKey()) : txAvg) * m;
 }
 // Slow to draw: a guessed redraw over TX_HEAVY, the people list, or a list of more than
 // ~150 sessions or saved items (the Full program's whole week).

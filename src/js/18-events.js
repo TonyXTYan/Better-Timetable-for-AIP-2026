@@ -55,6 +55,7 @@ function filterGo(set, redraw = refresh){
   settleTransition();
   const was = filterSees();
   set();
+  viewGen++;
   renderChips();
   const sees = filterSees();
   if (state.scope === 'participants'){ redraw(); return; }

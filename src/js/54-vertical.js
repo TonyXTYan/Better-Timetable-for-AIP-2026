@@ -474,7 +474,66 @@ function agendaNoMatchDay(items){
   const msg = agendaNoMatchHtml(items);
   return state.day === 'all' ? msg : agendaEmptyDay(DATA.days[state.day], msg);
 }
+// Detached calendar view cache (LRU of 4): stashes the outgoing calendar's already-fitted
+// DOM fragment when leaving it, and puts it back on an exact key match (scope, day, orient,
+// talks, agendaParents, HZ zoom/collapsed, viewGen, width/rem, font/text, now-minute bucket,
+// search/filters). Avoids re-running hzInit/weekFit on revisits.
+const CAL_CACHE_MAX = 4, calCache = new Map();
+function calCacheKey(to = {}){
+  const v = { ...state, ...to };
+  if (v.layout !== 'calendar' || v.scope === 'participants') return null;
+  const ag = v.scope === 'agenda', day = v.day;
+  const hzK = v.orient === 'h' && day !== 'all' && DATA.days[day] ? (ag ? 'a:' : '') + DATA.days[day].date : '';
+  const hzPart = hzK ? (HZ.zoom[hzZoomKey(hzK)] ?? '') + ';' + [...HZ.collapsed].sort().join(',') : '';
+  const n = aedtNow();
+  const nowPart = DATA.days.some(d => d.date === n.date) ? n.date + ':' + n.min : '0';
+  const q = ag ? v.aq : v.q;
+  const cats = [...(ag ? v.acats : v.cats)].sort().join(',');
+  const grp = ag ? '' : (v.group || '');
+  const de = document.documentElement.dataset;
+  return [v.scope, day, v.orient, !ag && v.programTalks && day !== 'all' ? 1 : 0, ag && v.agendaParents ? 1 : 0,
+    hzPart, viewGen, innerWidth, remPx(), de.font || '', de.text || '', nowPart, q, cats, grp].join('|');
+}
+function calCacheHas(to = {}){
+  const k = calCacheKey(to);
+  return !!(k && calCache.has(k));
+}
+function calCacheSync(root){
+  if (!root || !root._calKey) return;
+  calCache.delete(root._calKey);
+  root._calKey = calCacheKey();
+}
+function calCacheStash(main){
+  const key = main && main._calKey;
+  if (!key) return;
+  main._calKey = null;
+  // (never stash a list that replaced the calendar)
+  if (main._list && main.firstElementChild === main._list.first) return;
+  hzPopHide();
+  vtPopHide();
+  // (assert no view-transition-name remains on any outgoing calendar node)
+  if (main.querySelector('[style*="view-transition-name"]')){
+    if (TX_DEBUG) console.warn('[calCache] skipped stash: view-transition-name present on', key);
+    calCache.delete(key);
+    return;
+  }
+  const wsc = main.querySelector('.week-sc'), vtw = main.querySelector('.vt-wrap.scroll');
+  const result = document.getElementById('resultLine');
+  const frag = document.createDocumentFragment();
+  frag.append(...main.childNodes);
+  calCache.delete(key);
+  calCache.set(key, {
+    frag,
+    w: main.clientWidth,
+    resultHtml: result.innerHTML,
+    rlQuiet: result.parentElement.classList.contains('rl-quiet'),
+    weekScroll: wsc ? wsc.scrollLeft : 0,
+    vtScroll: vtw ? [vtw.scrollLeft, vtw.scrollTop] : null,
+  });
+  while (calCache.size > CAL_CACHE_MAX) calCache.delete(calCache.keys().next().value);
+}
 function renderCalendar(){
+  renderCalendar.lastHit = false;
   paintLevel();   // (All week greys out Talks)
   const favourites = state.scope === 'agenda';
   // My agenda draws its saved items with the program's own day views and week overview
@@ -490,8 +549,45 @@ function renderCalendar(){
   const vw = main.querySelector('.vt-wrap.scroll'), vtKeep = vw && [vw.scrollLeft, vw.scrollTop];
   const result = document.getElementById('resultLine');
   // the list is kept aside, not thrown away, for a return to it (renderAgenda)
-  if (main._list && main.firstElementChild === main._list.first && !main._stash){ main._stash = document.createDocumentFragment(); main._stash.append(...main.childNodes); }
+  if (main._list && main.firstElementChild === main._list.first && !main._stash){ main._stash = document.createDocumentFragment(); main._stash.append(...main.childNodes); main._calKey = null; }
+  else calCacheStash(main);
   main.classList.add('wide');
+  const key = !fallback && selected.length ? calCacheKey() : null;
+  const hit = key && calCache.get(key);
+  if (hit){
+    calCache.delete(key);
+    main.replaceChildren(hit.frag);
+    const h = main.querySelector('.hz-day');
+    const hvp = h && h.querySelector('.hz-vp'), lw = h && h.querySelector('.hz-corner')?.offsetWidth;
+    const widthMismatch = (hit.w && Math.abs(main.clientWidth - hit.w) > 2)
+      || (h && hvp && +h.dataset.tw && Math.abs(Math.max(120, hvp.clientWidth - (lw || 0)) - +h.dataset.tw) > 2);
+    if (!widthMismatch){
+      if (h){
+        const hk = hzKey(h);
+        if (HZ.left[hk] !== undefined) hzScrollTo(h, HZ.left[hk], 0, 'instant');
+        hzSync(h);
+        for (const z of main.querySelectorAll('.hz-zoom')) if (typeof segPlace === 'function' && z._segOn !== undefined) segPlace(z, true);
+      }
+      const nw = main.querySelector('.vt-wrap.scroll');
+      if (nw){
+        const sc = vtKeep || hit.vtScroll;
+        if (sc){ nw.scrollLeft = sc[0]; nw.scrollTop = sc[1]; }
+      }
+      const wsc = main.querySelector('.week-sc');
+      if (wsc && hit.weekScroll) wsc.scrollLeft = hit.weekScroll;
+      vtPopHide();
+      result.innerHTML = hit.resultHtml;
+      result.parentElement.classList.toggle('rl-quiet', hit.rlQuiet);
+      document.getElementById('emptyNote').classList.remove('show');
+      if (!h) hlUnclip(main);
+      for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
+      paintNow();
+      writeHash();
+      main._calKey = key;
+      renderCalendar.lastHit = true;
+      return;
+    }
+  }
   if (fallback){
     const message = `No matches on ${DATA.days[state.day].label}. Showing matches from the rest of the week.`;
     main.innerHTML = `<div class="fallback-banner">${esc(message)} <button class="toggle" data-fball>Show all week</button></div>` + weekOverview();
@@ -529,6 +625,7 @@ function renderCalendar(){
   for (const b of main.querySelectorAll('.sx-box')) sxEdges(b);
   paintNow();
   writeHash();
+  main._calKey = key;
 }
 // (?txprof=1: its time, txpRender)
 if (TXP){ const f = renderCalendar; renderCalendar = function(){ return txpRender(f, this, arguments); }; }

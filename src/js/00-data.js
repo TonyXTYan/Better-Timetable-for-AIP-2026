@@ -273,7 +273,9 @@ try { state.hideClashes = localStorage.getItem('aip2026-hide-clashes') === '1'; 
 state.softClashes = true;
 try { state.softClashes = localStorage.getItem('aip2026-soft-clashes') !== '0'; } catch (e) {}
 
+let viewGen = 0;
 function persistStars(){
+  viewGen++;
   try { localStorage.setItem('aip2026-stars', JSON.stringify([...state.starred])); } catch(e){}
 }
 // The My agenda badge counts what My agenda lists: a saved session with starred talks

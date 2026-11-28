@@ -306,6 +306,7 @@ function hzDayView(day){
 function hzDraw(root, left){
   const h = root.querySelector('.hz-day');
   if (!h) return;
+  if (typeof calCacheSync === 'function') calCacheSync(root);
   hzPopHide();
   hzMorphStop(h);   // (a zoom still moving lands: this draw is the last word)
   const date = h.dataset.date, key = hzKey(h), day = DATA.days.find(d => d.date === date);

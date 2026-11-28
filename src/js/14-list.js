@@ -54,6 +54,7 @@ function plateFit(cards, m = listCols()){
 // (the page's width or its font changed: every plate drawn, again)
 let plateM = 0;
 function platesRefit(){
+  viewGen++;
   plateW = 0;
   const m = listCols();
   if (m === plateM) return;
@@ -181,6 +182,7 @@ function listLazyRun(L, sync){
 function renderAgenda(){
   if (state.layout === 'calendar'){ renderCalendar(); return; }
   const main = document.getElementById('agenda');
+  if (typeof calCacheStash === 'function') calCacheStash(main);
   // The list already on the page for this day (kept behind My agenda, or aside while a
   // calendar showed) is shown as it is, its stars brought up to date, rather than built
   // again.
