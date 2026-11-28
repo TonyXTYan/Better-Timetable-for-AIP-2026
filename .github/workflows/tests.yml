@@ -1,0 +1,78 @@
+name: Regression test suite
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      include_pill:
+        description: 'Include the slow pill suite (~15-25 min)'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests (${{ matrix.shard.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.shard.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - name: core
+            only: func,press,viewcache,func29,errors,footer,sw
+            timeout: 20
+          - name: audit-chips
+            only: audit,chips,t1-build
+            timeout: 20
+          - name: motion-crash
+            only: daytab-slide,anim-leftovers,softclash,crash-listcal,crash-scope
+            timeout: 25
+          - name: pill
+            only: pill
+            timeout: 45
+    if: matrix.shard.name != 'pill' || github.event_name != 'workflow_dispatch' || inputs.include_pill
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright Chromium
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" != "true" ]; then
+            npx playwright install --with-deps chromium
+          else
+            npx playwright install-deps chromium
+          fi
+
+      - name: Run shard (${{ matrix.shard.name }})
+        run: node tests/run.js --only ${{ matrix.shard.only }}
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.shard.name }}
+          path: tests/out/run/
+          retention-days: 7
