@@ -146,12 +146,11 @@ function mxBlockIdxBump(){
 }
 function mxBlockIdxSoon(){
   if (mxBlockIdxJob) return;
-  const gen = listIdxGen;
   const run = () => {
     mxBlockIdxJob = 0;
-    if (gen !== listIdxGen || state.layout !== 'list' || state.scope === 'participants') return;
+    if (state.layout !== 'list' || state.scope === 'participants') return;
     if (viewTx){ mxBlockIdxJob = setTimeout(run, 150); return; }
-    mxBlockIdxBuild(gen);
+    mxBlockIdxBuild(listIdxGen);
   };
   const idle = window.requestIdleCallback || (f => setTimeout(f, 80));
   mxBlockIdxJob = idle(run, { timeout: 400 });
