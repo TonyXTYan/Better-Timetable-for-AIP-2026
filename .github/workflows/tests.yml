@@ -19,6 +19,21 @@ permissions:
   contents: read
 
 jobs:
+  # The committed pages must be what the sources build: a change to src/, build_program.py,
+  # normalize.py or the data that was not rebuilt (python3 build_program.py) fails here.
+  build:
+    name: Build matches committed pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild the page
+        run: python3 build_program.py
+      - name: Check the committed pages are up to date
+        run: |
+          cmp index.html aip-2026-program.html
+          git diff --exit-code --stat -- index.html aip-2026-program.html aip2026-data.json
+
   test:
     name: Tests (${{ matrix.shard.name }})
     runs-on: ubuntu-latest
