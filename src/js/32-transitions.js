@@ -184,7 +184,9 @@ function settleTransition(e){
 // root is forwarded, and only by the click that ends it.
 let redirectArmed = -1e9;
 document.addEventListener('pointerdown', e => {
-  redirectArmed = viewTx && e.isTrusted && e.target === document.documentElement && !txHitPress(viewTx, e) ? performance.now() : -1e9;
+  redirectArmed = viewTx && e.isTrusted && !txHitPress(viewTx, e)
+    && (e.target === document.documentElement || (viewTx.group && e.target instanceof Element && viewTx.group.contains(e.target)))
+    ? performance.now() : -1e9;
 }, true);
 // (and the focus stays where it is until that click, rather than going to the page for the
 // frames between: the press on the root would otherwise blur it)
